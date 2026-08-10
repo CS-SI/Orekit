@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,8 +32,11 @@ import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
-import org.orekit.time.clocks.QuadraticClockModel;
+import org.orekit.time.clocks.PolynomialClockModel;
 import org.orekit.utils.Constants;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Check against prediction in
@@ -61,7 +64,7 @@ public class RelativisticJ2ClockOneWayGNSSRangeModifierTest {
 
         // Measurement
         final OneWayGNSSRange range = new OneWayGNSSRange(new ObserverSatellite("", states[1].getOrbit(), 
-                                                                            new QuadraticClockModel(date, 0.0, 0.0, 0.0)), 
+                                                                            new PolynomialClockModel(date)), 
                                                           date,
                                                           Vector3D.distance(states[0].getPosition(),
                                                                             states[1].getPosition()),
@@ -84,6 +87,17 @@ public class RelativisticJ2ClockOneWayGNSSRangeModifierTest {
                                 estimatedAfter.getAppliedEffects().entrySet().stream().
                                 filter(e -> e.getKey().getEffectName().equals("J₂ clock relativity")).count());
 
+    }
+
+    @Test
+    void testDepends() {
+        // GIVEN
+        final RelativisticJ2ClockOneWayGNSSRangeModifier modifier = mock();
+        when(modifier.dependsOnParticipantsStates()).thenCallRealMethod();
+        // WHEN
+        final boolean flag = modifier.dependsOnParticipantsStates();
+        // THEN
+        assertTrue(flag);
     }
 
     @BeforeEach

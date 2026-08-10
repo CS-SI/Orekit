@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -251,51 +251,6 @@ public class CircularOrbit extends Orbit implements PositionAngleBased<CircularO
                 frame, date, mu);
     }
 
-    /** Creates a new instance.
-     * @param a  semi-major axis (m)
-     * @param ex e cos(ω), first component of circular eccentricity vector
-     * @param ey e sin(ω), second component of circular eccentricity vector
-     * @param i inclination (rad)
-     * @param raan right ascension of ascending node (Ω, rad)
-     * @param alpha  input latitude argument (rad)
-     * @param aDot  semi-major axis derivative (m/s)
-     * @param exDot d(e cos(ω))/dt, first component of circular eccentricity vector derivative
-     * @param eyDot d(e sin(ω))/dt, second component of circular eccentricity vector derivative
-     * @param iDot inclination  derivative(rad/s)
-     * @param raanDot right ascension of ascending node derivative (rad/s)
-     * @param alphaDot  input latitude argument derivative (rad/s)
-     * @param pvCoordinates the {@link PVCoordinates} in inertial frame
-     * @param positionAngleType type of position angle
-     * @param frame the frame in which are defined the parameters
-     * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
-     * @param mu central attraction coefficient (m³/s²)
-     * @exception IllegalArgumentException if eccentricity is equal to 1 or larger or
-     * if frame is not a {@link Frame#isPseudoInertial pseudo-inertial frame}
-     */
-    private CircularOrbit(final double a, final double ex, final double ey,
-                          final double i, final double raan, final double alpha,
-                          final double aDot, final double exDot, final double eyDot,
-                          final double iDot, final double raanDot, final double alphaDot,
-                          final TimeStampedPVCoordinates pvCoordinates,
-                          final PositionAngleType positionAngleType, final Frame frame, final double mu)
-        throws IllegalArgumentException {
-        super(pvCoordinates, frame, mu);
-        this.a           =  a;
-        this.aDot        =  aDot;
-        this.ex          = ex;
-        this.exDot       = exDot;
-        this.ey          = ey;
-        this.eyDot       = eyDot;
-        this.i           = i;
-        this.iDot        = iDot;
-        this.raan        = raan;
-        this.raanDot     = raanDot;
-        this.cachedAlpha = alpha;
-        this.cachedAlphaDot = alphaDot;
-        this.cachedPositionAngleType = positionAngleType;
-        this.partialPV   = null;
-    }
-
     /** Constructor from Cartesian parameters.
      *
      * <p> The acceleration provided in {@code pvCoordinates} is accessible using
@@ -491,6 +446,13 @@ public class CircularOrbit extends Orbit implements PositionAngleBased<CircularO
 
     /** {@inheritDoc} */
     @Override
+    public AbstractOrbitFactory<CircularOrbit> factory(final PositionAngleType positionAngleType,
+                                                       final double positionScale) {
+        return new CircularOrbitFactory(this, positionScale, positionAngleType);
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public double getA() {
         return a;
     }
@@ -618,19 +580,11 @@ public class CircularOrbit extends Orbit implements PositionAngleBased<CircularO
      * @return v + ω true latitude argument (rad)
      */
     public double getAlphaV() {
-        switch (cachedPositionAngleType) {
-            case TRUE:
-                return cachedAlpha;
-
-            case ECCENTRIC:
-                return CircularLatitudeArgumentUtility.eccentricToTrue(ex, ey, cachedAlpha);
-
-            case MEAN:
-                return CircularLatitudeArgumentUtility.meanToTrue(ex, ey, cachedAlpha);
-
-            default:
-                throw new OrekitInternalError(null);
-        }
+        return switch (cachedPositionAngleType) {
+            case TRUE -> cachedAlpha;
+            case ECCENTRIC -> CircularLatitudeArgumentUtility.eccentricToTrue(ex, ey, cachedAlpha);
+            case MEAN -> CircularLatitudeArgumentUtility.meanToTrue(ex, ey, cachedAlpha);
+        };
     }
 
     /** Get the true latitude argument derivative.
@@ -670,19 +624,11 @@ public class CircularOrbit extends Orbit implements PositionAngleBased<CircularO
      * @return E + ω eccentric latitude argument (rad)
      */
     public double getAlphaE() {
-        switch (cachedPositionAngleType) {
-            case TRUE:
-                return CircularLatitudeArgumentUtility.trueToEccentric(ex, ey, cachedAlpha);
-
-            case ECCENTRIC:
-                return cachedAlpha;
-
-            case MEAN:
-                return CircularLatitudeArgumentUtility.meanToEccentric(ex, ey, cachedAlpha);
-
-            default:
-                throw new OrekitInternalError(null);
-        }
+        return switch (cachedPositionAngleType) {
+            case TRUE -> CircularLatitudeArgumentUtility.trueToEccentric(ex, ey, cachedAlpha);
+            case ECCENTRIC -> cachedAlpha;
+            case MEAN -> CircularLatitudeArgumentUtility.meanToEccentric(ex, ey, cachedAlpha);
+        };
     }
 
     /** Get the eccentric latitude argument derivative.
@@ -722,19 +668,11 @@ public class CircularOrbit extends Orbit implements PositionAngleBased<CircularO
      * @return M + ω mean latitude argument (rad)
      */
     public double getAlphaM() {
-        switch (cachedPositionAngleType) {
-            case TRUE:
-                return CircularLatitudeArgumentUtility.trueToMean(ex, ey, cachedAlpha);
-
-            case MEAN:
-                return cachedAlpha;
-
-            case ECCENTRIC:
-                return CircularLatitudeArgumentUtility.eccentricToMean(ex, ey, cachedAlpha);
-
-            default:
-                throw new OrekitInternalError(null);
-        }
+        return switch (cachedPositionAngleType) {
+            case TRUE -> CircularLatitudeArgumentUtility.trueToMean(ex, ey, cachedAlpha);
+            case MEAN -> cachedAlpha;
+            case ECCENTRIC -> CircularLatitudeArgumentUtility.eccentricToMean(ex, ey, cachedAlpha);
+        };
     }
 
     /** Get the mean latitude argument derivative.

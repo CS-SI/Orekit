@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -832,7 +832,7 @@ public enum LOFType implements LOF {
     public Rotation rotationFromLOF(final LOFType fromLOF, final PVCoordinates pv) {
 
         // First compute the rotation from the input LOF to the pivot inertial
-        final Rotation fromLOFToInertial = fromLOF.rotationFromInertial(pv).revert();
+        final Rotation fromLOFToInertial = fromLOF.rotationToInertial(pv);
 
         // Then compute the rotation from the pivot inertial to the output LOF
         final Rotation inertialToThis = this.rotationFromInertial(pv);
@@ -860,7 +860,7 @@ public enum LOFType implements LOF {
                                                                                 final FieldPVCoordinates<T> pv) {
 
         // First compute the rotation from the input LOF to the pivot inertial
-        final FieldRotation<T> fromLOFToInertial = fromLOF.rotationFromInertial(field, pv).revert();
+        final FieldRotation<T> fromLOFToInertial = fromLOF.rotationToInertial(field, pv);
 
         // Then compute the rotation from the pivot inertial to the output LOF
         final FieldRotation<T> inertialToThis = this.rotationFromInertial(field, pv);
@@ -893,6 +893,22 @@ public enum LOFType implements LOF {
     public abstract Rotation rotationFromInertial(PVCoordinates pv);
 
     /**
+     * Get the rotation from local orbital frame to inertial frame.
+     * <p>
+     * This rotation does not include any time derivatives. If first time derivatives (i.e. rotation rate) is needed as well,
+     * the full {@link #transformToInertial(AbsoluteDate, PVCoordinates)} method must be called and
+     * the complete rotation transform must be extracted from it.
+     * </p>
+     *
+     * @param pv position-velocity of the spacecraft in some inertial frame
+     *
+     * @return rotation from local orbital frame to inertial frame
+     */
+    public Rotation rotationToInertial(final PVCoordinates pv) {
+        return rotationFromInertial(pv).revert();
+    }
+
+    /**
      * {@inheritDoc} It is unnecessary to use this method when dealing with {@link LOFType}, use
      * {@link #rotationFromInertial(Field, FieldPVCoordinates)} instead.
      */
@@ -919,6 +935,26 @@ public enum LOFType implements LOF {
      */
     public abstract <T extends CalculusFieldElement<T>> FieldRotation<T> rotationFromInertial(Field<T> field,
                                                                                               FieldPVCoordinates<T> pv);
+
+    /**
+     * Get the rotation from local orbital frame to inertial frame.
+     * <p>
+     * This rotation does not include any time derivatives. If first time derivatives (i.e. rotation rate) is needed as well,
+     * the full {@link #transformToInertial(FieldAbsoluteDate, FieldPVCoordinates)} method must be
+     * called and the complete rotation transform must be extracted from it.
+     * </p>
+     *
+     * @param field field to which the elements belong
+     * @param pv position-velocity of the spacecraft in some inertial frame
+     * @param <T> type of the field elements
+     *
+     * @return rotation from local orbital frame to inertial frame
+     */
+    public <T extends CalculusFieldElement<T>> FieldRotation<T> rotationToInertial(final Field<T> field,
+                                                                                              final FieldPVCoordinates<T> pv) {
+        return rotationFromInertial(field, pv).revert();
+    }
+
 
     /**
      * Convert current local orbital frame to CCSDS equivalent orbit relative frame when possible, null otherwise.

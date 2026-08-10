@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,9 +29,7 @@ import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.files.ccsds.utils.generation.MessageWriter;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.DateComponents;
 import org.orekit.time.DateTimeComponents;
-import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
 
 /** Cdm message writer.
@@ -160,11 +158,8 @@ public abstract class CdmMessageWriter implements MessageWriter<CdmHeader, CdmSe
 
         // creation date is informational only, but mandatory and always in UTC
         final DateTimeComponents creationDate = ((header == null) ? date : header.getCreationDate()).getComponents(utc);
-        final DateComponents     dc           = creationDate.getDate();
-        final TimeComponents     tc           = creationDate.getTime();
         generator.writeEntry(HeaderKey.CREATION_DATE.name(),
-                             generator.dateToString(dc.getYear(), dc.getMonth(), dc.getDay(),
-                                                    tc.getHour(), tc.getMinute(), tc.getSecond()),
+                             generator.dateToString(creationDate),
                              null, true);
 
         // Use built-in default if mandatory originator not present
@@ -173,11 +168,11 @@ public abstract class CdmMessageWriter implements MessageWriter<CdmHeader, CdmSe
                              null, true);
 
         if (header != null) {
-            generator.writeEntry(CdmHeaderKey.MESSAGE_FOR.name(), header.getMessageFor(), null, false);
+            generator.writeOptionalStringEntry(CdmHeaderKey.MESSAGE_FOR.name(), header.getMessageFor(), null, false);
         }
 
         if (header != null) {
-            generator.writeEntry(HeaderKey.MESSAGE_ID.name(), header.getMessageId(), null, false);
+            generator.writeOptionalStringEntry(HeaderKey.MESSAGE_ID.name(), header.getMessageId(), null, false);
         }
 
         if (generator.getFormat() == FileFormat.XML) {

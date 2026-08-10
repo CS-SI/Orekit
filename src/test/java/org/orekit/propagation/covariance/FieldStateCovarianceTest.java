@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -1180,9 +1180,9 @@ class FieldStateCovarianceTest {
         // WHEN
         final FieldStateCovariance<I> originalCovariance;
         final FieldStateCovariance<I> covariance;
-        if (frameOrLOF instanceof LOF) {
-            originalCovariance = new FieldStateCovariance<>(expectedMatrix, date, (LOF) frameOrLOF);
-            covariance         = originalCovariance.changeCovarianceFrame(orbit, (LOF) frameOrLOF);
+        if (frameOrLOF instanceof LOF oF) {
+            originalCovariance = new FieldStateCovariance<>(expectedMatrix, date, oF);
+            covariance         = originalCovariance.changeCovarianceFrame(orbit, oF);
         } else {
             originalCovariance =
                     new FieldStateCovariance<>(expectedMatrix, date, (Frame) frameOrLOF, orbit.getType(), anomalyType);

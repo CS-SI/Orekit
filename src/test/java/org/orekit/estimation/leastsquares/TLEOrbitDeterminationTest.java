@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -44,7 +44,6 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
 import org.orekit.models.earth.atmosphere.Atmosphere;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEConstants;
 import org.orekit.propagation.analytical.tle.generation.FixedPointTleGenerationAlgorithm;
@@ -78,8 +77,10 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
     protected TLEPropagatorBuilder createPropagatorBuilder(final Orbit referenceOrbit,
                                                            final ODEIntegratorBuilder builder,
                                                            final double positionScale) {
-        return new TLEPropagatorBuilder(templateTLE, PositionAngleType.MEAN, positionScale,
-                                        new FixedPointTleGenerationAlgorithm());
+        final TLEPropagatorBuilder tb =
+            new TLEPropagatorBuilder(new FixedPointTleGenerationAlgorithm(templateTLE));
+        tb.getPropagationParametersDrivers().getDrivers().getFirst().setSelected(true);
+        return tb;
     }
 
     /** {@inheritDoc} */
@@ -190,7 +191,6 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
         final String line1 = "1 32711U 08012A   16044.40566026 -.00000039  00000-0  00000+0 0  9991";
         final String line2 = "2 32711  55.4362 301.3402 0091577 207.7302 151.8353  2.00563580 58013";
         templateTLE = new TLE(line1, line2);
-        templateTLE.getParametersDrivers().get(0).setSelected(false);
 
         //orbit determination run.
         ResultBatchLeastSquares odGNSS = runBLS(input, false);
@@ -198,11 +198,11 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
         //test
 
         //definition of the accuracy for the test
-        final double distanceAccuracy = 113.46;
+        final double distanceAccuracy = 125.30;
 
         //test on the convergence
-        final int numberOfIte  = 2;
-        final int numberOfEval = 3;
+        final int numberOfIte  = 3;
+        final int numberOfEval = 4;
         Assertions.assertEquals(numberOfIte, odGNSS.getNumberOfIteration());
         Assertions.assertEquals(numberOfEval, odGNSS.getNumberOfEvaluation());
 
@@ -220,7 +220,7 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
 
         //test on statistic for the range residuals
         final long nbRange = 8211;
-        final double[] RefStatRange = { -14.448, 18.706, 0.132, 6.322 };
+        final double[] RefStatRange = { -10.389, 16.755, 0.238, 4.277 };
         Assertions.assertEquals(nbRange, odGNSS.getRangeStat().getN());
         Assertions.assertEquals(RefStatRange[0], odGNSS.getRangeStat().getMin(),               1.0e-3);
         Assertions.assertEquals(RefStatRange[1], odGNSS.getRangeStat().getMax(),               1.0e-3);
@@ -245,19 +245,18 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
         final String line1 = "1 22195U 92070B   16045.51027931 -.00000009  00000-0  00000+0 0  9990";
         final String line2 = "2 22195  52.6508 132.9147 0137738 336.2706   1.6348  6.47294052551192";
         templateTLE = new TLE(line1, line2);
-        templateTLE.getParametersDrivers().get(0).setSelected(false);
 
         //orbit determination run.
         ResultBatchLeastSquares odLageos2 = runBLS(input, false);
 
         //test
         //definition of the accuracy for the test
-        final double distanceAccuracy = 212.82;
-        final double velocityAccuracy = 6.17e-2;
+        final double distanceAccuracy = 221.4;
+        final double velocityAccuracy = 0.114;
 
         //test on the convergence
-        final int numberOfIte  = 4;
-        final int numberOfEval = 4;
+        final int numberOfIte  = 5;
+        final int numberOfEval = 5;
 
         Assertions.assertEquals(numberOfIte, odLageos2.getNumberOfIteration());
         Assertions.assertEquals(numberOfEval, odLageos2.getNumberOfEvaluation());
@@ -276,11 +275,11 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
 
         //test on statistic for the range residuals
         final long nbRange = 95;
-        final double[] RefStatRange = { -67.331, 79.823, 6.668E-8, 32.296 };
+        final double[] RefStatRange = { -57.420, 87.124, -5.686e-10, 24.960 };
         Assertions.assertEquals(nbRange, odLageos2.getRangeStat().getN());
         Assertions.assertEquals(RefStatRange[0], odLageos2.getRangeStat().getMin(),               1.0e-3);
         Assertions.assertEquals(RefStatRange[1], odLageos2.getRangeStat().getMax(),               1.0e-3);
-        Assertions.assertEquals(RefStatRange[2], odLageos2.getRangeStat().getMean(),              1.0e-3);
+        Assertions.assertEquals(RefStatRange[2], odLageos2.getRangeStat().getMean(),              1.0e-13);
         Assertions.assertEquals(RefStatRange[3], odLageos2.getRangeStat().getStandardDeviation(), 1.0e-3);
 
     }

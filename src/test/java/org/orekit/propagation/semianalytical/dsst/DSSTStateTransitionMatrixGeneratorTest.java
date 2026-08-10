@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -47,8 +47,6 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
-import java.io.FileNotFoundException;
-import java.io.UnsupportedEncodingException;
 import java.util.Collections;
 
 /** Unit tests for {@link DSSTStateTransitionMatrixGenerator}. */
@@ -140,17 +138,16 @@ class DSSTStateTransitionMatrixGeneratorTest {
     }
 
     @Test
-    void testPropagationTypesElliptical() throws FileNotFoundException, UnsupportedEncodingException, OrekitException {
+    void testPropagationTypesElliptical() throws OrekitException {
         doTestPropagation(PropagationType.MEAN, 7.0e-16);
     }
 
     @Test
-    void testPropagationTypesEllipticalWithShortPeriod() throws FileNotFoundException, UnsupportedEncodingException, OrekitException {
+    void testPropagationTypesEllipticalWithShortPeriod() throws OrekitException {
         doTestPropagation(PropagationType.OSCULATING, 3.3e-4);
     }
 
-    private void doTestPropagation(PropagationType type, double tolerance)
-        throws FileNotFoundException, UnsupportedEncodingException {
+    private void doTestPropagation(PropagationType type, double tolerance) {
 
         UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(5, 5);
 
@@ -313,7 +310,7 @@ class DSSTStateTransitionMatrixGeneratorTest {
         DSSTPropagator propagatorMEAN = setUpPropagator(PropagationType.MEAN,  dP, provider);
         propagatorMEAN.setMu(provider.getMu());
         SpacecraftState initialStateMEAN = propagatorMEAN.getInitialState();
-        DSSTHarvester harvesterMEAN = (DSSTHarvester) propagatorMEAN.setupMatricesComputation("stm", null, null);
+        DSSTHarvester harvesterMEAN = propagatorMEAN.setupMatricesComputation("stm", null, null);
         propagatorMEAN.
         getAllForceModels().
         forEach(fm -> fm.
@@ -337,6 +334,7 @@ class DSSTStateTransitionMatrixGeneratorTest {
         }
         Assertions.assertEquals(OrbitType.EQUINOCTIAL, harvesterMEAN.getOrbitType());
         Assertions.assertEquals(PositionAngleType.MEAN, harvesterMEAN.getPositionAngleType());
+        Assertions.assertNull(harvesterMEAN.getStateJacobianVsBuilderParameters(initialStateMEAN));
 
         // FIXME With the addition of the Extended Semi-analytical Kalman Filter, the following
         //       test doesn't work.

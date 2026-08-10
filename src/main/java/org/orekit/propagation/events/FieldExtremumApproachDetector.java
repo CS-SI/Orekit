@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -74,6 +74,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  *  }
  * </pre>
  *
+ * @param <T> type of the field elements
  * @author Vincent Cucchietti
  * @see org.orekit.propagation.FieldPropagator#addEventDetector(FieldEventDetector)
  * @see FieldEventSlopeFilter

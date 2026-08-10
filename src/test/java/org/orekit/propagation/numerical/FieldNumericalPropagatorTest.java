@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -81,6 +81,7 @@ import org.orekit.models.earth.atmosphere.data.MarshallSolarActivityFutureEstima
 import org.orekit.orbits.*;
 import org.orekit.propagation.*;
 import org.orekit.propagation.events.*;
+import org.orekit.propagation.events.functions.EventFunction;
 import org.orekit.propagation.events.handlers.FieldContinueOnEvent;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.handlers.FieldStopOnEvent;
@@ -1075,20 +1076,30 @@ class FieldNumericalPropagatorTest {
             super(detectionSettings, handler);
         }
 
-        @Override
-        public boolean dependsOnMainVariablesOnly() {
-            return false;
-        }
-
         protected AdditionalStateLinearDetector<T> create(final FieldEventDetectionSettings<T> detectionSettings,
                                                           final FieldEventHandler<T> newHandler) {
             return new AdditionalStateLinearDetector<>(detectionSettings, newHandler);
         }
 
+        @Override
         public T g(FieldSpacecraftState<T> s) {
-            return s.getAdditionalState("linear")[0].subtract(3.0);
+            return getEventFunction().value(s);
         }
 
+        @Override
+        public EventFunction getEventFunction() {
+            return new EventFunction() {
+                @Override
+                public double value(SpacecraftState state) {
+                    return state.getAdditionalState("linear")[0] - 3.0;
+                }
+
+                @Override
+                public boolean dependsOnMainVariablesOnly() {
+                    return false;
+                }
+            };
+        }
     }
 
 

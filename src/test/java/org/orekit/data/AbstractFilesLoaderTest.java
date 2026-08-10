@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,11 +18,13 @@ package org.orekit.data;
 
 import org.hipparchus.util.FastMath;
 import org.orekit.Utils;
+import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.Constants;
 
-import java.util.SortedSet;
+import java.util.ArrayList;
+import java.util.List;
 
 public abstract class AbstractFilesLoaderTest {
 
@@ -37,10 +39,12 @@ public abstract class AbstractFilesLoaderTest {
         utc = DataContext.getDefault().getTimeScales().getUTC();
     }
 
-    protected int getMaxGap(SortedSet<? extends TimeStamped> history) {
+    protected int getMaxGap(List<? extends TimeStamped> history) {
+        final List<TimeStamped> sorted = new ArrayList<>(history);
+        sorted.sort(new ChronologicalComparator());
         double maxGap = 0;
         TimeStamped previous = null;
-        for (final TimeStamped current : history) {
+        for (final TimeStamped current : sorted) {
             if (previous != null) {
                 maxGap = FastMath.max(maxGap, current.getDate().durationFrom(previous.getDate()));
             }

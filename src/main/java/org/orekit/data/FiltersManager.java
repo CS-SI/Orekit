@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,6 @@
  */
 package org.orekit.data;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -70,13 +69,11 @@ public class FiltersManager {
      * </p>
      * @param original original data source
      * @return fully filtered data source
-     * @exception IOException if some data stream cannot be filtered
      * @see #addFilter(DataFilter)
      * @see #clearFilters()
      * @since 9.2
      */
-    public DataSource applyRelevantFilters(final DataSource original)
-        throws IOException {
+    public DataSource applyRelevantFilters(final DataSource original) {
         DataSource top = original;
         for (boolean filtering = true; filtering;) {
             filtering = false;

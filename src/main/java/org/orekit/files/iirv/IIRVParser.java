@@ -1,4 +1,4 @@
-/* Copyright 2024-2025 The Johns Hopkins University Applied Physics Laboratory
+/* Copyright 2024-2026 The Johns Hopkins University Applied Physics Laboratory
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -220,7 +220,7 @@ public class IIRVParser implements EphemerisFileParser<IIRVEphemerisFile> {
 
                     // Add metadata (if applicable)
                     if (!vectors.isEmpty() && line1Pattern == IIRVVector.LINE_1_PATTERN_METADATA_OMITTED) {
-                        vectorLines.set(0, vectors.get(0).buildLine1(true));
+                        vectorLines.set(0, vectors.getFirst().buildLine1(true));
                         newVector = new IIRVVector(vectorLines, utc);
                     }
 

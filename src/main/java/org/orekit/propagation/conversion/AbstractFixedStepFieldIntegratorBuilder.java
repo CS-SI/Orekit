@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,8 +25,8 @@ import org.hipparchus.ode.AbstractFieldIntegrator;
 /**
  * Abstract class for integrator builder using fixed step size.
  *
- * @param <T> Type of the field elements
- *
+ * @param <T> type of the field elements
+ * @param <W> type of the field integrator
  * @author Vincent Cucchietti
  */
 public abstract class AbstractFixedStepFieldIntegratorBuilder<T extends CalculusFieldElement<T>, W  extends AbstractFieldIntegrator<T>>

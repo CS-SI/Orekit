@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -34,8 +34,11 @@ import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
-import org.orekit.time.clocks.QuadraticClockModel;
+import org.orekit.time.clocks.PolynomialClockModel;
 import org.orekit.utils.Constants;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Check against prediction in
@@ -66,7 +69,7 @@ public class RelativisticJ2ClockOneWayGNSSPhaseModifierTest {
         // Measurement
         final double wavelength = PredefinedGnssSignal.G01.getWavelength();
         final OneWayGNSSPhase phase = new OneWayGNSSPhase(new ObserverSatellite("", states[1].getOrbit(), 
-                                                                            new QuadraticClockModel(date, 0.0, 0.0, 0.0)), date,
+                                                                            new PolynomialClockModel(date)), date,
                                                           Vector3D.distance(states[0].getPosition(),
                                                                             states[1].getPosition()) / wavelength,
                                                           wavelength, 1.0, 1.0, new ObservableSatellite(0),
@@ -97,7 +100,7 @@ public class RelativisticJ2ClockOneWayGNSSPhaseModifierTest {
         // Measurement
         final double wavelength = PredefinedGnssSignal.G01.getWavelength();
         final OneWayGNSSPhase phase = new OneWayGNSSPhase(new ObserverSatellite("remote", states[1].getOrbit(), 
-                                                                            new QuadraticClockModel(date, 0.0, 0.0, 0.0)), date,
+                                                                            new PolynomialClockModel(date)), date,
                                                           Vector3D.distance(states[0].getPosition(),
                                                                             states[1].getPosition()) / wavelength,
                                                           wavelength, 1.0, 1.0, new ObservableSatellite(0),
@@ -117,6 +120,17 @@ public class RelativisticJ2ClockOneWayGNSSPhaseModifierTest {
         Assertions.assertEquals(-0.106217, estimatedBefore.getEstimatedValue()[0] - estimatedAfter.getEstimatedValue()[0], 1.0e-6);
         Assertions.assertEquals(0, modifier.getParametersDrivers().size());
 
+    }
+
+    @Test
+    void testDepends() {
+        // GIVEN
+        final RelativisticJ2ClockOneWayGNSSPhaseModifier modifier = mock();
+        when(modifier.dependsOnParticipantsStates()).thenCallRealMethod();
+        // WHEN
+        final boolean flag = modifier.dependsOnParticipantsStates();
+        // THEN
+        assertTrue(flag);
     }
 
     @BeforeEach

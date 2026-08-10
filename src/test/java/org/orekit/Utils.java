@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,9 +22,11 @@ import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataProvidersManager;
+import org.orekit.data.DirectoryCrawler;
 import org.orekit.data.LazyLoadedDataContext;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.frames.EOPEntry;
+import org.orekit.frames.EopDataType;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.ITRFVersion;
 import org.orekit.orbits.FieldCartesianOrbit;
@@ -116,6 +118,28 @@ public class Utils {
         }
     }
 
+    /**
+     * Creates a new data context, similar to {@link #setDataRoot(String)}
+     * except that this method does not modify any static variables.
+     *
+     * @param root of data context. Paths separated by {@code ":"}.
+     * @return new data context.
+     */
+    public static LazyLoadedDataContext newDataContext(String root) {
+        try {
+            LazyLoadedDataContext dataContext = new LazyLoadedDataContext();
+            DataProvidersManager manager = dataContext.getDataProvidersManager();
+            for (String component : root.split(":")) {
+                String componentPath;
+                componentPath = Utils.class.getClassLoader().getResource(component).toURI().getPath();
+                manager.addProvider(new DirectoryCrawler(new File(componentPath)));
+            }
+            return dataContext;
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private static void clearFactoryMaps(Class<?> factoryClass) {
         try {
             for (Field field : factoryClass.getDeclaredFields()) {
@@ -184,7 +208,8 @@ public class Utils {
                                   Double.NaN, Double.NaN,
                                   equinox[0], equinox[1],
                                   nro[0], nro[1], version,
-                                  AbsoluteDate.createMJDDate((int) row[0], 0.0, utc)));
+                                  AbsoluteDate.createMJDDate((int) row[0], 0.0, utc),
+                                  EopDataType.PREDICTED));
         }
         return list;
     }

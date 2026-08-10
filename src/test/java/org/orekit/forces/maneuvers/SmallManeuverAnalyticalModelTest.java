@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -185,7 +185,7 @@ class SmallManeuverAnalyticalModelTest {
                 Assertions.assertEquals(0, modelError,    1.0e-10);
             } else {
                 // after maneuver, model error should be less than 1700m,
-                // despite nominal deltaP exceeds 300 kilometers at perigee, after 3 orbits
+                // despite nominal deltaP exceeds 300 kilometers at periapsis, after 3 orbits
                 if (t.durationFrom(t0) > 0.01 * heo.getKeplerianPeriod()) {
                     Assertions.assertTrue(modelError < 0.005 * nominalDeltaP);
                 }

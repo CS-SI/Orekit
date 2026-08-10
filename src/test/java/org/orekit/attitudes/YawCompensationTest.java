@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -160,7 +160,7 @@ class YawCompensationTest {
                                                                      1.0e-10),
                                                             satInert,
                                                             circOrbit.getFrame(), circOrbit.getDate());
-        PVCoordinates pEarth   = new PVCoordinates(earthShape.transform(gp), Vector3D.ZERO, Vector3D.ZERO);
+        PVCoordinates pEarth   = new PVCoordinates(earthShape.transform(gp), Vector3D.ZERO);
 
         double minYWithoutCompensation    = Double.POSITIVE_INFINITY;
         double maxYWithoutCompensation    = Double.NEGATIVE_INFINITY;

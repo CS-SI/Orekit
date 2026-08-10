@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,12 +16,14 @@
  */
 package org.orekit.control.indirect.adjoint.cost;
 
+import java.util.List;
+import java.util.stream.Stream;
+
 import org.hipparchus.Field;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.complex.ComplexField;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.MathArrays;
@@ -30,10 +32,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.orekit.propagation.events.FieldEventDetector;
-
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import org.orekit.propagation.events.handlers.FieldResetDerivativesOnEvent;
 
 class FieldBoundedCartesianEnergyTest {
 
@@ -71,13 +70,11 @@ class FieldBoundedCartesianEnergyTest {
         // WHEN
         final Stream<FieldEventDetector<Complex>> eventDetectorStream = boundedCartesianEnergy.getFieldEventDetectors(field);
         // THEN
-        final List<FieldEventDetector<Complex>> eventDetectors = eventDetectorStream.collect(Collectors.toList());
+        final List<FieldEventDetector<Complex>> eventDetectors = eventDetectorStream.toList();
         Assertions.assertEquals(2, eventDetectors.size());
         for (final FieldEventDetector<Complex> eventDetector : eventDetectors) {
-            Assertions.assertInstanceOf(FieldCartesianEnergyConsideringMass.FieldSingularityDetector.class, eventDetector);
-            final FieldCartesianEnergyConsideringMass<Complex>.FieldSingularityDetector singularityDetector =
-                    (FieldCartesianEnergyConsideringMass<Complex>.FieldSingularityDetector) eventDetector;
-            Assertions.assertEquals(Action.RESET_DERIVATIVES, singularityDetector.getHandler().eventOccurred(null, null, true));
+            Assertions.assertInstanceOf(FieldAbstractCartesianCost.FieldSwitchFunction.class, eventDetector.getEventFunction());
+            Assertions.assertInstanceOf(FieldResetDerivativesOnEvent.class, eventDetector.getHandler());
         }
     }
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -105,7 +105,7 @@ class EulerWriter extends AbstractWriter {
 
         // rates
         if (euler.hasRates()) {
-            final double[] rates = euler.getRotationRates();
+            final double[] rates = euler.getRotationRates().orElseThrow(); // Optional presence verified by hasRates()
             if (formatVersion < 2.0) {
                 generator.writeEntry(seq.charAt(0) + RATE, rates[0], Units.DEG_PER_S, true);
                 generator.writeEntry(seq.charAt(1) + RATE, rates[1], Units.DEG_PER_S, true);

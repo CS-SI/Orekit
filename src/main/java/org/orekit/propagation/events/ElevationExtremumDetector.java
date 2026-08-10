@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,14 +16,11 @@
  */
 package org.orekit.propagation.events;
 
-import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
-import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.orekit.frames.KinematicTransform;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.functions.ElevationExtremumEventFunction;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnIncreasing;
-import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** Detector for elevation extremum with respect to a ground point.
  * <p>This detector identifies when a spacecraft reaches its
@@ -63,35 +60,38 @@ public class ElevationExtremumDetector extends AbstractTopocentricDetector<Eleva
         this(new EventDetectionSettings(maxCheck, threshold, DEFAULT_MAX_ITER), new StopOnIncreasing(), topo);
     }
 
+    /** Build a detector.
+     * @param detectionSettings event detection settings
+     * @param handler event handler to call at event occurrences
+     * @param topo topocentric frame centered on ground point
+     */
+    public ElevationExtremumDetector(final EventDetectionSettings detectionSettings, final EventHandler handler,
+                                     final TopocentricFrame topo) {
+        this(new ElevationExtremumEventFunction(topo), detectionSettings, handler);
+    }
+
     /** Protected constructor with full parameters.
      * <p>
      * This constructor is not public as users are expected to use the builder
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
+     * @param eventFunction event function
      * @param detectionSettings event detection settings
      * @param handler event handler to call at event occurrences
-     * @param topo topocentric frame centered on ground point
-     * @since 13.0
+     * @since 14.0
      */
-    protected ElevationExtremumDetector(final EventDetectionSettings detectionSettings, final EventHandler handler,
-                                        final TopocentricFrame topo) {
-        super(detectionSettings, handler, topo);
+    protected ElevationExtremumDetector(final ElevationExtremumEventFunction eventFunction,
+                                        final EventDetectionSettings detectionSettings, final EventHandler handler) {
+        super(eventFunction, detectionSettings, handler, eventFunction.getTopocentricFrame());
     }
 
     /** {@inheritDoc} */
     @Override
     protected ElevationExtremumDetector create(final EventDetectionSettings detectionSettings,
-                                              final EventHandler newHandler) {
-        return new ElevationExtremumDetector(detectionSettings, newHandler, getTopocentricFrame());
-    }
-
-    /** Get the elevation value.
-     * @param s the current state information: date, kinematics, attitude
-     * @return spacecraft elevation
-     */
-    public double getElevation(final SpacecraftState s) {
-        return getTopocentricFrame().getElevation(s.getPosition(), s.getFrame(), s.getDate());
+                                               final EventHandler newHandler) {
+        return new ElevationExtremumDetector((ElevationExtremumEventFunction) getEventFunction(), detectionSettings,
+                newHandler);
     }
 
     /** Compute the value of the detection function.
@@ -102,23 +102,6 @@ public class ElevationExtremumDetector extends AbstractTopocentricDetector<Eleva
      * @return spacecraft elevation first time derivative
      */
     public double g(final SpacecraftState s) {
-
-        // get position, velocity of spacecraft in topocentric frame
-        final KinematicTransform inertToTopo = s.getFrame().getKinematicTransformTo(getTopocentricFrame(), s.getDate());
-        final TimeStampedPVCoordinates pvTopo = inertToTopo.transformOnlyPV(s.getPVCoordinates());
-
-        // convert the coordinates to UnivariateDerivative1 based vector
-        // instead of having vector position, then vector velocity then vector acceleration
-        // we get one vector and each coordinate is a Taylor expansion containing
-        // value, first time derivative (we don't need second time derivative here)
-        final FieldVector3D<UnivariateDerivative1> positionUD1 = pvTopo.toUnivariateDerivative1Vector();
-
-        // compute elevation and its first time derivative
-        final UnivariateDerivative1 elevation = positionUD1.getDelta();
-
-        // return elevation first time derivative
-        return elevation.getFirstDerivative();
-
+        return getEventFunction().value(s);
     }
-
 }

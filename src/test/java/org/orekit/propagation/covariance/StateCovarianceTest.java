@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -1056,9 +1056,9 @@ public class StateCovarianceTest {
         // WHEN
         final StateCovariance originalCovariance;
         final StateCovariance covariance;
-        if (frameOrLOF instanceof LOF) {
-            originalCovariance = new StateCovariance(expectedMatrix, date, (LOF) frameOrLOF);
-            covariance         = originalCovariance.changeCovarianceFrame(orbit, (LOF) frameOrLOF);
+        if (frameOrLOF instanceof LOF oF) {
+            originalCovariance = new StateCovariance(expectedMatrix, date, oF);
+            covariance         = originalCovariance.changeCovarianceFrame(orbit, oF);
         } else {
             originalCovariance = new StateCovariance(expectedMatrix, date, (Frame) frameOrLOF, orbit.getType(), anomalyType);
             covariance         = originalCovariance.changeCovarianceFrame(orbit, (Frame) frameOrLOF);

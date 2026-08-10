@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,12 +19,12 @@ package org.orekit.estimation.measurements.modifiers;
 import java.util.List;
 
 import org.hipparchus.CalculusFieldElement;
-import org.orekit.estimation.measurements.GroundStation;
-import org.orekit.frames.TopocentricFrame;
+import org.orekit.estimation.measurements.Observer;
 import org.orekit.models.earth.ionosphere.IonosphericModel;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.PVCoordinatesProvider;
 
 /** Base class modifying theoretical range measurement with ionospheric delay.
  * The effect of ionospheric correction on the range is directly computed
@@ -77,11 +77,11 @@ public abstract class BaseRangeIonosphericDelayModifier {
      * @param state spacecraft state
      * @return the measurement error due to Ionosphere
      */
-    protected double rangeErrorIonosphericModel(final GroundStation station, final SpacecraftState state) {
+    protected double rangeErrorIonosphericModel(final Observer station, final SpacecraftState state) {
         // Base frame associated with the station
-        final TopocentricFrame baseFrame = station.getBaseFrame();
+        final PVCoordinatesProvider coordsProvider = station.getPVCoordinatesProvider();
         // delay in meters
-        final double delay = ionoModel.pathDelay(state, baseFrame, frequency, ionoModel.getParameters());
+        final double delay = ionoModel.pathDelay(state, coordsProvider, frequency, ionoModel.getParameters());
         return delay;
     }
 
@@ -92,13 +92,13 @@ public abstract class BaseRangeIonosphericDelayModifier {
      * @param parameters ionospheric model parameters
      * @return the measurement error due to Ionosphere
      */
-    protected <T extends CalculusFieldElement<T>> T rangeErrorIonosphericModel(final GroundStation station,
+    protected <T extends CalculusFieldElement<T>> T rangeErrorIonosphericModel(final Observer station,
                                                                                final FieldSpacecraftState<T> state,
                                                                                final T[] parameters) {
         // Base frame associated with the station
-        final TopocentricFrame baseFrame = station.getBaseFrame();
+        final PVCoordinatesProvider coordsProvider = station.getPVCoordinatesProvider();
         // delay in meters
-        final T delay = ionoModel.pathDelay(state, baseFrame, frequency, parameters);
+        final T delay = ionoModel.pathDelay(state, coordsProvider, frequency, parameters);
         return delay;
     }
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,6 +21,18 @@ package org.orekit.geometry.fov;
  * @since 10.1
  */
 public abstract class AbstractFieldOfView implements FieldOfView {
+
+    /**
+     * The default setting for if the footprint should be projected
+     * off the body onto a spatial point when there is no intersection point.
+     */
+    protected static final boolean DEFAULT_EXTERNAL_FOOTPRINT = false;
+
+    /**
+     * The default length of line segments of extended footprints that
+     * project directly into space.
+     */
+    protected static final double DEFAULT_MAX_DIST = 1e7;
 
     /** Margin to apply to the zone. */
     private final double margin;

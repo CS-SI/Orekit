@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -68,7 +68,7 @@ public class MeasurementCombinationFactoryTest {
         List<ObservationDataSet> parsed2 = parser.parse(new DataSource(name2,
                                                                        () -> Utils.class.getClassLoader().getResourceAsStream(name2))).
                                            getObservationDataSets();
-        dataSetRinex2 = parsed2.get(0);
+        dataSetRinex2 = parsed2.getFirst();
 
         // RINEX 3 Observation data set
         final String name3 = "rinex/aaaa0000.00o";
@@ -207,7 +207,7 @@ public class MeasurementCombinationFactoryTest {
     @Test
     public void testRinex2GeometryFree() {
         doTestRinexDualFrequency(MeasurementCombinationFactory.getGeometryFreeCombination(system),
-                     CombinationType.GEOMETRY_FREE, 6.953, 27534453.519,0.0,  Double.NaN, 2, 2);
+                     CombinationType.GEOMETRY_FREE, 6.953, 9.65285587310791, 0.0,  Double.NaN, 2, 2);
     }
 
     @Test
@@ -231,7 +231,7 @@ public class MeasurementCombinationFactoryTest {
     @Test
     public void testRinex2MelbourneWubbena() {
         doTestRinexDualFrequency(MeasurementCombinationFactory.getMelbourneWubbenaCombination(system),
-                     CombinationType.MELBOURNE_WUBBENA, 0.0, 0.0, 3801972.2239, 34 * GnssSignal.F0, 1, 2);
+                     CombinationType.MELBOURNE_WUBBENA, 0.0, 0.0, -29.164272382855415, 34 * GnssSignal.F0, 1, 2);
     }
 
     @Test
@@ -255,15 +255,15 @@ public class MeasurementCombinationFactoryTest {
         // Verify the combined observation data
         final List<CombinedObservationData> data = combinedDataSet.getObservationData();
         // L2/P2
-        Assertions.assertEquals(expectedL2P2,       data.get(0).getValue(),                eps);
-        Assertions.assertEquals(120 * GnssSignal.F0, data.get(0).getCombinedFrequency(), eps);
+        Assertions.assertEquals(expectedL2P2,       data.getFirst().getValue(),                eps);
+        Assertions.assertEquals(120 * GnssSignal.F0, data.getFirst().getCombinedFrequency(), eps);
 
     }
 
     @Test
     public void testRinex3GeometryFree() {
         doTestRinexDualFrequency(MeasurementCombinationFactory.getGeometryFreeCombination(system),
-                     CombinationType.GEOMETRY_FREE, 2.187, 3821708.096, 0.0, Double.NaN, 2, 3);
+                     CombinationType.GEOMETRY_FREE, 2.187, 0.9417382925748825, 0.0, Double.NaN, 2, 3);
     }
 
     @Test
@@ -287,7 +287,7 @@ public class MeasurementCombinationFactoryTest {
     @Test
     public void testRinex3MelbourneWubbena() {
         doTestRinexDualFrequency(MeasurementCombinationFactory.getMelbourneWubbenaCombination(system),
-                     CombinationType.MELBOURNE_WUBBENA, 0.0, 0.0, -18577480.4117, 5 * GnssSignal.F0, 1, 3);
+                     CombinationType.MELBOURNE_WUBBENA, 0.0, 0.0, 15.086727432906628, 5 * GnssSignal.F0, 1, 3);
     }
 
     @Test
@@ -313,8 +313,8 @@ public class MeasurementCombinationFactoryTest {
         // Verify the combined observation data
         final List<CombinedObservationData> data = combinedDataSet.getObservationData();
         // L1C/C1C
-        Assertions.assertEquals(expected1C,          data.get(0).getValue(),                eps);
-        Assertions.assertEquals(154 * GnssSignal.F0, data.get(0).getCombinedFrequency(), eps);
+        Assertions.assertEquals(expected1C,          data.getFirst().getValue(),                eps);
+        Assertions.assertEquals(154 * GnssSignal.F0, data.getFirst().getCombinedFrequency(), eps);
         // L2W/C2W
         Assertions.assertEquals(expected2W,          data.get(1).getValue(),                eps);
         Assertions.assertEquals(120 * GnssSignal.F0, data.get(1).getCombinedFrequency(), eps);
@@ -407,4 +407,25 @@ public class MeasurementCombinationFactoryTest {
 
     }
 
+    @Test
+    public void testIssue1076GraphicCombinationType() {
+        // Verify that GRAPHICCombination returns GRAPHIC CombinationType, not PHASE_MINUS_CODE
+        // See: https://gitlab.orekit.org/orekit/orekit/-/work_items/1076
+        final GRAPHICCombination graphic = MeasurementCombinationFactory.getGRAPHICCombination(SatelliteSystem.GPS);
+        final CombinedObservationData combined = graphic.combine(new ObservationData(PredefinedObservationType.L1, 1.23456789E8, 0, 0),
+                new ObservationData(PredefinedObservationType.C1, 2.34567890E7, 0, 0));
+        Assertions.assertEquals(CombinationType.GRAPHIC, combined.getCombinationType());
+        Assertions.assertEquals(MeasurementType.COMBINED_RANGE_PHASE, combined.getMeasurementType());
+    }
+
+    @Test
+    public void testIssue1076PhaseMinusCodeCombinationType() {
+        // Verify that PhaseMinusCodeCombination returns PHASE_MINUS_CODE CombinationType
+        // See: https://gitlab.orekit.org/orekit/orekit/-/work_items/1076
+        final PhaseMinusCodeCombination phaseMinusCode = MeasurementCombinationFactory.getPhaseMinusCodeCombination(SatelliteSystem.GPS);
+        final CombinedObservationData combined = phaseMinusCode.combine(new ObservationData(PredefinedObservationType.L1, 1.23456789E8, 0, 0),
+                                                                        new ObservationData(PredefinedObservationType.C1, 2.34567890E7, 0, 0));
+        Assertions.assertEquals(CombinationType.PHASE_MINUS_CODE, combined.getCombinationType());
+        Assertions.assertEquals(MeasurementType.COMBINED_RANGE_PHASE, combined.getMeasurementType());
+    }
 }

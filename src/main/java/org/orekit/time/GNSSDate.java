@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,7 @@
  */
 package org.orekit.time;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
@@ -43,6 +44,7 @@ import org.orekit.utils.IERSConventions;
 public class GNSSDate implements Serializable, TimeStamped {
 
     /** Serializable UID. */
+    @Serial
     private static final long serialVersionUID = 20221228L;
 
     /** Duration of a week in days. */
@@ -178,9 +180,15 @@ public class GNSSDate implements Serializable, TimeStamped {
     public GNSSDate(final int weekNumber, final TimeOffset secondsInWeek,
                     final SatelliteSystem system, final TimeScales timeScales) {
 
-        final int day = (int) (secondsInWeek.getSeconds() / TimeOffset.DAY.getSeconds());
-        final TimeOffset secondsInDay = new TimeOffset(secondsInWeek.getSeconds() % TimeOffset.DAY.getSeconds(),
+        int day = (int) (secondsInWeek.getSeconds() / TimeOffset.DAY.getSeconds());
+        TimeOffset secondsInDay = new TimeOffset(secondsInWeek.getSeconds() % TimeOffset.DAY.getSeconds(),
                                                        secondsInWeek.getAttoSeconds());
+        while (secondsInDay.compareTo(TimeOffset.ZERO) < 0) {
+            // manage negative secondsInWeek
+            // (this happens for example in some GPS navigation messages, where secondsInWeek = -60)
+            --day;
+            secondsInDay = secondsInDay.add(TimeOffset.DAY);
+        }
 
         int w = weekNumber;
         DateComponents dc = new DateComponents(getWeekReferenceDateComponents(system), weekNumber * 7 + day);
@@ -192,7 +200,7 @@ public class GNSSDate implements Serializable, TimeStamped {
                 // lazy setting of a default reference, using end of EOP entries
                 final UT1Scale       ut1       = timeScales.getUT1(IERSConventions.IERS_2010, true);
                 final List<EOPEntry> eop       = ut1.getEOPHistory().getEntries();
-                final int            lastMJD   = eop.get(eop.size() - 1).getMjd();
+                final int            lastMJD   = eop.getLast().getMjd();
                 reference = new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, lastMJD);
                 ROLLOVER_REFERENCE.compareAndSet(null, reference);
             }

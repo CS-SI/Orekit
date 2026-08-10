@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -782,11 +782,11 @@ public class FieldEcksteinHechlerPropagatorTest {
     }
 
     @Test
-    public void perigee() {
-        doPerigee(Binary64Field.getInstance());
+    public void periapsis() {
+        doPeriapsis(Binary64Field.getInstance());
     }
 
-    private <T extends CalculusFieldElement<T>> void doPerigee(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doPeriapsis(Field<T> field) {
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         final FieldKeplerianOrbit<T> orbit =

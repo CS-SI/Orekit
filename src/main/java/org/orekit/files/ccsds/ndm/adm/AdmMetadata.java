@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,10 +16,15 @@
  */
 package org.orekit.files.ccsds.ndm.adm;
 
+import java.util.Optional;
+
+import org.orekit.annotation.Nullable;
 import org.orekit.bodies.CelestialBodies;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.files.ccsds.definitions.BodyFacade;
+import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.section.Metadata;
+import org.orekit.frames.Frame;
 
 /** This class gathers the meta-data present in the Attitude Data Message (ADM).
  * @author Bryan Cazabonne
@@ -34,12 +39,17 @@ public class AdmMetadata extends Metadata {
     private String objectID;
 
     /** Body at origin of reference frame. */
+    @Nullable
     private BodyFacade center;
 
-    /** Simple constructor.
+    /**
+     * Simple constructor.
+     *
+     * @param frameMapper for creating an Orekit {@link Frame}.
+     * @since 13.1.5
      */
-    public AdmMetadata() {
-        super(null);
+    public AdmMetadata(final CcsdsFrameMapper frameMapper) {
+        super(null, frameMapper);
     }
 
     /** {@inheritDoc} */
@@ -108,8 +118,8 @@ public class AdmMetadata extends Metadata {
     /** Get the body at origin of reference frame.
      * @return the body at origin of reference frame.
      */
-    public BodyFacade getCenter() {
-        return center;
+    public Optional<BodyFacade> getCenter() {
+        return Optional.ofNullable(center);
     }
 
     /** Set the body at origin of reference frame.
@@ -127,7 +137,7 @@ public class AdmMetadata extends Metadata {
      *         false otherwise
      */
     public boolean getHasCreatableBody() {
-        return center != null && center.getBody() != null;
+        return getCenter().isPresent() && getCenter().get().getBody().isPresent();
     }
 
 }

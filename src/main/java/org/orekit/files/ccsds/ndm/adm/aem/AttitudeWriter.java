@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -106,7 +106,7 @@ public class AttitudeWriter implements AttitudeEphemerisFileWriter {
         this.outputName        = outputName;
         this.maxRelativeOffset = maxRelativeOffset;
         this.unitsColumn       = unitsColumn;
-        this.formatter = formatter;
+        this.formatter         = formatter;
     }
 
     /**
@@ -214,7 +214,7 @@ public class AttitudeWriter implements AttitudeEphemerisFileWriter {
         metadata.setStartTime(segment.getStart());
         metadata.setStopTime(segment.getStop());
         if (metadata.getEndpoints().getFrameA() == null ||
-            metadata.getEndpoints().getFrameA().asSpacecraftBodyFrame() == null) {
+            metadata.getEndpoints().getFrameA().asSpacecraftBodyFrame().isEmpty()) {
             // the external frame must be frame A
             metadata.getEndpoints().setFrameA(FrameFacade.map(segment.getReferenceFrame()));
         } else {
@@ -230,8 +230,8 @@ public class AttitudeWriter implements AttitudeEphemerisFileWriter {
 
         // Loop on attitude data
         writer.startAttitudeBlock(generator);
-        if (segment instanceof AemSegment) {
-            generator.writeComments(((AemSegment) segment).getData().getComments());
+        if (segment instanceof AemSegment aemSegment) {
+            generator.writeComments(aemSegment.getData().getComments());
         }
         for (final TimeStampedAngularCoordinates coordinates : segment.getAngularCoordinates()) {
             writer.writeAttitudeEphemerisLine(generator,

@@ -61,6 +61,9 @@ UNABLE_TO_FIND_RESOURCE={0} no existeix en el "classpath"
 # no Earth Orientation Parameters loaded
 NO_EARTH_ORIENTATION_PARAMETERS_LOADED=no s''han carregat els paràmetres d''orientació de la Terra
 
+# cannot combine Earth Orientation Parameters at different dates ({0} and {1})
+INCOMPATIBLE_EARTH_ORIENTATION_PARAMETERS=
+
 # missing Earth Orientation Parameters between {0} and {1}
 MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES=falten paràmetred d''orientació de la Terra entre {0} i {1}
 
@@ -154,6 +157,9 @@ WRONG_DEGREE_OR_ORDER=cap terme ({0}, {1}) en una descomposició armònica esfè
 # wrong orbital elements for averaging theory
 WRONG_ELEMENTS_FOR_AVERAGING_THEORY=
 
+# not a valid Observer type for this calculation
+WRONG_OBSERVER_TYPE=
+
 # several reference dates ({0} and {1} differ by {3,number,0.0##############E0} s) found in gravity field file {2}
 SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD=s''han trobat varies dates de referència ({0} i {1} difereixen de {3,number,0.0##############E0} s) en el fitxer de camp gravitacional {2}
 
@@ -186,6 +192,9 @@ NOT_POSITIVE_SPACECRAFT_MASS=la massa del vehícle espacial no és positiva: {0}
 
 # too large eccentricity for propagation model: e = {0}
 TOO_LARGE_ECCENTRICITY_FOR_PROPAGATION_MODEL=l''excentricitat és massa alta pel model de propagació (e : {0})
+
+# too large eccentricity for teardrop motion: e > 1e-4
+TOO_LARGE_ECCENTRICITY_FOR_TEARDROP_MOTION=excentricitat massa gran per al moviment en forma de llàgrima: e > 1e-4
 
 # no solar activity available at {0}, data available only in range [{1}, {2}]
 NO_SOLAR_ACTIVITY_AT_DATE=no hi ha paràmetres d''activitat solar disponibles el {0}, dades disponibles únicament per l''interval [{1}, {2}]
@@ -255,6 +264,9 @@ INCONSISTENT_EARTH_MOON_RATIO_IN_FILES=valors incoherents de la relació de mass
 
 # no data loaded for celestial body {0}
 NO_DATA_LOADED_FOR_CELESTIAL_BODY=no hi ha dades carregades pel cos celestial {0}
+
+# unknown celestial body: {0}
+UNKNOWN_CELESTIAL_BODY=<MISSING TRANSLATION>
 
 # file {0} is not a JPL ephemerides binary file
 NOT_A_JPL_EPHEMERIDES_BINARY_FILE=el fitxer {0} no és un fitxer d''efemèrides binari del JPL
@@ -571,11 +583,17 @@ CCSDS_SENSOR_INDEX_ALREADY_USED=índex de captor {0} ja utilitzat
 # missing sensor index {0}
 CCSDS_MISSING_SENSOR_INDEX=falta l''índex de captor {0}
 
+# cannot use optional CCSDS value because not present in file
+CCSDS_MISSING_OPTIONAL_VALUE=
+
 # inconsistent number of elements: expected {0}, got {1}
 INCONSISTENT_NUMBER_OF_ELEMENTS=número d''elements incoherents: esperats {0}, donats {1}
 
 # Creating an aggregate propagator requires at least one constituent propagator, but none were provided.
 NOT_ENOUGH_PROPAGATORS=Per crear un propagador combinat es necesita al menys un propagador, però no s''en ha especificat cap.
+
+# aggregate propagator requires either all null or all non-null attitude providers
+BOTH_NULL_AND_NON_NULL_ATTITUDE_PROVIDERS=
 
 # Creating an aggregate attitude provider requires at least one constituent attitude provider, but none were provided.
 NOT_ENOUGH_ATTITUDE_PROVIDERS=La creació d''un proveïdor d''actitud agregat necessita al menys un proveïdor d''actitud, però no se n''ha previst cap.
@@ -927,6 +945,9 @@ INFINITE_NRLMSISE00_DENSITY=Un valor infint apareix durant el calcul del model a
 # Propagator builder cannot be cloned
 PROPAGATOR_BUILDER_NOT_CLONEABLE=El constructor del propagador no és pot clonar
 
+# Orbital parameter factory cannot be cloned
+ORBITAL_PARAMETER_FACTORY_NOT_CLONEABLE=
+
 # field "{0}" is too long, maximum length is {1} characters
 FIELD_TOO_LONG=Camp "{0}" és massa llarg, la llargada màxima és de {1} caràcters
 
@@ -966,6 +987,9 @@ WRONG_SATELLITES_NUMBER=
 # invalid format: width = {0}, precision = {1}
 INVALID_FORMAT=
 
+# width exceeded: value {0} cannot fit in a field {1} characters wide
+WIDTH_EXCEEDED=
+
 # output {0} has already been closed
 OUTPUT_ALREADY_CLOSED=
 
@@ -977,3 +1001,126 @@ LAMBERT_CORRECTION_DID_NOT_CONVERGE=
 
 # invalid number of revolutions {0} for Lambert problem, a maximum of {1} is possible with the given time of flight
 LAMBERT_INVALID_NUMBER_OF_REVOLUTIONS=
+
+# invalid number of facets: {0}, it must be an odd number
+NUMBER_OF_FACETS_NOT_ODD=
+
+# Invalid DAF FTP string found in DAF file {0}
+INVALID_DAF_FTPSTR =
+
+# Incomplete DAF comment record found
+INCOMPLETE_DAF_COMMENT_RECORD =
+
+# Incomplete DAF summary record found
+INCOMPLETE_DAF_SUMMARY_RECORD =
+
+# DAF endianness string must be BIG-IEEE or LTL-IEEE, got {0}
+INVALID_DAF_ENDIANNESS =
+
+# DAF file type string must be of the format DAF/XXXX, got {0}
+INVALID_DAF_FILETYPE_STRING =
+
+# Incomplete DAF name record found
+INCOMPLETE_DAF_NAME_RECORD =
+
+# DAF object cannot be null
+NULL_DAF =
+
+# Initial position for two-body propagator is zero
+TWOBODY_ZERO_INITIAL_DISTANCE =
+
+# Initial velocity for two-body propagator is zero
+TWOBODY_ZERO_INITIAL_VELOCITY =
+
+# Rectilinear motion detected in two-body propagator
+TWOBODY_RECTILINEAR_MOTION =
+
+# Two-body propagation numerically unstable
+TWOBODY_UNSTABLE_PROPAGATION =
+
+# GM value cannot be negative
+NEGATIVE_GM =
+
+# Stumpff function order cannot be negative
+STUMPFF_NEGATIVE_ORDER =
+
+# Semilatus rectum cannot be negative
+NEGATIVE_SEMILATUS_RECTUM =
+
+# Eccentricity cannot be negative
+NEGATIVE_ECCENTRICITY =
+
+# Central body radius cannot be negative
+NEGATIVE_CENTRAL_BODY_RADIUS =
+
+# Norm of trajectory pole vector is zero
+ZERO_NORM_TRAJECTORY_POLE_VECTOR =
+
+# Norm of periapsis vector is zero
+ZERO_NORM_PERIAPSIS_VECTOR =
+
+# Norm of central body pole vector is zero
+ZERO_NORM_CENTRAL_BODY_POLE_VECTOR =
+
+# Trajectory pole and periapsis vectors are not orthogonal
+NON_ORTHOGONAL_TRAJECTORY_POLE_PERIAPSIS =
+
+# Semimajor axis cannot be negative
+NEGATIVE_SEMIMAJOR_AXIS =
+
+# Unknown SPK type {0}
+UNKNOWN_SPK_TYPE =
+
+# Unknown SPK subtype code found for SPK segment of type {0}
+UNKNOWN_SPK_SUBTYPE =
+
+# Unexpected number of metadata items in type {0} SPK
+SPK_UNEXPECTED_NUMBER_METADATA =
+
+# Unexpected number of constants in type {0} SPK
+SPK_UNEXPECTED_NUMBER_CONSTANTS =
+
+# Unexpected data packet size in type {0} SPK"
+SPK_UNEXPECTED_DATA_PACKET_SIZE =
+
+# Target date {0} is outside the interval covered by the SPK segment
+SPK_TARGET_DATE_OUTSIDE_INTERVAL =
+
+# Segment does not contain enough data records to perform {0} interpolation ({1} available, at least {2} needed)
+SPK_INTERPOLATION_SEGMENT_TOO_SHORT =
+
+# Unknown PCK segment type {0}.
+UNKNOWN_PCK_TYPE =
+
+# Unexpected number of metadata items in type {0} PCK segment
+PCK_UNEXPECTED_NUMBER_METADATA =
+
+# Unexpected number of constants in type {0} PCK segment
+PCK_UNEXPECTED_NUMBER_CONSTANTS =
+
+# Unexpected data packet size in type {0} PCK segment
+PCK_UNEXPECTED_DATA_PACKET_SIZE =
+
+# Target date {0} is outside the interval covered by the PCK segment
+PCK_TARGET_DATE_OUTSIDE_INTERVAL =
+
+# PCK segment does not contain enough data records to perform {0} interpolation ({1} available, at least {2} needed)
+PCK_INTERPOLATION_SEGMENT_TOO_SHORT =
+
+# Comments require {0} records but DAF file record specifies only {1} reserved records
+DAF_INSUFFICIENT_COMMENT_RECORDS =
+
+# File description string is {0} characters long but should be at most 60 characters
+DAF_TOO_LONG_FILEDESCRIPTION_STRING =
+
+# missing unit for {0} record (line {1} of file {2})
+MISSING_ORBEX_UNIT=
+
+# expected {0} satellites for time tag {1} but got {2} (line {3} of file {4})
+INCOMPLETE_ORBEX_DATA=
+
+# wrong number of columns at line {0}, file {1}; {2} columns is not allowed for {3} record
+ORBEX_WRONG_COLUMNS=
+
+# duplicated satellite {0} (line {1}, file {2})
+DUPLICATED_SATELLITE=

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -179,7 +179,7 @@ public class UnscentedKalmanOrbitDeterminationTest {
 
         // Verify the last estimated position
         final RealVector estimatedState = estimation.getPhysicalEstimatedState();
-        final Vector3D ref       = ((Position) measurements.get(measurements.size() - 1)).getPosition();
+        final Vector3D ref       = ((Position) measurements.getLast()).getPosition();
         final Vector3D estimated = new Vector3D(estimatedState.getEntry(0),
                                                 estimatedState.getEntry(1),
                                                 estimatedState.getEntry(2));
@@ -322,7 +322,8 @@ public class UnscentedKalmanOrbitDeterminationTest {
         final PropagatorBuilder builder;
 
         // Initialize the numerical builder
-        final NumericalPropagatorBuilder propagator = new NumericalPropagatorBuilder(orbit, integrator, PositionAngleType.MEAN, 10.0);
+        final NumericalPropagatorBuilder propagator =
+            new NumericalPropagatorBuilder(orbit.factory(PositionAngleType.MEAN, 10.0), integrator);
 
         // Add force models to the numerical propagator
         addNumericalForceModels(propagator, orbit, centralBody, gravityField, convention, simpleEop, surface, useDrag, useSrp, useSun, useMoon, useTides);
@@ -525,13 +526,13 @@ public class UnscentedKalmanOrbitDeterminationTest {
     public static class Observer implements KalmanObserver {
 
         /** Statistics on X position residuals. */
-        private StreamingStatistics statX;
+        private final StreamingStatistics statX;
 
         /** Statistics on Y position residuals. */
-        private StreamingStatistics statY;
+        private final StreamingStatistics statY;
 
         /** Statistics on Z position residuals. */
-        private StreamingStatistics statZ;
+        private final StreamingStatistics statZ;
 
         /** Kalman estimation. */
         private KalmanEstimation estimation;

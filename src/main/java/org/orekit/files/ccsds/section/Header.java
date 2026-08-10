@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,9 @@
  */
 package org.orekit.files.ccsds.section;
 
+import java.util.Optional;
+
+import org.orekit.annotation.Nullable;
 import org.orekit.time.AbsoluteDate;
 
 /**
@@ -29,6 +32,7 @@ public class Header extends CommentsContainer {
     private double formatVersion;
 
     /** Classification. */
+    @Nullable
     private String classification;
 
     /** Message creation date and time in UTC. */
@@ -38,6 +42,7 @@ public class Header extends CommentsContainer {
     private String originator;
 
     /** ID that uniquely identifies a message from a given originator. */
+    @Nullable
     private String messageId;
 
     /** Minimum version for {@link HeaderKey#MESSAGE_ID}. */
@@ -90,8 +95,8 @@ public class Header extends CommentsContainer {
      * Get the classification/caveats.
      * @return classification/caveats.
      */
-    public String getClassification() {
-        return classification;
+    public Optional<String> getClassification() {
+        return Optional.ofNullable(classification);
     }
 
     /**
@@ -141,8 +146,8 @@ public class Header extends CommentsContainer {
      * Get the ID that uniquely identifies a message from a given originator.
      * @return ID that uniquely identifies a message from a given originator
      */
-    public String getMessageId() {
-        return messageId;
+    public Optional<String> getMessageId() {
+        return Optional.ofNullable(messageId);
     }
 
     /**

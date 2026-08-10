@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,6 +23,7 @@ import org.hipparchus.util.FastMath;
 /**
  * Fuel cost penalized with a logarithmic term, which is a barrier so is not defined for epsilon equal to 0 or 1.
  *
+ * @param <T> type of the field elements
  * @author Romain Serra
  * @since 13.0
  */

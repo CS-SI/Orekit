@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -145,7 +145,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  */
 public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends FieldAbstractIntegratedPropagator<T> {
 
-    /** Force models used during the extrapolation of the FieldOrbit<T>, without Jacobians. */
+    /** Force models used during the extrapolation of the orbit, without Jacobians. */
     private final List<ForceModel> forceModels;
 
     /** boolean to ignore or not the creation of a NewtonianAttraction. */
@@ -263,7 +263,7 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
 
             try {
                 // ensure we are notified of any mu change
-                model.getParametersDrivers().get(0).addObserver(new ParameterObserver() {
+                model.getParametersDrivers().getFirst().addObserver(new ParameterObserver() {
                     /** {@inheritDoc} */
                     @Override
                     public void valueChanged(final double previousValue, final ParameterDriver driver, final AbsoluteDate date) {
@@ -537,7 +537,7 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
                 if (numberOfForces > 1) {
                     recomputingJacobian = true;
                 } else {
-                    recomputingJacobian = !(forceModels.get(0) instanceof NewtonianAttraction);
+                    recomputingJacobian = !(forceModels.getFirst() instanceof NewtonianAttraction);
                 }
             } else {
                 recomputingJacobian = false;

@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Thales Alenia Space
+/* Copyright 2022-2026 Thales Alenia Space
  * Licensed to CS Communication & Systèmes (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -55,6 +55,11 @@ public class CIPM2007 implements WaterVaporPressureProvider {
 
     /** Temperature enhancement factor. */
     private static final double F_T2 = 5.6e-7;
+
+    /** Simple constructor. */
+    public CIPM2007() {
+        // nothing to do
+    }
 
     /** {@inheritDoc} */
     @Override

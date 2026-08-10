@@ -16,12 +16,12 @@ import org.orekit.frames.TopocentricFrame;
 import org.orekit.models.earth.ReferenceEllipsoid;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.FieldStopOnEvent;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ExtendedPositionProvider;
 import org.orekit.utils.FieldPVCoordinates;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 
@@ -33,6 +33,24 @@ class FieldExtremumAngularSeparationDetectorTest {
     }
 
     @Test
+    void testToEventFunction() {
+        // GIVEN
+        final ExtendedPositionProvider mockedBeacon = mock();
+        final ExtendedPositionProvider mockedObserver = mock();
+        final FieldEventDetectionSettings<Binary64> detectionSettings = new FieldEventDetectionSettings<>(Binary64Field.getInstance(),
+                EventDetectionSettings.getDefaultEventDetectionSettings());
+        final FieldExtremumAngularSeparationDetector<Binary64> fieldDetector = new FieldExtremumAngularSeparationDetector<>(detectionSettings,
+                new FieldStopOnEvent<>(), mockedBeacon, mockedObserver);
+        final EventHandler handler = mock();
+        // WHEN
+        final ExtremumAngularSeparationDetector detector = fieldDetector.toEventDetector(handler);
+        // THEN
+        assertEquals(mockedBeacon, detector.getBeacon());
+        assertEquals(mockedObserver, detector.getObserver());
+        assertEquals(handler, detector.getHandler());
+    }
+
+    @Test
     void testGetter() {
         // GIVEN
         final ExtendedPositionProvider mockedBeacon = mock();
@@ -40,7 +58,6 @@ class FieldExtremumAngularSeparationDetectorTest {
         final FieldEventDetectionSettings<Binary64> detectionSettings = new FieldEventDetectionSettings<>(Binary64Field.getInstance(),
                 EventDetectionSettings.getDefaultEventDetectionSettings());
         // WHEN
-        
         final FieldExtremumAngularSeparationDetector<Binary64> detector = new FieldExtremumAngularSeparationDetector<>(detectionSettings,
                 new FieldStopOnEvent<>(), mockedBeacon, mockedObserver);
         // THEN

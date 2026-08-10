@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Thales Alenia Space
+/* Copyright 2022-2026 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -41,7 +41,7 @@ public class IGSUtils {
     /** Pattern for frame names with year.
      * @since 12.1
      */
-    private static final Pattern EARTH_FRAME_WITH_YEAR = Pattern.compile("(?:IER|ITR|ITRF|IGS|IGb|SLR)([0-9]{2})");
+    private static final Pattern EARTH_FRAME_WITH_YEAR = Pattern.compile("(?:IER|ITR|ITRF|IGS|IGB|IGC|SLR)([0-9]{2})");
 
     /** Pattern for GCRF inertial frame.
      * @since 12.1
@@ -59,8 +59,9 @@ public class IGSUtils {
         // nothing to do
     }
 
-    /** Default string to {@link Frame} conversion for {@link org.orekit.files.sp3.SP3Parser}
-     * or {@link org.orekit.files.rinex.clock.RinexClockParser}.
+    /** Default string to {@link Frame} conversion for {@link org.orekit.files.sp3.SP3Parser},
+     * {@link org.orekit.files.rinex.clock.RinexClockParser}, or
+     * {@link org.orekit.files.sinex.orbex.OrbexParser}.
      *
      * <p>
      * This method uses the {@link DataContext#getDefault() default data context}.
@@ -69,8 +70,9 @@ public class IGSUtils {
      * Various frame names are supported:
      * </p>
      * <ul>
-     *     <li>IER##, ITR##, ITRF##, IGS##, IGb##, or SLR##, where ## is a two digits number,
-     *         the number will be used to build the appropriate {@link ITRFVersion}</li>
+     *     <li>IER##, ITR##, ITRF##, IGS##, IGb##, IGc##, or SLR##, (potentially in upper case),
+     *         where ## is a two digits number, the number will be used to build the appropriate
+     *         {@link ITRFVersion}</li>
      *     <li>GCRF (left or right justified) for GCRF inertial frame</li>
      *     <li>EME00 or EME2K for EME2000 inertial frame</li>
      *     <li>for all other names (for example if name is UNDEF or WGS84),
@@ -100,8 +102,9 @@ public class IGSUtils {
      * Various frame names are supported:
      * </p>
      * <ul>
-     *     <li>IER##, ITR##, ITRF##, IGS##, IGb##, or SLR##, where ## is a two digits number,
-     *         the number will be used to build the appropriate {@link ITRFVersion}</li>
+     *     <li>IER##, ITR##, ITRF##, IGS##, IGb##, IGc##, or SLR##, (potentially in upper case),
+     *         where ## is a two digits number, the number will be used to build the appropriate
+     *         {@link ITRFVersion}</li>
      *     <li>GCRF (left or right justified) for GCRF inertial frame</li>
      *     <li>EME00 or EME2K for EME2000 inertial frame</li>
      *     <li>for all other names (for example if name is UNDEF or WGS84),
@@ -120,7 +123,7 @@ public class IGSUtils {
      * @since 12.1
      */
     public static Frame guessFrame(final Frames frames, final String name) {
-        final Matcher earthMatcher = EARTH_FRAME_WITH_YEAR.matcher(name);
+        final Matcher earthMatcher = EARTH_FRAME_WITH_YEAR.matcher(name.toUpperCase(Locale.ROOT));
         if (earthMatcher.matches()) {
             // this is a frame of the form IGS14, or ITR20, or SLR08, or similar
             final int yy = Integer.parseInt(earthMatcher.group(1));
@@ -159,8 +162,8 @@ public class IGSUtils {
      * @since 12.1
      */
     public static String frameName(final Frame frame) {
-        if (frame instanceof VersionedITRF) {
-            final int yy = ((VersionedITRF) frame).getITRFVersion().getYear() % 100;
+        if (frame instanceof VersionedITRF rF) {
+            final int yy = rF.getITRFVersion().getYear() % 100;
             return String.format(Locale.US, "IGS%02d", yy);
         } else if (Predefined.GCRF.getName().equals(frame.getName())) {
             return "GCRF";

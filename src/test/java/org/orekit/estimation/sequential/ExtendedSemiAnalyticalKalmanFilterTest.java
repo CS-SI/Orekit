@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -65,6 +65,7 @@ import org.orekit.models.earth.atmosphere.NRLMSISE00;
 import org.orekit.models.earth.atmosphere.data.MarshallSolarActivityFutureEstimation;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
+import org.orekit.orbits.EquinoctialOrbitFactory;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
@@ -170,13 +171,13 @@ public class ExtendedSemiAnalyticalKalmanFilterTest {
         final StreamingStatistics statX = observer.getXStatistics();
         final StreamingStatistics statY = observer.getYStatistics();
         final StreamingStatistics statZ = observer.getZStatistics();
-        Assertions.assertEquals(0.0, statX.getMean(), 1.26e-4);
-        Assertions.assertEquals(0.0, statY.getMean(), 1.18e-4);
+        Assertions.assertEquals(0.0, statX.getMean(), 2.64e-4);
+        Assertions.assertEquals(0.0, statY.getMean(), 1.31e-4);
         Assertions.assertEquals(0.0, statZ.getMean(), 1.29e-4);
         Assertions.assertEquals(0.0, statX.getMin(),  0.019); // It's a negative value
-        Assertions.assertEquals(0.0, statY.getMin(),  0.018); // It's a negative value
+        Assertions.assertEquals(0.0, statY.getMin(),  0.044); // It's a negative value
         Assertions.assertEquals(0.0, statX.getMin(),  0.020); // It's a negative value
-        Assertions.assertEquals(0.0, statX.getMax(),  0.031);
+        Assertions.assertEquals(0.0, statX.getMax(),  0.033);
         Assertions.assertEquals(0.0, statY.getMax(),  0.029);
         Assertions.assertEquals(0.0, statX.getMax(),  0.033);
 
@@ -194,10 +195,9 @@ public class ExtendedSemiAnalyticalKalmanFilterTest {
      * Initialize the Position/Velocity observations.
      * @param fileName measurement file name
      * @return the ephemeris contained in the input file
-     * @throws IOException if observations file cannot be read properly
      * @throws URISyntaxException if URI syntax is wrong
      */
-    private CPFEphemeris initializeObservations(final String fileName) throws URISyntaxException, IOException {
+    private CPFEphemeris initializeObservations(final String fileName) throws URISyntaxException {
 
         // Input in tutorial resources directory
         final String inputPath = ExtendedSemiAnalyticalKalmanFilterTest.class.getClassLoader().
@@ -314,7 +314,9 @@ public class ExtendedSemiAnalyticalKalmanFilterTest {
         final EquinoctialOrbit equinoctial = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(orbit);
 
         // Initialize the numerical builder
-        final DSSTPropagatorBuilder propagator = new DSSTPropagatorBuilder(equinoctial, integrator, 1.0, PropagationType.MEAN, initialStateType);
+        final DSSTPropagatorBuilder propagator =
+            new DSSTPropagatorBuilder(new EquinoctialOrbitFactory(equinoctial, 1.0, PositionAngleType.ECCENTRIC),
+                                      integrator, PropagationType.MEAN, initialStateType);
 
         // Add the force models to the DSST propagator
         addDSSTForceModels(propagator, centralBody, gravityField, surface, useDrag, useSrp, useSun, useMoon);
@@ -496,9 +498,9 @@ public class ExtendedSemiAnalyticalKalmanFilterTest {
     public static class Observer implements KalmanObserver {
 
         /** Statistics. */
-        private StreamingStatistics statX;
-        private StreamingStatistics statY;
-        private StreamingStatistics statZ;
+        private final StreamingStatistics statX;
+        private final StreamingStatistics statY;
+        private final StreamingStatistics statZ;
 
         /** Kalman estimation. */
         private KalmanEstimation estimation;

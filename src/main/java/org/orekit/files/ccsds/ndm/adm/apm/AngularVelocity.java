@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Luc Maisonobe
+/* Copyright 2022-2026 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,9 +16,11 @@
  */
 package org.orekit.files.ccsds.ndm.adm.apm;
 
+import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.ndm.adm.AttitudeEndpoints;
 import org.orekit.files.ccsds.section.CommentsContainer;
+import org.orekit.frames.Frame;
 
 /**
  * Container for Attitude Parameter Message data lines.
@@ -56,10 +58,14 @@ public class AngularVelocity extends CommentsContainer {
     /** Angular velocity around Z axis (rad/s). */
     private double angVelZ;
 
-    /** Simple constructor.
+    /**
+     * Simple constructor.
+     *
+     * @param frameMapper for creating a {@link Frame}.
+     * @since 13.1.5
      */
-    public AngularVelocity() {
-        endpoints = new AttitudeEndpoints();
+    public AngularVelocity(final CcsdsFrameMapper frameMapper) {
+        endpoints = new AttitudeEndpoints(frameMapper);
         frame     = null;
         angVelX   = Double.NaN;
         angVelY   = Double.NaN;

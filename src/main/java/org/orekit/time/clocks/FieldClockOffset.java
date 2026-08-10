@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Thales Alenia Space
+/* Copyright 2022-2026 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,11 +16,18 @@
  */
 package org.orekit.time.clocks;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.hipparchus.CalculusFieldElement;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.FieldTimeStamped;
 
-/** Container for time stamped clock offset.
+/**
+ * Container for time stamped clock offset.
+ *
  * @param <T> type of the field elements
  * @author Luc Maisonobe
  * @since 12.1
@@ -30,8 +37,8 @@ public class FieldClockOffset<T extends CalculusFieldElement<T>> implements Fiel
     /** Date. */
     private final FieldAbsoluteDate<T> date;
 
-    /** Clock offset. */
-    private final T offset;
+    /** Clock bias. */
+    private final T bias;
 
     /** Clock rate. */
     private final T rate;
@@ -40,47 +47,89 @@ public class FieldClockOffset<T extends CalculusFieldElement<T>> implements Fiel
     private final T acceleration;
 
     /** Simple constructor.
-     * @param date   date
-     * @param offset clock offset
-     * @param rate   clock rate (can be set to {@code null} if unknown)
-     * @param acceleration clock acceleration (can be set to {@code null} if unknown)
+     *
+     * @param date         date
+     * @param bias         clock bias
+     * @param rate         clock rate (can be set to {@code null} if unknown)
+     * @param acceleration clock acceleration (can be set to {@code null} if
+     *                     unknown)
      */
-    public FieldClockOffset(final FieldAbsoluteDate<T> date, final T offset,
-                            final T rate, final T acceleration) {
-        this.date         = date;
-        this.offset       = offset;
-        this.rate         = rate;
+    public FieldClockOffset(final FieldAbsoluteDate<T> date, final T bias,
+            final T rate, final T acceleration) {
+        this.date = date;
+        this.bias = bias;
+        this.rate = rate;
         this.acceleration = acceleration;
     }
 
-    /** Add another offset to the instance.
+    /** Simple constructor.
+     *
+     * @param date         date
+     * @param terms        array of clock terms (bias, rate, acceleration)
+     */
+    public FieldClockOffset(final FieldAbsoluteDate<T> date, final T[] terms) {
+        this(date, Arrays.asList(terms));
+    }
+
+    /** Simple constructor.
+     *
+     * @param date         date
+     * @param terms        list of clock terms (bias, rate, acceleration)
+     */
+    public FieldClockOffset(final FieldAbsoluteDate<T> date, final List<T> terms) {
+        this.date = date;
+
+        if (!terms.isEmpty()) {
+            this.bias = terms.getFirst();
+        } else {
+            this.bias = date.getField().getZero();
+        }
+        if (terms.size() >= 2) {
+            this.rate = terms.get(1);
+        } else {
+            this.rate = date.getField().getZero();
+        }
+        if (terms.size() == 3) {
+            this.acceleration = terms.get(2);
+        } else {
+            this.acceleration = date.getField().getZero();
+        }
+        if (terms.size() > 3) {
+            throw new OrekitException(OrekitMessages.CANNOT_PARSE_DATA);
+        }
+    }
+
+    /**
+     * Add another offset to the instance.
      * <p>
      * The instance is not modified, a new instance is created
      * </p>
+     *
      * @param other offset to add (date part will be ignored)
      * @return instance + other, at instance date
      * @since 14.0
      */
     public FieldClockOffset<T> add(final FieldClockOffset<T> other) {
         return new FieldClockOffset<>(date,
-                                      offset.add(other.offset),
-                                      rate.add(other.rate),
-                                      acceleration.add(other.acceleration));
+                bias.add(other.bias),
+                rate.add(other.rate),
+                acceleration.add(other.acceleration));
     }
 
     /** Subtract another offset from the instance.
      * <p>
      * The instance is not modified, a new instance is created
      * </p>
+     *
      * @param other offset to subtract (date part will be ignored)
      * @return instance - other, at instance date
      * @since 14.0
      */
     public FieldClockOffset<T> subtract(final FieldClockOffset<T> other) {
         return new FieldClockOffset<>(date,
-                                      offset.subtract(other.offset),
-                                      rate.subtract(other.rate),
-                                      acceleration.subtract(other.acceleration));
+                bias.subtract(other.bias),
+                rate.subtract(other.rate),
+                acceleration.subtract(other.acceleration));
     }
 
     /** {@inheritDoc} */
@@ -89,11 +138,11 @@ public class FieldClockOffset<T extends CalculusFieldElement<T>> implements Fiel
         return date;
     }
 
-    /** Get offset.
-     * @return offset
+    /** Get bias.
+     * @return bias
      */
-    public T getOffset() {
-        return offset;
+    public T getBias() {
+        return bias;
     }
 
     /** Get rate.
@@ -108,6 +157,18 @@ public class FieldClockOffset<T extends CalculusFieldElement<T>> implements Fiel
      */
     public T getAcceleration() {
         return acceleration;
+    }
+
+    /** Negate instance.
+     * <p>
+     * The instance is not modified, a new instance is created
+     * </p>
+     *
+     * @return instance - other, at instance date
+     * @since 14.0
+     */
+    public FieldClockOffset<T> negate() {
+        return new FieldClockOffset<>(getDate(), bias.negate(), rate.negate(), acceleration.negate());
     }
 
 }

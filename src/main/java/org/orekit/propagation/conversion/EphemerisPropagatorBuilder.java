@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Bryan Cazabonne
+/* Copyright 2022-2026 Bryan Cazabonne
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,6 +22,7 @@ import org.orekit.estimation.leastsquares.AbstractBatchLSModel;
 import org.orekit.estimation.leastsquares.BatchLSModel;
 import org.orekit.estimation.leastsquares.ModelObserver;
 import org.orekit.estimation.measurements.ObservedMeasurement;
+import org.orekit.orbits.AbstractOrbitFactory;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
@@ -42,7 +43,8 @@ import java.util.List;
  * @author Vincent Cucchietti
  * @since 11.3
  */
-public class EphemerisPropagatorBuilder extends AbstractPropagatorBuilder<Ephemeris> {
+public class EphemerisPropagatorBuilder
+    extends AbstractPropagatorBuilder<Ephemeris, Orbit, AbstractOrbitFactory<Orbit>> {
 
     /** Default position scale (not used for ephemeris based estimation). */
     private static final double DEFAULT_SCALE = 10.0;
@@ -73,7 +75,7 @@ public class EphemerisPropagatorBuilder extends AbstractPropagatorBuilder<Epheme
      */
     public EphemerisPropagatorBuilder(final List<SpacecraftState> states,
                                       final TimeInterpolator<SpacecraftState> stateInterpolator) {
-        this(states, stateInterpolator, states.isEmpty() ? null : new FrameAlignedProvider(states.get(0).getFrame()));
+        this(states, stateInterpolator, states.isEmpty() ? null : new FrameAlignedProvider(states.getFirst().getFrame()));
     }
 
     /**
@@ -103,7 +105,7 @@ public class EphemerisPropagatorBuilder extends AbstractPropagatorBuilder<Epheme
                                       final AttitudeProvider attitudeProvider) {
         this(states,
              new SpacecraftStateInterpolator(interpolationPoints, extrapolationThreshold,
-                                             states.get(0).getFrame(), states.get(0).getFrame()),
+                                             states.getFirst().getFrame(), states.getFirst().getFrame()),
              attitudeProvider);
     }
 
@@ -126,7 +128,7 @@ public class EphemerisPropagatorBuilder extends AbstractPropagatorBuilder<Epheme
                                       final List<StateCovariance> covariances,
                                       final TimeInterpolator<TimeStampedPair<Orbit, StateCovariance>> covarianceInterpolator) {
         this(states, stateInterpolator, covariances, covarianceInterpolator,
-             states.isEmpty() ? null : new FrameAlignedProvider(states.get(0).getFrame()));
+             states.isEmpty() ? null : new FrameAlignedProvider(states.getFirst().getFrame()));
     }
 
     /**
@@ -143,7 +145,8 @@ public class EphemerisPropagatorBuilder extends AbstractPropagatorBuilder<Epheme
                                       final List<StateCovariance> covariances,
                                       final TimeInterpolator<TimeStampedPair<Orbit, StateCovariance>> covarianceInterpolator,
                                       final AttitudeProvider attitudeProvider) {
-        super(states.get(0).getOrbit(), PositionAngleType.TRUE, DEFAULT_SCALE, false, attitudeProvider);
+        super((AbstractOrbitFactory<Orbit>) states.getFirst().getOrbit().factory(PositionAngleType.TRUE, DEFAULT_SCALE),
+              false, attitudeProvider);
         deselectDynamicParameters();
 
         // Check input consistency the same way Ephemeris is checking consistency

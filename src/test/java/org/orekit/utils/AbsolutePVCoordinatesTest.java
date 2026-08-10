@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -143,10 +143,10 @@ public class AbsolutePVCoordinatesTest {
     void testDifferentFrames() {
         final AbsolutePVCoordinates apv1 = new AbsolutePVCoordinates(FramesFactory.getEME2000(),
                 AbsoluteDate.ARBITRARY_EPOCH,
-                Vector3D.ZERO, Vector3D.ZERO, Vector3D.ZERO);
+                Vector3D.ZERO, Vector3D.ZERO);
         final AbsolutePVCoordinates apv2 = new AbsolutePVCoordinates(FramesFactory.getGCRF(),
                 AbsoluteDate.ARBITRARY_EPOCH,
-                Vector3D.ZERO, Vector3D.ZERO, Vector3D.ZERO);
+                Vector3D.ZERO, Vector3D.ZERO);
         try {
             new AbsolutePVCoordinates(AbsoluteDate.ARBITRARY_EPOCH, apv1, apv2);
             Assertions.fail("an exception should have been thrown");

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,8 +16,6 @@
  */
 package org.orekit.orbits;
 
-
-import java.lang.reflect.Array;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
@@ -51,7 +49,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  *     Ω
  *     v
  *   </pre>
- * where ω stands for the Perigee Argument, Ω stands for the
+ * where ω stands for the Periapsis Argument, Ω stands for the
  * Right Ascension of the Ascending Node and v stands for the true anomaly.
  * <p>
  * This class supports hyperbolic orbits, using the convention that semi major
@@ -94,7 +92,7 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
     /** Inclination (rad). */
     private final T i;
 
-    /** Perigee Argument (rad). */
+    /** Periapsis Argument (rad). */
     private final T pa;
 
     /** Right Ascension of Ascending Node (rad). */
@@ -112,7 +110,7 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
     /** Inclination derivative (rad/s). */
     private final T iDot;
 
-    /** Perigee Argument derivative (rad/s). */
+    /** Periapsis Argument derivative (rad/s). */
     private final T paDot;
 
     /** Right Ascension of Ascending Node derivative (rad/s). */
@@ -127,18 +125,11 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
     /** Partial Cartesian coordinates (position and velocity are valid, acceleration may be missing). */
     private FieldPVCoordinates<T> partialPV;
 
-    /** PThird Canonical Vector. */
-    private final FieldVector3D<T> PLUS_K;
+    /** Third Canonical Vector. */
+    private final FieldVector3D<T> plusK;
 
     /** Creates a new instance.
-     * @param a  semi-major axis (m), negative for hyperbolic orbits
-     * @param e eccentricity (positive or equal to 0)
-     * @param i inclination (rad)
-     * @param pa perigee argument (ω, rad)
-     * @param raan right ascension of ascending node (Ω, rad)
-     * @param anomaly mean, eccentric or true anomaly (rad)
-     * @param type type of anomaly
-     * @param cachedPositionAngleType type of cached anomaly
+     * @param elements Keplerian elements
      * @param frame the frame in which the parameters are defined
      * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
      * @param date date of the orbital parameters
@@ -146,24 +137,22 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
      * @exception IllegalArgumentException if frame is not a {@link
      * Frame#isPseudoInertial pseudo-inertial frame} or a and e don't match for hyperbolic orbits,
      * or v is out of range for hyperbolic orbits
-     * @since 12.1
+     * @since 14.0
      */
-    public FieldKeplerianOrbit(final T a, final T e, final T i,
-                               final T pa, final T raan,
-                               final T anomaly, final PositionAngleType type,
-                               final PositionAngleType cachedPositionAngleType,
-                               final Frame frame, final FieldAbsoluteDate<T> date, final T mu)
+    public FieldKeplerianOrbit(final FieldKeplerianParameters<T> elements, final Frame frame,
+                               final FieldAbsoluteDate<T> date, final T mu)
         throws IllegalArgumentException {
-        this(a, e, i, pa, raan, anomaly,
-             a.getField().getZero(), a.getField().getZero(), a.getField().getZero(), a.getField().getZero(), a.getField().getZero(),
-             computeKeplerianAnomalyDot(type, a, e, mu, anomaly, type), type, cachedPositionAngleType, frame, date, mu);
+        this(elements, mu.getField().getZero(), mu.getField().getZero(),
+                mu.getField().getZero(), mu.getField().getZero(), mu.getField().getZero(),
+                computeKeplerianAnomalyDot(elements.positionAngleType(), elements.a(), elements.e(), mu, elements.anomaly(), elements.positionAngleType()),
+                elements.positionAngleType(), frame, date, mu);
     }
 
     /** Creates a new instance.
      * @param a  semi-major axis (m), negative for hyperbolic orbits
      * @param e eccentricity (positive or equal to 0)
      * @param i inclination (rad)
-     * @param pa perigee argument (ω, rad)
+     * @param pa periapsis argument (ω, rad)
      * @param raan right ascension of ascending node (Ω, rad)
      * @param anomaly mean, eccentric or true anomaly (rad)
      * @param type type of anomaly
@@ -176,28 +165,21 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
      * or v is out of range for hyperbolic orbits
      * @since 12.1
      */
-    public FieldKeplerianOrbit(final T a, final T e, final T i,
-                               final T pa, final T raan,
-                               final T anomaly, final PositionAngleType type,
-                               final Frame frame, final FieldAbsoluteDate<T> date, final T mu)
+    public FieldKeplerianOrbit(final T a, final T e, final T i, final T pa, final T raan,
+                               final T anomaly, final PositionAngleType type, final Frame frame,
+                               final FieldAbsoluteDate<T> date, final T mu)
             throws IllegalArgumentException {
-        this(a, e, i, pa, raan, anomaly, type, type, frame, date, mu);
+        this(new FieldKeplerianParameters<>(a, e, i, pa, raan, anomaly, type), frame, date, mu);
     }
 
     /** Creates a new instance.
-     * @param a  semi-major axis (m), negative for hyperbolic orbits
-     * @param e eccentricity (positive or equal to 0)
-     * @param i inclination (rad)
-     * @param pa perigee argument (ω, rad)
-     * @param raan right ascension of ascending node (Ω, rad)
-     * @param anomaly mean, eccentric or true anomaly (rad)
+     * @param elements Keplerian elements
      * @param aDot  semi-major axis derivative, null if unknown (m/s)
      * @param eDot eccentricity derivative, null if unknown
      * @param iDot inclination derivative, null if unknown (rad/s)
-     * @param paDot perigee argument derivative, null if unknown (rad/s)
+     * @param paDot periapsis argument derivative, null if unknown (rad/s)
      * @param raanDot right ascension of ascending node derivative, null if unknown (rad/s)
      * @param anomalyDot mean, eccentric or true anomaly derivative, null if unknown (rad/s)
-     * @param type type of anomaly
      * @param cachedPositionAngleType type of cached anomaly
      * @param frame the frame in which the parameters are defined
      * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
@@ -206,18 +188,19 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
      * @exception IllegalArgumentException if frame is not a {@link
      * Frame#isPseudoInertial pseudo-inertial frame} or a and e don't match for hyperbolic orbits,
      * or v is out of range for hyperbolic orbits
-     * @since 12.1
+     * @since 14.0
      */
-    public FieldKeplerianOrbit(final T a, final T e, final T i,
-                               final T pa, final T raan, final T anomaly,
+    public FieldKeplerianOrbit(final FieldKeplerianParameters<T> elements,
                                final T aDot, final T eDot, final T iDot,
                                final T paDot, final T raanDot, final T anomalyDot,
-                               final PositionAngleType type, final PositionAngleType cachedPositionAngleType,
+                               final PositionAngleType cachedPositionAngleType,
                                final Frame frame, final FieldAbsoluteDate<T> date, final T mu)
         throws IllegalArgumentException {
         super(frame, date, mu);
         this.cachedPositionAngleType = cachedPositionAngleType;
 
+        this.a = elements.a();
+        this.e = elements.e();
         if (a.multiply(e.negate().add(1)).getReal() < 0) {
             throw new OrekitIllegalArgumentException(OrekitMessages.ORBIT_A_E_MISMATCH_WITH_CONIC_TYPE, a.getReal(), e.getReal());
         }
@@ -225,20 +208,19 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
         // Checking eccentricity range
         checkParameterRangeInclusive(ECCENTRICITY, e.getReal(), 0.0, Double.POSITIVE_INFINITY);
 
-        this.a       =    a;
         this.aDot    =    aDot;
-        this.e       =    e;
         this.eDot    =    eDot;
-        this.i       =    i;
+        this.i       =    elements.i();
         this.iDot    =    iDot;
-        this.pa      =    pa;
+        this.pa      =    elements.pa();
         this.paDot   =    paDot;
-        this.raan    =    raan;
+        this.raan    =    elements.raan();
         this.raanDot =    raanDot;
 
-        this.PLUS_K = FieldVector3D.getPlusK(a.getField());  // third canonical vector
+        this.plusK = FieldVector3D.getPlusK(a.getField());  // third canonical vector
 
-        final FieldUnivariateDerivative1<T> cachedAnomalyUD = initializeCachedAnomaly(anomaly, anomalyDot, type);
+        final FieldUnivariateDerivative1<T> cachedAnomalyUD = initializeCachedAnomaly(elements.anomaly(), anomalyDot,
+                elements.positionAngleType());
         this.cachedAnomaly = cachedAnomalyUD.getValue();
         this.cachedAnomalyDot = cachedAnomalyUD.getFirstDerivative();
 
@@ -260,13 +242,13 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
      * @param a  semi-major axis (m), negative for hyperbolic orbits
      * @param e eccentricity (positive or equal to 0)
      * @param i inclination (rad)
-     * @param pa perigee argument (ω, rad)
+     * @param pa periapsis argument (ω, rad)
      * @param raan right ascension of ascending node (Ω, rad)
      * @param anomaly mean, eccentric or true anomaly (rad)
      * @param aDot  semi-major axis derivative, null if unknown (m/s)
      * @param eDot eccentricity derivative, null if unknown
      * @param iDot inclination derivative, null if unknown (rad/s)
-     * @param paDot perigee argument derivative, null if unknown (rad/s)
+     * @param paDot periapsis argument derivative, null if unknown (rad/s)
      * @param raanDot right ascension of ascending node derivative, null if unknown (rad/s)
      * @param anomalyDot mean, eccentric or true anomaly derivative, null if unknown (rad/s)
      * @param type type of anomaly
@@ -285,8 +267,8 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
                                final PositionAngleType type,
                                final Frame frame, final FieldAbsoluteDate<T> date, final T mu)
             throws IllegalArgumentException {
-        this(a, e, i, pa, raan, anomaly, aDot, eDot, iDot, paDot, raanDot, anomalyDot,
-                type, type, frame, date, mu);
+        this(new FieldKeplerianParameters<>(a, e, i, pa, raan, anomaly, type), aDot, eDot, iDot, paDot, raanDot, anomalyDot,
+                type, frame, date, mu);
     }
 
     /** Constructor from Cartesian parameters.
@@ -330,56 +312,21 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
         throws IllegalArgumentException {
 
         super(pvCoordinates, frame, mu);
+        plusK = FieldVector3D.getPlusK(mu.getField());
 
-        // third canonical vector
-        this.PLUS_K = FieldVector3D.getPlusK(getOne().getField());
-
-        // compute inclination
-        final FieldVector3D<T> momentum = pvCoordinates.getMomentum();
-        final T m2 = momentum.getNorm2Sq();
-
-        i = FieldVector3D.angle(momentum, PLUS_K);
-        // compute right ascension of ascending node
-        raan = FieldVector3D.crossProduct(PLUS_K, momentum).getAlpha();
-        // preliminary computations for parameters depending on orbit shape (elliptic or hyperbolic)
-        final FieldVector3D<T> pvP     = pvCoordinates.getPosition();
-        final FieldVector3D<T> pvV     = pvCoordinates.getVelocity();
-        final FieldVector3D<T> pvA     = pvCoordinates.getAcceleration();
-
-        final T   r2      = pvP.getNorm2Sq();
-        final T   r       = r2.sqrt();
-        final T   V2      = pvV.getNorm2Sq();
-        final T   rV2OnMu = r.multiply(V2).divide(mu);
-
-        // compute semi-major axis (will be negative for hyperbolic orbits)
-        a = r.divide(rV2OnMu.negate().add(2.0));
-        final T muA = a.multiply(mu);
-
-        // compute true anomaly
-        if (isElliptical()) {
-            // elliptic or circular orbit
-            final T eSE = FieldVector3D.dotProduct(pvP, pvV).divide(muA.sqrt());
-            final T eCE = rV2OnMu.subtract(1);
-            e = (eSE.multiply(eSE).add(eCE.multiply(eCE))).sqrt();
-            this.cachedPositionAngleType = PositionAngleType.ECCENTRIC;
-            cachedAnomaly = eSE.atan2(eCE);
-        } else {
-            // hyperbolic orbit
-            final T eSH = FieldVector3D.dotProduct(pvP, pvV).divide(muA.negate().sqrt());
-            final T eCH = rV2OnMu.subtract(1);
-            e = (m2.negate().divide(muA).add(1)).sqrt();
-            this.cachedPositionAngleType = PositionAngleType.TRUE;
-            cachedAnomaly = FieldKeplerianAnomalyUtility.hyperbolicEccentricToTrue(e, (eCH.add(eSH)).divide(eCH.subtract(eSH)).log().divide(2));
-        }
+        // Convert Cartesian to Keplerian elements
+        final FieldKeplerianParametersConverter<T> converter = new FieldKeplerianParametersConverter<>(mu);
+        cachedPositionAngleType = PositionAngleType.ECCENTRIC;
+        final FieldKeplerianParameters<T> elements = converter.toParameters(pvCoordinates, cachedPositionAngleType);
+        a = elements.a();
+        e = elements.e();
+        i = elements.i();
+        pa = elements.pa();
+        raan = elements.raan();
+        cachedAnomaly = elements.anomaly();
 
         // Checking eccentricity range
         checkParameterRangeInclusive(ECCENTRICITY, e.getReal(), 0.0, Double.POSITIVE_INFINITY);
-
-        // compute perigee argument
-        final FieldVector3D<T> node = new FieldVector3D<>(raan, getZero());
-        final T px = FieldVector3D.dotProduct(pvP, node);
-        final T py = FieldVector3D.dotProduct(pvP, FieldVector3D.crossProduct(momentum, node)).divide(m2.sqrt());
-        pa = py.atan2(px).subtract(getTrueAnomaly());
 
         partialPV = pvCoordinates;
 
@@ -389,8 +336,11 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
             final T[][] jacobian = MathArrays.buildArray(a.getField(), 6, 6);
             getJacobianWrtCartesian(PositionAngleType.MEAN, jacobian);
 
+            final FieldVector3D<T> pvP = pvCoordinates.getPosition();
+            final T r2 = pvP.getNorm2Sq();
+            final T r  = FastMath.sqrt(r2);
             final FieldVector3D<T> keplerianAcceleration    = new FieldVector3D<>(r.multiply(r2).reciprocal().multiply(mu.negate()), pvP);
-            final FieldVector3D<T> nonKeplerianAcceleration = pvA.subtract(keplerianAcceleration);
+            final FieldVector3D<T> nonKeplerianAcceleration = pvCoordinates.getAcceleration().subtract(keplerianAcceleration);
             final T   aX                       = nonKeplerianAcceleration.getX();
             final T   aY                       = nonKeplerianAcceleration.getY();
             final T   aZ                       = nonKeplerianAcceleration.getZ();
@@ -406,17 +356,10 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
                            add(jacobian[5][3].multiply(aX)).add(jacobian[5][4].multiply(aY)).add(jacobian[5][5].multiply(aZ));
             final FieldUnivariateDerivative1<T> eUD = new FieldUnivariateDerivative1<>(e, eDot);
             final FieldUnivariateDerivative1<T> MUD = new FieldUnivariateDerivative1<>(getMeanAnomaly(), MDot);
-            if (cachedPositionAngleType == PositionAngleType.ECCENTRIC) {
-                final FieldUnivariateDerivative1<T> EUD = (a.getReal() < 0) ?
-                         FieldKeplerianAnomalyUtility.hyperbolicMeanToEccentric(eUD, MUD) :
-                         FieldKeplerianAnomalyUtility.ellipticMeanToEccentric(eUD, MUD);
-                cachedAnomalyDot = EUD.getFirstDerivative();
-            } else { // TRUE
-                final FieldUnivariateDerivative1<T> vUD = (a.getReal() < 0) ?
-                         FieldKeplerianAnomalyUtility.hyperbolicMeanToTrue(eUD, MUD) :
-                         FieldKeplerianAnomalyUtility.ellipticMeanToTrue(eUD, MUD);
-                cachedAnomalyDot = vUD.getFirstDerivative();
-            }
+            final FieldUnivariateDerivative1<T> EUD = (a.getReal() < 0) ?
+                     FieldKeplerianAnomalyUtility.hyperbolicMeanToEccentric(eUD, MUD) :
+                     FieldKeplerianAnomalyUtility.ellipticMeanToEccentric(eUD, MUD);
+            cachedAnomalyDot = EUD.getFirstDerivative();
 
         } else {
             // acceleration is either almost zero or NaN,
@@ -467,13 +410,11 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
      * @since 12.0
      */
     public FieldKeplerianOrbit(final Field<T> field, final KeplerianOrbit op) {
-        this(field.getZero().newInstance(op.getA()), field.getZero().newInstance(op.getE()), field.getZero().newInstance(op.getI()),
-                field.getZero().newInstance(op.getPerigeeArgument()), field.getZero().newInstance(op.getRightAscensionOfAscendingNode()),
-                field.getZero().newInstance(op.getAnomaly(op.getCachedPositionAngleType())),
+        this(new FieldKeplerianParameters<>(field, op.getKeplerianParameters()),
                 field.getZero().newInstance(op.getADot()),
                 field.getZero().newInstance(op.getEDot()),
                 field.getZero().newInstance(op.getIDot()),
-                field.getZero().newInstance(op.getPerigeeArgumentDot()),
+                field.getZero().newInstance(op.getPeriapsisArgumentDot()),
                 field.getZero().newInstance(op.getRightAscensionOfAscendingNodeDot()),
                 field.getZero().newInstance(op.getAnomalyDot(op.getCachedPositionAngleType())),
                 op.getCachedPositionAngleType(), op.getFrame(),
@@ -532,17 +473,17 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
         return iDot;
     }
 
-    /** Get the perigee argument.
-     * @return perigee argument (rad)
+    /** Get the periapsis argument.
+     * @return periapsis argument (rad)
      */
-    public T getPerigeeArgument() {
+    public T getPeriapsisArgument() {
         return pa;
     }
 
-    /** Get the perigee argument derivative.
-     * @return perigee argument derivative (rad/s)
+    /** Get the periapsis argument derivative.
+     * @return periapsis argument derivative (rad/s)
      */
-    public T getPerigeeArgumentDot() {
+    public T getPeriapsisArgumentDot() {
         return paDot;
     }
 
@@ -564,113 +505,75 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
      * @return true anomaly (rad)
      */
     public T getTrueAnomaly() {
-        switch (cachedPositionAngleType) {
-            case MEAN: return (a.getReal() < 0) ? FieldKeplerianAnomalyUtility.hyperbolicMeanToTrue(e, cachedAnomaly) :
-                    FieldKeplerianAnomalyUtility.ellipticMeanToTrue(e, cachedAnomaly);
-
-            case TRUE: return cachedAnomaly;
-
-            case ECCENTRIC: return (a.getReal() < 0) ? FieldKeplerianAnomalyUtility.hyperbolicEccentricToTrue(e, cachedAnomaly) :
-                    FieldKeplerianAnomalyUtility.ellipticEccentricToTrue(e, cachedAnomaly);
-
-            default: throw new OrekitInternalError(null);
-        }
+        return getAnomaly(PositionAngleType.TRUE);
     }
 
     /** Get the true anomaly derivative.
      * @return true anomaly derivative (rad/s)
      */
     public T getTrueAnomalyDot() {
-        switch (cachedPositionAngleType) {
-            case MEAN:
+        return switch (cachedPositionAngleType) {
+            case MEAN -> {
                 final FieldUnivariateDerivative1<T> eUD = new FieldUnivariateDerivative1<>(e, eDot);
                 final FieldUnivariateDerivative1<T> MUD = new FieldUnivariateDerivative1<>(cachedAnomaly, cachedAnomalyDot);
                 final FieldUnivariateDerivative1<T> vUD = (a.getReal() < 0) ?
-                         FieldKeplerianAnomalyUtility.hyperbolicMeanToTrue(eUD, MUD) :
-                         FieldKeplerianAnomalyUtility.ellipticMeanToTrue(eUD, MUD);
-                return vUD.getFirstDerivative();
+                        FieldKeplerianAnomalyUtility.hyperbolicMeanToTrue(eUD, MUD) :
+                        FieldKeplerianAnomalyUtility.ellipticMeanToTrue(eUD, MUD);
+                yield vUD.getFirstDerivative();
+            }
 
-            case TRUE:
-                return cachedAnomalyDot;
+            case TRUE -> cachedAnomalyDot;
 
-            case ECCENTRIC:
+            case ECCENTRIC -> {
                 final FieldUnivariateDerivative1<T> eUD2 = new FieldUnivariateDerivative1<>(e, eDot);
                 final FieldUnivariateDerivative1<T> EUD = new FieldUnivariateDerivative1<>(cachedAnomaly, cachedAnomalyDot);
                 final FieldUnivariateDerivative1<T> vUD2 = (a.getReal() < 0) ?
                          FieldKeplerianAnomalyUtility.hyperbolicEccentricToTrue(eUD2, EUD) :
                          FieldKeplerianAnomalyUtility.ellipticEccentricToTrue(eUD2, EUD);
-                return vUD2.getFirstDerivative();
-
-            default:
-                throw new OrekitInternalError(null);
-        }
+                yield vUD2.getFirstDerivative();
+            }
+        };
     }
 
     /** Get the eccentric anomaly.
      * @return eccentric anomaly (rad)
      */
     public T getEccentricAnomaly() {
-        switch (cachedPositionAngleType) {
-            case MEAN:
-                return (a.getReal() < 0) ? FieldKeplerianAnomalyUtility.hyperbolicMeanToEccentric(e, cachedAnomaly) :
-                    FieldKeplerianAnomalyUtility.ellipticMeanToEccentric(e, cachedAnomaly);
-
-            case ECCENTRIC:
-                return cachedAnomaly;
-
-            case TRUE:
-                return (a.getReal() < 0) ? FieldKeplerianAnomalyUtility.hyperbolicTrueToEccentric(e, cachedAnomaly) :
-                    FieldKeplerianAnomalyUtility.ellipticTrueToEccentric(e, cachedAnomaly);
-
-            default:
-                throw new OrekitInternalError(null);
-        }
+        return getAnomaly(PositionAngleType.ECCENTRIC);
     }
 
     /** Get the eccentric anomaly derivative.
      * @return eccentric anomaly derivative (rad/s)
      */
     public T getEccentricAnomalyDot() {
-        switch (cachedPositionAngleType) {
-            case ECCENTRIC:
-                return cachedAnomalyDot;
+        return switch (cachedPositionAngleType) {
+            case ECCENTRIC -> cachedAnomalyDot;
 
-            case TRUE:
+            case TRUE -> {
                 final FieldUnivariateDerivative1<T> eUD = new FieldUnivariateDerivative1<>(e, eDot);
                 final FieldUnivariateDerivative1<T> vUD = new FieldUnivariateDerivative1<>(cachedAnomaly, cachedAnomalyDot);
                 final FieldUnivariateDerivative1<T> EUD = (a.getReal() < 0) ?
-                         FieldKeplerianAnomalyUtility.hyperbolicTrueToEccentric(eUD, vUD) :
-                         FieldKeplerianAnomalyUtility.ellipticTrueToEccentric(eUD, vUD);
-                return EUD.getFirstDerivative();
+                        FieldKeplerianAnomalyUtility.hyperbolicTrueToEccentric(eUD, vUD) :
+                        FieldKeplerianAnomalyUtility.ellipticTrueToEccentric(eUD, vUD);
+                yield EUD.getFirstDerivative();
+            }
 
-            case MEAN:
+            case MEAN -> {
                 final FieldUnivariateDerivative1<T> eUD2 = new FieldUnivariateDerivative1<>(e, eDot);
                 final FieldUnivariateDerivative1<T> MUD = new FieldUnivariateDerivative1<>(cachedAnomaly, cachedAnomalyDot);
                 final FieldUnivariateDerivative1<T> EUD2 = (a.getReal() < 0) ?
-                         FieldKeplerianAnomalyUtility.hyperbolicMeanToEccentric(eUD2, MUD) :
-                         FieldKeplerianAnomalyUtility.ellipticMeanToEccentric(eUD2, MUD);
-                return EUD2.getFirstDerivative();
-
-            default:
-                throw new OrekitInternalError(null);
-        }
+                        FieldKeplerianAnomalyUtility.hyperbolicMeanToEccentric(eUD2, MUD) :
+                        FieldKeplerianAnomalyUtility.ellipticMeanToEccentric(eUD2, MUD);
+                yield EUD2.getFirstDerivative();
+            }
+        };
     }
 
     /** Get the mean anomaly.
      * @return mean anomaly (rad)
      */
     public T getMeanAnomaly() {
-        switch (cachedPositionAngleType) {
-            case ECCENTRIC: return (a.getReal() < 0) ? FieldKeplerianAnomalyUtility.hyperbolicEccentricToMean(e, cachedAnomaly) :
-                    FieldKeplerianAnomalyUtility.ellipticEccentricToMean(e, cachedAnomaly);
-
-            case MEAN: return cachedAnomaly;
-
-            case TRUE: return (a.getReal() < 0) ? FieldKeplerianAnomalyUtility.hyperbolicTrueToMean(e, cachedAnomaly) :
-                    FieldKeplerianAnomalyUtility.ellipticTrueToMean(e, cachedAnomaly);
-
-            default: throw new OrekitInternalError(null);
-        }
+        return getAnomaly(PositionAngleType.MEAN);
     }
 
     /** Get the mean anomaly derivative.
@@ -678,29 +581,27 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
      * @return mean anomaly derivative (rad/s)
      */
     public T getMeanAnomalyDot() {
-        switch (cachedPositionAngleType) {
-            case MEAN:
-                return cachedAnomalyDot;
+        return switch (cachedPositionAngleType) {
+            case MEAN -> cachedAnomalyDot;
 
-            case ECCENTRIC:
+            case ECCENTRIC -> {
                 final FieldUnivariateDerivative1<T> eUD = new FieldUnivariateDerivative1<>(e, eDot);
                 final FieldUnivariateDerivative1<T> EUD = new FieldUnivariateDerivative1<>(cachedAnomaly, cachedAnomalyDot);
                 final FieldUnivariateDerivative1<T> MUD = (a.getReal() < 0) ?
-                         FieldKeplerianAnomalyUtility.hyperbolicEccentricToMean(eUD, EUD) :
-                         FieldKeplerianAnomalyUtility.ellipticEccentricToMean(eUD, EUD);
-                return MUD.getFirstDerivative();
+                        FieldKeplerianAnomalyUtility.hyperbolicEccentricToMean(eUD, EUD) :
+                        FieldKeplerianAnomalyUtility.ellipticEccentricToMean(eUD, EUD);
+                yield MUD.getFirstDerivative();
+            }
 
-            case TRUE:
+            case TRUE -> {
                 final FieldUnivariateDerivative1<T> eUD2 = new FieldUnivariateDerivative1<>(e, eDot);
                 final FieldUnivariateDerivative1<T> vUD = new FieldUnivariateDerivative1<>(cachedAnomaly, cachedAnomalyDot);
                 final FieldUnivariateDerivative1<T> MUD2 = (a.getReal() < 0) ?
-                         FieldKeplerianAnomalyUtility.hyperbolicTrueToMean(eUD2, vUD) :
-                         FieldKeplerianAnomalyUtility.ellipticTrueToMean(eUD2, vUD);
-                return MUD2.getFirstDerivative();
-
-            default:
-                throw new OrekitInternalError(null);
-        }
+                        FieldKeplerianAnomalyUtility.hyperbolicTrueToMean(eUD2, vUD) :
+                        FieldKeplerianAnomalyUtility.ellipticTrueToMean(eUD2, vUD);
+                yield MUD2.getFirstDerivative();
+            }
+        };
     }
 
     /** Get the anomaly.
@@ -708,9 +609,7 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
      * @return anomaly (rad)
      */
     public T getAnomaly(final PositionAngleType type) {
-        return (type == PositionAngleType.MEAN) ? getMeanAnomaly() :
-                                              ((type == PositionAngleType.ECCENTRIC) ? getEccentricAnomaly() :
-                                                                                   getTrueAnomaly());
+        return getKeplerianParameters().withPositionAngleType(type).anomaly();
     }
 
     /** Get the anomaly derivative.
@@ -718,9 +617,20 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
      * @return anomaly derivative (rad/s)
      */
     public T getAnomalyDot(final PositionAngleType type) {
-        return (type == PositionAngleType.MEAN) ? getMeanAnomalyDot() :
-                                              ((type == PositionAngleType.ECCENTRIC) ? getEccentricAnomalyDot() :
-                                                                                   getTrueAnomalyDot());
+        return switch (type) {
+            case MEAN -> getMeanAnomalyDot();
+            case ECCENTRIC -> getEccentricAnomalyDot();
+            case TRUE -> getTrueAnomalyDot();
+        };
+    }
+
+    /**
+     * Method providing with the Keplerian elements, using the cached type for the anomaly.
+     * @return Keplerian elements
+     * @since 14.0
+     */
+    public FieldKeplerianParameters<T> getKeplerianParameters() {
+        return new FieldKeplerianParameters<>(a, e, i, pa, raan, cachedAnomaly, cachedPositionAngleType);
     }
 
     /** {@inheritDoc} */
@@ -936,37 +846,6 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
 
     }
 
-    /** Compute reference axes.
-     * @return reference axes
-     * @since 12.0
-     */
-    private FieldVector3D<T>[] referenceAxes() {
-
-        // preliminary variables
-        final FieldSinCos<T> scRaan = FastMath.sinCos(raan);
-        final FieldSinCos<T> scPa   = FastMath.sinCos(pa);
-        final FieldSinCos<T> scI    = FastMath.sinCos(i);
-        final T cosRaan = scRaan.cos();
-        final T sinRaan = scRaan.sin();
-        final T cosPa   = scPa.cos();
-        final T sinPa   = scPa.sin();
-        final T cosI    = scI.cos();
-        final T sinI    = scI.sin();
-        final T crcp    = cosRaan.multiply(cosPa);
-        final T crsp    = cosRaan.multiply(sinPa);
-        final T srcp    = sinRaan.multiply(cosPa);
-        final T srsp    = sinRaan.multiply(sinPa);
-
-        // reference axes defining the orbital plane
-        @SuppressWarnings("unchecked")
-        final FieldVector3D<T>[] axes = (FieldVector3D<T>[]) Array.newInstance(FieldVector3D.class, 2);
-        axes[0] = new FieldVector3D<>(crcp.subtract(cosI.multiply(srsp)),  srcp.add(cosI.multiply(crsp)), sinI.multiply(sinPa));
-        axes[1] = new FieldVector3D<>(crsp.add(cosI.multiply(srcp)).negate(), cosI.multiply(crcp).subtract(srsp), sinI.multiply(cosPa));
-
-        return axes;
-
-    }
-
     /** Compute position and velocity but not acceleration.
      */
     private void computePVWithoutA() {
@@ -976,54 +855,15 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
             return;
         }
 
-        final FieldVector3D<T>[] axes = referenceAxes();
-
-        if (isElliptical()) {
-
-            // elliptical case
-
-            // elliptic eccentric anomaly
-            final T uME2             = e.negate().add(1).multiply(e.add(1));
-            final T s1Me2            = uME2.sqrt();
-            final FieldSinCos<T> scE = FastMath.sinCos(getEccentricAnomaly());
-            final T cosE             = scE.cos();
-            final T sinE             = scE.sin();
-
-            // coordinates of position and velocity in the orbital plane
-            final T x      = a.multiply(cosE.subtract(e));
-            final T y      = a.multiply(sinE).multiply(s1Me2);
-            final T factor = FastMath.sqrt(getMu().divide(a)).divide(e.negate().multiply(cosE).add(1));
-            final T xDot   = sinE.negate().multiply(factor);
-            final T yDot   = cosE.multiply(s1Me2).multiply(factor);
-
-            final FieldVector3D<T> position = new FieldVector3D<>(x, axes[0], y, axes[1]);
-            final FieldVector3D<T> velocity = new FieldVector3D<>(xDot, axes[0], yDot, axes[1]);
-            partialPV = new FieldPVCoordinates<>(position, velocity);
-
-        } else {
-
-            // hyperbolic case
-
-            // compute position and velocity factors
-            final FieldSinCos<T> scV = FastMath.sinCos(getTrueAnomaly());
-            final T sinV             = scV.sin();
-            final T cosV             = scV.cos();
-            final T f                = a.multiply(e.square().negate().add(1));
-            final T posFactor        = f.divide(e.multiply(cosV).add(1));
-            final T velFactor        = FastMath.sqrt(getMu().divide(f));
-
-            final FieldVector3D<T> position     = new FieldVector3D<>(posFactor.multiply(cosV), axes[0], posFactor.multiply(sinV), axes[1]);
-            final FieldVector3D<T> velocity     = new FieldVector3D<>(velFactor.multiply(sinV).negate(), axes[0], velFactor.multiply(e.add(cosV)), axes[1]);
-            partialPV = new FieldPVCoordinates<>(position, velocity);
-
-        }
+        final FieldKeplerianParametersConverter<T> converter = new FieldKeplerianParametersConverter<>(getMu());
+        partialPV = converter.toCartesian(getKeplerianParameters());
 
     }
 
     /** {@inheritDoc} */
     @Override
     protected FieldVector3D<T> initPosition() {
-        final FieldVector3D<T>[] axes = referenceAxes();
+        final FieldVector3D<T>[] axes = FieldKeplerianParametersConverter.referenceAxes(i, pa, raan);
 
         if (isElliptical()) {
 
@@ -1107,32 +947,101 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
 
     /** {@inheritDoc} */
     @Override
-    public FieldKeplerianOrbit<T> shiftedBy(final TimeOffset dt) {
-        return shiftedBy(dt.toDouble());
+    public FieldKeplerianOrbit<T> shiftedBy(final T dt) {
+
+        // use Keplerian-only motion
+        final FieldKeplerianOrbit<T> keplerianShifted = shiftWithKeplerianMotion(dt);
+
+        // Non-Keplerian acceleration shall be considered
+        if (!dt.isZero() && hasNonKeplerianRates()) {
+            return keplerianShifted.applyNonKeplerianAcceleration(nonKeplerianAcceleration(), dt);
+        }
+        // Keplerian-only motion is all we can do
+        else {
+            return keplerianShifted;
+        }
+
     }
 
     /** {@inheritDoc} */
     @Override
-    public FieldKeplerianOrbit<T> shiftedBy(final T dt) {
+    public FieldKeplerianOrbit<T> shiftedBy(final TimeOffset dt) {
+
+        // Get field and express dt as T
+        final Field<T> field   = getField();
+        final T        dtValue = field.getOne().newInstance(dt.toDouble());
 
         // use Keplerian-only motion
-        final FieldKeplerianOrbit<T> keplerianShifted = new FieldKeplerianOrbit<>(a, e, i, pa, raan,
-                                                                                  getKeplerianMeanMotion().multiply(dt).add(getMeanAnomaly()),
-                                                                                  PositionAngleType.MEAN, cachedPositionAngleType, getFrame(), getDate().shiftedBy(dt), getMu());
+        final FieldKeplerianOrbit<T> keplerianShifted = shiftWithKeplerianMotion(dt);
 
-        if (!dt.isZero() && hasNonKeplerianRates()) {
-
-            final FieldPVCoordinates<T> pvCoordinates = shiftNonKeplerian(keplerianShifted.getPVCoordinates(), dt);
-
-            // build a new orbit, taking non-Keplerian acceleration into account
-            return new FieldKeplerianOrbit<>(new TimeStampedFieldPVCoordinates<>(keplerianShifted.getDate(), pvCoordinates),
-                                             keplerianShifted.getFrame(), keplerianShifted.getMu());
-
-        } else {
-            // Keplerian-only motion is all we can do
+        // Non-Keplerian acceleration shall be considered
+        if (!dtValue.isZero() && hasNonKeplerianRates()) {
+            return keplerianShifted.applyNonKeplerianAcceleration(nonKeplerianAcceleration(), dtValue);
+        }
+        // Keplerian-only motion is all we can do
+        else {
             return keplerianShifted;
         }
 
+    }
+
+    /**
+     * Computes a new orbit by shifting the current orbit forward or backward in time using Keplerian motion.
+     *
+     * @param dt time delta
+     * @return shifted orbit
+     */
+    private FieldKeplerianOrbit<T> shiftWithKeplerianMotion(final T dt) {
+        final FieldKeplerianParameters<T> shiftedElements = new FieldKeplerianParameters<>(a, e, i, pa, raan,
+                getKeplerianMeanMotion().multiply(dt).add(getMeanAnomaly()), PositionAngleType.MEAN);
+        return new FieldKeplerianOrbit<>(shiftedElements.withPositionAngleType(cachedPositionAngleType), getFrame(),
+                getDate().shiftedBy(dt), getMu());
+    }
+
+    /**
+     * Computes a new orbit by shifting the current orbit forward or backward in time using Keplerian motion. This
+     * implementation uses the more accurate {@link TimeOffset} to compute the shifted date.
+     *
+     * @param dt time delta
+     * @return shifted orbit
+     */
+    private FieldKeplerianOrbit<T> shiftWithKeplerianMotion(final TimeOffset dt) {
+        final FieldKeplerianParameters<T> shiftedElements = new FieldKeplerianParameters<>(a, e, i, pa, raan,
+                getKeplerianMeanMotion().multiply(dt.toDouble()).add(getMeanAnomaly()), PositionAngleType.MEAN);
+        return new FieldKeplerianOrbit<>(shiftedElements.withPositionAngleType(cachedPositionAngleType), getFrame(),
+                getDate().shiftedBy(dt), getMu());
+    }
+
+    /**
+     * Shifts the current orbit with consideration of non-Keplerian acceleration by including the quadratic effects of
+     * the acceleration into the position, velocity, and acceleration calculations.
+     *
+     * @param nonKeplerianAcceleration non-Keplerian acceleration vector to apply
+     * @param dt                       the time shift in seconds for which the orbit is to be shifted.
+     * @return a new {@link FieldCircularOrbit} representing the shifted orbit, factoring in non-Keplerian acceleration
+     * effects.
+     */
+    private FieldKeplerianOrbit<T> applyNonKeplerianAcceleration(final FieldVector3D<T> nonKeplerianAcceleration,
+                                                                 final T dt) {
+        // extract non-Keplerian acceleration from first time derivatives
+
+        // add quadratic effect of non-Keplerian acceleration to Keplerian-only shift
+        this.computePVWithoutA();
+        final FieldVector3D<T> fixedP = new FieldVector3D<>(getOne(), this.partialPV.getPosition(),
+                                                            dt.square().multiply(0.5), nonKeplerianAcceleration);
+        final T fixedR2 = fixedP.getNorm2Sq();
+        final T fixedR  = fixedR2.sqrt();
+        final FieldVector3D<T> fixedV = new FieldVector3D<>(getOne(), this.partialPV.getVelocity(),
+                                                            dt, nonKeplerianAcceleration);
+        final FieldVector3D<T> fixedA =
+                new FieldVector3D<>(fixedR2.multiply(fixedR).reciprocal().multiply(getMu().negate()),
+                                    this.partialPV.getPosition(),
+                                    getOne(), nonKeplerianAcceleration);
+
+        // build a new orbit, taking non-Keplerian acceleration into account
+        return new FieldKeplerianOrbit<>(new TimeStampedFieldPVCoordinates<>(this.getDate(),
+                                                                             fixedP, fixedV, fixedA),
+                                         this.getFrame(), this.getMu());
     }
 
     /** {@inheritDoc} */
@@ -1235,19 +1144,19 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
         final T t2 = sqrtRec.multiply(sinE.negate().multiply(pz).divide(r3));
         final T t3 = sqrtRec.multiply(cosE.subtract(e)).multiply(vz).divide(sqrtMuA.multiply(2));
         final T t4 = sqrtRec.multiply(e.multiply(sinI).multiply(cosPA).multiply(sqrtRec).subtract(vz.multiply(sqrtAoMu)));
-        final FieldVector3D<T> s = new FieldVector3D<>(cosE.divide(r), this.PLUS_K,
+        final FieldVector3D<T> s = new FieldVector3D<>(cosE.divide(r), this.plusK,
                                                        s1,       vectorEAnR,
                                                        s2,       position,
                                                        s3,       vectorAR);
-        final FieldVector3D<T> sDot = new FieldVector3D<>(sinE.negate().multiply(sqrtAoMu), this.PLUS_K,
+        final FieldVector3D<T> sDot = new FieldVector3D<>(sinE.negate().multiply(sqrtAoMu), this.plusK,
                                                           s1,               vectorEAnRDot,
                                                           s3,               vectorARDot);
         final FieldVector3D<T> t =
-            new FieldVector3D<>(sqrtRec.multiply(sinE).divide(r), this.PLUS_K).add(new FieldVector3D<>(t1, vectorEAnR,
+            new FieldVector3D<>(sqrtRec.multiply(sinE).divide(r), this.plusK).add(new FieldVector3D<>(t1, vectorEAnR,
                                                                                                        t2, position,
                                                                                                        t3, vectorAR,
                                                                                                        t4, vectorER));
-        final FieldVector3D<T> tDot = new FieldVector3D<>(sqrtRec.multiply(cosE.subtract(e)).multiply(sqrtAoMu), this.PLUS_K,
+        final FieldVector3D<T> tDot = new FieldVector3D<>(sqrtRec.multiply(cosE.subtract(e)).multiply(sqrtAoMu), this.plusK,
                                                           t1,                                                    vectorEAnRDot,
                                                           t3,                                                    vectorARDot,
                                                           t4,                                                    vectorERDot);
@@ -1375,7 +1284,7 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
         final T cP7     = cP3.multiply(cP5);
         final FieldVector3D<T> dacP  = new FieldVector3D<>(cP1, dcXP, cP2, dcYP, cP4, dCP, oOm, new FieldVector3D<>(my.negate(), mx, getZero()));
         final FieldVector3D<T> dacV  = new FieldVector3D<>(cP1, dcXV, cP2, dcYV, cP4, dCV);
-        final FieldVector3D<T> dpoP  = new FieldVector3D<>(cP6, dacP, cP7, this.PLUS_K);
+        final FieldVector3D<T> dpoP  = new FieldVector3D<>(cP6, dacP, cP7, this.plusK);
         final FieldVector3D<T> dpoV  = new FieldVector3D<>(cP6, dacV);
 
         final T re2     = r2.multiply(e.square());
@@ -1580,12 +1489,12 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
 
     /**
      * Compute rate of argument of latitude.
-     * @param type position angle type of rate
+     * @param type position angle type of output rate
      * @param a semi major axis
      * @param e eccentricity
      * @param mu mu
      * @param anomaly anomaly
-     * @param cachedType position angle type of passed anomaly
+     * @param cachedType position angle type of input anomaly
      * @param <T> field type
      * @return first-order time derivative for anomaly
      * @since 12.2
@@ -1615,14 +1524,14 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
      * @return a string representation of this object
      */
     public String toString() {
-        return new StringBuilder().append("Keplerian parameters: ").append('{').
-                                  append("a: ").append(a.getReal()).
-                                  append("; e: ").append(e.getReal()).
-                                  append("; i: ").append(FastMath.toDegrees(i.getReal())).
-                                  append("; pa: ").append(FastMath.toDegrees(pa.getReal())).
-                                  append("; raan: ").append(FastMath.toDegrees(raan.getReal())).
-                                  append("; v: ").append(FastMath.toDegrees(getTrueAnomaly().getReal())).
-                                  append(";}").toString();
+        return "Keplerian parameters: " + '{' +
+                "a: " + a.getReal() +
+                "; e: " + e.getReal() +
+                "; i: " + FastMath.toDegrees(i.getReal()) +
+                "; pa: " + FastMath.toDegrees(pa.getReal()) +
+                "; raan: " + FastMath.toDegrees(raan.getReal()) +
+                "; v: " + FastMath.toDegrees(getTrueAnomaly().getReal()) +
+                ";}";
     }
 
     /** {@inheritDoc} */
@@ -1640,8 +1549,7 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
     /** {@inheritDoc} */
     @Override
     public FieldKeplerianOrbit<T> withKeplerianRates() {
-        return new FieldKeplerianOrbit<>(getA(), getE(), getI(), getPerigeeArgument(), getRightAscensionOfAscendingNode(),
-                cachedAnomaly, cachedPositionAngleType, getFrame(), getDate(), getMu());
+        return new FieldKeplerianOrbit<>(getKeplerianParameters(), getFrame(), getDate(), getMu());
     }
 
     /** Check if the given parameter is within an acceptable range.
@@ -1669,13 +1577,11 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
     /** {@inheritDoc} */
     @Override
     public KeplerianOrbit toOrbit() {
-        final double cachedPositionAngle = cachedAnomaly.getReal();
-        return new KeplerianOrbit(a.getReal(), e.getReal(), i.getReal(),
-                                  pa.getReal(), raan.getReal(), cachedPositionAngle,
-                                  aDot.getReal(), eDot.getReal(), iDot.getReal(),
-                                  paDot.getReal(), raanDot.getReal(),
-                                  cachedAnomalyDot.getReal(),
-                                  cachedPositionAngleType, cachedPositionAngleType,
+        final KeplerianParameters elements = new KeplerianParameters(a.getReal(), e.getReal(), i.getReal(),
+                pa.getReal(), raan.getReal(), cachedAnomaly.getReal(), cachedPositionAngleType);
+        return new KeplerianOrbit(elements,
+                                  aDot.getReal(), eDot.getReal(), iDot.getReal(), paDot.getReal(), raanDot.getReal(),
+                                  cachedAnomalyDot.getReal(), cachedPositionAngleType,
                                   getFrame(), getDate().toAbsoluteDate(), getMu().getReal());
     }
 

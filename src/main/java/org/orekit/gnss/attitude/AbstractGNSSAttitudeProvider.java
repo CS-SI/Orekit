@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -140,7 +140,7 @@ abstract class AbstractGNSSAttitudeProvider implements GNSSAttitudeProvider {
         // the span to consider can only be the first span that is after date
         final SortedSet<TimeStamped> after = turns.tailSet(date);
         if (!after.isEmpty()) {
-            final TurnSpan ts = (TurnSpan) after.first();
+            final TurnSpan ts = (TurnSpan) after.getFirst();
             if (ts.inTurnTimeRange(date)) {
                 return ts;
             }
@@ -168,7 +168,7 @@ abstract class AbstractGNSSAttitudeProvider implements GNSSAttitudeProvider {
         final SortedSet<TimeStamped> after = sortedSet.tailSet(dateDouble);
         if (!after.isEmpty()) {
             @SuppressWarnings("unchecked")
-            final FieldTurnSpan<T> ts = (FieldTurnSpan<T>) after.first();
+            final FieldTurnSpan<T> ts = (FieldTurnSpan<T>) after.getFirst();
             if (ts.inTurnTimeRange(dateDouble)) {
                 return ts;
             }

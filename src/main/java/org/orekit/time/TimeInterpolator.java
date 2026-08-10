@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -33,9 +33,12 @@ public interface TimeInterpolator<T extends TimeStamped> {
 
     /**
      * Get an interpolated instance.
+     * <p>
+     * The stream must yield elements in chronological order. Passing an unsorted stream yields undefined
+     * neighbors and may throw {@link org.orekit.errors.TimeStampedCacheException}.
      *
      * @param interpolationDate interpolation date
-     * @param sample time stamped sample
+     * @param sample time stamped sample (chronologically sorted)
      *
      * @return a new instance, interpolated at specified date
      *
@@ -46,9 +49,12 @@ public interface TimeInterpolator<T extends TimeStamped> {
 
     /**
      * Get an interpolated instance.
+     * <p>
+     * The sample must be in chronological order. Passing an unsorted sample yields undefined neighbors and may
+     * throw {@link org.orekit.errors.TimeStampedCacheException}.
      *
      * @param interpolationDate interpolation date
-     * @param sample time stamped sample
+     * @param sample time stamped sample (chronologically sorted)
      *
      * @return a new instance, interpolated at specified date
      */

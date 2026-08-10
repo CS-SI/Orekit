@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,14 +19,18 @@ package org.orekit.estimation.measurements;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.hipparchus.analysis.differentiation.Gradient;
+import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** Abstract class handling measurements boilerplate.
  * @param <T> the type of the measurement
@@ -49,11 +53,8 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>> impl
     /** Observed value. */
     private double[] observed;
 
-    /** Theoretical standard deviation. */
-    private final double[] sigma;
-
-    /** Base weight. */
-    private final double[] baseWeight;
+    /** Measurement data. */
+    private final MeasurementQuality measurementQuality;
 
     /** Modifiers that apply to the measurement.*/
     private final List<EstimationModifier<T>> modifiers;
@@ -70,35 +71,12 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>> impl
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
      * @param satellites satellites related to this measurement
-     * @since 9.3
+     * @since 14.0
      */
     protected AbstractMeasurement(final AbsoluteDate date, final double observed,
                                   final double sigma, final double baseWeight,
                                   final List<ObservableSatellite> satellites) {
-
-        this.supportedParameters = new ArrayList<>();
-
-        // Add parameter drivers
-        satellites.forEach(s -> {
-            addParametersDrivers(s.getParametersDrivers());
-        });
-
-        this.date       = date;
-        this.observed   = new double[] {
-            observed
-        };
-        this.sigma      = new double[] {
-            sigma
-        };
-        this.baseWeight = new double[] {
-            baseWeight
-        };
-
-        this.satellites = satellites;
-
-        this.modifiers = new ArrayList<>();
-        setEnabled(true);
-
+        this(date, new double[] {observed}, new double[] {sigma}, new double[] {baseWeight}, satellites);
     }
 
     /** Simple constructor, for multi-dimensional measurements.
@@ -110,23 +88,42 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>> impl
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
      * @param satellites satellites related to this measurement
-     * @since 9.3
+     * @since 14.0
      */
     protected AbstractMeasurement(final AbsoluteDate date, final double[] observed,
                                   final double[] sigma, final double[] baseWeight,
                                   final List<ObservableSatellite> satellites) {
+        this(date, observed, new MeasurementQuality(sigma, baseWeight), satellites);
+    }
+
+    /** Simple constructor, for multi-dimensional measurements.
+     * <p>
+     * At construction, a measurement is enabled.
+     * </p>
+     * @param date date of the measurement
+     * @param observed observed value
+     * @param measurementQuality measurement quality data
+     * @param satellites satellites related to this measurement
+     * @since 14.0
+     */
+    protected AbstractMeasurement(final AbsoluteDate date, final double[] observed,
+                                  final MeasurementQuality measurementQuality,
+                                  final List<ObservableSatellite> satellites) {
+        if (measurementQuality.getDimension() != observed.length) {
+            throw new OrekitException(LocalizedCoreFormats.DIMENSIONS_MISMATCH, measurementQuality.getDimension(), observed.length);
+        }
         this.supportedParameters = new ArrayList<>();
 
         this.date       = date;
         this.observed   = observed.clone();
-        this.sigma      = sigma.clone();
-        this.baseWeight = baseWeight.clone();
-
+        this.measurementQuality = measurementQuality;
         this.satellites = satellites;
+
+        // Add parameter drivers
+        satellites.forEach(s -> addParametersDrivers(s.getParametersDrivers()));
 
         this.modifiers = new ArrayList<>();
         setEnabled(true);
-
     }
 
     /** {@inheritDoc} */
@@ -173,20 +170,8 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>> impl
 
     /** {@inheritDoc} */
     @Override
-    public int getDimension() {
-        return observed.length;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public double[] getTheoreticalStandardDeviation() {
-        return sigma.clone();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public double[] getBaseWeight() {
-        return baseWeight.clone();
+    public MeasurementQuality getMeasurementQuality() {
+        return measurementQuality;
     }
 
     /** {@inheritDoc} */
@@ -210,9 +195,31 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>> impl
     protected EstimatedMeasurementBase<T> theoreticalEvaluationWithoutDerivatives(final int iteration,
                                                                                   final int evaluation,
                                                                                   final SpacecraftState[] states) {
+        return theoreticalEvaluationWithoutDerivatives(iteration, evaluation, states, true);
+    }
+
+    /** Estimate the theoretical value without derivatives.
+     * The default implementation uses the computation with derivatives and ought to be overwritten for performance.
+     * <p>
+     * The theoretical value does not have <em>any</em> modifiers applied.
+     * </p>
+     * @param iteration iteration number
+     * @param evaluation evaluation number
+     * @param states orbital states at measurement date
+     * @param fillParticipants flag to compute and store participants dynamical states at measurement date and along signal path if applicable
+     * @return theoretical value
+     * @see #estimate(int, int, SpacecraftState[])
+     * @since 14.0
+     */
+    protected EstimatedMeasurementBase<T> theoreticalEvaluationWithoutDerivatives(final int iteration,
+                                                                                  final int evaluation,
+                                                                                  final SpacecraftState[] states,
+                                                                                  final boolean fillParticipants) {
         final EstimatedMeasurement<T> estimatedMeasurement = theoreticalEvaluation(iteration, evaluation, states);
+        final TimeStampedPVCoordinates[] participants = fillParticipants ? estimatedMeasurement.getParticipants() :
+                new TimeStampedPVCoordinates[0];
         final EstimatedMeasurementBase<T> estimatedMeasurementBase = new EstimatedMeasurementBase<>(estimatedMeasurement.getObservedMeasurement(),
-                iteration, evaluation, states, estimatedMeasurement.getParticipants());
+                iteration, evaluation, states, participants);
         estimatedMeasurementBase.setEstimatedValue(estimatedMeasurement.getEstimatedValue());
         estimatedMeasurementBase.setStatus(estimatedMeasurement.getStatus());
         return estimatedMeasurementBase;
@@ -230,12 +237,19 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>> impl
      */
     protected abstract EstimatedMeasurement<T> theoreticalEvaluation(int iteration, int evaluation, SpacecraftState[] states);
 
-    /** {@inheritDoc} */
+    /** {@inheritDoc}
+     * <p>
+     * For the sake of computational performance, the output will contain the participant's states only if at least
+     * one measurement modifier explicitly requires it (note that the estimated states can still be accessed {@link EstimatedMeasurementBase#getStates()}).
+     * </p>
+     */
     @Override
-    public EstimatedMeasurementBase<T> estimateWithoutDerivatives(final int iteration, final int evaluation, final SpacecraftState[] states) {
+    public EstimatedMeasurementBase<T> estimateWithoutDerivatives(final int iteration, final int evaluation,
+                                                                  final SpacecraftState[] states) {
 
         // compute the theoretical value
-        final EstimatedMeasurementBase<T> estimation = theoreticalEvaluationWithoutDerivatives(iteration, evaluation, states);
+        final boolean fillParticipants = modifiers.stream().anyMatch(EstimationModifier::dependsOnParticipantsStates);
+        final EstimatedMeasurementBase<T> estimation = theoreticalEvaluationWithoutDerivatives(iteration, evaluation, states, fillParticipants);
 
         // apply the modifiers
         for (final EstimationModifier<T> modifier : modifiers) {
@@ -335,6 +349,16 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>> impl
 
         return new TimeStampedFieldPVCoordinates<>(state.getDate(), pDS, vDS, aDS);
 
+    }
+
+    /**
+     * Form the mapping between parameters' names and derivatives' indices.
+     * @param states observables
+     * @return map
+     * @since 14.0
+     */
+    protected Map<String, Integer> getParameterIndices(final SpacecraftState[] states) {
+        return Observer.getParameterIndices(states, getParametersDrivers());
     }
 
 }

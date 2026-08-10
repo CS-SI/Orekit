@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -251,8 +251,18 @@ public abstract class AbstractGenerator implements Generator {
     @Override
     public String dateToCalendarString(final TimeConverter converter, final AbsoluteDate date) {
         final DateTimeComponents dt = converter.components(date);
-        return dateToString(dt.getDate().getYear(), dt.getDate().getMonth(), dt.getDate().getDay(),
-                            dt.getTime().getHour(), dt.getTime().getMinute(), dt.getTime().getSecond());
+        return dateToString(dt);
+    }
+
+    /**
+     * Convert a date to string value with high precision (attosecond accuracy).
+     * @param dt date and time components to write
+     * @return date as a string
+     * @since 13.1.6
+     */
+    @Override
+    public String dateToString(final DateTimeComponents dt) {
+        return formatter.toString(dt);
     }
 
     /** {@inheritDoc} */

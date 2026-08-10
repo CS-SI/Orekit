@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -135,7 +135,7 @@ public abstract class AbstractSingleFrequencyCombination implements MeasurementC
 
         // Combined observation data
         return new CombinedObservationData(combinedValue, f,
-                                           CombinationType.PHASE_MINUS_CODE, MeasurementType.COMBINED_RANGE_PHASE,
+                                           type, MeasurementType.COMBINED_RANGE_PHASE,
                                            Arrays.asList(phase, pseudoRange));
     }
 

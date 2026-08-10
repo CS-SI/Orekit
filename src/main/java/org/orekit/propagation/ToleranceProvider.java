@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -93,7 +93,6 @@ public interface ToleranceProvider extends CartesianToleranceProvider {
     /**
      * Build a provider based on a tolerance provider for Cartesian coordinates.
      * <p> Orbits Jacobian matrices are used to get consistent errors on orbital parameters.
-     * <p>
      *
      * @param cartesianToleranceProvider tolerance provider dedicated to Cartesian propagation
      * @return tolerance provider

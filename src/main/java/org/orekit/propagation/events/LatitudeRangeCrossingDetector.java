@@ -1,4 +1,4 @@
-/* Copyright 2023-2025 Alberto Ferrero
+/* Copyright 2023-2026 Alberto Ferrero
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,8 +18,8 @@ package org.orekit.propagation.events;
 
 import org.hipparchus.util.FastMath;
 import org.orekit.bodies.BodyShape;
-import org.orekit.bodies.GeodeticPoint;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.functions.AbstractGeodeticEventFunction;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnDecreasing;
 
@@ -37,11 +37,6 @@ public class LatitudeRangeCrossingDetector extends AbstractGeographicalDetector<
 
     /** Fixed latitude to be crossed, upper boundary in radians. */
     private final double toLatitude;
-
-    /**
-     * Sign, to get reversed inclusion latitude range (lower > upper).
-     */
-    private final double sign;
 
     /** Build a new detector.
      * <p>The new instance uses default values for maximal checking interval
@@ -84,10 +79,10 @@ public class LatitudeRangeCrossingDetector extends AbstractGeographicalDetector<
     protected LatitudeRangeCrossingDetector(final EventDetectionSettings detectionSettings,
                                             final EventHandler handler,
                                             final BodyShape body, final double fromLatitude, final double toLatitude) {
-        super(detectionSettings, handler, body);
+        super(new LocalEventFunction(body, FastMath.min(fromLatitude, toLatitude), FastMath.max(fromLatitude, toLatitude)),
+                detectionSettings, handler, body);
         this.fromLatitude = fromLatitude;
         this.toLatitude = toLatitude;
-        this.sign = FastMath.signum(toLatitude - fromLatitude);
     }
 
     /** {@inheritDoc} */
@@ -121,17 +116,30 @@ public class LatitudeRangeCrossingDetector extends AbstractGeographicalDetector<
      * @return positive if spacecraft inside the range
      */
     public double g(final SpacecraftState s) {
-
-        // convert state to geodetic coordinates
-        final GeodeticPoint gp = getBodyShape().transform(s.getPVCoordinates().getPosition(),
-            s.getFrame(), s.getDate());
-
-        // point latitude
-        final double latitude = gp.getLatitude();
-
-        // inside or outside latitude range
-        return sign * (latitude - fromLatitude) * (toLatitude - latitude);
-
+        return getEventFunction().value(s);
     }
 
+    /**
+     * Local event function.
+     * @since 14.0
+     */
+    private static class LocalEventFunction extends AbstractGeodeticEventFunction {
+
+        /** Lower bound latitude. */
+        private final double minLatitude;
+        /** Upper bound latitude. */
+        private final double maxLatitude;
+
+        LocalEventFunction(final BodyShape body, final double minLatitude, final double maxLatitude) {
+            super(body);
+            this.minLatitude = minLatitude;
+            this.maxLatitude = maxLatitude;
+        }
+
+        @Override
+        public double value(final SpacecraftState state) {
+            final double latitude = transformToGeodeticPoint(state).getLatitude();
+            return (latitude - minLatitude) * (maxLatitude - latitude);
+        }
+    }
 }

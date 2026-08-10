@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,14 +24,11 @@ import org.hipparchus.util.FastMath;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.intervals.AdaptableInterval;
+import org.orekit.propagation.events.functions.EventFunction;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.EventDetectionSettings;
-import org.orekit.propagation.events.intervals.FieldAdaptableInterval;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.events.FieldEventDetectionSettings;
-import org.orekit.propagation.events.handlers.EventHandler;
-import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.handlers.FieldResetDerivativesOnEvent;
 import org.orekit.propagation.events.handlers.ResetDerivativesOnEvent;
 import org.orekit.time.AbsoluteDate;
@@ -178,75 +175,107 @@ public class ConicallyShadowedLightFluxModel extends AbstractSolarLightFluxModel
     /** {@inheritDoc} */
     @Override
     protected double getLightingRatio(final Vector3D position, final Vector3D occultedBodyPosition) {
-        final double distanceSun = occultedBodyPosition.getNorm();
-        final double squaredDistance = position.getNorm2Sq();
-        final Vector3D occultedBodyDirection = occultedBodyPosition.normalize();
-        final double s0 = -position.dotProduct(occultedBodyDirection);
-        if (s0 > 0.0) {
-            final double l = FastMath.sqrt(squaredDistance - s0 * s0);
-            final double sinf2 = (occultedBodyRadius - getOccultingBodyRadius()) / distanceSun;
-            final double l2 = (s0 * sinf2 - getOccultingBodyRadius()) / FastMath.sqrt(1.0 - sinf2 * sinf2);
-            if (FastMath.abs(l2) - l >= 0.0) { // umbra
-                return 0.;
-            }
-            final double sinf1 = (occultedBodyRadius + getOccultingBodyRadius()) / distanceSun;
-            final double l1 = (s0 * sinf1 + getOccultingBodyRadius()) / FastMath.sqrt(1.0 - sinf1 * sinf1);
-            if (l1 - l > 0.0) { // penumbra
-                final Vector3D relativePosition = occultedBodyPosition.subtract(position);
-                final double relativeDistance = relativePosition.getNorm();
-                final double a = FastMath.asin(occultedBodyRadius / relativeDistance);
-                final double a2 = a * a;
-                final double r = FastMath.sqrt(squaredDistance);
-                final double b = FastMath.asin(getOccultingBodyRadius() / r);
-                final double c = FastMath.acos(-(relativePosition.dotProduct(position)) / (r * relativeDistance));
-                final double x = (c * c + a2 - b * b) / (2 * c);
-                final double y = FastMath.sqrt(FastMath.max(0., a2 - x * x));
-                final double arcCosXOverA = FastMath.acos(FastMath.max(-1, x / a));
-                final double intermediate = (arcCosXOverA + (b * b * FastMath.acos((c - x) / b) - c * y) / a2) / FastMath.PI;
-                return 1. - intermediate;
-            }
+        // See Section 3.4.2, Figure 3.8
+        final double occultingBodyRadius = getOccultingBodyRadius();
+        final Vector3D relativePosition = occultedBodyPosition.subtract(position);
+        final double relativeDistance = relativePosition.getNorm();
+        final double a = FastMath.asin(occultedBodyRadius / relativeDistance);
+        final double a2 = a * a;
+        final double r = position.getNorm();
+        final double b = FastMath.asin(occultingBodyRadius / r);
+        final double b2 = b * b;
+        final double c = Vector3D.angle(relativePosition.negate(), position);
+        final double c2 = c * c;
+        if (a + b <= c) {
+            // no occultation
+            return 1.0;
         }
-        return 1.;
+        if (a <= b && c + a <= b) {
+            // may have total eclipse and in umbra
+            return 0.0;
+        }
+        if (a >= b && c + b <= a) {
+            // occulting body too small for total eclipse
+            // and maximally eclipsed
+            // simple ratio of areas
+            return 1.0 - b2 / a2;
+        }
+        final double x = (c2 + a2 - b2) / (2 * c);
+        final double x2 = x * x;
+        // expression for (c - x), i.e. BE in Fig 3.8. See #1892
+        final double cMinusX = (c2 + b2 - a2) / (2 * c);
+        final double y = FastMath.sqrt(FastMath.max(0., a2 - x2));
+        // ref Figure 3.8
+        final double alpha = FastMath.atan2(y, x);
+        final double beta = FastMath.atan2(y, cMinusX);
+        // because a, b, c are sides of a triangle, which is verified by the
+        // three if's above, every expression in ( ... ) must be positive.
+        final double triangleArea2 =
+                (-c + a + b) * (c + a - b) * (c - a + b) * (c + a + b) / 4;
+        // equivalent to c*y, see #1892
+        final double triangleArea = FastMath.sqrt(triangleArea2);
+        final double intermediate =
+                (alpha + (b2 * beta - triangleArea) / a2) / FastMath.PI;
+        return 1. - intermediate;
     }
 
     /** {@inheritDoc} */
     @Override
-    protected <T extends CalculusFieldElement<T>> T getLightingRatio(final FieldVector3D<T> position,
-                                                                     final FieldVector3D<T> occultedBodyPosition) {
+    protected <T extends CalculusFieldElement<T>> T getLightingRatio(
+            final FieldVector3D<T> position,
+            final FieldVector3D<T> occultedBodyPosition) {
+
         final Field<T> field = position.getX().getField();
-        final T distanceSun = occultedBodyPosition.getNorm();
-        final T squaredDistance = position.getNorm2Sq();
-        final FieldVector3D<T> occultedBodyDirection = occultedBodyPosition.normalize();
-        final T s0 = position.dotProduct(occultedBodyDirection).negate();
-        if (s0.getReal() > 0.0) {
-            final T reciprocalDistanceSun = distanceSun.reciprocal();
-            final T sinf2 = reciprocalDistanceSun.multiply(occultedBodyRadius - getOccultingBodyRadius());
-            final T l2 = (s0.multiply(sinf2).subtract(getOccultingBodyRadius())).divide(FastMath.sqrt(sinf2.square().negate().add(1)));
-            final T l = FastMath.sqrt(squaredDistance.subtract(s0.square()));
-            if (FastMath.abs(l2).subtract(l).getReal() >= 0.0) { // umbra
-                return field.getZero();
-            }
-            final T sinf1 = reciprocalDistanceSun.multiply(occultedBodyRadius + getOccultingBodyRadius());
-            final T l1 = (s0.multiply(sinf1).add(getOccultingBodyRadius())).divide(FastMath.sqrt(sinf1.square().negate().add(1)));
-            if (l1.subtract(l).getReal() > 0.0) { // penumbra
-                final FieldVector3D<T> relativePosition = occultedBodyPosition.subtract(position);
-                final T relativeDistance = relativePosition.getNorm();
-                final T a = FastMath.asin(relativeDistance.reciprocal().multiply(occultedBodyRadius));
-                final T a2 = a.square();
-                final T r = FastMath.sqrt(squaredDistance);
-                final T b = FastMath.asin(r.reciprocal().multiply(getOccultingBodyRadius()));
-                final T b2 = b.square();
-                final T c = FastMath.acos((relativePosition.dotProduct(position).negate()).divide(r.multiply(relativeDistance)));
-                final T x = (c.square().add(a2).subtract(b2)).divide(c.multiply(2));
-                final T x2 = x.square();
-                final T y = (a2.getReal() - x2.getReal() <= 0) ? s0.getField().getZero() : FastMath.sqrt(a2.subtract(x2));
-                final T arcCosXOverA = (x.getReal() / a.getReal() < -1) ? s0.getPi().negate() : FastMath.acos(x.divide(a));
-                final T intermediate = arcCosXOverA.add(((b2.multiply(FastMath.acos((c.subtract(x)).divide(b))))
-                        .subtract(c.multiply(y))).divide(a2));
-                return intermediate.divide(-FastMath.PI).add(1);
-            }
+        final T zero = field.getZero();
+        final T one = field.getOne();
+
+        // See Section 3.4.2, Figure 3.8
+        final T occultingBodyRadius = zero.add(getOccultingBodyRadius());
+        final FieldVector3D<T> relativePosition =
+                occultedBodyPosition.subtract(position);
+        final T relativeDistance = relativePosition.getNorm();
+        final T a = zero.add(occultedBodyRadius).divide(relativeDistance).asin();
+        final T a2 = a.square();
+        final T r = position.getNorm();
+        final T b = occultingBodyRadius.divide(r).asin();
+        final T b2 = b.square();
+        final T c = FieldVector3D.angle(relativePosition.negate(), position);
+        final T c2 = c.square();
+        if (a.add(b).getReal() <= c.getReal()) {
+            // no occultation
+            return one;
         }
-        return field.getOne();
+        if (a.getReal() <= b.getReal() && c.add(a).getReal() <= b.getReal()) {
+            // may have total eclipse and in umbra
+            return zero;
+        }
+        if (a.getReal() >= b.getReal() && c.add(b).getReal() <= a.getReal()) {
+            // occulting body too small for total eclipse
+            // and maximally eclipsed
+            // simple ratio of areas
+            return one.subtract(b2.divide(a2));
+        }
+        final T x = c2.add(a2).subtract(b2).divide(c.multiply(2));
+        final T x2 = x.square();
+        // expression for (c - x), i.e. BE in Fig 3.8. See #1892
+        final T cMinusX = c2.add(b2).subtract(a2).divide(c.multiply(2));
+        final T y = FastMath.sqrt(FastMath.max(zero, a2.subtract(x2)));
+        // ref Figure 3.8
+        final T alpha = FastMath.atan2(y, x);
+        final T beta = FastMath.atan2(y, cMinusX);
+        // because a, b, c are sides of a triangle, which is verified by the
+        // three if's above, every expression in ( ... ) must be positive.
+        final T triangleArea2 = c.negate().add(a).add(b)
+                .multiply(c.add(a).subtract(b))
+                .multiply(c.subtract(a).add(b))
+                .multiply(c.add(a).add(b))
+                .divide(4);
+        // equivalent to c*y, see #1892
+        final T triangleArea = FastMath.sqrt(triangleArea2);
+        final T intermediate = alpha
+                .add(b2.multiply(beta).subtract(triangleArea).divide(a2))
+                .divide(FastMath.PI);
+        return one.subtract(intermediate);
     }
 
     /** {@inheritDoc} */
@@ -262,83 +291,79 @@ public class ConicallyShadowedLightFluxModel extends AbstractSolarLightFluxModel
      * Method to create a new umbra detector.
      * @return detector
      */
-    private InternalEclipseDetector createUmbraEclipseDetector() {
-        return new InternalEclipseDetector() {
-            @Override
-            public double g(final SpacecraftState s) {
-                final Vector3D position = s.getPosition();
-                final Vector3D occultedBodyPosition = getOccultedBodyPosition(s.getDate());
-                final Vector3D occultedBodyDirection = occultedBodyPosition.normalize();
-                final double s0 = -position.dotProduct(occultedBodyDirection);
-                final double distanceSun = occultedBodyPosition.getNorm();
-                final double squaredDistance = position.getNorm2Sq();
-                final double sinf2 = (occultedBodyRadius - getOccultingBodyRadius()) / distanceSun;
-                final double l = FastMath.sqrt(squaredDistance - s0 * s0);
-                final double l2 = (s0 * sinf2 - getOccultingBodyRadius()) / FastMath.sqrt(1.0 - sinf2 * sinf2);
-                return FastMath.abs(l2) / l - 1.;
-            }
-        };
+    private EventDetector createUmbraEclipseDetector() {
+        return EventDetector.of(new UmbraEclipseFunction(), new ResetDerivativesOnEvent(), getEventDetectionSettings());
     }
 
     /**
      * Method to create a new penumbra detector.
      * @return detector
      */
-    private InternalEclipseDetector createPenumbraEclipseDetector() {
-        return new InternalEclipseDetector() {
-            @Override
-            public double g(final SpacecraftState s) {
-                final Vector3D position = s.getPosition();
-                final Vector3D occultedBodyPosition = getOccultedBodyPosition(s.getDate());
-                final Vector3D occultedBodyDirection = occultedBodyPosition.normalize();
-                final double s0 = -position.dotProduct(occultedBodyDirection);
-                final double distanceSun = occultedBodyPosition.getNorm();
-                final double squaredDistance = position.getNorm2Sq();
-                final double l = FastMath.sqrt(squaredDistance - s0 * s0);
-                final double sinf1 = (occultedBodyRadius + getOccultingBodyRadius()) / distanceSun;
-                final double l1 = (s0 * sinf1 + getOccultingBodyRadius()) / FastMath.sqrt(1.0 - sinf1 * sinf1);
-                return l1 / l - 1.;
-            }
-        };
+    private EventDetector createPenumbraEclipseDetector() {
+        return EventDetector.of(new PenumbraEclipseFunction(), new ResetDerivativesOnEvent(), getEventDetectionSettings());
     }
 
-    /**
-     * Internal class for event detector.
-     */
-    private abstract class InternalEclipseDetector implements EventDetector {
-        /** Event handler. */
-        private final ResetDerivativesOnEvent handler;
+    private class PenumbraEclipseFunction implements EventFunction {
 
-        /**
-         * Constructor.
-         */
-        InternalEclipseDetector() {
-            this.handler = new ResetDerivativesOnEvent();
+        @Override
+        public double value(final SpacecraftState s) {
+            final Vector3D position = s.getPosition();
+            final Vector3D occultedBodyPosition = getOccultedBodyPosition(s.getDate());
+            final Vector3D occultedBodyDirection = occultedBodyPosition.normalize();
+            final double s0 = -position.dotProduct(occultedBodyDirection);
+            final double distanceSun = occultedBodyPosition.getNorm();
+            final double squaredDistance = position.getNorm2Sq();
+            final double l = FastMath.sqrt(squaredDistance - s0 * s0);
+            final double sinf1 = (occultedBodyRadius + getOccultingBodyRadius()) / distanceSun;
+            final double l1 = (s0 * sinf1 + getOccultingBodyRadius()) / FastMath.sqrt(1.0 - sinf1 * sinf1);
+            return l1 / l - 1.;
         }
 
         @Override
-        public EventDetectionSettings getDetectionSettings() {
-            return getEventDetectionSettings();
+        public <T extends CalculusFieldElement<T>> T value(final FieldSpacecraftState<T> fieldState) {
+            final FieldVector3D<T> position = fieldState.getPosition();
+            final FieldVector3D<T> occultedBodyPosition = getOccultedBodyPosition(fieldState.getDate());
+            final FieldVector3D<T> occultedBodyDirection = occultedBodyPosition.normalize();
+            final T s0 = position.dotProduct(occultedBodyDirection).negate();
+            final T distanceSun = occultedBodyPosition.getNorm();
+            final T squaredDistance = position.getNorm2Sq();
+            final T reciprocalDistanceSun = distanceSun.reciprocal();
+            final T sinf1 = reciprocalDistanceSun.multiply(occultedBodyRadius + getOccultingBodyRadius());
+            final T l1 = (s0.multiply(sinf1).add(getOccultingBodyRadius())).divide(FastMath.sqrt(sinf1.square().negate().add(1)));
+            final T l = FastMath.sqrt(squaredDistance.subtract(s0.square()));
+            return l1.divide(l).subtract(1);
+        }
+    }
+
+    private class UmbraEclipseFunction implements EventFunction {
+
+        @Override
+        public double value(final SpacecraftState state) {
+            final Vector3D position = state.getPosition();
+            final Vector3D occultedBodyPosition = getOccultedBodyPosition(state.getDate());
+            final Vector3D occultedBodyDirection = occultedBodyPosition.normalize();
+            final double s0 = -position.dotProduct(occultedBodyDirection);
+            final double distanceSun = occultedBodyPosition.getNorm();
+            final double squaredDistance = position.getNorm2Sq();
+            final double sinf2 = (occultedBodyRadius - getOccultingBodyRadius()) / distanceSun;
+            final double l = FastMath.sqrt(squaredDistance - s0 * s0);
+            final double l2 = (s0 * sinf2 - getOccultingBodyRadius()) / FastMath.sqrt(1.0 - sinf2 * sinf2);
+            return FastMath.abs(l2) / l - 1.;
         }
 
         @Override
-        public double getThreshold() {
-            return getDetectionSettings().getThreshold();
-        }
-
-        @Override
-        public AdaptableInterval getMaxCheckInterval() {
-            return getDetectionSettings().getMaxCheckInterval();
-        }
-
-        @Override
-        public int getMaxIterationCount() {
-            return getDetectionSettings().getMaxIterationCount();
-        }
-
-        @Override
-        public EventHandler getHandler() {
-            return handler;
+        public <T extends CalculusFieldElement<T>> T value(final FieldSpacecraftState<T> fieldState) {
+            final FieldVector3D<T> position = fieldState.getPosition();
+            final FieldVector3D<T> occultedBodyPosition = getOccultedBodyPosition(fieldState.getDate());
+            final FieldVector3D<T> occultedBodyDirection = occultedBodyPosition.normalize();
+            final T s0 = position.dotProduct(occultedBodyDirection).negate();
+            final T distanceSun = occultedBodyPosition.getNorm();
+            final T squaredDistance = position.getNorm2Sq();
+            final T reciprocalDistanceSun = distanceSun.reciprocal();
+            final T sinf2 = reciprocalDistanceSun.multiply(occultedBodyRadius - getOccultingBodyRadius());
+            final T l2 = (s0.multiply(sinf2).subtract(getOccultingBodyRadius())).divide(FastMath.sqrt(sinf2.square().negate().add(1)));
+            final T l = FastMath.sqrt(squaredDistance.subtract(s0.square()));
+            return FastMath.abs(l2).divide(l).subtract(1);
         }
     }
 
@@ -359,23 +384,8 @@ public class ConicallyShadowedLightFluxModel extends AbstractSolarLightFluxModel
      * @param <T> field type
      * @return detector
      */
-    private <T extends CalculusFieldElement<T>> FieldInternalEclipseDetector<T> createFieldUmbraEclipseDetector(final FieldEventDetectionSettings<T> detectionSettings) {
-        return new FieldInternalEclipseDetector<T>(detectionSettings) {
-            @Override
-            public T g(final FieldSpacecraftState<T> s) {
-                final FieldVector3D<T> position = s.getPosition();
-                final FieldVector3D<T> occultedBodyPosition = getOccultedBodyPosition(s.getDate());
-                final FieldVector3D<T> occultedBodyDirection = occultedBodyPosition.normalize();
-                final T s0 = position.dotProduct(occultedBodyDirection).negate();
-                final T distanceSun = occultedBodyPosition.getNorm();
-                final T squaredDistance = position.getNorm2Sq();
-                final T reciprocalDistanceSun = distanceSun.reciprocal();
-                final T sinf2 = reciprocalDistanceSun.multiply(occultedBodyRadius - getOccultingBodyRadius());
-                final T l2 = (s0.multiply(sinf2).subtract(getOccultingBodyRadius())).divide(FastMath.sqrt(sinf2.square().negate().add(1)));
-                final T l = FastMath.sqrt(squaredDistance.subtract(s0.square()));
-                return FastMath.abs(l2).divide(l).subtract(1);
-            }
-        };
+    private <T extends CalculusFieldElement<T>> FieldEventDetector<T> createFieldUmbraEclipseDetector(final FieldEventDetectionSettings<T> detectionSettings) {
+        return FieldEventDetector.of(new UmbraEclipseFunction(), new FieldResetDerivativesOnEvent<>(), detectionSettings);
     }
 
     /**
@@ -384,67 +394,8 @@ public class ConicallyShadowedLightFluxModel extends AbstractSolarLightFluxModel
      * @param <T> field type
      * @return detector
      */
-    private <T extends CalculusFieldElement<T>> FieldInternalEclipseDetector<T> createFieldPenumbraEclipseDetector(final FieldEventDetectionSettings<T> detectionSettings) {
-        return new FieldInternalEclipseDetector<T>(detectionSettings) {
-            @Override
-            public T g(final FieldSpacecraftState<T> s) {
-                final FieldVector3D<T> position = s.getPosition();
-                final FieldVector3D<T> occultedBodyPosition = getOccultedBodyPosition(s.getDate());
-                final FieldVector3D<T> occultedBodyDirection = occultedBodyPosition.normalize();
-                final T s0 = position.dotProduct(occultedBodyDirection).negate();
-                final T distanceSun = occultedBodyPosition.getNorm();
-                final T squaredDistance = position.getNorm2Sq();
-                final T reciprocalDistanceSun = distanceSun.reciprocal();
-                final T sinf1 = reciprocalDistanceSun.multiply(occultedBodyRadius + getOccultingBodyRadius());
-                final T l1 = (s0.multiply(sinf1).add(getOccultingBodyRadius())).divide(FastMath.sqrt(sinf1.square().negate().add(1)));
-                final T l = FastMath.sqrt(squaredDistance.subtract(s0.square()));
-                return l1.divide(l).subtract(1);
-            }
-        };
+    private <T extends CalculusFieldElement<T>> FieldEventDetector<T> createFieldPenumbraEclipseDetector(final FieldEventDetectionSettings<T> detectionSettings) {
+        return FieldEventDetector.of(new PenumbraEclipseFunction(), new FieldResetDerivativesOnEvent<>(), detectionSettings);
     }
 
-    /**
-     * Internal class for event detector.
-     */
-    private abstract static class FieldInternalEclipseDetector<T extends CalculusFieldElement<T>> implements FieldEventDetector<T> {
-        /** Event handler. */
-        private final FieldResetDerivativesOnEvent<T> handler;
-
-        /** Detection settings. */
-        private final FieldEventDetectionSettings<T> fieldEventDetectionSettings;
-
-        /**
-         * Constructor.
-         * @param fieldEventDetectionSettings detection settings
-         */
-        FieldInternalEclipseDetector(final FieldEventDetectionSettings<T> fieldEventDetectionSettings) {
-            this.handler = new FieldResetDerivativesOnEvent<>();
-            this.fieldEventDetectionSettings = fieldEventDetectionSettings;
-        }
-
-        @Override
-        public FieldEventDetectionSettings<T> getDetectionSettings() {
-            return fieldEventDetectionSettings;
-        }
-
-        @Override
-        public T getThreshold() {
-            return getDetectionSettings().getThreshold();
-        }
-
-        @Override
-        public FieldAdaptableInterval<T> getMaxCheckInterval() {
-            return getDetectionSettings().getMaxCheckInterval();
-        }
-
-        @Override
-        public int getMaxIterationCount() {
-            return getDetectionSettings().getMaxIterationCount();
-        }
-
-        @Override
-        public FieldEventHandler<T> getHandler() {
-            return handler;
-        }
-    }
 }

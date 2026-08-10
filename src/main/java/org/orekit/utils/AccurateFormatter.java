@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,6 +17,7 @@
 package org.orekit.utils;
 
 import org.hipparchus.util.RyuDouble;
+import org.orekit.time.DateTimeComponents;
 
 /** Formatter used to produce strings from data with high accuracy.
  * <p>
@@ -67,4 +68,16 @@ public class AccurateFormatter implements Formatter {
                              hour, minute, s.charAt(1) == '.' ? "0" + s : s);
     }
 
+    /**
+     * Format date time components to make use of attosecond accuracy from {@link org.orekit.time.TimeOffset}.
+     * It relies on the {@link DateTimeComponents#toStringWithoutUtcOffset()} method to display date time.
+     *
+     * @param dt date time components to be formatted
+     * @return date formatted to match the following format [yyyy-MM-ddTHH:mm:ss.S#]
+     * @since 13.1.6
+     */
+    @Override
+    public String toString(final DateTimeComponents dt) {
+        return dt.toStringWithoutUtcOffset();
+    }
 }

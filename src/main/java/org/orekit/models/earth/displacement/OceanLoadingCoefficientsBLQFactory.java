@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -147,7 +147,7 @@ public class OceanLoadingCoefficientsBLQFactory extends AbstractSelfFeedingLoade
 
         final Optional<OceanLoadingCoefficients> optional =
                         coefficients.stream().filter(c -> c.getSiteName().equalsIgnoreCase(site)).findFirst();
-        if (!optional.isPresent()) {
+        if (optional.isEmpty()) {
             throw new OrekitException(OrekitMessages.STATION_NOT_FOUND,
                                       site,
                                       String.join(", ", getSites()));

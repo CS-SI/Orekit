@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,12 +21,14 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeStamped;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.SortedSet;
 
 /**
  * Abstract class for solar activity data loader.
  *
+ * @param <L> type of the line parameters
  * @author Vincent Cucchietti
  * @since 12.0
  */
@@ -95,6 +97,7 @@ public abstract class AbstractSolarActivityDataLoader<L extends AbstractSolarAct
     public abstract static class LineParameters implements TimeStamped, Comparable<LineParameters>, Serializable {
 
         /** Serializable UID. */
+        @Serial
         private static final long serialVersionUID = 6607862001953526475L;
 
         /** Entry date. */
@@ -126,7 +129,9 @@ public abstract class AbstractSolarActivityDataLoader<L extends AbstractSolarAct
         @Override
         public abstract int hashCode();
 
-        /** @return entry date */
+        /** Get the date of the entry.
+         * @return entry date
+         */
         @Override
         public AbsoluteDate getDate() {
             return date;

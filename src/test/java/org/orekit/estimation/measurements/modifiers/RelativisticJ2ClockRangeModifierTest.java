@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -38,19 +38,17 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedPVCoordinates;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
-import java.util.Arrays;
 
-
-/**
+/** test for RelativisticJ2ClockRangeModifier.
  * Check against prediction in
- *
  * "Springer Handbook oƒ Global Navigation Satellite Systems, Teunissen, Montenbruck"
- *
  * An approximate value is given in terms of delay for Galileo satellites.
  * As these satellites are close to GPS satellites, we consider the delays to be
  * of the same order, namely around 62ps.
- *
  * The values produced by the modifiers are translated in terms of delay and checked against
  * the approximate value.
  */
@@ -76,16 +74,7 @@ public class RelativisticJ2ClockRangeModifierTest {
         final SpacecraftState state = new SpacecraftState(new CartesianOrbit(satPV, FramesFactory.getEME2000(), Constants.WGS84_EARTH_MU));
 
         // Set reference date to station drivers
-        for (ParameterDriver driver : Arrays.asList(station.getClockOffsetDriver(),
-                                                    station.getEastOffsetDriver(),
-                                                    station.getNorthOffsetDriver(),
-                                                    station.getZenithOffsetDriver(),
-                                                    station.getPrimeMeridianOffsetDriver(),
-                                                    station.getPrimeMeridianDriftDriver(),
-                                                    station.getPolarOffsetXDriver(),
-                                                    station.getPolarDriftXDriver(),
-                                                    station.getPolarOffsetYDriver(),
-                                                    station.getPolarDriftYDriver())) {
+        for (ParameterDriver driver : station.getParametersDrivers()) {
             if (driver.getReferenceDate() == null) {
                 driver.setReferenceDate(state.getDate());
             }
@@ -119,7 +108,7 @@ public class RelativisticJ2ClockRangeModifierTest {
     }
 
     @Test
-    /**
+    /*
      * Testing if the 2 way case is taken into account in the computation of the delay.
      * This has the effect of shifting the index from 0 to 1 for the selected PV coordinates
      * to get the emitter's parameters and not the station's.
@@ -141,16 +130,7 @@ public class RelativisticJ2ClockRangeModifierTest {
         final SpacecraftState state = new SpacecraftState(new CartesianOrbit(satPV, FramesFactory.getEME2000(), Constants.WGS84_EARTH_MU));
 
         // Set reference date to station drivers
-        for (ParameterDriver driver : Arrays.asList(station.getClockOffsetDriver(),
-                                                    station.getEastOffsetDriver(),
-                                                    station.getNorthOffsetDriver(),
-                                                    station.getZenithOffsetDriver(),
-                                                    station.getPrimeMeridianOffsetDriver(),
-                                                    station.getPrimeMeridianDriftDriver(),
-                                                    station.getPolarOffsetXDriver(),
-                                                    station.getPolarDriftXDriver(),
-                                                    station.getPolarOffsetYDriver(),
-                                                    station.getPolarDriftYDriver())) {
+        for (ParameterDriver driver : station.getParametersDrivers()) {
             if (driver.getReferenceDate() == null) {
                 driver.setReferenceDate(state.getDate());
             }
@@ -179,6 +159,17 @@ public class RelativisticJ2ClockRangeModifierTest {
         //          The computed value is equal to 63.3 ps, therefore lying in the supposed range.
         Assertions.assertEquals(-0.019414, estimated.getObservedValue()[0] - estimated.getEstimatedValue()[0], 1.0e-6);
 
+    }
+
+    @Test
+    void testDepends() {
+        // GIVEN
+        final RelativisticJ2ClockRangeModifier modifier = mock();
+        when(modifier.dependsOnParticipantsStates()).thenCallRealMethod();
+        // WHEN
+        final boolean flag = modifier.dependsOnParticipantsStates();
+        // THEN
+        assertTrue(flag);
     }
 
     @BeforeEach

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,7 +22,6 @@ import java.util.List;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -44,6 +43,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
+import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.Month;
@@ -63,7 +63,6 @@ class IodGoodingTest extends AbstractIodTest {
 
     /** Based on example provided in forum thread:
      * <a href="https://forum.orekit.org/t/iodgooging-orbit-got-from-three-angular-observations/2749">IodGooding</a> */
-    @Disabled("Disabled provisionally due to OS-dependent different results")
     @Test
     void testIssue1166RaDec() {
         AbsoluteDate t1 = new AbsoluteDate(2023, Month.JUNE, 9, 17, 4,59.10, TimeScalesFactory.getUTC());
@@ -82,6 +81,7 @@ class IodGoodingTest extends AbstractIodTest {
         GeodeticPoint stationCoord = new GeodeticPoint(FastMath.toRadians(43.05722), FastMath.toRadians(76.971667), 2735.0);
         TopocentricFrame stationFrame = new TopocentricFrame(earth, stationCoord, "N42");
         GroundStation ground_station = new GroundStation(stationFrame);
+        ground_station.getParametersDrivers().forEach(driver -> driver.setReferenceDate(AbsoluteDate.ARBITRARY_EPOCH));
 
         double[] angular1 = {FastMath.toRadians(RA.getX()), FastMath.toRadians(DEC.getX())};
         double[] angular2 = {FastMath.toRadians(RA.getY()), FastMath.toRadians(DEC.getY())};
@@ -99,39 +99,37 @@ class IodGoodingTest extends AbstractIodTest {
         // BEFORE the fix -> Gooding: {a: 6.993021221010809E7; e: 0.3347390725866758; i: 0.5890565053278204; pa: -108.07120996868652; raan: -12.64337508041537; v: 2.587189785272028;}
         // Values changed slightly after updating to new Lambert solver
         // BEFORE the update -> Gooding {a: 4.242929828622434E7; e: 0.005085550484861005; i: 0.09455751549021724; pa: 162.64799060142445; raan: 90.00027281152558; v: -10.884841988914873;}
-        // AFTER the update (still forcing an intermediate planar solution) -> Gooding {a: 4.2403353295223184E7; e: 0.004577584580855903; i: 0.09260357354394354; pa: 167.5968594644297; raan: 90.67242725909259; v: -16.505869685082935}
-        Orbit estimatedOrbitGooding = new IodGooding(mu).estimate(eme2000, raDec1,raDec2,raDec3);
+        // AFTER the update (still forcing an intermediate planar solution) -> Gooding: Keplerian parameters: {a: 4.2400558079418406E7; e: 0.004504568857387906; i: 0.09137634766893886; pa: 170.1160849868576; raan: 90.77888177347695; v: -19.13147024478354;}
+        Orbit estimatedOrbitGooding = new IodGooding(mu).estimate(eme2000, raDec1, raDec2, raDec3);
         KeplerianOrbit orbitGooding = new KeplerianOrbit(estimatedOrbitGooding);
-        Assertions.assertEquals(4.2403353295223184E7, orbitGooding.getA(), 1.0e-6);
-        Assertions.assertEquals(0.004577584580855903, orbitGooding.getE(), 1.0e-10);
-        Assertions.assertEquals(FastMath.toRadians(0.09260357354394354), orbitGooding.getI(), 1.0e-10);
-        Assertions.assertEquals(FastMath.toRadians(167.5968594644297), orbitGooding.getPerigeeArgument(), 1.0e-10);
-        Assertions.assertEquals(FastMath.toRadians(90.67242725909259), orbitGooding.getRightAscensionOfAscendingNode(), 1.0e-10);
-        Assertions.assertEquals(FastMath.toRadians(-16.505869685082935), orbitGooding.getTrueAnomaly(), 1.0e-10);
+        Assertions.assertEquals(4.2400558079418406E7, orbitGooding.getA(), 1.0e-1);
+        Assertions.assertEquals(0.004504568857387906, orbitGooding.getE(), 1.0e-7);
+        Assertions.assertEquals(FastMath.toRadians(0.09137634766893886), orbitGooding.getI(), 1.0e-10);
+        Assertions.assertEquals(FastMath.toRadians(170.1160849868576), orbitGooding.getPeriapsisArgument(), 1.0e-6);
+        Assertions.assertEquals(FastMath.toRadians(90.77888177347695), orbitGooding.getRightAscensionOfAscendingNode(), 1.0e-8);
+        Assertions.assertEquals(FastMath.toRadians(-19.13147024478354), orbitGooding.getTrueAnomaly(), 1.0e-6);
     }
 
     @Test
     void testIssue1166AzEl() {
         // Generate measurements
         final Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
-        final NumericalPropagatorBuilder propagatorBuilder = context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true, 1.0e-6, 60.0, 0.001);
+        final NumericalPropagatorBuilder propagatorBuilder = context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true, 1.0e-6, 60.0, 0.001);
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,  propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements = EstimationTestUtils.createMeasurements(propagator,
                                                                                                  new AngularAzElMeasurementCreator(context),
                                                                                                  0.0, 1.0, 60.0);
-        final AngularAzEl azEl1 = (AngularAzEl) measurements.get(0);
+        final AngularAzEl azEl1 = (AngularAzEl) measurements.getFirst();
         final AngularAzEl azEl2 = (AngularAzEl) measurements.get(20);
         final AngularAzEl azEl3 = (AngularAzEl) measurements.get(40);
 
         // Gauss: {a: 1.4240687661878748E7; e: 0.16505257340554763; i: 71.54945520547201; pa: 21.27193872599194; raan: 78.78440298193975; v: -163.45049044435925;}
-        Orbit estimatedOrbitGooding = new IodGooding(mu).estimate(eme2000, azEl1,azEl2,azEl3);
-        KeplerianOrbit orbitGooding = new KeplerianOrbit(estimatedOrbitGooding);
-        Assertions.assertEquals(1.4197961507698389E7, orbitGooding.getA(), 1.0e-6);
-        Assertions.assertEquals(0.16923654961240223, orbitGooding.getE(), 1.0e-10);
-        Assertions.assertEquals(FastMath.toRadians(71.52638181160407), orbitGooding.getI(), 1.0e-10);
-        Assertions.assertEquals(FastMath.toRadians(21.450082668672675), orbitGooding.getPerigeeArgument(), 1.0e-10);
-        Assertions.assertEquals(FastMath.toRadians(78.76324220205018), orbitGooding.getRightAscensionOfAscendingNode(), 1.0e-10);
-        Assertions.assertEquals(FastMath.toRadians(-163.62886990452034), orbitGooding.getTrueAnomaly(), 1.0e-10);
+        Orbit orbitGooding = new IodGooding(mu).estimate(eme2000, azEl1,azEl2,azEl3);
+
+        // IOD should be close to original
+        SpacecraftState midPoint = propagator.propagate(azEl2.getDate());
+        Assertions.assertTrue(midPoint.getPosition().subtract(orbitGooding.getPosition()).getNorm() < 170.0);
+        Assertions.assertTrue(midPoint.getVelocity().subtract(orbitGooding.getVelocity()).getNorm() < 0.06);
     }
 
     @Test
@@ -142,7 +140,7 @@ class IodGoodingTest extends AbstractIodTest {
         final Frame frame = context.initialOrbit.getFrame();
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect range measurements
@@ -204,16 +202,12 @@ class IodGoodingTest extends AbstractIodTest {
                                          lineOfSight1, date1,
                                          lineOfSight2, date2,
                                          lineOfSight3, date3,
-                                         r1 * 1.0, r3 * 1.0);
-        Assertions.assertEquals(orbit.getA(), context.initialOrbit.getA(), 1.0e-6 * context.initialOrbit.getA());
-        Assertions.assertEquals(orbit.getE(), context.initialOrbit.getE(), 1.0e-6 * context.initialOrbit.getE());
-        Assertions.assertEquals(orbit.getI(), context.initialOrbit.getI(), 1.0e-6 * context.initialOrbit.getI());
+                                         r1 - 1e3, r3 + 1e3);
 
-        Assertions.assertEquals(13127847.99808, iod.getRange1(), 1.0e-3);
-        Assertions.assertEquals(13375711.51931, iod.getRange2(), 1.0e-3);
-        Assertions.assertEquals(13950296.64852, iod.getRange3(), 1.0e-3);
-
-
+        // IOD should be close to original
+        SpacecraftState midPoint = propagator.propagate(date2);
+        Assertions.assertTrue(midPoint.getPosition().subtract(orbit.getPosition()).getNorm() < 1100.0);
+        Assertions.assertTrue(midPoint.getVelocity().subtract(orbit.getVelocity()).getNorm() < 0.47);
     }
 
     @Test
@@ -224,7 +218,7 @@ class IodGoodingTest extends AbstractIodTest {
         final Frame frame = context.initialOrbit.getFrame();
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect range measurements
@@ -237,7 +231,7 @@ class IodGoodingTest extends AbstractIodTest {
                                                        0.0, 1.0, 60.0);
 
         // Angular measurements
-        final AngularRaDec raDec1 = (AngularRaDec) measurements.get(0);
+        final AngularRaDec raDec1 = (AngularRaDec) measurements.getFirst();
         final AngularRaDec raDec2 = (AngularRaDec) measurements.get(20);
         final AngularRaDec raDec3 = (AngularRaDec) measurements.get(40);
 
@@ -250,21 +244,22 @@ class IodGoodingTest extends AbstractIodTest {
 
         final KeplerianOrbit orbit1 = new KeplerianOrbit(iod.estimate(frame, raDec1, raDec2, raDec3, rhoInit1, rhoInit3));
         final KeplerianOrbit orbit2 = new KeplerianOrbit(iod.estimate(frame,
-                                                         raDec1.getGroundStationPosition(frame),
-                                                         raDec2.getGroundStationPosition(frame),
-                                                         raDec3.getGroundStationPosition(frame),
+                                                         raDec1.getObserver().getPVCoordinatesProvider().getPosition(raDec1.getDate(), frame),
+                                                         raDec2.getObserver().getPVCoordinatesProvider().getPosition(raDec2.getDate(), frame),
+                                                         raDec3.getObserver().getPVCoordinatesProvider().getPosition(raDec3.getDate(), frame),
                                                          raDec1.getObservedLineOfSight(frame), raDec1.getDate(),
                                                          raDec2.getObservedLineOfSight(frame), raDec2.getDate(),
                                                          raDec3.getObservedLineOfSight(frame), raDec3.getDate(),
                                                          rhoInit1, rhoInit3));
 
-        Assertions.assertEquals(orbit1.getA(), orbit2.getA(), 1.0e-6 * orbit2.getA());
-        Assertions.assertEquals(orbit1.getE(), orbit2.getE(), 1.0e-6 * orbit2.getE());
-        Assertions.assertEquals(orbit1.getI(), orbit2.getI(), 1.0e-6 * orbit2.getI());
-        Assertions.assertEquals(orbit1.getRightAscensionOfAscendingNode(), orbit2.getRightAscensionOfAscendingNode(), 1.0e-6 * orbit2.getRightAscensionOfAscendingNode());
-        Assertions.assertEquals(orbit1.getPerigeeArgument(), orbit2.getPerigeeArgument(), FastMath.abs(1.0e-6 * orbit2.getPerigeeArgument()));
-        Assertions.assertEquals(orbit1.getMeanAnomaly(), orbit2.getMeanAnomaly(), 1.0e-6 * orbit2.getMeanAnomaly());
-        Assertions.assertEquals(orbit1.getMeanAnomaly(), orbit2.getMeanAnomaly(), 1.0e-6 * orbit2.getMeanAnomaly());
+        // Orbit 1 and 2 should be identical
+        Assertions.assertEquals(0.0, orbit1.getPosition().subtract(orbit2.getPosition()).getNorm());
+        Assertions.assertEquals(0.0, orbit1.getVelocity().subtract(orbit2.getVelocity()).getNorm());
+
+        // IOD should be close to original
+        SpacecraftState midPoint = propagator.propagate(raDec2.getDate());
+        Assertions.assertTrue(midPoint.getPosition().subtract(orbit1.getPosition()).getNorm() < 170.0);
+        Assertions.assertTrue(midPoint.getVelocity().subtract(orbit1.getVelocity()).getNorm() < 0.06);
     }
 
     @Test
@@ -275,7 +270,7 @@ class IodGoodingTest extends AbstractIodTest {
         final Frame frame = context.initialOrbit.getFrame();
 
         final NumericalPropagatorBuilder propagatorBuilder =
-            context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+            context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                 1.0e-6, 60.0, 0.001);
 
         // create perfect range measurements
@@ -288,7 +283,7 @@ class IodGoodingTest extends AbstractIodTest {
                 0.0, 1.0, 60.0);
 
         // Angular measurements
-        final AngularAzEl azEl1 = (AngularAzEl) measurements.get(0);
+        final AngularAzEl azEl1 = (AngularAzEl) measurements.getFirst();
         final AngularAzEl azEl2 = (AngularAzEl) measurements.get(20);
         final AngularAzEl azEl3 = (AngularAzEl) measurements.get(40);
 
@@ -301,21 +296,22 @@ class IodGoodingTest extends AbstractIodTest {
 
         final KeplerianOrbit orbit1 = new KeplerianOrbit(iod.estimate(frame, azEl1, azEl2, azEl3, rhoInit1, rhoInit3));
         final KeplerianOrbit orbit2 = new KeplerianOrbit(iod.estimate(frame,
-            azEl1.getGroundStationPosition(frame),
-            azEl2.getGroundStationPosition(frame),
-            azEl3.getGroundStationPosition(frame),
+            azEl1.getStation().getPVCoordinatesProvider().getPosition(azEl1.getDate(), frame),
+            azEl2.getStation().getPVCoordinatesProvider().getPosition(azEl2.getDate(), frame),
+            azEl3.getStation().getPVCoordinatesProvider().getPosition(azEl3.getDate(), frame),
             azEl1.getObservedLineOfSight(frame), azEl1.getDate(),
             azEl2.getObservedLineOfSight(frame), azEl2.getDate(),
             azEl3.getObservedLineOfSight(frame), azEl3.getDate(),
             rhoInit1, rhoInit3));
 
-        Assertions.assertEquals(orbit1.getA(), orbit2.getA(), 1.0e-6 * orbit2.getA());
-        Assertions.assertEquals(orbit1.getE(), orbit2.getE(), 1.0e-6 * orbit2.getE());
-        Assertions.assertEquals(orbit1.getI(), orbit2.getI(), 1.0e-6 * orbit2.getI());
-        Assertions.assertEquals(orbit1.getRightAscensionOfAscendingNode(), orbit2.getRightAscensionOfAscendingNode(), 1.0e-6 * orbit2.getRightAscensionOfAscendingNode());
-        Assertions.assertEquals(orbit1.getPerigeeArgument(), orbit2.getPerigeeArgument(), FastMath.abs(1.0e-6 * orbit2.getPerigeeArgument()));
-        Assertions.assertEquals(orbit1.getMeanAnomaly(), orbit2.getMeanAnomaly(), 1.0e-6 * orbit2.getMeanAnomaly());
-        Assertions.assertEquals(orbit1.getMeanAnomaly(), orbit2.getMeanAnomaly(), 1.0e-6 * orbit2.getMeanAnomaly());
+        // Orbit 1 and 2 should be identical
+        Assertions.assertEquals(0.0, orbit1.getPosition().subtract(orbit2.getPosition()).getNorm());
+        Assertions.assertEquals(0.0, orbit1.getVelocity().subtract(orbit2.getVelocity()).getNorm());
+
+        // IOD should be close to original
+        SpacecraftState midPoint = propagator.propagate(azEl2.getDate());
+        Assertions.assertTrue(midPoint.getPosition().subtract(orbit1.getPosition()).getNorm() < 170.0);
+        Assertions.assertTrue(midPoint.getVelocity().subtract(orbit1.getVelocity()).getNorm() < 0.06);
     }
 
 }

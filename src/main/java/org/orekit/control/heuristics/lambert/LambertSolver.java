@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -40,12 +40,11 @@ import org.orekit.utils.FieldPVCoordinates;
  * This solver combines Dario Izzo's algorithm with Gim Der design to find all possible solutions.
  * <p>
  * An orbit is determined from two position vectors.
- *
  * References:
  *  Battin, R.H., An Introduction to the Mathematics and Methods of Astrodynamics, AIAA Education, 1999.
  *  Lancaster, E.R. and Blanchard, R.C., A Unified Form of Lambert’s Theorem, Goddard Space Flight Center, 1968.
- *  Dario Izzo. Revisiting Lambert’s problem. Celestial Mechanics and Dynamical Astronomy, 2015. https://arxiv.org/abs/1403.2705
- *  Gim J. Der. The Superior Lambert Algorithm. Advanced Maui Optical and Space Surveillance Technologies, 2011. https://amostech.com/TechnicalPapers/2011/Poster/DER.pdf
+ *  Dario Izzo. <a href="https://arxiv.org/abs/1403.2705">Revisiting Lambert’s problem. Celestial Mechanics and Dynamical Astronomy</a>, 2015
+ *  Gim J. Der. <a href="https://amostech.com/TechnicalPapers/2011/Poster/DER.pdf">The Superior Lambert Algorithm. Advanced Maui Optical and Space Surveillance Technologies</a>, 2011.
  * </p>
  * @author Joris Olympio
  * @author Romain Serra
@@ -351,6 +350,17 @@ public class LambertSolver {
             orbitType = LambertOrbitType.HYPERBOLIC;
         }
         nMax = orbitType.equals(LambertOrbitType.ELLIPTIC) ? (int) FastMath.floor(tau / FastMath.PI) : 0;
+        // when tau falls below the time of flight at x = 0 for nMax revolutions, the actual
+        // minimum time of flight may exceed tau so nMax has to be adjusted (Algorithm 2 in Izzo's paper)
+        if (nMax > 0 && tau < tauME + nMax * FastMath.PI) {
+            final double tauMin = calculateTauMin(sigma, nMax,
+                    householderParameters.getMaxIterations(),
+                    householderParameters.getAbsoluteTolerance(),
+                    householderParameters.getRelativeTolerance());
+            if (tauMin > tau) {
+                nMax--;
+            }
+        }
         if (FastMath.abs(tauME - tau) <= Precision.EPSILON) {
             shortestPathType = LambertPathType.MIN_ENERGY_PATH;
         } else if (tau < tauME) {
@@ -510,6 +520,36 @@ public class LambertSolver {
         return (7.0 * x * F2 + 8.0 * F1 - 6.0 * (1.0 - sigma * sigma) * FastMath.pow(sigma / y, 5) * x) / (1.0 - x * x);
     }
 
+    /** Find the minimum time of flight required to complete the given number of revolutions.
+     * Halley iterations locate the x for which the first derivative of tau with respect to x
+     * vanishes, starting from x = 0.
+     * @param sigma value of sigma
+     * @param nRevs number of complete revolutions
+     * @param maxIterations maximum number of iterations
+     * @param atol absolute tolerance for convergence
+     * @param rtol relative tolerance for convergence
+     * @return minimum value of tau for the given number of revolutions
+     */
+    private static double calculateTauMin(final double sigma, final int nRevs,
+                                          final int maxIterations,
+                                          final double atol, final double rtol) {
+        double x = 0.1;
+        for (int iteration = 0; iteration < maxIterations; iteration++) {
+            final double y    = calculateY(x, sigma);
+            final double tauX = calculateF0(x, y, nRevs, 0.0, sigma);
+            final double F1   = calculateF1(x, y, tauX, sigma);
+            final double F2   = calculateF2(x, y, tauX, F1, sigma);
+            final double F3   = calculateF3(x, y, F1, F2, sigma);
+            final double xNew = x - 2.0 * F1 * F2 / (2.0 * F2 * F2 - F1 * F3);
+            if (FastMath.abs(xNew - x) < rtol * FastMath.abs(x) + atol) {
+                final double yNew = calculateY(xNew, sigma);
+                return calculateF0(xNew, yNew, nRevs, 0.0, sigma);
+            }
+            x = xNew;
+        }
+        throw new OrekitException(OrekitMessages.LAMBERT_HOUSEHOLDER_DID_NOT_CONVERGE, maxIterations);
+    }
+
     /** Calculate the value of psi.
     * @param x value of x
     * @param y value of y
@@ -554,8 +594,9 @@ public class LambertSolver {
     * Calculate the value of Gaussian hypergeometric function 2F1.
     * Currently we use the raw series expansion. This means we have the following
     * constraints: |z| smaller than 1, c larger than 0, c != 0.
-    * Implementation based on Taylor series expansion method (a) in John Pearson's thesis
-    * https://people.maths.ox.ac.uk/porterm/research/pearson_final.pdf , page 31.
+    * Implementation based on Taylor series expansion method (a) in
+    * <a href="https://people.maths.ox.ac.uk/porterm/research/pearson_final.pdf">John Pearson's thesis</a>,
+    * page 31.
     * @param a value of a
     * @param b value of b
     * @param c value of c
@@ -683,7 +724,9 @@ public class LambertSolver {
         return intermediate.multiply(inverse);
     }
 
-    /* Get the gravitational constant. */
+    /** Get the gravitational constant.
+     * @return gravitational constant
+     */
     public double getMu() {
         return mu;
     }

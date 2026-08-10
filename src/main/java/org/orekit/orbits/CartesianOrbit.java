@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -125,18 +125,24 @@ public class CartesianOrbit extends Orbit {
     public CartesianOrbit(final Orbit op) {
         super(op.getPVCoordinates(), op.getFrame(), op.getMu());
         hasNonKeplerianAcceleration = op.hasNonKeplerianAcceleration();
-        if (op instanceof EquinoctialOrbit) {
-            equinoctial = (EquinoctialOrbit) op;
-        } else if (op instanceof CartesianOrbit) {
-            equinoctial = ((CartesianOrbit) op).equinoctial;
-        } else {
-            equinoctial = null;
+        switch (op) {
+            case EquinoctialOrbit orbit1 -> equinoctial = orbit1;
+            case CartesianOrbit orbit -> equinoctial = orbit.equinoctial;
+            case null, default -> equinoctial = null;
         }
     }
 
     /** {@inheritDoc} */
+    @Override
     public OrbitType getType() {
         return OrbitType.CARTESIAN;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public AbstractOrbitFactory<CartesianOrbit> factory(final PositionAngleType positionAngleType,
+                                                        final double positionScale) {
+        return new CartesianOrbitFactory(this, positionScale);
     }
 
     /** {@inheritDoc} */

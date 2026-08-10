@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -226,7 +226,7 @@ class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
         Assertions.assertEquals("", maneuver.getName());
         List<ParameterDriver> drivers = maneuver.getParametersDrivers();
         Assertions.assertEquals(6, drivers.size());
-        Assertions.assertEquals("thrust", drivers.get(0).getName());
+        Assertions.assertEquals("thrust", drivers.getFirst().getName());
         Assertions.assertEquals("flow rate", drivers.get(1).getName());
         EventDetector detector = maneuver.getEventDetectors().findFirst().get();
 
@@ -250,7 +250,7 @@ class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
                                        "1A-");
         List<ParameterDriver> drivers = maneuver.getParametersDrivers();
         Assertions.assertEquals(6, drivers.size());
-        Assertions.assertEquals("1A-thrust", drivers.get(0).getName());
+        Assertions.assertEquals("1A-thrust", drivers.getFirst().getName());
         Assertions.assertEquals("1A-flow rate", drivers.get(1).getName());
         EventDetector detector = maneuver.getEventDetectors().findFirst().get();
 

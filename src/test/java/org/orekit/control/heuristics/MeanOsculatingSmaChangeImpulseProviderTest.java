@@ -72,6 +72,11 @@ class MeanOsculatingSmaChangeImpulseProviderTest {
         }
 
         @Override
+        public double getThreshold() {
+            return 1.0e-9;
+        }
+
+        @Override
         public Orbit convertToMean(Orbit osculating) {
             return osculating;
         }

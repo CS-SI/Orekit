@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,6 +20,8 @@ package org.orekit.files.ccsds.ndm.odm.ocm;
 import java.util.Collections;
 import java.util.List;
 
+import org.orekit.files.ccsds.utils.Initializer;
+
 /** Covariance history.
  * @author Luc Maisonobe
  * @since 11.0
@@ -39,7 +41,7 @@ public class OrbitCovarianceHistory {
     public OrbitCovarianceHistory(final OrbitCovarianceHistoryMetadata metadata,
                              final List<OrbitCovariance> covariances) {
         this.metadata    = metadata;
-        this.covariances = covariances;
+        this.covariances = Initializer.emptyListIfNull(covariances);
     }
 
     /** Get metadata.

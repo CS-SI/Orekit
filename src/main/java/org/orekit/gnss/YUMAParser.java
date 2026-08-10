@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -35,9 +35,14 @@ import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.frames.Frame;
+import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElementsFactory;
 import org.orekit.propagation.analytical.gnss.data.GPSAlmanac;
+import org.orekit.propagation.analytical.gnss.data.GPSAlmanacFactory;
+import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
-
+import org.orekit.utils.IERSConventions;
+import org.orekit.utils.ParameterDriversList;
 
 /**
  * This class reads Yuma almanac files and provides {@link GPSAlmanac GPS almanacs}.
@@ -70,7 +75,7 @@ public class YUMAParser extends AbstractSelfFeedingLoader implements DataLoader 
         "rate", // Rate of Right Ascen(r/s)
         "sqrt", // SQRT(A)  (m 1/2)
         "right", // Right Ascen at Week(rad)
-        "argument", // Argument of Perigee(rad)
+        "argument", // Argument of Periapsis(rad)
         "mean", // Mean Anom(rad)
         "af0", // Af0(s)
         "af1", // Af1(s/s)
@@ -93,6 +98,16 @@ public class YUMAParser extends AbstractSelfFeedingLoader implements DataLoader 
     /** Set of time scales to use. */
     private final TimeScales timeScales;
 
+    /** Reference inertial frame.
+     * @since 14.0
+     */
+    private final Frame inertial;
+
+    /** Body fixed frame.
+     * @since 14.0
+     */
+    private final Frame bodyFixed;
+
     /** Simple constructor.
     *
     * <p>This constructor does not load any data by itself. Data must be loaded
@@ -102,20 +117,23 @@ public class YUMAParser extends AbstractSelfFeedingLoader implements DataLoader 
      *
      * <p>The supported files names are used when getting data from the
      * {@link #loadData() loadData()} method that relies on the
-     * {@link DataContext#getDefault() default data context}. They are useless when
+     * {@link DataContext#getDefault() default data context}. The frames
+     * are set to EME2000 and ITRF with IERS 2010 conventions. They are useless when
      * getting data from the {@link #loadData(InputStream, String) loadData(input, name)}
      * method.</p>
      *
      * @param supportedNames regular expression for supported files names
      * (if null, a default pattern matching files with a ".alm" extension will be used)
      * @see #loadData()
-     * @see #YUMAParser(String, DataProvidersManager, TimeScales)
+     * @see #YUMAParser(String, DataProvidersManager, TimeScales, Frame, Frame)
     */
     @DefaultDataContext
     public YUMAParser(final String supportedNames) {
         this(supportedNames,
                 DataContext.getDefault().getDataProvidersManager(),
-                DataContext.getDefault().getTimeScales());
+                DataContext.getDefault().getTimeScales(),
+                DataContext.getDefault().getFrames().getEME2000(),
+                DataContext.getDefault().getFrames().getITRF(IERSConventions.IERS_2010, false));
     }
 
     /**
@@ -136,17 +154,21 @@ public class YUMAParser extends AbstractSelfFeedingLoader implements DataLoader 
      * (if null, a default pattern matching files with a ".alm" extension will be used)
      * @param dataProvidersManager provides access to auxiliary data.
      * @param timeScales to use when parsing the GPS dates.
+     * @param inertial   reference inertial frame
+     * @param bodyFixed  body fixed frame
+     * @since 14.0
      * @see #loadData()
-     * @since 10.1
      */
     public YUMAParser(final String supportedNames,
                       final DataProvidersManager dataProvidersManager,
-                      final TimeScales timeScales) {
+                      final TimeScales timeScales, final Frame inertial, final Frame bodyFixed) {
         super((supportedNames == null) ? DEFAULT_SUPPORTED_NAMES : supportedNames,
                 dataProvidersManager);
-        this.almanacs = new ArrayList<>();
-        this.prnList = new ArrayList<>();
+        this.almanacs   = new ArrayList<>();
+        this.prnList    = new ArrayList<>();
         this.timeScales = timeScales;
+        this.inertial   = inertial;
+        this.bodyFixed  = bodyFixed;
     }
 
     /**
@@ -196,7 +218,7 @@ public class YUMAParser extends AbstractSelfFeedingLoader implements DataLoader 
                     // Adds the GPSAlmanac to the list
                     almanacs.add(almanac);
                     // Adds the PRN number of the GPSAlmanac to the list
-                    prnList.add(almanac.getPRN());
+                    prnList.add(almanac.getPrn());
                     // Clears the entries
                     entries.clear();
                 }
@@ -245,65 +267,76 @@ public class YUMAParser extends AbstractSelfFeedingLoader implements DataLoader 
     private GPSAlmanac getAlmanac(final List<Pair<String, String>> entries, final String name) {
         try {
             // Initializes almanac and set the source
-            final GPSAlmanac almanac = new GPSAlmanac(timeScales, SatelliteSystem.GPS);
-            almanac.setSource(SOURCE);
+            final GPSAlmanacFactory factory =
+                new GPSAlmanacFactory(timeScales, SatelliteSystem.GPS, inertial, bodyFixed);
+            factory.setSource(SOURCE);
 
             // Initializes checks
             final boolean[] checks = new boolean[KEY.length];
             // Loop over entries
+            final ParameterDriversList orb = factory.getOrbitalParametersDrivers();
             for (Pair<String, String> entry: entries) {
                 final String lowerCaseKey = entry.getKey().toLowerCase(Locale.US);
                 if (lowerCaseKey.startsWith(KEY[0])) {
                     // Gets the PRN of the SVN
-                    almanac.setPRN(Integer.parseInt(entry.getValue()));
+                    factory.setPrn(Integer.parseInt(entry.getValue()));
                     checks[0] = true;
                 } else if (lowerCaseKey.startsWith(KEY[1])) {
                     // Gets the Health status
-                    almanac.setHealth(Integer.parseInt(entry.getValue()));
+                    factory.setHealth(Integer.parseInt(entry.getValue()));
                     checks[1] = true;
                 } else if (lowerCaseKey.startsWith(KEY[2])) {
                     // Gets the eccentricity
-                    almanac.setE(Double.parseDouble(entry.getValue()));
+                    orb.findByName(GNSSOrbitalElementsFactory.ECCENTRICITY).
+                        setValue(Double.parseDouble(entry.getValue()));
                     checks[2] = true;
                 } else if (lowerCaseKey.startsWith(KEY[3])) {
                     // Gets the Time of Applicability
-                    almanac.setTime(Double.parseDouble(entry.getValue()));
+                    factory.getTimeDriver().setValue(Double.parseDouble(entry.getValue()));
                     checks[3] = true;
                 } else if (lowerCaseKey.startsWith(KEY[4])) {
                     // Gets the Inclination
-                    almanac.setI0(Double.parseDouble(entry.getValue()));
+                    orb.findByName(GNSSOrbitalElementsFactory.INCLINATION).
+                        setValue(Double.parseDouble(entry.getValue()));
                     checks[4] = true;
                 } else if (lowerCaseKey.startsWith(KEY[5])) {
                     // Gets the Rate of Right Ascension
-                    almanac.setOmegaDot(Double.parseDouble(entry.getValue()));
+                    factory.getOmegaDotDriver().setValue(Double.parseDouble(entry.getValue()));
                     checks[5] = true;
                 } else if (lowerCaseKey.startsWith(KEY[6])) {
                     // Gets the square root of the semi-major axis
-                    almanac.setSqrtA(Double.parseDouble(entry.getValue()));
+                    final double sqrtA = Double.parseDouble(entry.getValue());
+                    orb.findByName(GNSSOrbitalElementsFactory.SEMI_MAJOR_AXIS).
+                        setValue(sqrtA * sqrtA);
                     checks[6] = true;
                 } else if (lowerCaseKey.startsWith(KEY[7])) {
                     // Gets the Right Ascension of Ascending Node
-                    almanac.setOmega0(Double.parseDouble(entry.getValue()));
+                    orb.findByName(GNSSOrbitalElementsFactory.NODE_LONGITUDE).
+                        setValue(Double.parseDouble(entry.getValue()));
                     checks[7] = true;
                 } else if (lowerCaseKey.startsWith(KEY[8])) {
-                    // Gets the Argument of Perigee
-                    almanac.setPa(Double.parseDouble(entry.getValue()));
+                    // Gets the Argument of Periapsis
+                    orb.findByName(GNSSOrbitalElementsFactory.ARGUMENT_OF_PERIAPSIS).
+                        setValue(Double.parseDouble(entry.getValue()));
                     checks[8] = true;
                 } else if (lowerCaseKey.startsWith(KEY[9])) {
-                    // Gets the Mean Anomalie
-                    almanac.setM0(Double.parseDouble(entry.getValue()));
+                    // Gets the Mean Anomaly
+                    orb.findByName(GNSSOrbitalElementsFactory.MEAN_ANOMALY).
+                        setValue(Double.parseDouble(entry.getValue()));
                     checks[9] = true;
                 } else if (lowerCaseKey.startsWith(KEY[10])) {
                     // Gets the SV clock bias
-                    almanac.setAf0(Double.parseDouble(entry.getValue()));
+                    factory.getAf0Driver().setValue(Double.parseDouble(entry.getValue()));
                     checks[10] = true;
                 } else if (lowerCaseKey.startsWith(KEY[11])) {
                     // Gets the SV clock Drift
-                    almanac.setAf1(Double.parseDouble(entry.getValue()));
+                    factory.getAf1Driver().setValue(Double.parseDouble(entry.getValue()));
                     checks[11] = true;
                 } else if (lowerCaseKey.startsWith(KEY[12])) {
                     // Gets the week number
-                    almanac.setWeek(Integer.parseInt(entry.getValue()));
+                    factory.setTimeOfEphemeris(new GNSSDate(Integer.parseInt(entry.getValue()),
+                                                            factory.getTimeDriver().getValue(),
+                                                            factory.getSystem()));
                     checks[12] = true;
                 } else {
                     // Unknown entry: the file is not a YUMA file
@@ -316,11 +349,11 @@ public class YUMAParser extends AbstractSelfFeedingLoader implements DataLoader 
             if (readOK(checks)) {
 
                 // Add default values to missing keys
-                almanac.setSVN(-1);
-                almanac.setURA(-1);
-                almanac.setSatConfiguration(-1);
+                factory.setSvn(-1);
+                factory.setUra(-1);
+                factory.setSatConfiguration(-1);
 
-                return almanac;
+                return factory.createFromDrivers();
             } else {
                 // The file is not a YUMA file
                 throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_YUMA_ALMANAC_FILE,

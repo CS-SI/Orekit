@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -1282,7 +1282,7 @@ public class CRDParser {
                 // Use the date of the last range data as the end epoch.
                 if (pi.header.getEndEpoch() == null) {
                     final List<RangeMeasurement> rangeData =  pi.dataBlock.getRangeData();
-                    pi.header.setEndEpoch(rangeData.get(rangeData.size() - 1).getDate());
+                    pi.header.setEndEpoch(rangeData.getLast().getDate());
                 }
 
                 // Fill data block

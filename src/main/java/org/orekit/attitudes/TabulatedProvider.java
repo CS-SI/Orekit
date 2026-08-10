@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -70,7 +70,7 @@ public class TabulatedProvider implements BoundedAttitudeProvider {
      */
     public TabulatedProvider(final Frame referenceFrame, final List<? extends TimeStampedAngularCoordinates> table,
                              final int n, final AngularDerivativesFilter filter) {
-        this(table, n, filter, table.get(0).getDate(), table.get(table.size() - 1).getDate(),
+        this(table, n, filter, table.getFirst().getDate(), table.getLast().getDate(),
              new FixedFrameBuilder(referenceFrame));
     }
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -46,19 +46,18 @@ class KeplerianConverterTest {
 
     @Test
     void testConversionPositionVelocity() {
-        checkFit(orbit, 86400, 300, 1.0e-3, false, 7.812e-9);
+        checkFit(orbit, 86400, 300, 1.0e-3, false, 1.268e-8);
     }
 
     @Test
     void testConversionPositionOnly() {
-        checkFit(orbit, 86400, 300, 1.0e-3, true, 2.337e-8);
+        checkFit(orbit, 86400, 300, 1.0e-3, true, 2.177e-8);
     }
 
     @Test
     void testConversionWithFreeParameter() {
-        Assertions.assertThrows(OrekitException.class, () -> {
-            checkFit(orbit, 86400, 300, 1.0e-3, true, 2.65e-8, "toto");
-        });
+        Assertions.assertThrows(OrekitException.class,
+                                () -> checkFit(orbit, 86400, 300, 1.0e-3, true, 2.65e-8, "toto"));
     }
 
     protected void checkFit(final Orbit orbit,
@@ -76,9 +75,9 @@ class KeplerianConverterTest {
             sample.add(p.propagate(orbit.getDate().shiftedBy(dt)));
         }
 
-        PropagatorBuilder builder = new KeplerianPropagatorBuilder(OrbitType.KEPLERIAN.convertType(orbit),
-                                                                   PositionAngleType.MEAN,
-                                                                   1.0);
+        PropagatorBuilder builder =
+            new KeplerianPropagatorBuilder(OrbitType.KEPLERIAN.convertType(orbit).
+                                           factory(PositionAngleType.MEAN, 1.0));
 
         FiniteDifferencePropagatorConverter fitter = new FiniteDifferencePropagatorConverter(builder, threshold, 1000);
 

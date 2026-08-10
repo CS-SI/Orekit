@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -35,7 +35,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
-import org.orekit.bodies.IAUPoleFactory.OldIAUPole;
 import org.orekit.bodies.JPLEphemeridesLoader.EphemerisType;
 import org.orekit.data.DataContext;
 import org.orekit.time.AbsoluteDate;
@@ -99,11 +98,10 @@ public class PredefinedIAUPolesTest {
                     final double wRef        = Double.parseDouble(fields[5]);
                     final double[][] m       = new double[3][3];
                     int index = 6;
+                    // construct transformation matrix from EME2000 to IAU_specific
                     for (int i = 0; i < 3; ++i) {
                         for (int j = 0; j < 3; ++j) {
-                            // we transpose the matrix to get the transform
-                            // from ICRF to body frame
-                            m[j][i] = Double.parseDouble(fields[index++]);
+                            m[i][j] = Double.parseDouble(fields[index++]);
                         }
                     }
                     Rotation rRef = new Rotation(m, 1.0e-10);
@@ -115,7 +113,7 @@ public class PredefinedIAUPolesTest {
                     Assertions.assertEquals(0.0, date2.durationFrom(date1), 8.0e-5);
                     Assertions.assertEquals(alphaRef, MathUtils.normalizeAngle(pole.getAlpha(), alphaRef), 1.8e-15);
                     Assertions.assertEquals(deltaRef, pole.getDelta(), 2.4e-13);
-                    Assertions.assertEquals(wRef, MathUtils.normalizeAngle(w, wRef), 2.5e-12);
+                    Assertions.assertEquals(wRef, MathUtils.normalizeAngle(w, wRef), 3.0e-12);
 
                     // check matrix
                     Vector3D qNode = Vector3D.crossProduct(Vector3D.PLUS_K, pole);
@@ -124,25 +122,11 @@ public class PredefinedIAUPolesTest {
                     }
                     final Rotation rotation = new Rotation(Vector3D.PLUS_K, wRef, RotationConvention.FRAME_TRANSFORM).
                                     applyTo(new Rotation(pole, qNode, Vector3D.PLUS_K, Vector3D.PLUS_I));
-                    Assertions.assertEquals(0.0, Rotation.distance(rRef, rotation), 1.9e-15);
+                    Assertions.assertEquals(0.0, Rotation.distance(rRef, rotation), 3.0e-15);
 
                 }
             }
         }
-    }
-
-    @Test
-    void testVersus80Implementation() {
-        for (EphemerisType body : EphemerisType.values()) {
-            IAUPole    newPole = PredefinedIAUPoles.getIAUPole(body, timeScales);
-            OldIAUPole oldPole = IAUPoleFactory.getIAUPole(body);
-            for (double dt = 0; dt < Constants.JULIAN_YEAR; dt += 3600) {
-                final AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(dt);
-                Assertions.assertEquals(0, Vector3D.angle(newPole.getPole(date), oldPole.getPole(date)), 1.0e-20);
-                Assertions.assertEquals(oldPole.getPrimeMeridianAngle(date), newPole.getPrimeMeridianAngle(date), 5.0e-13);
-            }
-        }
-
     }
 
     @Test

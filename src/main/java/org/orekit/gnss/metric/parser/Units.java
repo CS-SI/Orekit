@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,6 +29,9 @@ public class Units {
 
     /** Semi-circles units. */
     public static final Unit SEMI_CIRCLE = Unit.RADIAN.scale("sc", GNSSConstants.GNSS_PI);
+
+    /** Milliseconds units. */
+    public static final Unit MS = Unit.parse("ms");
 
     /** Nanoseconds units. */
     public static final Unit NS = Unit.parse("ns");

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,7 @@
  */
 package org.orekit.propagation.analytical.gnss.data;
 
+import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeStamped;
 
 /** This interface provides the minimal set of clock elements needed by the
@@ -57,15 +58,13 @@ public interface GNSSClockElements extends TimeStamped {
      * Get the estimated group delay differential TGD for L1-L2 correction.
      * @return the estimated group delay differential TGD for L1-L2 correction (s)
      */
-    double getTGD();
+    double getTgd();
 
     /**
      * Get the time of clock.
-     * @return the time of clock (s)
-     * @see #getAf0()
-     * @see #getAf1()
-     * @see #getAf2()
+     * @return the time of clock
+     * @since 14.0
      */
-    double getToc();
+    GNSSDate getTimeOfClock();
 
 }

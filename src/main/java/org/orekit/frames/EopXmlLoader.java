@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,13 +17,9 @@
 package org.orekit.frames;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.SortedSet;
 import java.util.function.Supplier;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -32,6 +28,7 @@ import javax.xml.parsers.SAXParserFactory;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.orekit.data.DataProvidersManager;
+import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
@@ -48,7 +45,7 @@ import org.xml.sax.helpers.DefaultHandler;
  * <p>The XML EOP files are recognized thanks to their base names, which
  * must match one of the the patterns {@code finals.2000A.*.xml} or
  * {@code finals.*.xml} or {@code eopc04_*.xml} (or the same ending with
- * {@.gz} for gzip-compressed files) where * stands for any string of characters.</p>
+ * {@code .gz} for gzip-compressed files) where * stands for any string of characters.</p>
  * <p>Files containing data (back to 1962) are available at IERS web site: <a
  * href="https://datacenter.iers.org/products/eop/">IERS https data download</a>.</p>
  * <p>
@@ -84,7 +81,7 @@ class EopXmlLoader extends AbstractEopLoader implements EopHistoryLoader {
 
     /** {@inheritDoc} */
     public void fillHistory(final IERSConventions.NutationCorrectionConverter converter,
-                            final SortedSet<EOPEntry> history) {
+                            final Collection<EOPEntry> history) {
         final ItrfVersionProvider itrfVersionProvider = new ITRFVersionLoader(
                 ITRFVersionLoader.SUPPORTED_NAMES,
                 getDataProvidersManager());
@@ -115,7 +112,7 @@ class EopXmlLoader extends AbstractEopLoader implements EopHistoryLoader {
 
         /** {@inheritDoc} */
         @Override
-        public Collection<EOPEntry> parse(final InputStream input, final String name)
+        public Collection<EOPEntry> parse(final DataSource source)
             throws IOException, OrekitException {
             try {
                 this.history = new ArrayList<>();
@@ -123,8 +120,8 @@ class EopXmlLoader extends AbstractEopLoader implements EopHistoryLoader {
                 final SAXParser parser = SAXParserFactory.newInstance().newSAXParser();
 
                 // read all file, ignoring header
-                parser.parse(new InputSource(new InputStreamReader(input, StandardCharsets.UTF_8)),
-                             new EOPContentHandler(name));
+                parser.parse(new InputSource(source.getOpener().openStreamOnce()),
+                             new EOPContentHandler(source.getName()));
 
                 return history;
 
@@ -239,27 +236,32 @@ class EopXmlLoader extends AbstractEopLoader implements EopHistoryLoader {
 
                 if (content == DataFileContent.UNKNOWN) {
                     // try to identify file content
-                    if (qName.equals(TIME_SERIES_ELT)) {
-                        // the file contains final data
-                        content = DataFileContent.DAILY;
-                    } else if (qName.equals(FINALS_ELT)) {
-                        // the file contains final data
-                        content = DataFileContent.FINAL;
-                    } else if (qName.equals(DATA_ELT)) {
-                        final String product = atts.getValue(PRODUCT_ATTR);
-                        if (product != null) {
-                            if (product.startsWith(BULLETIN_A_PROD)) {
-                                // the file contains bulletinA
-                                content     = DataFileContent.BULLETIN_A;
-                                inBulletinA = true;
-                            } else if (product.startsWith(BULLETIN_B_PROD)) {
-                                // the file contains bulletinB
-                                content = DataFileContent.BULLETIN_B;
-                            } else if (product.startsWith(EOP_C04_PROD_PREFIX) && product.endsWith(EOP_C04_PROD_SUFFIX)) {
-                                // the file contains EOP C04
-                                content = DataFileContent.EOP_C04;
+                    switch (qName) {
+                        case TIME_SERIES_ELT ->
+                            // the file contains final data
+                            content = DataFileContent.DAILY;
+                        case FINALS_ELT ->
+                            // the file contains final data
+                            content = DataFileContent.FINAL;
+                        case DATA_ELT -> {
+                            final String product = atts.getValue(PRODUCT_ATTR);
+                            if (product != null) {
+                                if (product.startsWith(BULLETIN_A_PROD)) {
+                                    // the file contains bulletinA
+                                    content = DataFileContent.BULLETIN_A;
+                                    inBulletinA = true;
+                                } else if (product.startsWith(BULLETIN_B_PROD)) {
+                                    // the file contains bulletinB
+                                    content = DataFileContent.BULLETIN_B;
+                                } else if (product.startsWith(EOP_C04_PROD_PREFIX) && product.endsWith(
+                                    EOP_C04_PROD_SUFFIX)) {
+                                    // the file contains EOP C04
+                                    content = DataFileContent.EOP_C04;
+                                }
                             }
                         }
+                        default ->
+                            content = DataFileContent.UNKNOWN;
                     }
                 }
 
@@ -336,13 +338,13 @@ class EopXmlLoader extends AbstractEopLoader implements EopHistoryLoader {
              * @param qName name of the element
              */
             private void endDailyElement(final String qName) {
-                if (qName.equals(DATE_YEAR_ELT) && buffer.length() > 0) {
+                if (qName.equals(DATE_YEAR_ELT) && !buffer.isEmpty()) {
                     year = Integer.parseInt(buffer.toString());
-                } else if (qName.equals(DATE_MONTH_ELT) && buffer.length() > 0) {
+                } else if (qName.equals(DATE_MONTH_ELT) && !buffer.isEmpty()) {
                     month = Integer.parseInt(buffer.toString());
-                } else if (qName.equals(DATE_DAY_ELT) && buffer.length() > 0) {
+                } else if (qName.equals(DATE_DAY_ELT) && !buffer.isEmpty()) {
                     day = Integer.parseInt(buffer.toString());
-                } else if (qName.equals(MJD_ELT) && buffer.length() > 0) {
+                } else if (qName.equals(MJD_ELT) && !buffer.isEmpty()) {
                     mjd     = Integer.parseInt(buffer.toString());
                     mjdDate = new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjd),
                                                getUtc());
@@ -390,7 +392,7 @@ class EopXmlLoader extends AbstractEopLoader implements EopHistoryLoader {
                         }
                         history.add(new EOPEntry(mjd, dtu1, lod, x, y, Double.NaN, Double.NaN,
                                                  equinox[0], equinox[1], nro[0], nro[1],
-                                                 configuration.getVersion(), mjdDate));
+                                                 configuration.getVersion(), mjdDate, EopDataType.UNKNOWN));
                     }
                 }
             }
@@ -399,14 +401,14 @@ class EopXmlLoader extends AbstractEopLoader implements EopHistoryLoader {
              * @param qName name of the element
              */
             private void endFinalElement(final String qName) {
-                if (qName.equals(DATE_ELT) && buffer.length() > 0) {
+                if (qName.equals(DATE_ELT) && !buffer.isEmpty()) {
                     final String[] fields = buffer.toString().split("-");
                     if (fields.length == 3) {
                         year  = Integer.parseInt(fields[0]);
                         month = Integer.parseInt(fields[1]);
                         day   = Integer.parseInt(fields[2]);
                     }
-                } else if (qName.equals(MJD_ELT) && buffer.length() > 0) {
+                } else if (qName.equals(MJD_ELT) && !buffer.isEmpty()) {
                     mjd     = Integer.parseInt(buffer.toString());
                     mjdDate = new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjd),
                                                getUtc());
@@ -454,7 +456,8 @@ class EopXmlLoader extends AbstractEopLoader implements EopHistoryLoader {
                         }
                         history.add(new EOPEntry(mjd, dtu1, lod, x, y, xRate, yRate,
                                                  equinox[0], equinox[1], nro[0], nro[1],
-                                                 configuration.getVersion(), mjdDate));
+                                                 configuration.getVersion(), mjdDate,
+                                                 EopDataType.UNKNOWN));
                     }
                 }
             }
@@ -465,7 +468,7 @@ class EopXmlLoader extends AbstractEopLoader implements EopHistoryLoader {
              * @return a new value
              */
             private double overwrite(final double oldValue, final Unit units) {
-                if (buffer.length() == 0) {
+                if (buffer.isEmpty()) {
                     // there is nothing to overwrite with
                     return oldValue;
                 } else if (inBulletinA && !Double.isNaN(oldValue)) {

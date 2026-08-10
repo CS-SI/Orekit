@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,6 +26,7 @@ import org.orekit.time.AbstractTimeInterpolator;
 import org.orekit.time.TimeInterpolator;
 import org.orekit.time.TimeStamped;
 import org.orekit.time.TimeStampedPair;
+import org.orekit.utils.SortedListTrimmer;
 
 import java.util.Collections;
 import java.util.List;
@@ -116,6 +117,12 @@ public abstract class AbstractStateCovarianceInterpolator
         this.outPositionAngleType = outPositionAngleType;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public List<TimeInterpolator<? extends TimeStamped>> getSubInterpolators() {
+        return Collections.singletonList(orbitInterpolator);
+    }
+
     /**
      * Interpolate orbit and associated covariance.
      *
@@ -130,12 +137,41 @@ public abstract class AbstractStateCovarianceInterpolator
         final Orbit interpolatedOrbit = interpolateOrbit(interpolationData.getInterpolationDate(),
                                                          interpolationData.getNeighborList());
 
+        // Ensure that the chosen number of interpolation points is used to interpolate the state covariance
+        final List<TimeStampedPair<Orbit, StateCovariance>> uncertainStates = getNeighborsSubList(interpolationData);
+
         // Rebuild state covariance
         final StateCovariance covarianceInOrbitFrame =
-                computeInterpolatedCovarianceInOrbitFrame(interpolationData.getNeighborList(), interpolatedOrbit);
+                computeInterpolatedCovarianceInOrbitFrame(uncertainStates, interpolatedOrbit);
 
         // Output new blended StateCovariance instance in desired output
         return expressCovarianceInDesiredOutput(interpolatedOrbit, covarianceInOrbitFrame);
+    }
+
+    /**
+     * Extract the correct number of interpolation points for state covariance interpolation/blending. Otherwise,
+     * sub-interpolators may require more samples and state covariance interpolation itself would use the wrong number
+     * of samples.
+     *
+     * @param interpolationData interpolation data
+     * @return Sample specific to state covariance interpolation/blending
+     */
+    private List<TimeStampedPair<Orbit, StateCovariance>> getNeighborsSubList(final InterpolationData interpolationData) {
+        final List<TimeStampedPair<Orbit, StateCovariance>> neighborList = interpolationData.getNeighborList();
+
+        // Handle special case where sub-interpolator uses the same number of interpolation points
+        if (getNbInterpolationPoints() == getInternalNbInterpolationPoints()) {
+            return interpolationData.getNeighborList();
+        }
+
+        // Otherwise, select sublist around interpolation date
+        final AbsoluteDate central = getCentralDate(interpolationData.getInterpolationDate(),
+                                                    neighborList.getFirst().getDate(),
+                                                    neighborList.getLast().getDate(),
+                                                    getExtrapolationThreshold());
+
+        return new SortedListTrimmer(getInternalNbInterpolationPoints()).getNeighborsSubList(central,
+                                                                                             interpolationData.getNeighborList());
     }
 
     /** Get output frame.
@@ -171,11 +207,6 @@ public abstract class AbstractStateCovarianceInterpolator
      */
     public TimeInterpolator<Orbit> getOrbitInterpolator() {
         return orbitInterpolator;
-    }
-
-    @Override
-    public List<TimeInterpolator<? extends TimeStamped>> getSubInterpolators() {
-        return Collections.singletonList(orbitInterpolator);
     }
 
     /**

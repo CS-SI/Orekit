@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -75,26 +75,29 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
     protected FieldVector3D<DerivativeStructure> accelerationDerivatives(final ForceModel forceModel,
                                                                          final FieldSpacecraftState<DerivativeStructure> state) {
         try {
-            final AbsoluteDate                       date     = state.getDate().toAbsoluteDate();
+            final FieldAbsoluteDate<DerivativeStructure> date = state.getDate();
             final FieldVector3D<DerivativeStructure> position = state.getPVCoordinates().getPosition();
             java.lang.reflect.Field bodyField = AbstractBodyAttraction.class.getDeclaredField("positionProvider");
             bodyField.setAccessible(true);
             CelestialBody body = (CelestialBody) bodyField.get(forceModel);
             double gm = forceModel.
                         getParameterDriver(body.getName() + ThirdBodyAttraction.ATTRACTION_COEFFICIENT_SUFFIX).
-                        getValue(date);
+                        getValue(date.toAbsoluteDate());
 
             // compute bodies separation vectors and squared norm
-            final Vector3D centralToBody    = body.getPosition(date, state.getFrame());
-            final double r2Central          = centralToBody.getNorm2Sq();
+            final FieldVector3D<DerivativeStructure> centralToBody =
+                    body.getPosition(date, state.getFrame());
+            final DerivativeStructure r2Central = centralToBody.getNorm2Sq();
             final FieldVector3D<DerivativeStructure> satToBody = position.subtract(centralToBody).negate();
             final DerivativeStructure r2Sat = satToBody.getNorm2Sq();
 
             // compute relative acceleration
             final FieldVector3D<DerivativeStructure> satAcc =
                     new FieldVector3D<>(r2Sat.sqrt().multiply(r2Sat).reciprocal().multiply(gm), satToBody);
-            final Vector3D centralAcc =
-                    new Vector3D(gm / (r2Central * FastMath.sqrt(r2Central)), centralToBody);
+            final FieldVector3D<DerivativeStructure> centralAcc =
+                    new FieldVector3D<>(
+                            r2Central.multiply(r2Central.sqrt()).reciprocal().multiply(gm),
+                            centralToBody);
             return satAcc.subtract(centralAcc);
 
 

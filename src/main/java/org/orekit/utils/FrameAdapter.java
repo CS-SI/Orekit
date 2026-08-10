@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Luc Maisonobe
+/* Copyright 2022-2026 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -58,6 +58,18 @@ public class FrameAdapter implements ExtendedPositionProvider {
     public <T extends CalculusFieldElement<T>> FieldVector3D<T> getPosition(final FieldAbsoluteDate<T> date,
                                                                             final Frame frame) {
         return originFrame.getStaticTransformTo(frame, date).transformPosition(Vector3D.ZERO);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Vector3D getVelocity(final AbsoluteDate date, final Frame frame) {
+        return originFrame.getKinematicTransformTo(frame, date).transformOnlyPV(PVCoordinates.ZERO).getVelocity();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends CalculusFieldElement<T>> FieldVector3D<T> getVelocity(final FieldAbsoluteDate<T> date, final Frame frame) {
+        return originFrame.getKinematicTransformTo(frame, date).transformOnlyPV(FieldPVCoordinates.getZero(date.getField())).getVelocity();
     }
 
     /** {@inheritDoc} */

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,12 +17,16 @@
 package org.orekit.files.ccsds.ndm.adm.apm;
 
 import java.util.Arrays;
+import java.util.Optional;
 
 import org.hipparchus.complex.Quaternion;
+import org.orekit.annotation.Nullable;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.ndm.adm.AttitudeEndpoints;
 import org.orekit.files.ccsds.section.CommentsContainer;
+import org.orekit.frames.Frame;
 
 /**
  * Container for Attitude Parameter Message quaternion logical block.
@@ -52,16 +56,19 @@ public class ApmQuaternion extends CommentsContainer {
     private final double[] q;
 
     /** Quaternion derivative. */
-    private final double[] qDot;
+    @Nullable
+    private double[] qDot;
 
-    /** Simple constructor.
+    /**
+     * Simple constructor.
+     *
+     * @param frameMapper for creating a {@link Frame}.
+     * @since 13.1.5
      */
-    public ApmQuaternion() {
-        endpoints = new AttitudeEndpoints();
+    public ApmQuaternion(final CcsdsFrameMapper frameMapper) {
+        endpoints = new AttitudeEndpoints(frameMapper);
         q         = new double[4];
-        qDot      = new double[4];
-        Arrays.fill(q,    Double.NaN);
-        Arrays.fill(qDot, Double.NaN);
+        Arrays.fill(q, Double.NaN);
     }
 
     /** {@inheritDoc} */
@@ -115,8 +122,8 @@ public class ApmQuaternion extends CommentsContainer {
      * Get the quaternion derivative.
      * @return quaternion derivative
      */
-    public Quaternion getQuaternionDot() {
-        return new Quaternion(qDot[0], qDot[1], qDot[2], qDot[3]);
+    public Optional<Quaternion> getQuaternionDot() {
+        return qDot == null ? Optional.empty() : Optional.of(new Quaternion(qDot[0], qDot[1], qDot[2], qDot[3]));
     }
 
     /**
@@ -126,6 +133,10 @@ public class ApmQuaternion extends CommentsContainer {
      */
     public void setQDot(final int index, final double derivative) {
         refuseFurtherComments();
+        if (qDot == null) {
+            qDot = new double[4];
+            Arrays.fill(qDot, Double.NaN);
+        }
         this.qDot[index] = derivative;
     }
 
@@ -133,7 +144,7 @@ public class ApmQuaternion extends CommentsContainer {
      * @return true if logical block includes rates
      */
     public boolean hasRates() {
-        return !Double.isNaN(qDot[0] + qDot[1] + qDot[2] + qDot[3]);
+        return getQuaternionDot().isPresent() && !Double.isNaN(qDot[0] + qDot[1] + qDot[2] + qDot[3]);
     }
 
 }

@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Luc Maisonobe
+/* Copyright 2022-2026 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,6 +24,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.utils.formatting.FastLongFormatter;
 
 import java.io.IOException;
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.concurrent.TimeUnit;
 
@@ -166,12 +167,12 @@ public class TimeOffset
     /** Formatter for seconds.
      * @since 13.0.3
      */
-    private static final FastLongFormatter SECONDS_FORMATTER = new FastLongFormatter(1, false);
+    private static final FastLongFormatter SECONDS_FORMATTER = new FastLongFormatter(1, false, false);
 
     /** Formatter for attoseconds.
      * @since 13.0.3
      */
-    private static final FastLongFormatter ATTOSECONDS_FORMATTER = new FastLongFormatter(18, true);
+    private static final FastLongFormatter ATTOSECONDS_FORMATTER = new FastLongFormatter(18, true, true);
 
     /** NaN. */
     private static final String NAN_STRING = "NaN";
@@ -183,6 +184,7 @@ public class TimeOffset
     private static final String NEGATIVE_INTINITY_STRING = "-∞";
 
     /** Serializable UID. */
+    @Serial
     private static final long serialVersionUID = 20240711L;
 
     /** Seconds part. */
@@ -651,27 +653,22 @@ public class TimeOffset
         }
 
         final long sign = seconds < 0L ? -1L : 1L;
-        switch (unit) {
-            case DAYS:
-                return sign * ((sign * seconds + DAY.seconds / 2) / DAY.seconds);
-            case HOURS:
-                return sign * ((sign * seconds + HOUR.seconds / 2) / HOUR.seconds);
-            case MINUTES:
-                return sign * ((sign * seconds + MINUTE.seconds / 2) / MINUTE.seconds);
-            case SECONDS:
-                return seconds + ((attoSeconds >= ATTOS_IN_SECOND / 2) ? 1 : 0);
-            case MILLISECONDS:
-                return seconds * MILLIS_IN_SECOND +
-                       (attoSeconds + MILLISECOND.attoSeconds / 2) / MILLISECOND.attoSeconds;
-            case MICROSECONDS:
-                return seconds * MICROS_IN_SECOND +
-                       (attoSeconds + MICROSECOND.attoSeconds / 2) / MICROSECOND.attoSeconds;
-            case NANOSECONDS:
-                return seconds * NANOS_IN_SECOND +
-                       (attoSeconds + NANOSECOND.attoSeconds / 2) / NANOSECOND.attoSeconds;
-            default:
-                throw new OrekitException(OrekitMessages.UNKNOWN_UNIT, unit.name());
-        }
+        return switch (unit) {
+            case DAYS ->
+                sign * ((sign * seconds + DAY.seconds / 2) / DAY.seconds);
+            case HOURS ->
+                sign * ((sign * seconds + HOUR.seconds / 2) / HOUR.seconds);
+            case MINUTES ->
+                sign * ((sign * seconds + MINUTE.seconds / 2) / MINUTE.seconds);
+            case SECONDS ->
+                seconds + ((attoSeconds >= ATTOS_IN_SECOND / 2) ? 1 : 0);
+            case MILLISECONDS ->
+                seconds * MILLIS_IN_SECOND + (attoSeconds + MILLISECOND.attoSeconds / 2) / MILLISECOND.attoSeconds;
+            case MICROSECONDS ->
+                seconds * MICROS_IN_SECOND + (attoSeconds + MICROSECOND.attoSeconds / 2) / MICROSECOND.attoSeconds;
+            case NANOSECONDS ->
+                seconds * NANOS_IN_SECOND + (attoSeconds + NANOSECOND.attoSeconds / 2) / NANOSECOND.attoSeconds;
+        };
     }
 
     /** Round to specified accuracy.

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,9 +20,10 @@ import java.util.List;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.estimation.measurements.GroundStation;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
+import org.orekit.estimation.measurements.GroundObserver;
+import org.orekit.estimation.measurements.Observer;
 import org.orekit.models.earth.troposphere.TroposphericModel;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
@@ -33,10 +34,10 @@ import org.orekit.utils.TrackingCoordinates;
 /** Base class modifying theoretical range measurements with tropospheric delay.
  * The effect of tropospheric correction on the range is directly computed
  * through the computation of the tropospheric delay.
- *
+ * <p>
  * In general, for GNSS, VLBI, ... there is hardly any frequency dependence in the delay.
  * For SLR techniques however, the frequency dependence is sensitive.
- *
+ * </p>
  * @author Joris Olympio
  * @since 11.2
  */
@@ -70,62 +71,69 @@ public abstract class BaseRangeTroposphericDelayModifier {
     }
 
     /** Compute the measurement error due to Troposphere.
-     * @param station station
-     * @param state spacecraft state
+     * @param observer object that observes signal
+     * @param state    estimated spacecraft state
      * @return the measurement error due to Troposphere
      */
-    public double rangeErrorTroposphericModel(final GroundStation station,
+    public double rangeErrorTroposphericModel(final Observer observer,
                                               final SpacecraftState state) {
 
-        // spacecraft position and elevation as seen from the ground station
-        final Vector3D position = state.getPosition();
-        final TrackingCoordinates trackingCoordinates =
-                        station.getBaseFrame().getTrackingCoordinates(position, state.getFrame(), state.getDate());
+        // Currently not calculating tropospheric delays for this type of observer
+        if (observer instanceof GroundObserver groundObserver) {
 
-        // only consider measures above the horizon
-        if (trackingCoordinates.getElevation() > 0) {
-            // tropospheric delay in meters
-            return tropoModel.
-                    pathDelay(trackingCoordinates,
-                              station.getOffsetGeodeticPoint(state.getDate()),
-                              tropoModel.getParameters(), state.getDate()).
-                    getDelay();
+            // spacecraft position and elevation as seen from the ground station
+            final TrackingCoordinates trackingCoordinates = groundObserver.getTrackingCoordinates(state);
+
+            // only consider measures above the horizon
+            if (trackingCoordinates.getElevation() > 0) {
+                // tropospheric delay in meters
+                return tropoModel.
+                        pathDelay(trackingCoordinates, groundObserver.getOffsetGeodeticPoint(state.getDate()),
+                                tropoModel.getParameters(), state.getDate()).
+                        getDelay();
+            }
+
+            return 0;
+        } else {
+            throw new OrekitException(OrekitMessages.WRONG_OBSERVER_TYPE);
         }
-
-        return 0;
     }
 
 
     /** Compute the measurement error due to Troposphere.
      * @param <T> type of the element
-     * @param station station
-     * @param state spacecraft state
+     * @param observer   object that observes signal
+     * @param state      estimated spacecraft state
      * @param parameters tropospheric model parameters
      * @return the measurement error due to Troposphere
      */
-    public <T extends CalculusFieldElement<T>> T rangeErrorTroposphericModel(final GroundStation station,
+    public <T extends CalculusFieldElement<T>> T rangeErrorTroposphericModel(final Observer observer,
                                                                              final FieldSpacecraftState<T> state,
                                                                              final T[] parameters) {
-        // Field
-        final Field<T> field = state.getDate().getField();
-        final T zero         = field.getZero();
 
-        // spacecraft position and elevation as seen from the ground station
-        final FieldVector3D<T> position = state.getPosition();
-        final FieldTrackingCoordinates<T> trackingCoordinates =
-                        station.getBaseFrame().getTrackingCoordinates(position, state.getFrame(), state.getDate());
+        // Currently not calculating tropospheric delays for this type of observer
+        if (observer instanceof GroundObserver groundObserver) {
 
-        // only consider measures above the horizon
-        if (trackingCoordinates.getElevation() .getReal() > 0) {
-            // tropospheric delay in meters
-            return tropoModel.
-                    pathDelay(trackingCoordinates,
-                              station.getOffsetGeodeticPoint(state.getDate()),
-                              parameters, state.getDate()).
-                    getDelay();
+            // Field
+            final Field<T> field = state.getDate().getField();
+            final T zero = field.getZero();
+
+            // spacecraft position and elevation as seen from the ground station
+            final FieldTrackingCoordinates<T> trackingCoordinates = groundObserver.getTrackingCoordinates(state);
+
+            // only consider measures above the horizon
+            if (trackingCoordinates.getElevation().getReal() > 0) {
+                // tropospheric delay in meters
+                return tropoModel.
+                        pathDelay(trackingCoordinates, groundObserver.getOffsetGeodeticPoint(state.getDate()),
+                                parameters, state.getDate()).
+                        getDelay();
+            }
+
+            return zero;
+        } else {
+            throw new OrekitException(OrekitMessages.WRONG_OBSERVER_TYPE);
         }
-
-        return zero;
     }
 
     /** Get the drivers for this modifier parameters.

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,8 +18,6 @@ package org.orekit.frames;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.SortedSet;
-import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import org.hipparchus.CalculusFieldElement;
@@ -48,7 +46,6 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalStateException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
@@ -59,7 +56,6 @@ import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
-import org.orekit.utils.IERSConventions.NutationCorrectionConverter;
 import org.orekit.utils.PVCoordinates;
 
 public class FramesFactoryTest {
@@ -118,21 +114,14 @@ public class FramesFactoryTest {
     public void testEOPLoaderException() {
         final boolean[] flags = new boolean[2];
         try {
-            FramesFactory.addEOPHistoryLoader(IERSConventions.IERS_2010, new EopHistoryLoader() {
-                @Override
-                public void fillHistory(NutationCorrectionConverter converter, SortedSet<EOPEntry> history) {
-                    // don't really fill history here
-                    flags[0] = true;
-                }
+            FramesFactory.addEOPHistoryLoader(IERSConventions.IERS_2010, (converter, history) -> {
+                // don't really fill history here
+                flags[0] = true;
             });
-            FramesFactory.addEOPHistoryLoader(IERSConventions.IERS_2010, new EopHistoryLoader() {
-                @Override
-                public void fillHistory(NutationCorrectionConverter converter, SortedSet<EOPEntry> history)
-                    {
-                    // generate exception
-                    flags[1] = true;
-                    throw new OrekitException(OrekitMessages.NO_DATA_GENERATED, AbsoluteDate.J2000_EPOCH);
-                }
+            FramesFactory.addEOPHistoryLoader(IERSConventions.IERS_2010, (converter, history) -> {
+                // generate exception
+                flags[1] = true;
+                throw new OrekitException(OrekitMessages.NO_DATA_GENERATED, AbsoluteDate.J2000_EPOCH);
             });
             FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true);
             Assertions.fail("an exception should have been thrown");
@@ -231,7 +220,7 @@ public class FramesFactoryTest {
         Transform t = icrf.getTransformTo(FramesFactory.getGCRF(),
                                           new AbsoluteDate(1969, 6, 25, TimeScalesFactory.getTT()));
         Assertions.assertEquals(0.0, t.getRotation().getAngle(), 1.0e-15);
-        Assertions.assertEquals(CelestialBodyFactory.EARTH_MOON + "/inertial", icrf.getParent().getName());
+        Assertions.assertEquals(CelestialBodyFactory.EARTH_MOON + "/ICRF", icrf.getParent().getName());
         Assertions.assertEquals(Predefined.GCRF.getName(), icrf.getParent().getParent().getName());
     }
 
@@ -296,7 +285,7 @@ public class FramesFactoryTest {
         Utils.setDataRoot("rapid-data-columns");
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_1996.getNutationCorrectionConverter();
-        SortedSet<EOPEntry> rawEquinox = new TreeSet<>(new ChronologicalComparator());
+        List<EOPEntry> rawEquinox = new ArrayList<>();
         DataProvidersManager manager = DataContext.getDefault().getDataProvidersManager();
         UTCScale utc = DataContext.getDefault().getTimeScales().getUTC();
         new RapidDataAndPredictionColumnsLoader(false, "^finals\\.daily$", manager, () -> utc)
@@ -315,7 +304,7 @@ public class FramesFactoryTest {
         Utils.setDataRoot("rapid-data-columns");
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_2003.getNutationCorrectionConverter();
-        final SortedSet<EOPEntry> rawNRO = new TreeSet<>(new ChronologicalComparator());
+        final List<EOPEntry> rawNRO = new ArrayList<>();
         DataProvidersManager manager = DataContext.getDefault().getDataProvidersManager();
         UTCScale utc = DataContext.getDefault().getTimeScales().getUTC();
         new RapidDataAndPredictionColumnsLoader(true, "^finals2000A\\.daily$", manager, () -> utc)
@@ -383,8 +372,8 @@ public class FramesFactoryTest {
         Utils.setLoaders(IERSConventions.IERS_2010, converted);
         Frame todConvertedCorrection  = FramesFactory.getTOD(IERSConventions.IERS_2010, false);
 
-        for (AbsoluteDate date = forced.get(0).getDate();
-             date.compareTo(forced.get(forced.size() - 1).getDate()) < 0;
+        for (AbsoluteDate date = forced.getFirst().getDate();
+             date.compareTo(forced.getLast().getDate()) < 0;
              date = date.shiftedBy(3600)) {
             Transform tNoCorrection =
                     FramesFactory.getNonInterpolatingTransform(todNoCorrection, cirf, date);

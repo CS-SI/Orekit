@@ -16,6 +16,9 @@
  */
 package org.orekit.models.earth;
 
+import java.io.Serial;
+
+
 import org.hipparchus.optim.MaxEval;
 import org.hipparchus.optim.nonlinear.scalar.GoalType;
 import org.hipparchus.optim.univariate.BrentOptimizer;
@@ -73,6 +76,7 @@ public class ITURP834AtmosphericRefraction implements AtmosphericRefractionModel
     };
 
     /** Serializable UID. */
+    @Serial
     private static final long serialVersionUID = 20160118L;
 
     /** station altitude (m). */

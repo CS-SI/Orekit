@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -31,6 +31,6 @@ public enum DutyCycleType {
     TIME,
 
     /** Duty cycle based on phasing/clocking of space object body past a reference direction. */
-    TIME_AND_ANGLE;
+    TIME_AND_ANGLE
 
 }

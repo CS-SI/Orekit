@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -41,7 +41,7 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 
-public class ParameterDrivenDateIntervalDetectorTest {
+class ParameterDrivenDateIntervalDetectorTest {
 
     private Propagator propagator;
 
@@ -66,7 +66,7 @@ public class ParameterDrivenDateIntervalDetectorTest {
         final ParameterDrivenDateIntervalDetector detector = new ParameterDrivenDateIntervalDetector("a",
                 AbsoluteDate.ARBITRARY_EPOCH, AbsoluteDate.ARBITRARY_EPOCH);
         // WHEN
-        final boolean value = detector.dependsOnTimeOnly();
+        final boolean value = detector.getEventFunction().dependsOnTimeOnly();
         // THEN
         Assertions.assertTrue(value);
     }
@@ -95,7 +95,7 @@ public class ParameterDrivenDateIntervalDetectorTest {
         propagator.propagate(propagator.getInitialState().getOrbit().getDate().shiftedBy(3600.0));
 
         Assertions.assertEquals(2, logger.getLoggedEvents().size());
-        Assertions.assertEquals(0.0, logger.getLoggedEvents().get(0).getDate().durationFrom(start), 1.0e-10);
+        Assertions.assertEquals(0.0, logger.getLoggedEvents().getFirst().getDate().durationFrom(start), 1.0e-10);
         Assertions.assertEquals(0.0, logger.getLoggedEvents().get(1).getDate().durationFrom(stop),  1.0e-10);
     }
 
@@ -125,7 +125,7 @@ public class ParameterDrivenDateIntervalDetectorTest {
         propagator.propagate(propagator.getInitialState().getOrbit().getDate().shiftedBy(3600.0));
 
         Assertions.assertEquals(2, logger.getLoggedEvents().size());
-        Assertions.assertEquals(startShift, logger.getLoggedEvents().get(0).getDate().durationFrom(start), 1.0e-10);
+        Assertions.assertEquals(startShift, logger.getLoggedEvents().getFirst().getDate().durationFrom(start), 1.0e-10);
         Assertions.assertEquals(stopShift,  logger.getLoggedEvents().get(1).getDate().durationFrom(stop),  1.0e-10);
     }
 
@@ -269,7 +269,7 @@ public class ParameterDrivenDateIntervalDetectorTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
         final TimeScale utc = TimeScalesFactory.getUTC();
         final Vector3D position = new Vector3D(-6142438.668, 3492467.56, -25767.257);

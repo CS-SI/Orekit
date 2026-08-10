@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -89,6 +89,7 @@ public class KeplerianStateTransitionMatrixTest {
         RealMatrix dYdY0 = harvester.getStateTransitionMatrix(finalState);
         Assertions.assertEquals(OrbitType.CARTESIAN, harvester.getOrbitType());
         Assertions.assertEquals(PositionAngleType.MEAN, harvester.getPositionAngleType());
+        Assertions.assertNull(harvester.getStateJacobianVsBuilderParameters(initialState));
 
         // compute reference state Jacobian using finite differences
         double[][] dYdY0Ref = new double[6][6];

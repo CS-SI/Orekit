@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -122,7 +122,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
     /** Flag for resetting the state at end of propagation. */
     private boolean resetAtEnd;
 
-    /** Type of orbit to output (mean or osculating) <br/>
+    /** Type of orbit to output (mean or osculating).
      * <p>
      * This is used only in the case of semi-analytical propagators where there is a clear separation between
      * mean and short periodic elements. It is ignored by the Numerical propagator.
@@ -552,8 +552,6 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
 
             return finalState;
 
-        } catch (OrekitException pe) {
-            throw pe;
         } catch (MathIllegalArgumentException | MathIllegalStateException me) {
             throw OrekitException.unwrap(me);
         }
@@ -718,6 +716,24 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
 
         return updateAdditionalStatesAndDerivatives(s, os);
 
+    }
+
+    /**
+     * Reset the state prior to continue propagation.
+     * <p>
+     * As the new state will be used for the next integration step,
+     * it shall be consistent with propagator needs. A typical example
+     * is that DSST only integrates mean elements, not osculating ones.
+     * </p>
+     * @param handler event handler
+     * @param detector event detector
+     * @param oldState old state (previous one)
+     * @return new state
+     * @since 13.1.6
+     */
+    protected FieldSpacecraftState<T> resetIntegrationStateAtEvent(final FieldEventHandler<T> handler, final FieldEventDetector<T> detector,
+                                                                   final FieldSpacecraftState<T> oldState) {
+        return handler.resetState(detector, oldState);
     }
 
     /** Differential equations for the main state (orbit, attitude and mass).
@@ -929,8 +945,8 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
 
     }
 
-    /** Adapt an {@link org.orekit.propagation.events.FieldEventDetector<T>}
-     * to Hipparchus {@link org.hipparchus.ode.events.FieldODEEventDetector<T>} interface.
+    /** Adapt an {@link org.orekit.propagation.events.FieldEventDetector}
+     * to Hipparchus {@link org.hipparchus.ode.events.FieldODEEventDetector} interface.
      * @author Fabien Maussion
      */
     private class FieldAdaptedEventDetector implements FieldODEEventDetector<T> {
@@ -1009,7 +1025,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
          * @return Orekit state
          */
         private FieldSpacecraftState<T> convertToOrekitForEventFunction(final FieldODEStateAndDerivative<T> s) {
-            if (!this.detector.dependsOnMainVariablesOnly()) {
+            if (!this.detector.getEventFunction().dependsOnMainVariablesOnly()) {
                 return convertToOrekit(s);
             } else {
                 // event function does not require secondary states or attitude rates
@@ -1023,7 +1039,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
         /** {@inheritDoc} */
         public FieldODEEventHandler<T> getHandler() {
 
-            return new FieldODEEventHandler<T>() {
+            return new FieldODEEventHandler<>() {
 
                 /** {@inheritDoc} */
                 public Action eventOccurred(final FieldODEStateAndDerivative<T> s,
@@ -1038,7 +1054,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
                                                    final FieldODEStateAndDerivative<T> s) {
 
                     final FieldSpacecraftState<T> oldState = convertToOrekit(s);
-                    final FieldSpacecraftState<T> newState = handler.resetState(detector, oldState);
+                    final FieldSpacecraftState<T> newState = resetIntegrationStateAtEvent(handler, detector, oldState);
                     stateChanged(newState);
 
                     // main part
@@ -1063,8 +1079,8 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
 
     }
 
-    /** Adapt an {@link org.orekit.propagation.sampling.FieldOrekitStepHandler<T>}
-     * to Hipparchus {@link FieldODEStepHandler<T>} interface.
+    /** Adapt an {@link org.orekit.propagation.sampling.FieldOrekitStepHandler}
+     * to Hipparchus {@link FieldODEStepHandler} interface.
      * @author Luc Maisonobe
      */
     private class FieldAdaptedStepHandler implements FieldODEStepHandler<T> {
@@ -1098,8 +1114,8 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
 
     }
 
-    /** Adapt an {@link org.orekit.propagation.sampling.FieldOrekitStepInterpolator<T>}
-     * to Hipparchus {@link FieldODEStateInterpolator<T>} interface.
+    /** Adapt an {@link org.orekit.propagation.sampling.FieldOrekitStepInterpolator}
+     * to Hipparchus {@link FieldODEStateInterpolator} interface.
      * @author Luc Maisonobe
      */
     private class FieldAdaptedStepInterpolator implements FieldOrekitStepInterpolator<T> {
@@ -1321,7 +1337,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
      * If propagator-specific event handlers and step handlers are added to
      * the integrator in the try block, they will be removed automatically
      * when leaving the block, so the integrator only keep its own handlers
-     * between calls to {@link FieldAbstractIntegratedPropagator#propagate(FieldAbsoluteDate, FieldAbsoluteDate).
+     * between calls to {@link FieldAbstractIntegratedPropagator#propagate(FieldAbsoluteDate, FieldAbsoluteDate)}.
      * </p>
      * @param <T> the type of the field elements
      * @since 11.0

@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,14 +24,34 @@ import org.orekit.TestUtils;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.handlers.ContinueOnEvent;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ExtendedPositionProvider;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 class FieldAngularSeparationDetectorTest {
+
+    @Test
+    void testToEventDetector() {
+        // GIVEN
+        final ExtendedPositionProvider mockedBeacon = mock();
+        final ExtendedPositionProvider mockedObserver = mock();
+        final Binary64 expectedAngle = Binary64.ONE;
+        final FieldAngularSeparationDetector<Binary64> fieldDetector = new FieldAngularSeparationDetector<>(mockedBeacon,
+                mockedObserver, expectedAngle);
+        final EventHandler expectedHandler = new ContinueOnEvent();
+        // WHEN
+        final AngularSeparationDetector detector = fieldDetector.toEventDetector(expectedHandler);
+        // THEN
+        assertEquals(expectedHandler, detector.getHandler());
+        assertEquals(fieldDetector.getProximityAngle().getReal(), detector.getProximityAngle());
+        assertEquals(fieldDetector.getBeacon(), detector.getBeacon());
+        assertEquals(fieldDetector.getObserver(), detector.getObserver());
+    }
 
     @Test
     void testGetter() {

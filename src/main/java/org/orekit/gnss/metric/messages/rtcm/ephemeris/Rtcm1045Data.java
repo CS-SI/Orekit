@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,104 +16,30 @@
  */
 package org.orekit.gnss.metric.messages.rtcm.ephemeris;
 
-import org.orekit.annotation.DefaultDataContext;
-import org.orekit.data.DataContext;
-import org.orekit.gnss.SatelliteSystem;
-import org.orekit.propagation.analytical.gnss.GNSSPropagator;
-import org.orekit.propagation.analytical.gnss.data.GalileoNavigationMessage;
-import org.orekit.time.GNSSDate;
-import org.orekit.time.TimeScales;
+import org.orekit.gnss.metric.messages.common.AccuracyProvider;
+import org.orekit.propagation.analytical.gnss.data.GalileoNavigationMessageFactory;
 
 /**
  * Container for RTCM 1045 data.
  * @author Bryan Cazabonne
  * @since 11.0
  */
-public class Rtcm1045Data extends RtcmEphemerisData {
-
-    /** Galileo navigation message. */
-    private GalileoNavigationMessage galileoNavigationMessage;
-
-    /** Galileo Time of clock. */
-    private double galileoToc;
+public class Rtcm1045Data extends Rtcm1046Data {
 
     /** Galileo NAV Data Validity Status. */
-    private int galileoDataValidityStatus;
+    private final int galileoDataValidityStatus;
 
-    /** Constructor. */
-    public Rtcm1045Data() {
-        // Nothing to do ...
-    }
-
-    /**
-     * Get the Galileo navigation message corresponding to the current RTCM data.
-     * <p>
-     * This object can be used to initialize a {@link GNSSPropagator}
-     * <p>
-     * This method uses the {@link DataContext#getDefault()} to initialize
-     * the time scales used to configure the reference epochs of the navigation
-     * message.
-     *
-     * @return the Galileo navigation message
+    /** Constructor.
+     * @param satelliteId satellite ID
+     * @param accuracyProvider accuracy provider
+     * @param factory factory for Galileo navigation message
+     * @param galileoDataValidityStatus the validity status to set
+     * @since 14.0
      */
-    @DefaultDataContext
-    public GalileoNavigationMessage getGalileoNavigationMessage() {
-        return getGalileoNavigationMessage(DataContext.getDefault().getTimeScales());
-    }
-
-    /**
-     * Get the Galileo navigation message corresponding to the current RTCM data.
-     * <p>
-     * This object can be used to initialize a {@link GNSSPropagator}
-     * <p>
-     * When calling this method, the reference epochs of the navigation message
-     * (i.e. ephemeris and clock epochs) are initialized using the provided time scales.
-     *
-     * @param timeScales time scales to use for initializing epochs
-     * @return the Galileo navigation message
-     */
-    public GalileoNavigationMessage getGalileoNavigationMessage(final TimeScales timeScales) {
-
-        // Satellite system
-        final SatelliteSystem system = SatelliteSystem.GALILEO;
-
-        // Week number and time of ephemeris
-        final int    week = galileoNavigationMessage.getWeek();
-
-        // Set the ephemeris reference data
-        galileoNavigationMessage.setEpochToc(new GNSSDate(week, galileoToc, system, timeScales).getDate());
-
-        // Return the navigation message
-        return galileoNavigationMessage;
-
-    }
-
-    /**
-     * Set the Galileo navigation message.
-     * @param galileoNavigationMessage the Galileo navigation message to set
-     */
-    public void setGalileoNavigationMessage(final GalileoNavigationMessage galileoNavigationMessage) {
-        this.galileoNavigationMessage = galileoNavigationMessage;
-    }
-
-    /**
-     * Get the Galileo time of clock.
-     * <p>
-     * The Galileo time of clock is given in seconds since
-     * the beginning of the Galileo week.
-     * </p>
-     * @return the Galileo time of clock
-     */
-    public double getGalileoToc() {
-        return galileoToc;
-    }
-
-    /**
-     * Set the Galileo time of clock.
-     * @param toc the time of clock to set
-     */
-    public void setGalileoToc(final double toc) {
-        this.galileoToc = toc;
+    public Rtcm1045Data(final int satelliteId, final AccuracyProvider accuracyProvider,
+                        final GalileoNavigationMessageFactory factory, final int galileoDataValidityStatus) {
+        super(satelliteId, accuracyProvider, factory);
+        this.galileoDataValidityStatus = galileoDataValidityStatus;
     }
 
     /**
@@ -122,14 +48,6 @@ public class Rtcm1045Data extends RtcmEphemerisData {
      */
     public int getGalileoDataValidityStatus() {
         return galileoDataValidityStatus;
-    }
-
-    /**
-     * Set the Galileo data validity status.
-     * @param galileoDataValidityStatus the validity status to set
-     */
-    public void setGalileoDataValidityStatus(final int galileoDataValidityStatus) {
-        this.galileoDataValidityStatus = galileoDataValidityStatus;
     }
 
 }

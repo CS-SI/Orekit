@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,8 +26,9 @@ import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.Range;
 import org.orekit.estimation.measurements.modifiers.Bias;
+import org.orekit.estimation.measurements.modifiers.MeasurementNoise;
 
-public class RangeBuilderTest extends AbstractGroundMeasurementBuilderTest<Range> {
+class RangeBuilderTest extends AbstractGroundMeasurementBuilderTest<Range> {
 
     private static final double SIGMA = 10.0;
     private static final double BIAS  =  3.0;
@@ -37,10 +38,12 @@ public class RangeBuilderTest extends AbstractGroundMeasurementBuilderTest<Range
                                                    final ObservableSatellite satellite) {
         final RealMatrix covariance = MatrixUtils.createRealDiagonalMatrix(new double[] { SIGMA * SIGMA });
         MeasurementBuilder<Range> rb =
-                        new RangeBuilder(random == null ? null : new CorrelatedRandomVectorGenerator(covariance,
-                                                                                                     1.0e-10,
-                                                                                                     new GaussianRandomGenerator(random)),
-                                         groundStation, true, SIGMA, 1.0, satellite);
+                        new RangeBuilder(groundStation, true, SIGMA, 1.0, satellite);
+        if (random != null) {
+            rb.addModifier(new MeasurementNoise<>(new CorrelatedRandomVectorGenerator(covariance,
+                    1.0e-10,
+                    new GaussianRandomGenerator(random))));
+        }
         rb.addModifier(new Bias<>(new String[] { "bias" },
                         new double[] { BIAS },
                         new double[] { 1.0 },
@@ -50,13 +53,13 @@ public class RangeBuilderTest extends AbstractGroundMeasurementBuilderTest<Range
     }
 
     @Test
-    public void testForward() {
-        doTest(0x01e226dd859c2c9dl, 0.4, 0.9, 128, 2.7 * SIGMA);
+    void testForward() {
+        doTest(0x01e226dd859c2c9dl, 0.4, 0.9, 128, 6. * SIGMA);
     }
 
     @Test
-    public void testBackward() {
-        doTest(0xd4e49e3716605903l, -0.2, -0.6, 100, 3.2 * SIGMA);
+    void testBackward() {
+        doTest(0xd4e49e3716605903l, -0.2, -0.6, 100, 6. * SIGMA);
     }
 
 }

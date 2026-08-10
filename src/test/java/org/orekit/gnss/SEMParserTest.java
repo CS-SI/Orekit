@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,6 +24,7 @@ import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.analytical.gnss.data.GNSSConstants;
 import org.orekit.propagation.analytical.gnss.data.GPSAlmanac;
+import org.orekit.time.DateComponents;
 import org.orekit.time.GNSSDate;
 
 import java.io.IOException;
@@ -70,6 +71,7 @@ public class SEMParserTest {
 
     @Test
     public void testLoadData() throws IOException, ParseException, OrekitException {
+        GNSSDate.setRolloverReference(DateComponents.GPS_EPOCH);
         // the parser for reading SEM files with *.sem as supported name for SEM files
         SEMParser reader = new SEMParser(".*\\.sem$");
         // the SEM file to read
@@ -85,37 +87,38 @@ public class SEMParserTest {
         Assertions.assertEquals(31, reader.getPRNNumbers().size());
 
         // Checks the first almanac read
-        final GPSAlmanac alm = reader.getAlmanacs().get(0);
-        Assertions.assertEquals(1, alm.getPRN());
+        final GPSAlmanac alm = reader.getAlmanacs().getFirst();
+        Assertions.assertEquals(1, alm.getPrn());
         Assertions.assertEquals(63, alm.getSVN());
-        Assertions.assertEquals(862, alm.getWeek());
-        Assertions.assertEquals(319488.0, alm.getTime(), 0.);
-        Assertions.assertEquals(5.15360253906250E+03, FastMath.sqrt(alm.getSma()), FastMath.ulp(5.E+03));
-        Assertions.assertEquals(5.10072708129883E-03, alm.getE(), FastMath.ulp(8E-05));
-        Assertions.assertEquals(6.84547424316406E-03,  (alm.getI0() / GNSSConstants.GNSS_PI) - 0.30, 1.E-17);
+        Assertions.assertEquals(862, alm.getTimeOfEphemeris().getWeekNumber());
+        Assertions.assertEquals(319488.0, alm.getTimeOfEphemeris().getSecondsInWeek(), 0.);
+        Assertions.assertEquals(5.15360253906250E+03, FastMath.sqrt(alm.getOrbit().getA()), FastMath.ulp(5.E+03));
+        Assertions.assertEquals(5.10072708129883E-03, alm.getOrbit().getE(), FastMath.ulp(8E-05));
+        Assertions.assertEquals(6.84547424316406E-03,  (alm.getOrbit().getI() / GNSSConstants.GNSS_PI) - 0.30, 1.E-17);
         Assertions.assertEquals(0., alm.getIDot(), 0.);
-        Assertions.assertEquals(-2.08778738975525E-01, alm.getOmega0() / GNSSConstants.GNSS_PI, FastMath.ulp(-2E-01));
+        Assertions.assertEquals(-2.08778738975525E-01, alm.getOrbit().getRightAscensionOfAscendingNode() / GNSSConstants.GNSS_PI, FastMath.ulp(-2E-01));
         Assertions.assertEquals(-2.48837750405073E-09, alm.getOmegaDot() / GNSSConstants.GNSS_PI, FastMath.ulp(-3E-09));
-        Assertions.assertEquals(1.46086812019348E-01, alm.getPa() / GNSSConstants.GNSS_PI, FastMath.ulp(1E-01));
-        Assertions.assertEquals(4.55284833908081E-01, alm.getM0() / GNSSConstants.GNSS_PI, FastMath.ulp(4E-01));
+        Assertions.assertEquals(1.46086812019348E-01, alm.getOrbit().getPeriapsisArgument() / GNSSConstants.GNSS_PI, FastMath.ulp(1E-01));
+        Assertions.assertEquals(4.55284833908081E-01, alm.getOrbit().getMeanAnomaly() / GNSSConstants.GNSS_PI, FastMath.ulp(4E-01));
         Assertions.assertEquals(1.33514404296875E-05, alm.getAf0(), FastMath.ulp(1E-05));
         Assertions.assertEquals(0., alm.getAf1(), 0.);
         Assertions.assertEquals(0, alm.getHealth());
         Assertions.assertEquals(0, alm.getURA());
         Assertions.assertEquals(11, alm.getSatConfiguration());
         Assertions.assertEquals("SEM", alm.getSource());
-        Assertions.assertEquals(alm.getDate().durationFrom(new GNSSDate(862, 319488.0, SatelliteSystem.GPS).getDate()), 0, 0);
+        Assertions.assertEquals(0, alm.getDate().durationFrom(alm.getTimeOfEphemeris()), 0);
         Assertions.assertEquals(0., alm.getCic(), 0.);
         Assertions.assertEquals(0., alm.getCis(), 0.);
         Assertions.assertEquals(0., alm.getCrc(), 0.);
         Assertions.assertEquals(0., alm.getCrs(), 0.);
         Assertions.assertEquals(0., alm.getCuc(), 0.);
         Assertions.assertEquals(0., alm.getCus(), 0.);
-        Assertions.assertEquals(1.4585998186870066E-4, alm.getMeanMotion0(), 0.);
+        Assertions.assertEquals(1.4585998186870066E-4, alm.getOrbit().getKeplerianMeanMotion(), 0.);
     }
 
     @Test
     public void testLoadDefault() throws OrekitException {
+        GNSSDate.setRolloverReference(DateComponents.GPS_EPOCH);
         // the parser for reading SEM files with default supported name *.al3 for SEM files
         SEMParser reader = new SEMParser(null);
         // Reads the SEM file
@@ -128,33 +131,33 @@ public class SEMParserTest {
         Assertions.assertEquals(31, reader.getPRNNumbers().size());
 
         // Checks the last almanac read
-        final GPSAlmanac alm = reader.getAlmanacs().get(reader.getAlmanacs().size() - 1);
-        Assertions.assertEquals(32, alm.getPRN());
+        final GPSAlmanac alm = reader.getAlmanacs().getLast();
+        Assertions.assertEquals(32, alm.getPrn());
         Assertions.assertEquals(70, alm.getSVN());
-        Assertions.assertEquals(862, alm.getWeek());
-        Assertions.assertEquals(319488.0, alm.getTime(), 0.);
-        Assertions.assertEquals(5.16559130859375E+03, FastMath.sqrt(alm.getSma()), FastMath.ulp(5.E+03));
-        Assertions.assertEquals(7.96318054199219E-05, alm.getE(), FastMath.ulp(8E-05));
-        Assertions.assertEquals(5.53321838378906E-03,  (alm.getI0() / GNSSConstants.GNSS_PI) - 0.30, 1.E-17);
+        Assertions.assertEquals(862, alm.getTimeOfEphemeris().getWeekNumber());
+        Assertions.assertEquals(319488.0, alm.getTimeOfEphemeris().getSecondsInWeek(), 0.);
+        Assertions.assertEquals(5.16559130859375E+03, FastMath.sqrt(alm.getOrbit().getA()), FastMath.ulp(5.E+03));
+        Assertions.assertEquals(7.96318054199219E-05, alm.getOrbit().getE(), FastMath.ulp(8E-05));
+        Assertions.assertEquals(5.53321838378906E-03,  (alm.getOrbit().getI() / GNSSConstants.GNSS_PI) - 0.30, 1.E-17);
         Assertions.assertEquals(0., alm.getIDot(), 0.);
-        Assertions.assertEquals(4.53996539115906E-01, alm.getOmega0() / GNSSConstants.GNSS_PI, FastMath.ulp(5E-01));
+        Assertions.assertEquals(4.53996539115906E-01, alm.getOrbit().getRightAscensionOfAscendingNode() / GNSSConstants.GNSS_PI, FastMath.ulp(5E-01));
         Assertions.assertEquals(-2.46291165240109E-09, alm.getOmegaDot() / GNSSConstants.GNSS_PI, FastMath.ulp(-3E-09));
-        Assertions.assertEquals(7.92368650436401E-02, alm.getPa() / GNSSConstants.GNSS_PI, FastMath.ulp(8E-02));
-        Assertions.assertEquals(3.84885787963867E-01, alm.getM0() / GNSSConstants.GNSS_PI, FastMath.ulp(4E-01));
+        Assertions.assertEquals(7.92368650436401E-02, alm.getOrbit().getPeriapsisArgument() / GNSSConstants.GNSS_PI, FastMath.ulp(8E-02));
+        Assertions.assertEquals(3.84885787963867E-01, alm.getOrbit().getMeanAnomaly() / GNSSConstants.GNSS_PI, FastMath.ulp(4E-01));
         Assertions.assertEquals(9.5367431640625E-6, alm.getAf0(), 0.);
         Assertions.assertEquals(3.63797880709171E-12, alm.getAf1(), 0.);
         Assertions.assertEquals(63, alm.getHealth());
         Assertions.assertEquals(0, alm.getURA());
         Assertions.assertEquals(11, alm.getSatConfiguration());
         Assertions.assertEquals("SEM", alm.getSource());
-        Assertions.assertEquals(0, alm.getDate().durationFrom(new GNSSDate(862, 319488.0, SatelliteSystem.GPS).getDate()), 1.0e-15);
+        Assertions.assertEquals(0, alm.getDate().durationFrom(alm.getTimeOfEphemeris()), 1.0e-15);
         Assertions.assertEquals(0., alm.getCic(), 0.);
         Assertions.assertEquals(0., alm.getCis(), 0.);
         Assertions.assertEquals(0., alm.getCrc(), 0.);
         Assertions.assertEquals(0., alm.getCrs(), 0.);
         Assertions.assertEquals(0., alm.getCuc(), 0.);
         Assertions.assertEquals(0., alm.getCus(), 0.);
-        Assertions.assertEquals(1.4484676213604242E-4, alm.getMeanMotion0(), 0.);
+        Assertions.assertEquals(1.4484676213604242E-4, alm.getOrbit().getKeplerianMeanMotion(), 0.);
     }
 
 }

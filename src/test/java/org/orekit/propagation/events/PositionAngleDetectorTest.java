@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -174,7 +174,7 @@ public class PositionAngleDetectorTest {
         double a = 24396159;                 // semi major axis in meters
         double e = 0.72831215;               // eccentricity
         double i = FastMath.toRadians(7);        // inclination
-        double omega = FastMath.toRadians(180);  // perigee argument
+        double omega = FastMath.toRadians(180);  // periapsis argument
         double raan = FastMath.toRadians(261);   // right ascension of ascending node
         double lM = 0;                       // mean anomaly
 
@@ -256,7 +256,7 @@ public class PositionAngleDetectorTest {
         double a = 24396159;                     // semi major axis in meters
         double e = 0.72831215;                   // eccentricity
         double i = FastMath.toRadians(7);        // inclination
-        double omega = FastMath.toRadians(180);  // perigee argument
+        double omega = FastMath.toRadians(180);  // periapsis argument
         double raan = FastMath.toRadians(261);   // right ascension of ascending node
         double lM = 0;                           // mean anomaly
 

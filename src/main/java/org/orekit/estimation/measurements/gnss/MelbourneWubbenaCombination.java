@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,6 +24,7 @@ import org.orekit.files.rinex.observation.ObservationData;
 import org.orekit.files.rinex.observation.ObservationDataSet;
 import org.orekit.gnss.MeasurementType;
 import org.orekit.gnss.SatelliteSystem;
+import org.orekit.utils.Constants;
 
 /**
  * Melbourne-Wübbena combination.
@@ -99,8 +100,10 @@ public class MelbourneWubbenaCombination implements MeasurementCombination {
                         // Verify if the combinations have used the same frequencies
                         final boolean isCombinationPossible = isCombinationPossible(odWL, odNL);
                         if (isCombinationPossible) {
+                            // Convert wide-lane phase from cycles to meters
+                            final double wavelengthWL = Constants.SPEED_OF_LIGHT / odWL.getCombinedFrequency();
                             // Combined value and frequency
-                            final double combinedValue     = odWL.getValue() - odNL.getValue();
+                            final double combinedValue     = odWL.getValue() * wavelengthWL - odNL.getValue();
                             final double combinedFrequency = odWL.getCombinedFrequency();
                             // Used observation data to build the Melbourn-Wübbena measurement
                             final List<ObservationData> usedData = new ArrayList<>(4);

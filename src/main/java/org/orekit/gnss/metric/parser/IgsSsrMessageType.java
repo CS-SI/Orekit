@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,6 +25,7 @@ import java.util.regex.Pattern;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.frames.Frame;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.metric.messages.ParsedMessage;
 import org.orekit.gnss.metric.messages.common.ClockCorrection;
@@ -73,9 +74,8 @@ public enum IgsSsrMessageType implements MessageType {
 
         /** {@inheritDoc} */
         @Override
-        public ParsedMessage parse(final EncodedMessage encodedMessage,
-                                   final int messageNumber,
-                                   final TimeScales timeScales) {
+        public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber,
+                                   final TimeScales timeScales, final Frame inertial, final Frame bodyFixed) {
 
             // Satellite system
             final SatelliteSystem system = messageNumberToSatelliteSystem(messageNumber);
@@ -139,7 +139,7 @@ public enum IgsSsrMessageType implements MessageType {
         /** {@inheritDoc} */
         @Override
         public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber,
-                                   final TimeScales timeScales) {
+                                   final TimeScales timeScales, final Frame inertial, final Frame bodyFixed) {
 
             // Satellite system
             final SatelliteSystem system = messageNumberToSatelliteSystem(messageNumber);
@@ -195,7 +195,7 @@ public enum IgsSsrMessageType implements MessageType {
         /** {@inheritDoc} */
         @Override
         public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber,
-                                   final TimeScales timeScales) {
+                                   final TimeScales timeScales, final Frame inertial, final Frame bodyFixed) {
 
             // Satellite system
             final SatelliteSystem system = messageNumberToSatelliteSystem(messageNumber);
@@ -266,7 +266,7 @@ public enum IgsSsrMessageType implements MessageType {
         /** {@inheritDoc} */
         @Override
         public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber,
-                                   final TimeScales timeScales) {
+                                   final TimeScales timeScales, final Frame inertial, final Frame bodyFixed) {
 
             // Satellite system
             final SatelliteSystem system = messageNumberToSatelliteSystem(messageNumber);
@@ -313,7 +313,7 @@ public enum IgsSsrMessageType implements MessageType {
         /** {@inheritDoc} */
         @Override
         public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber,
-                                   final TimeScales timeScales) {
+                                   final TimeScales timeScales, final Frame inertial, final Frame bodyFixed) {
 
             // Satellite system
             final SatelliteSystem system = messageNumberToSatelliteSystem(messageNumber);
@@ -372,7 +372,7 @@ public enum IgsSsrMessageType implements MessageType {
         /** {@inheritDoc} */
         @Override
         public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber,
-                                   final TimeScales timeScales) {
+                                   final TimeScales timeScales, final Frame inertial, final Frame bodyFixed) {
 
             // Satellite system
             final SatelliteSystem system = messageNumberToSatelliteSystem(messageNumber);
@@ -440,7 +440,7 @@ public enum IgsSsrMessageType implements MessageType {
         /** {@inheritDoc} */
         @Override
         public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber,
-                                   final TimeScales timeScales) {
+                                   final TimeScales timeScales, final Frame inertial, final Frame bodyFixed) {
 
             // Satellite system
             final SatelliteSystem system = messageNumberToSatelliteSystem(messageNumber);
@@ -487,7 +487,7 @@ public enum IgsSsrMessageType implements MessageType {
         /** {@inheritDoc} */
         @Override
         public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber,
-                                   final TimeScales timeScales) {
+                                   final TimeScales timeScales, final Frame inertial, final Frame bodyFixed) {
 
             // Header data
             final SsrIm201Header im201Header = new SsrIm201Header();
@@ -652,17 +652,11 @@ public enum IgsSsrMessageType implements MessageType {
     public static int getSatelliteId(final SatelliteSystem system, final int id) {
 
         // Switch on satellite systems
-        switch (system) {
-            case QZSS:
-                // ID = ID(parsed) + 192
-                return id + 192;
-            case SBAS:
-                // ID = ID(parsed) + 119
-                return id + 119;
-            default:
-                // For GPS, GLONASS, Beidou, and Galileo the id is unchanged
-                return id;
-        }
+        return switch (system) {
+            case QZSS -> id + 192;
+            case SBAS -> id + 119;
+            default -> id;
+        };
 
     }
 

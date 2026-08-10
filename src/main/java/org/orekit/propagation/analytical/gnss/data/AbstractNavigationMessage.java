@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,9 +17,8 @@
 package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.util.FastMath;
-import org.orekit.gnss.SatelliteSystem;
-import org.orekit.time.AbsoluteDate;
+import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
 
 /**
@@ -35,37 +34,54 @@ import org.orekit.time.TimeScales;
  * @see NavICLegacyNavigationMessage
  */
 public abstract class AbstractNavigationMessage<O extends AbstractNavigationMessage<O>>
-    extends AbstractAlmanac<O> implements NavigationMessage {
-
-    /** Time of clock epoch. */
-    private AbsoluteDate epochToc;
+    extends GNSSOrbitalElements<O> implements NavigationMessage {
 
     /** Transmission time.
      * @since 12.0
      */
-    private double transmissionTime;
-
-    /** Message type.
-     * @since 14.0
-     */
-    private final String type;
+    private final GNSSDate  transmissionTime;
 
     /**
      * Constructor.
-     * @param mu              Earth's universal gravitational parameter
-     * @param angularVelocity mean angular velocity of the Earth for the GNSS model
-     * @param weeksInCycle    number of weeks in the GNSS cycle
-     * @param timeScales      known time scales
-     * @param system          satellite system to consider for interpreting week number
-     *                        (may be different from real system, for example in Rinex nav, weeks
-     *                        are always according to GPS)
-     * @param type            message type
+     * @param angularVelocity  mean angular velocity of the Earth for the GNSS model
+     * @param weeksInCycle     number of weeks in the GNSS cycle
+     * @param timeScales       known time scales
+     * @param type             message type
+     * @param prn              PRN number of the satellite
+     * @param toe              time of ephemeris (<em>must</em> be consistent with {@code orbit})
+     * @param orbit            Keplerian orbit in Earth-frozen frame
+     * @param aDot             change rate in semi-major axis (m/s)
+     * @param deltaN0          delta of satellite mean motion
+     * @param deltaN0Dot       change rate in Δn₀
+     * @param iDot             inclination rate (rad/s)
+     * @param omegaDot         rate of right ascension (rad/s)
+     * @param cuc              amplitude of the cosine harmonic correction term to the argument of latitude
+     * @param cus              amplitude of the sine harmonic correction term to the argument of latitude
+     * @param crc              amplitude of the cosine harmonic correction term to the orbit radius
+     * @param crs              amplitude of the sine harmonic correction term to the orbit radius
+     * @param cic              amplitude of the cosine harmonic correction term to the inclination
+     * @param cis              amplitude of the sine harmonic correction term to the inclination
+     * @param af0              zero-th order clock correction (s)
+     * @param af1              first order clock correction (s/s)
+     * @param af2              second order clock correction (s/s²)
+     * @param toc              time of clock
+     * @param tgd              group delay differential TGD for L1-L2 correction
+     * @param transmissionTime transmission time
      */
-    protected AbstractNavigationMessage(final double mu, final double angularVelocity, final int weeksInCycle,
-                                        final TimeScales timeScales, final SatelliteSystem system,
-                                        final String type) {
-        super(mu, angularVelocity, weeksInCycle, timeScales, system);
-        this.type = type;
+    protected AbstractNavigationMessage(final double angularVelocity, final int weeksInCycle,
+                                        final TimeScales timeScales, final String type,
+                                        final int prn, final GNSSDate toe, final KeplerianOrbit orbit,
+                                        final double aDot, final double deltaN0, final double deltaN0Dot,
+                                        final double iDot, final double omegaDot,
+                                        final double cuc, final double cus,
+                                        final double crc, final double crs,
+                                        final double cic, final double cis,
+                                        final double af0, final double af1, final double af2,
+                                        final double tgd, final GNSSDate toc, final GNSSDate transmissionTime) {
+        super(angularVelocity, weeksInCycle, timeScales, type, prn,
+              toe, orbit, aDot, deltaN0, deltaN0Dot, iDot, omegaDot,
+              cuc, cus, crc, crs, cic, cis, af0, af1, af2, tgd, toc);
+        this.transmissionTime = transmissionTime;
     }
 
     /** Constructor from field instance.
@@ -76,15 +92,13 @@ public abstract class AbstractNavigationMessage<O extends AbstractNavigationMess
     protected <T extends CalculusFieldElement<T>,
                A extends AbstractNavigationMessage<A>> AbstractNavigationMessage(final FieldAbstractNavigationMessage<T, A> original) {
         super(original);
-        setEpochToc(original.getEpochToc().toAbsoluteDate());
-        setTransmissionTime(original.getTransmissionTime().getReal());
-        this.type = original.getNavigationMessageType();
+        transmissionTime = original.getTransmissionTime().getGnssDate();
     }
 
     /** {@inheritDoc} */
     @Override
     public String getNavigationMessageType() {
-        return type;
+        return getType();
     }
 
     /** {@inheritDoc} */
@@ -93,57 +107,12 @@ public abstract class AbstractNavigationMessage<O extends AbstractNavigationMess
         return null;
     }
 
-    /**
-     * Getter for Square Root of Semi-Major Axis (√m).
-     * @return Square Root of Semi-Major Axis (√m)
-     */
-    public double getSqrtA() {
-        return FastMath.sqrt(getSma());
-    }
-
-    /**
-     * Setter for the Square Root of Semi-Major Axis (√m).
-     * <p>
-     * In addition, this method set the value of the Semi-Major Axis.
-     * </p>
-     * @param sqrtA the Square Root of Semi-Major Axis (√m)
-     */
-    public void setSqrtA(final double sqrtA) {
-        getSmaDriver().setValue(sqrtA * sqrtA);
-    }
-
-    /**
-     * Getter for the time of clock epoch.
-     * @return the time of clock epoch
-     */
-    public AbsoluteDate getEpochToc() {
-        return epochToc;
-    }
-
-    /**
-     * Setter for the time of clock epoch.
-     * @param epochToc the epoch to set
-     */
-    public void setEpochToc(final AbsoluteDate epochToc) {
-        this.epochToc = epochToc;
-    }
-
-    /**
-     * Getter for transmission time.
+    /** Get transmission time.
      * @return transmission time
      * @since 12.0
      */
-    public double getTransmissionTime() {
+    public GNSSDate getTransmissionTime() {
         return transmissionTime;
-    }
-
-    /**
-     * Setter for transmission time.
-     * @param transmissionTime transmission time
-     * @since 12.0
-     */
-    public void setTransmissionTime(final double transmissionTime) {
-        this.transmissionTime = transmissionTime;
     }
 
 }

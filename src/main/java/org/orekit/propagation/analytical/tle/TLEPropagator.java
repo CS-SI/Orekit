@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -47,6 +47,8 @@ import org.orekit.time.TimeScale;
 import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterDriversProvider;
+import org.orekit.utils.ParameterObserver;
 import org.orekit.utils.TimeSpanMap;
 import org.orekit.utils.TimeSpanMap.Span;
 
@@ -75,7 +77,7 @@ import org.orekit.utils.TimeSpanMap.Span;
  * @author Fabien Maussion (java translation)
  * @see TLE
  */
-public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
+public abstract class TLEPropagator extends AbstractAnalyticalPropagator implements ParameterDriversProvider {
 
     // CHECKSTYLE: stop VisibilityModifier check
 
@@ -97,7 +99,7 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
     /** final inclination. */
     protected double i;
 
-    /** final perigee argument. */
+    /** final periapsis argument. */
     protected double omega;
 
     /** L from SPTRCK #3. */
@@ -121,7 +123,7 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
     /** common parameter for mean anomaly (M) computation. */
     protected double xmdot;
 
-    /** common parameter for perigee argument (omega) computation. */
+    /** common parameter for periapsis argument (omega) computation. */
     protected double omgdot;
 
     /** common parameter for raan (OMEGA) computation. */
@@ -135,7 +137,7 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
     /** sqrt (1 - e2). */
     protected double beta0;
 
-    /** perigee, expressed in KM and ALTITUDE. */
+    /** periapsis, expressed in KM and ALTITUDE. */
     protected double perige;
 
     /** eta squared. */
@@ -182,7 +184,15 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
     /** All TLEs and masses. */
     private TimeSpanMap<Pair<TLE, Double>> tlesAndMasses;
 
-    /** Protected constructor for derived classes.
+    /** Driver for the ballistic parameter.
+     * @since 14.0
+     */
+    private final ParameterDriver bStarDriver;
+
+    /** TLE generation algorithm used when resetting TLE from state. */
+    private TleGenerationAlgorithm generationAlgorithm;
+
+     /** Protected constructor for derived classes.
      *
      * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
      *
@@ -192,10 +202,9 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
      * @see #TLEPropagator(TLE, AttitudeProvider, double, Frame)
      */
     @DefaultDataContext
-    protected TLEPropagator(final TLE initialTLE, final AttitudeProvider attitudeProvider,
-                            final double mass) {
+    protected TLEPropagator(final TLE initialTLE, final AttitudeProvider attitudeProvider, final double mass) {
         this(initialTLE, attitudeProvider, mass,
-                DataContext.getDefault().getFrames().getTEME());
+             DataContext.getDefault().getFrames().getTEME());
     }
 
     /** Protected constructor for derived classes.
@@ -211,10 +220,30 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
                             final Frame teme) {
         super(attitudeProvider);
         setStartDate(initialTLE.getDate());
-        this.utc       = initialTLE.getUtc();
+        this.utc           = initialTLE.getUtc();
         initializeTle(initialTLE);
-        this.teme      = teme;
+        this.teme          = teme;
         this.tlesAndMasses = new TimeSpanMap<>(new Pair<>(tle, mass));
+        this.bStarDriver   = new ParameterDriver(TleGenerationAlgorithm.B_STAR,
+                                                 initialTLE.getBStar(),
+                                                 TleGenerationAlgorithm.B_STAR_SCALE,
+                                                 Double.NEGATIVE_INFINITY,
+                                                 Double.POSITIVE_INFINITY);
+        bStarDriver.addObserver(new ParameterObserver() {
+
+            @Override
+            public void valueChanged(final double previousValue, final ParameterDriver driver,
+                                     final AbsoluteDate date) {
+                resetBStar();
+            }
+
+            @Override
+            public void valueSpanMapChanged(final TimeSpanMap<Double> previousValueSpanMap,
+                                            final ParameterDriver driver) {
+                resetBStar();
+            }
+        });
+        this.generationAlgorithm = getDefaultTleGenerationAlgorithm(initialTLE, utc, teme);
 
         // set the initial state
         final Orbit orbit = propagateOrbit(initialTLE.getDate());
@@ -287,10 +316,11 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
                                                    final double mass,
                                                    final Frame teme) {
 
-        final double a1 = FastMath.pow( TLEConstants.XKE / (tle.getMeanMotion() * 60.0), TLEConstants.TWO_THIRD);
+        final double xkeOverN = TLEConstants.XKE / (tle.getMeanMotion() * 60.0);
+        final double a1 = FastMath.cbrt(xkeOverN * xkeOverN);
         final double cosi0 = FastMath.cos(tle.getI());
-        final double temp = TLEConstants.CK2 * 1.5 * (3 * cosi0 * cosi0 - 1.0) *
-                            FastMath.pow(1.0 - tle.getE() * tle.getE(), -1.5);
+        final double oMe2  = 1.0 - tle.getE() * tle.getE();
+        final double temp = TLEConstants.CK2 * 1.5 * (3 * cosi0 * cosi0 - 1.0) / (oMe2 * FastMath.sqrt(oMe2));
         final double delta1 = temp / (a1 * a1);
         final double a0 = a1 * (1.0 - delta1 * (TLEConstants.ONE_THIRD + delta1 * (delta1 * 134.0 / 81.0 + 1.0)));
         final double delta0 = temp / (a0 * a0);
@@ -306,6 +336,22 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
         }
     }
 
+    /** Get the TLE generation algorithm used when resetting TLE from state.
+     * @return TLE generation algorithm
+     * @since 14.0
+     */
+    TleGenerationAlgorithm getTleGenerationAlgorithm() {
+        return generationAlgorithm;
+    }
+
+    /** Set the TLE generation algorithm used when resetting TLE from state.
+     * @param tleGenerationAlgorithm TLE generation algorithm
+     * @since 14.0
+     */
+    public void setTleGenerationAlgorithm(final TleGenerationAlgorithm tleGenerationAlgorithm) {
+        this.generationAlgorithm = tleGenerationAlgorithm;
+    }
+
     /** Get the Earth gravity coefficient used for TLE propagation.
      * @return the Earth gravity coefficient.
      */
@@ -319,20 +365,22 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
      */
     public PVCoordinates getPVCoordinates(final AbsoluteDate date) {
 
-        sxpPropagate(date.durationFrom(tle.getDate()) / 60.0);
+        sxpPropagate(date.durationFrom(tle.getDate()) / 60.0, tle.getBStar());
 
         // Compute PV with previous calculated parameters
         return computePVCoordinates();
     }
 
     /** Computation of the first commons parameters.
+     * @param bStar value of the ballistic coefficient to use for propagation
      */
-    private void initializeCommons() {
+    private void initializeCommons(final double bStar) {
 
         // Sine and cosine of inclination
         final SinCos scI0 = FastMath.sinCos(tle.getI());
 
-        final double a1 = FastMath.pow(TLEConstants.XKE / (tle.getMeanMotion() * 60.0), TLEConstants.TWO_THIRD);
+        final double xkeOverN = TLEConstants.XKE / (tle.getMeanMotion() * 60.0);
+        final double a1 = FastMath.cbrt(xkeOverN * xkeOverN);
         cosi0 = scI0.cos();
         theta2 = cosi0 * cosi0;
         final double x3thm1 = 3.0 * theta2 - 1.0;
@@ -354,7 +402,7 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
 
         perige = (a0dp * (1 - tle.getE()) - TLEConstants.NORMALIZED_EQUATORIAL_RADIUS) * TLEConstants.EARTH_RADIUS; // perige
 
-        //  For perigee below 156 km, the values of s and qoms2t are changed :
+        //  For periapsis below 156 km, the values of s and qoms2t are changed :
         if (perige < 156.0) {
             if (perige <= 98.0) {
                 s4 = 20.0;
@@ -382,17 +430,17 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
         // C2 and C1 coefficients computation :
         c2 = coef1 * xn0dp * (a0dp * (1.0 + 1.5 * etasq + eeta * (4.0 + etasq)) +
              0.75 * TLEConstants.CK2 * tsi / psisq * x3thm1 * (8.0 + 3.0 * etasq * (8.0 + etasq)));
-        c1 = tle.getBStar() * c2;
+        c1 = bStar * c2;
         sini0 = scI0.sin();
 
         final double x1mth2 = 1.0 - theta2;
 
         // C4 coefficient computation :
         c4 = 2.0 * xn0dp * coef1 * a0dp * beta02 * (eta * (2.0 + 0.5 * etasq) +
-             tle.getE() * (0.5 + 2.0 * etasq) -
-             2 * TLEConstants.CK2 * tsi / (a0dp * psisq) *
-             (-3.0 * x3thm1 * (1.0 - 2.0 * eeta + etasq * (1.5 - 0.5 * eeta)) +
-              0.75 * x1mth2 * (2.0 * etasq - eeta * (1.0 + etasq)) * FastMath.cos(2.0 * tle.getPerigeeArgument())));
+                tle.getE() * (0.5 + 2.0 * etasq) -
+                2 * TLEConstants.CK2 * tsi / (a0dp * psisq) *
+                        (-3.0 * x3thm1 * (1.0 - 2.0 * eeta + etasq * (1.5 - 0.5 * eeta)) +
+                                0.75 * x1mth2 * (2.0 * etasq - eeta * (1.0 + etasq)) * FastMath.cos(2.0 * tle.getPeriapsisArgument())));
 
         final double theta4 = theta2 * theta2;
         final double temp1 = 3 * TLEConstants.CK2 * pinvsq * xn0dp;
@@ -407,8 +455,8 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
         final double x1m5th = 1.0 - 5.0 * theta2;
 
         omgdot = -0.5 * temp1 * x1m5th +
-                 0.0625 * temp2 * (7.0 - 114.0 * theta2 + 395.0 * theta4) +
-                 temp3 * (3.0 - 36.0 * theta2 + 49.0 * theta4);
+                0.0625 * temp2 * (7.0 - 114.0 * theta2 + 395.0 * theta4) +
+                temp3 * (3.0 - 36.0 * theta2 + 49.0 * theta4);
 
         final double xhdot1 = -temp1 * cosi0;
 
@@ -423,7 +471,7 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
      */
     private PVCoordinates computePVCoordinates() {
 
-        // Sine and cosine of final perigee argument
+        // Sine and cosine of final periapsis argument
         final SinCos scOmega = FastMath.sinCos(omega);
 
         // Long period periodics
@@ -546,14 +594,22 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
 
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public List<ParameterDriver> getParametersDrivers() {
+        return Collections.singletonList(bStarDriver);
+    }
+
     /** Initialization proper to each propagator (SGP or SDP).
+     * @param bStar value of the ballistic coefficient to use for propagation
      */
-    protected abstract void sxpInitialize();
+    protected abstract void sxpInitialize(double bStar);
 
     /** Propagation proper to each propagator (SGP or SDP).
      * @param t the offset from initial epoch (min)
+     * @param bStar value of the ballistic coefficient to use for propagation
      */
-    protected abstract void sxpPropagate(double t);
+    protected abstract void sxpPropagate(double t, double bStar);
 
     /** {@inheritDoc}
      * <p>
@@ -585,9 +641,24 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
      * @param state spacecraft state on which to base new TLE
      */
     private void resetTle(final SpacecraftState state) {
-        final TleGenerationAlgorithm algorithm = getDefaultTleGenerationAlgorithm(utc, teme);
-        final TLE newTle = algorithm.generate(state, tle);
+
+        final TLE newTle = generationAlgorithm.createFromDrivers();
         initializeTle(newTle);
+    }
+
+    /** Reset the B-star value from the parameter driver.
+     * @since 14.0
+     */
+    private void resetBStar() {
+        tle = new TLE(tle.getSatelliteNumber(), tle.getClassification(),
+                      tle.getLaunchYear(), tle.getLaunchNumber(), tle.getLaunchPiece(),
+                      tle.getEphemerisType(), tle.getElementNumber(), tle.getDate(),
+                      tle.getMeanMotion(), tle.getMeanMotionFirstDerivative(),
+                      tle.getMeanMotionSecondDerivative(),
+                      tle.getE(), tle.getI(), tle.getPeriapsisArgument(), tle.getRaan(),
+                      tle.getMeanAnomaly(), tle.getRevolutionNumberAtEpoch(),
+                      bStarDriver.getValue());
+        initializeTle(tle);
     }
 
     /** Initialize internal TLE.
@@ -595,8 +666,8 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
      */
     private void initializeTle(final TLE newTle) {
         tle = newTle;
-        initializeCommons();
-        sxpInitialize();
+        initializeCommons(newTle.getBStar());
+        sxpInitialize(newTle.getBStar());
     }
 
     /** {@inheritDoc} */
@@ -644,30 +715,28 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
      * @return names of the parameters (i.e. columns) of the Jacobian matrix
      */
     protected List<String> getJacobiansColumnsNames() {
-        final List<String> columnsNames = new ArrayList<>();
-        for (final ParameterDriver driver : tle.getParametersDrivers()) {
-
-            if (driver.isSelected() && !columnsNames.contains(driver.getNamesSpanMap().getFirstSpan().getData())) {
-                // As driver with same name should have same NamesSpanMap we only check the if condition on the
-                // first span map and then if the condition is OK all the span names are added to the jacobian column names
-                for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                    columnsNames.add(span.getData());
-                }
+        if (bStarDriver.isSelected()) {
+            final List<String> columnsNames = new ArrayList<>();
+            for (Span<String> span = bStarDriver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                columnsNames.add(span.getData());
             }
+            return columnsNames;
+        } else {
+            return Collections.emptyList();
         }
-        Collections.sort(columnsNames);
-        return columnsNames;
     }
 
     /**
      * Get the default TLE generation algorithm.
+     * @param templateTLE template TLE
      * @param utc UTC time scale
      * @param teme TEME frame
      * @return a TLE generation algorithm
-     * @since 12.0
      */
-    public static TleGenerationAlgorithm getDefaultTleGenerationAlgorithm(final TimeScale utc, final Frame teme) {
-        return new FixedPointTleGenerationAlgorithm(FixedPointTleGenerationAlgorithm.EPSILON_DEFAULT,
+    public static TleGenerationAlgorithm getDefaultTleGenerationAlgorithm(final TLE templateTLE,
+                                                                          final TimeScale utc, final Frame teme) {
+        return new FixedPointTleGenerationAlgorithm(templateTLE,
+                                                    FixedPointTleGenerationAlgorithm.EPSILON_DEFAULT,
                                                     FixedPointTleGenerationAlgorithm.MAX_ITERATIONS_DEFAULT,
                                                     FixedPointTleGenerationAlgorithm.SCALE_DEFAULT, utc, teme);
     }

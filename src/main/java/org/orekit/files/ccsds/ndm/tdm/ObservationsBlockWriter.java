@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -77,11 +77,10 @@ class ObservationsBlockWriter extends AbstractWriter {
             final double          siValue  = observation.getMeasurement();
             final double          rawValue = type.siToRaw(converter, metadata, date, siValue);
             if (generator.getFormat() == FileFormat.KVN) {
-                final StringBuilder builder = new StringBuilder();
-                builder.append(generator.dateToString(timeConverter, date));
-                builder.append(' ');
-                builder.append(generator.doubleToString(rawValue));
-                generator.writeEntry(observation.getType().name(), builder.toString(), null, false);
+                final String builder = generator.dateToString(timeConverter, date) +
+                        ' ' +
+                        generator.doubleToString(rawValue);
+                generator.writeEntry(observation.getType().name(), builder, null, false);
             } else {
                 generator.enterSection(TdmDataKey.observation.name());
                 generator.writeEntry(TdmDataKey.EPOCH.name(), timeConverter, date, true, true);

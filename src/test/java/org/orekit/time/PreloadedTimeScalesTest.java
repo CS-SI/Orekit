@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,6 +20,7 @@ import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.orekit.data.DataSource;
 import org.orekit.data.DirectoryCrawler;
 import org.orekit.data.LazyLoadedDataContext;
 import org.orekit.frames.EopHistoryLoader;
@@ -65,7 +66,8 @@ public class PreloadedTimeScalesTest {
                     try {
                         return EopHistoryLoader.Parser
                                 .newFinalsXmlParser(conventions, itrfVersionProvider, timeScales)
-                                .parse(PreloadedTimeScales.class.getResourceAsStream(eopPath), eopPath);
+                                .parse(new DataSource(eopPath,
+                                                      () -> PreloadedTimeScales.class.getResourceAsStream(eopPath)));
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -179,8 +179,8 @@ public class IodGooding {
 
         // Now, IOD Gooding can be used
         return estimate(outputFrame, azEl1, azEl2, azEl3,
-                        computeDistance(propagator, azEl1.getDate(), azEl1.getGroundStationPosition(outputFrame)),
-                        computeDistance(propagator, azEl3.getDate(), azEl3.getGroundStationPosition(outputFrame)),
+                        computeDistance(propagator, azEl1.getDate(), azEl1.getStation().getPVCoordinatesProvider().getPosition(azEl1.getDate(), outputFrame)),
+                        computeDistance(propagator, azEl3.getDate(), azEl3.getStation().getPVCoordinatesProvider().getPosition(azEl3.getDate(), outputFrame)),
                         nRev, direction);
     }
 
@@ -223,9 +223,9 @@ public class IodGooding {
                           final double rho1init, final double rho3init,
                           final int nRev, final boolean direction) {
         return estimate(outputFrame,
-                        azEl1.getGroundStationPosition(outputFrame),
-                        azEl2.getGroundStationPosition(outputFrame),
-                        azEl3.getGroundStationPosition(outputFrame),
+                        azEl1.getStation().getPVCoordinatesProvider().getPosition(azEl1.getDate(), outputFrame),
+                        azEl2.getStation().getPVCoordinatesProvider().getPosition(azEl2.getDate(), outputFrame),
+                        azEl3.getStation().getPVCoordinatesProvider().getPosition(azEl3.getDate(), outputFrame),
                         azEl1.getObservedLineOfSight(outputFrame), azEl1.getDate(),
                         azEl2.getObservedLineOfSight(outputFrame), azEl2.getDate(),
                         azEl3.getObservedLineOfSight(outputFrame), azEl3.getDate(),
@@ -276,8 +276,8 @@ public class IodGooding {
 
         // Now, IOD Gooding can be used
         return estimate(outputFrame, raDec1, raDec2, raDec3,
-                        computeDistance(propagator, raDec1.getDate(), raDec1.getGroundStationPosition(outputFrame)),
-                        computeDistance(propagator, raDec3.getDate(), raDec3.getGroundStationPosition(outputFrame)),
+                        computeDistance(propagator, raDec1.getDate(), raDec1.getStation().getPVCoordinatesProvider().getPosition(raDec1.getDate(), outputFrame)),
+                        computeDistance(propagator, raDec3.getDate(), raDec3.getStation().getPVCoordinatesProvider().getPosition(raDec3.getDate(), outputFrame)),
                         nRev, direction);
     }
 
@@ -320,9 +320,9 @@ public class IodGooding {
                           final double rho1init, final double rho3init,
                           final int nRev, final boolean direction) {
         return estimate(outputFrame,
-                        raDec1.getGroundStationPosition(outputFrame),
-                        raDec2.getGroundStationPosition(outputFrame),
-                        raDec3.getGroundStationPosition(outputFrame),
+                        raDec1.getStation().getPVCoordinatesProvider().getPosition(raDec1.getDate(), outputFrame),
+                        raDec2.getStation().getPVCoordinatesProvider().getPosition(raDec2.getDate(), outputFrame),
+                        raDec3.getStation().getPVCoordinatesProvider().getPosition(raDec3.getDate(), outputFrame),
                         raDec1.getObservedLineOfSight(outputFrame), raDec1.getDate(),
                         raDec2.getObservedLineOfSight(outputFrame), raDec2.getDate(),
                         raDec3.getObservedLineOfSight(outputFrame), raDec3.getDate(),
@@ -433,7 +433,7 @@ public class IodGooding {
                                    final Vector3D lineOfSight3) {
         final int maxIterations = 100;
         final double ARBF = 1e-6;   // finite differences step
-        boolean withHalley = true;  // use Halley's method
+        boolean withHalley = false;  // use Halley's method
         final double cvtol = 1e-14; // convergence tolerance
 
         rho1 = rho1init;
@@ -741,7 +741,7 @@ public class IodGooding {
         final LambertBoundaryConditions boundaryConditions = new LambertBoundaryConditions(date1, P1_planar, date3, P3_planar, frame);
         final LambertSolver lambertSolver = new LambertSolver(1.0);
         final List<LambertSolution> solutions = lambertSolver.solve(posigrade, nRev, boundaryConditions);
-        final LambertSolution selectedSolution = solutions.get(0);
+        final LambertSolution selectedSolution = solutions.getFirst();
         final LambertBoundaryVelocities velocities = selectedSolution.getBoundaryVelocities();
         Vector3D vel1 = velocities.getInitialVelocity();
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -47,7 +47,7 @@ public class PVTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.EQUINOCTIAL, PositionAngleType.TRUE, false,
+                        context.createNumerical(OrbitType.EQUINOCTIAL, PositionAngleType.TRUE, false,
                                               1.0e-6, 60.0, 0.001);
 
         // Create perfect right-ascension/declination measurements
@@ -93,7 +93,7 @@ public class PVTest {
         }
 
         // Test measurement type
-        Assertions.assertEquals(PV.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
+        Assertions.assertEquals(PV.MEASUREMENT_TYPE, measurements.getFirst().getMeasurementType());
     }
 
     /** Test the values of the state derivatives using a numerical.
@@ -105,7 +105,7 @@ public class PVTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect range measurements
@@ -202,7 +202,7 @@ public class PVTest {
             final PV pv = pvs[k];
 
             // Propagator numbers
-            Assertions.assertEquals(sats[k].getPropagatorIndex(), pv.getSatellites().get(0).getPropagatorIndex());
+            Assertions.assertEquals(sats[k].getPropagatorIndex(), pv.getSatellites().getFirst().getPropagatorIndex());
 
             // Weights
             for (int i = 0; i < 6; i++) {
@@ -277,7 +277,7 @@ public class PVTest {
             final PV pv = pvs[k];
 
             // Propagator numbers
-            Assertions.assertEquals(sats[k].getPropagatorIndex(), pv.getSatellites().get(0).getPropagatorIndex());
+            Assertions.assertEquals(sats[k].getPropagatorIndex(), pv.getSatellites().getFirst().getPropagatorIndex());
 
             // Weights
             for (int i = 0; i < 6; i++) {
@@ -363,7 +363,7 @@ public class PVTest {
             final PV pv = pvs[k];
 
             // Propagator numbers
-            Assertions.assertEquals(sats[k].getPropagatorIndex(), pv.getSatellites().get(0).getPropagatorIndex());
+            Assertions.assertEquals(sats[k].getPropagatorIndex(), pv.getSatellites().getFirst().getPropagatorIndex());
 
             // Weights
             for (int i = 0; i < 6; i++) {
@@ -442,7 +442,7 @@ public class PVTest {
             final PV pv = pvs[k];
 
             // Propagator numbers
-            Assertions.assertEquals(sats[k].getPropagatorIndex(), pv.getSatellites().get(0).getPropagatorIndex());
+            Assertions.assertEquals(sats[k].getPropagatorIndex(), pv.getSatellites().getFirst().getPropagatorIndex());
 
             // Weights
             for (int i = 0; i < 6; i++) {

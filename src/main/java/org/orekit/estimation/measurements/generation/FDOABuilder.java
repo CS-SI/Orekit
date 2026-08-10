@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 Bryan Cazabonne
+/* Copyright 2002-2026 Bryan Cazabonne
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,48 +16,53 @@
  */
 package org.orekit.estimation.measurements.generation;
 
-import org.hipparchus.random.CorrelatedRandomVectorGenerator;
-import org.orekit.estimation.measurements.FDOA;
-import org.orekit.estimation.measurements.GroundStation;
-import org.orekit.estimation.measurements.ObservableSatellite;
-import org.orekit.propagation.sampling.OrekitStepInterpolator;
-import org.orekit.time.AbsoluteDate;
-
 import java.util.Map;
+
+import org.orekit.estimation.measurements.FDOA;
+import org.orekit.estimation.measurements.MeasurementQuality;
+import org.orekit.estimation.measurements.ObservableSatellite;
+import org.orekit.estimation.measurements.Observer;
+import org.orekit.propagation.sampling.OrekitStepInterpolator;
+import org.orekit.signal.SignalTravelTimeModel;
+import org.orekit.time.AbsoluteDate;
 
 /** Builder for {@link FDOA} measurements.
  * @author Bryan Cazabonne
  * @since 12.0
  */
-public class FDOABuilder extends AbstractMeasurementBuilder<FDOA> {
-
-    /** Prime ground station. */
-    private final GroundStation primeStation;
-
-    /** Second ground station. */
-    private final GroundStation secondStation;
+public class FDOABuilder extends AbstractBireceiverBuilder<FDOA> {
 
     /** Centre frequency of the signal emitted from the satellite. */
     private final double centreFrequency;
 
     /** Simple constructor.
-     * @param noiseSource noise source, may be null for generating perfect measurements
-     * @param primeStation ground station that gives the date of the measurement
-     * @param secondStation ground station that gives the measurement
+     * @param primeObserver observer that gives the date of the measurement
+     * @param secondObserver observer that gives the measurement value
      * @param centreFrequency satellite emitter frequency
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
      * @param satellite satellite related to this builder
      */
-    public FDOABuilder(final CorrelatedRandomVectorGenerator noiseSource,
-                       final GroundStation primeStation,
-                       final GroundStation secondStation,
-                       final double centreFrequency,
-                       final double sigma, final double baseWeight,
+    public FDOABuilder(final Observer primeObserver, final Observer secondObserver,
+                       final double centreFrequency, final double sigma, final double baseWeight,
                        final ObservableSatellite satellite) {
-        super(noiseSource, sigma, baseWeight, satellite);
-        this.primeStation    = primeStation;
-        this.secondStation   = secondStation;
+        this(primeObserver, secondObserver, centreFrequency, new MeasurementQuality(sigma, baseWeight),
+                new SignalTravelTimeModel(), satellite);
+    }
+
+    /** Simple constructor.
+     * @param primeObserver observer that gives the date of the measurement
+     * @param secondObserver observer that gives the measurement value
+     * @param centreFrequency satellite emitter frequency
+     * @param measurementQuality measurement quality as used in estimation
+     * @param signalTravelTimeModel signal travel time model
+     * @param satellite satellite related to this builder
+     * @since 14.0
+     */
+    public FDOABuilder(final Observer primeObserver, final Observer secondObserver,
+                       final double centreFrequency, final MeasurementQuality measurementQuality,
+                       final SignalTravelTimeModel signalTravelTimeModel, final ObservableSatellite satellite) {
+        super(primeObserver, secondObserver, measurementQuality, signalTravelTimeModel, satellite);
         this.centreFrequency = centreFrequency;
     }
 
@@ -65,10 +70,8 @@ public class FDOABuilder extends AbstractMeasurementBuilder<FDOA> {
     @Override
     protected FDOA buildObserved(final AbsoluteDate date,
                                  final Map<ObservableSatellite, OrekitStepInterpolator> interpolators) {
-        return new FDOA(primeStation, secondStation, centreFrequency,
-                        date, Double.NaN,
-                        getTheoreticalStandardDeviation()[0],
-                        getBaseWeight()[0], getSatellites()[0]);
+        return new FDOA(getPrimeObserver(), getSecondObserver(), centreFrequency, date, Double.NaN,
+                        getMeasurementQuality(), getSignalTravelTimeModel(), getSatellites()[0]);
     }
 
 }

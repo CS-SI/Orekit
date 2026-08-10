@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Luc Maisonobe
+/* Copyright 2022-2026 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -86,8 +86,7 @@ public class AmbiguityCache {
         /** {@inheritDoc} */
         @Override
         public boolean equals(final Object object) {
-            if (object instanceof Key) {
-                final Key other = (Key) object;
+            if (object instanceof Key other) {
                 return emitter.equals(other.emitter) && receiver.equals(other.receiver) &&
                        Precision.equals(wavelength, other.wavelength, 1);
             }

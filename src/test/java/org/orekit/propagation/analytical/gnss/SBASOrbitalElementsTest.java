@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -40,11 +40,11 @@ public class SBASOrbitalElementsTest {
             public double getZ()          { return 0; }
             public double getZDot()       { return 0; }
             public double getZDotDot()    { return 0; }
+            public AbsoluteDate getToc()  { return AbsoluteDate.ARBITRARY_EPOCH; }
         };
         Assertions.assertEquals(0,   soe.getIODN());
         Assertions.assertEquals(0.0, soe.getAGf0(), Precision.SAFE_MIN);
         Assertions.assertEquals(0.0, soe.getAGf1(), Precision.SAFE_MIN);
-        Assertions.assertEquals(0.0, soe.getToc(), Precision.SAFE_MIN);
 
     }
 

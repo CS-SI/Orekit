@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -635,7 +635,7 @@ public class DataTypeTest {
 
     @Test
     public void testNumber() {
-        Assertions.assertEquals(68, DataType.values().length);
+        Assertions.assertEquals(69, DataType.values().length);
     }
 
     private void check(DataType dataType, long rawMessage, Long expected) {

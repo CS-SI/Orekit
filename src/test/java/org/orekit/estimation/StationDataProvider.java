@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,15 +17,24 @@
 
 package org.orekit.estimation;
 
-import org.orekit.estimation.measurements.GroundStation;
-
+import java.util.ArrayList;
 import java.util.List;
+
+import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.estimation.measurements.EarthBasedStation;
+import org.orekit.estimation.measurements.ObserverSatellite;
 
 /**
  * Utility class for station data providers.
  */
 public interface StationDataProvider {
 
-    List<GroundStation> getStations();
+    List<EarthBasedStation> getStations();
+
+    default List<ObserverSatellite> getSatellites() {
+        return new ArrayList<>();
+    }
+
+    OneAxisEllipsoid getEarth();
 
 }

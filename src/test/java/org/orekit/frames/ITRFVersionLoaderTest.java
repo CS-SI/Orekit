@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -93,9 +93,9 @@ public class ITRFVersionLoaderTest {
                 CoreMatchers.is(ITRFVersion.ITRF_2014));
 
         MatcherAssert.assertThat(loader.getConfiguration("finals.all", 0).getVersion(),
-                CoreMatchers.is(ITRFVersion.ITRF_2000));
+                CoreMatchers.is(ITRFVersion.ITRF_2005));
         MatcherAssert.assertThat(loader.getConfiguration("finals2000A.all", 0).getVersion(),
-                CoreMatchers.is(ITRFVersion.ITRF_2000));
+                CoreMatchers.is(ITRFVersion.ITRF_2005));
         MatcherAssert.assertThat(loader.getConfiguration("finals.all", 55555).getVersion(),
                 CoreMatchers.is(ITRFVersion.ITRF_2005));
         MatcherAssert.assertThat(loader.getConfiguration("finals2000A.all", 55555).getVersion(),
@@ -141,7 +141,7 @@ public class ITRFVersionLoaderTest {
             new ITRFVersionLoader(ITRFVersionLoader.SUPPORTED_NAMES);
             Assertions.fail("Expected Exception");
         } catch (OrekitException e) {
-            Assertions.assertEquals(e.getSpecifier(), OrekitMessages.ITRF_VERSIONS_PREFIX_ONLY);
+            Assertions.assertEquals(OrekitMessages.ITRF_VERSIONS_PREFIX_ONLY, e.getSpecifier());
         }
     }
 

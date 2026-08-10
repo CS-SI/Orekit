@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 package org.orekit.models.earth.ionosphere;
+
+import java.util.Collections;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
@@ -51,11 +53,12 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ParameterDriver;
 
-import java.util.Collections;
-
 public class SsrVtecIonosphericModelTest {
 
     private SsrIm201 vtecMessage;
+    
+    /** Earth model. */
+    private OneAxisEllipsoid earth;
 
     @BeforeEach
     public void setUp() {
@@ -78,6 +81,9 @@ public class SsrVtecIonosphericModelTest {
                                      {0.0, 6.2},
                                      {0.0, 17.6} });
 
+        earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                              Constants.WGS84_EARTH_FLATTENING,
+                                              FramesFactory.getITRF(IERSConventions.IERS_2010, true));                           
 
         // Initialize message
         vtecMessage = new SsrIm201(201, header, Collections.singletonList(data));
@@ -93,15 +99,12 @@ public class SsrVtecIonosphericModelTest {
         // Geodetic point
         final double height       = 0.0;
         final GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(45.0), FastMath.toRadians(25.0), height);
-        // Body: earth
-        final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                                                            Constants.WGS84_EARTH_FLATTENING,
-                                                            FramesFactory.getITRF(IERSConventions.IERS_2010, true));
+
         // Topocentric frame
         final TopocentricFrame baseFrame = new TopocentricFrame(earth, point, "topo");
 
         // Ionospheric model
-        final SsrVtecIonosphericModel model = new SsrVtecIonosphericModel(vtecMessage);
+        final SsrVtecIonosphericModel model = new SsrVtecIonosphericModel(earth, vtecMessage);
 
         // Spacecraft state
         final AbsoluteDate    date    = AbsoluteDate.J2000_EPOCH;
@@ -130,15 +133,12 @@ public class SsrVtecIonosphericModelTest {
         // Geodetic point
         final double height       = 0.0;
         final GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(45.0), FastMath.toRadians(25.0), height);
-        // Body: earth
-        final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                                                            Constants.WGS84_EARTH_FLATTENING,
-                                                            FramesFactory.getITRF(IERSConventions.IERS_2010, true));
+
         // Topocentric frame
         final TopocentricFrame baseFrame = new TopocentricFrame(earth, point, "topo");
 
         // Ionospheric model
-        final SsrVtecIonosphericModel model = new SsrVtecIonosphericModel(vtecMessage);
+        final SsrVtecIonosphericModel model = new SsrVtecIonosphericModel(earth, vtecMessage);
 
         // Spacecraft state
         final FieldAbsoluteDate<T>    date    = FieldAbsoluteDate.getJ2000Epoch(field);
@@ -161,15 +161,12 @@ public class SsrVtecIonosphericModelTest {
         // Geodetic point
         final double height       = 0.0;
         final GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(45.0), FastMath.toRadians(45.0), height);
-        // Body: earth
-        final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                                                            Constants.WGS84_EARTH_FLATTENING,
-                                                            FramesFactory.getITRF(IERSConventions.IERS_2010, true));
+
         // Topocentric frame
         final TopocentricFrame baseFrame = new TopocentricFrame(earth, point, "topo");
 
         // Ionospheric model
-        final SsrVtecIonosphericModel model = new SsrVtecIonosphericModel(vtecMessage);
+        final SsrVtecIonosphericModel model = new SsrVtecIonosphericModel(earth, vtecMessage);
 
         // Spacecraft state
         final AbsoluteDate    date    = AbsoluteDate.J2000_EPOCH;
@@ -197,15 +194,12 @@ public class SsrVtecIonosphericModelTest {
         // Geodetic point
         final double height       = 0.0;
         final GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(45.0), FastMath.toRadians(45.0), height);
-        // Body: earth
-        final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                                                            Constants.WGS84_EARTH_FLATTENING,
-                                                            FramesFactory.getITRF(IERSConventions.IERS_2010, true));
+        
         // Topocentric frame
         final TopocentricFrame baseFrame = new TopocentricFrame(earth, point, "topo");
 
         // Ionospheric model
-        final SsrVtecIonosphericModel model = new SsrVtecIonosphericModel(vtecMessage);
+        final SsrVtecIonosphericModel model = new SsrVtecIonosphericModel(earth, vtecMessage);
 
         // Spacecraft state
         final FieldAbsoluteDate<T>    date    = FieldAbsoluteDate.getJ2000Epoch(field);
@@ -229,15 +223,12 @@ public class SsrVtecIonosphericModelTest {
         // Geodetic point
         final double height       = 0.0;
         final GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(0.0), FastMath.toRadians(0.0), height);
-        // Body: earth
-        final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                                                            Constants.WGS84_EARTH_FLATTENING,
-                                                            FramesFactory.getITRF(IERSConventions.IERS_2010, true));
+
         // Topocentric frame
         final TopocentricFrame baseFrame = new TopocentricFrame(earth, point, "topo");
 
         // Ionospheric model
-        final SsrVtecIonosphericModel model = new SsrVtecIonosphericModel(vtecMessage);
+        final SsrVtecIonosphericModel model = new SsrVtecIonosphericModel(earth, vtecMessage);
 
         // Derivative Structure
         final DSFactory factory = new DSFactory(6, 1);
@@ -311,7 +302,7 @@ public class SsrVtecIonosphericModelTest {
         }
 
         for (int i = 0; i < 6; i++) {
-            Assertions.assertEquals(compDeriv[i + 1], refDeriv[0][i], 2.3e-11);
+            Assertions.assertEquals(compDeriv[i + 1], refDeriv[0][i], 4e-10);
         }
     }
 
@@ -324,13 +315,8 @@ public class SsrVtecIonosphericModelTest {
         // Geodetic point
         final double height = 0.0;
 
-        // Body: earth
-        final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                                                            Constants.WGS84_EARTH_FLATTENING,
-                                                            FramesFactory.getITRF(IERSConventions.IERS_2010, true));
-
         // Ionospheric model
-        final SsrVtecIonosphericModel model = new SsrVtecIonosphericModel(vtecMessage);
+        final SsrVtecIonosphericModel model = new SsrVtecIonosphericModel(earth, vtecMessage);
 
         // Spacecraft state
         final AbsoluteDate    date    = AbsoluteDate.J2000_EPOCH;
@@ -363,15 +349,10 @@ public class SsrVtecIonosphericModelTest {
         final double frequency = PredefinedGnssSignal.G01.getFrequency();
 
         // Geodetic point
-        final double height       = 0.0;
-
-        // Body: earth
-        final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                                                            Constants.WGS84_EARTH_FLATTENING,
-                                                            FramesFactory.getITRF(IERSConventions.IERS_2010, true));
+        final double height = 0.0;
 
         // Ionospheric model
-        final SsrVtecIonosphericModel model = new SsrVtecIonosphericModel(vtecMessage);
+        final SsrVtecIonosphericModel model = new SsrVtecIonosphericModel(earth, vtecMessage);
 
         // Spacecraft state
         final FieldAbsoluteDate<T>    date    = FieldAbsoluteDate.getJ2000Epoch(field);

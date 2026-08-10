@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,17 @@
  */
 package org.orekit.models.earth.atmosphere.data;
 
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Serial;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 import org.hipparchus.exception.DummyLocalizable;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.data.DataSource;
@@ -29,16 +40,6 @@ import org.orekit.time.TimeStamped;
 import org.orekit.utils.GenericTimeStampedCache;
 import org.orekit.utils.ImmutableTimeStampedCache;
 import org.orekit.utils.TimeStampedGenerator;
-
-import java.io.BufferedInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * Abstract class for solar activity data.
@@ -56,6 +57,7 @@ public abstract class AbstractSolarActivityData<L extends AbstractSolarActivityD
     protected static final int N_NEIGHBORS = 2;
 
     /** Serializable UID. */
+    @Serial
     private static final long serialVersionUID = 8804818166227680449L;
 
     /** Weather data thread safe cache. */
@@ -74,6 +76,7 @@ public abstract class AbstractSolarActivityData<L extends AbstractSolarActivityD
     private final AbsoluteDate lastDate;
 
     /**
+     * Constructor.
      * @param supportedNames regular expression for supported AGI/CSSI space weather files names
      * @param loader data loader
      * @param dataProvidersManager provides access to auxiliary data files.
@@ -259,24 +262,32 @@ public abstract class AbstractSolarActivityData<L extends AbstractSolarActivityD
                                           date.durationFrom(lastDate));
             }
 
-            final List<L> neighbours = cache.getNeighbors(date).collect(Collectors.toList());
+            final List<L> neighbours = cache.getNeighbors(date).toList();
 
             this.currentDate   = date;
-            this.previousParam = neighbours.get(0);
+            this.previousParam = neighbours.getFirst();
             this.nextParam     = neighbours.get(1);
         }
 
-        /** @return current date */
+        /** Get the current date.
+         * @return current date
+         */
         public AbsoluteDate getDate() {
             return currentDate;
         }
 
-        /** @return previous parameters */
+        /**
+         * Get previous parameters.
+         * @return previous parameters
+         */
         public L getPreviousParam() {
             return previousParam;
         }
 
-        /** @return next parameters */
+        /**
+         * Get next parameters.
+         * @return next parameters
+         */
         public L getNextParam() {
             return nextParam;
         }
@@ -337,7 +348,7 @@ public abstract class AbstractSolarActivityData<L extends AbstractSolarActivityD
             AbsoluteDate  latestNeighbourDate = neighbours.get(1).getDate();
             final List<L> params              = new ArrayList<>(neighbours);
             while (latestNeighbourDate.isBefore(latest)) {
-                neighbours = data.getNeighbors(latestNeighbourDate.shiftedBy(STEP)).collect(Collectors.toList());
+                neighbours = data.getNeighbors(latestNeighbourDate.shiftedBy(STEP)).toList();
                 params.add(neighbours.get(1));
                 latestNeighbourDate = neighbours.get(1).getDate();
             }

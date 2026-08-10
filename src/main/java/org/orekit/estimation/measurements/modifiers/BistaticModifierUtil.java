@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,17 +16,15 @@
  */
 package org.orekit.estimation.measurements.modifiers;
 
-import java.util.Arrays;
-
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
-import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservedMeasurement;
+import org.orekit.estimation.measurements.Observer;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.integration.AbstractGradientConverter;
+import org.orekit.propagation.AbstractGradientConverter;
 import org.orekit.utils.Differentiation;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversProvider;
@@ -46,14 +44,14 @@ class BistaticModifierUtil {
     /** Apply a modifier to an estimated measurement.
      * @param <T> type of the measurement
      * @param estimated estimated measurement to modify
-     * @param emitter emitter station
-     * @param receiver receiver station
+     * @param emitter emitter object
+     * @param receiver receiver object
      * @param modelEffect model effect
      * @param modifier applied modifier
      * @since 12.1
      */
     public static <T extends ObservedMeasurement<T>> void modify(final EstimatedMeasurementBase<T> estimated,
-                                                                 final GroundStation emitter, final GroundStation receiver,
+                                                                 final Observer emitter, final Observer receiver,
                                                                  final ParametricModelEffect modelEffect,
                                                                  final EstimationModifier<T> modifier) {
 
@@ -70,8 +68,8 @@ class BistaticModifierUtil {
     /** Apply a modifier to an estimated measurement.
      * @param <T> type of the measurement
      * @param estimated estimated measurement to modify
-     * @param emitter emitter station
-     * @param receiver receiver station
+     * @param emitter emitter object
+     * @param receiver receiver object
      * @param converter gradient converter
      * @param parametricModel parametric modifier model
      * @param modelEffect model effect
@@ -82,7 +80,7 @@ class BistaticModifierUtil {
     public static <T extends ObservedMeasurement<T>> void modify(final EstimatedMeasurement<T> estimated,
                                                                  final ParameterDriversProvider parametricModel,
                                                                  final AbstractGradientConverter converter,
-                                                                 final GroundStation emitter, final GroundStation receiver,
+                                                                 final Observer emitter, final Observer receiver,
                                                                  final ParametricModelEffect modelEffect,
                                                                  final ParametricModelEffectGradient modelEffectGradient,
                                                                  final EstimationModifier<T> modifier) {
@@ -123,40 +121,31 @@ class BistaticModifierUtil {
 
         }
 
-        for (final ParameterDriver driver : Arrays.asList(emitter.getEastOffsetDriver(),
-                                                          emitter.getNorthOffsetDriver(),
-                                                          emitter.getZenithOffsetDriver())) {
-            if (driver.isSelected()) {
-                for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+        modifyParameterDerivatives(estimated, emitter, modelEffect, state);
 
-                    // update estimated derivatives with derivative of the modification wrt station parameters
-                    double parameterDerivative = estimated.getParameterDerivatives(driver, span.getStart())[0];
-                    parameterDerivative += Differentiation.differentiate((d, t) -> modelEffect.evaluate(emitter, state),
-                                                                         3, 10.0 * driver.getScale()).value(driver, state.getDate());
-                    estimated.setParameterDerivatives(driver, span.getStart(), parameterDerivative);
-                }
-            }
-        }
-
-        for (final ParameterDriver driver : Arrays.asList(receiver.getClockOffsetDriver(),
-                                                          receiver.getEastOffsetDriver(),
-                                                          receiver.getNorthOffsetDriver(),
-                                                          receiver.getZenithOffsetDriver())) {
-            if (driver.isSelected()) {
-                for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-
-                    // update estimated derivatives with derivative of the modification wrt station parameters
-                    double parameterDerivative = estimated.getParameterDerivatives(driver, span.getStart())[0];
-                    parameterDerivative += Differentiation.differentiate((d, t) -> modelEffect.evaluate(receiver, state),
-                                                                         3, 10.0 * driver.getScale()).value(driver, state.getDate());
-                    estimated.setParameterDerivatives(driver, span.getStart(), parameterDerivative);
-                }
-            }
-        }
+        modifyParameterDerivatives(estimated, receiver, modelEffect, state);
 
         // modify the value
         modify(estimated, emitter, receiver, modelEffect, modifier);
 
+    }
+
+    private static <T extends ObservedMeasurement<T>> void modifyParameterDerivatives(final EstimatedMeasurement<T> estimated,
+                                                                                      final Observer observer,
+                                                                                      final ParametricModelEffect modelEffect,
+                                                                                      final SpacecraftState state) {
+        for (final ParameterDriver driver : observer.getParametersDrivers()) {
+            if (driver.isSelected()) {
+                for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+
+                    // update estimated derivatives with derivative of the modification wrt parameters
+                    double parameterDerivative = estimated.getParameterDerivatives(driver, span.getStart())[0];
+                    parameterDerivative += Differentiation.differentiate((d, t) -> modelEffect.evaluate(observer, state),
+                                                                         3, 10.0 * driver.getScale()).value(driver, state.getDate());
+                    estimated.setParameterDerivatives(driver, span.getStart(), parameterDerivative);
+                }
+            }
+        }
     }
 
 }

@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -122,6 +122,6 @@ class FieldEventShifterTest {
         assertEquals(1, recordAndContinue.getEvents().size());
         final double shift = useShiftedStates ? increasingTimeShift.getReal() : 0.;
         assertEquals(dateDetector.getDate().shiftedBy(shift),
-                recordAndContinue.getEvents().get(0).getState().getDate());
+                recordAndContinue.getEvents().getFirst().getState().getDate());
     }
 }

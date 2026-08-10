@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,6 +21,7 @@ import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.orekit.data.DataSource;
 import org.orekit.data.DirectoryCrawler;
 import org.orekit.data.LazyLoadedDataContext;
 import org.orekit.frames.ITRFVersionLoader.ITRFVersionConfiguration;
@@ -71,9 +72,8 @@ public class FramesTest {
                                         itrfVersionProvider,
                                         timeScales,
                                         true)
-                                .parse(
-                                        this.getClass().getResourceAsStream(eopPath),
-                                        eopPath);
+                                .parse(new DataSource(eopPath,
+                                                      () -> this.getClass().getResourceAsStream(eopPath)));
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
@@ -92,10 +92,10 @@ public class FramesTest {
         EOPHistory eopFull = ((ITRFProvider) itrfFull.getTransformProvider()).getEOPHistory();
 
         // verify
-        Assertions.assertEquals(eopHistory.getConventions(), IERSConventions.IERS_2010);
-        Assertions.assertEquals(eopFull.getConventions(), IERSConventions.IERS_2010);
-        Assertions.assertEquals(eopHistory.getTimeScales(), timeScales);
-        Assertions.assertEquals(eopFull.getTimeScales(), timeScales);
+        Assertions.assertEquals(IERSConventions.IERS_2010, eopHistory.getConventions());
+        Assertions.assertEquals(IERSConventions.IERS_2010, eopFull.getConventions());
+        Assertions.assertEquals(timeScales, eopHistory.getTimeScales());
+        Assertions.assertEquals(timeScales, eopFull.getTimeScales());
         // share EOP history when conventions and tidal corrections are the same
         Assertions.assertSame(
                 timeScales.getUT1(IERSConventions.IERS_2010, true).getEOPHistory(),

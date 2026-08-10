@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -316,9 +316,9 @@ public class EpochDerivativesEquations
             }
 
             // Add the derivatives of the acceleration w.r.t. the Epoch
-            if (forceModel instanceof ThirdBodyAttractionEpoch) {
+            if (forceModel instanceof ThirdBodyAttractionEpoch epoch) {
                 final double[] parametersValues = new double[] {parameters[0].getValue()};
-                final double[] derivatives = ((ThirdBodyAttractionEpoch) forceModel).getDerivativesToEpoch(s, parametersValues);
+                final double[] derivatives = epoch.getDerivativesToEpoch(s, parametersValues);
                 dAccdParam[0][paramDimEpoch - 1] += derivatives[0];
                 dAccdParam[1][paramDimEpoch - 1] += derivatives[1];
                 dAccdParam[2][paramDimEpoch - 1] += derivatives[2];

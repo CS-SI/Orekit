@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Thales Alenia Space
+/* Copyright 2022-2026 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,7 +19,10 @@ package org.orekit.files.rinex.navigation.writers.ephemeris;
 import org.orekit.files.rinex.navigation.RinexNavigationHeader;
 import org.orekit.files.rinex.navigation.RinexNavigationParser;
 import org.orekit.files.rinex.navigation.RinexNavigationWriter;
+import org.orekit.gnss.SatelliteSystem;
 import org.orekit.propagation.analytical.gnss.data.BeidouCivilianNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.BeidouCivilianType;
+import org.orekit.time.GNSSDate;
 import org.orekit.utils.units.Unit;
 
 import java.io.IOException;
@@ -30,6 +33,11 @@ import java.io.IOException;
  */
 public class BeidouCivilianNavigationMessageWriter
     extends AbstractNavigationMessageWriter<BeidouCivilianNavigationMessage> {
+
+    /** Simple constructor. */
+    public BeidouCivilianNavigationMessageWriter() {
+        // nothing to do
+    }
 
     /** {@inheritDoc} */
     @Override
@@ -49,7 +57,7 @@ public class BeidouCivilianNavigationMessageWriter
         writer.writeDouble(message.getIDot(), RinexNavigationParser.RAD_PER_S);
         writer.writeDouble(message.getDeltaN0Dot(), RinexNavigationParser.RAD_PER_S2);
         writer.writeInt(message.getSatelliteType().getIntegerId());
-        writer.writeDouble(message.getTime(), Unit.SECOND);
+        writer.writeDouble(new GNSSDate(message.getDate(), SatelliteSystem.BEIDOU).getSecondsInWeek(), Unit.SECOND);
         writer.finishLine();
     }
 
@@ -74,12 +82,12 @@ public class BeidouCivilianNavigationMessageWriter
                                  final RinexNavigationWriter writer)
         throws IOException {
         writer.indentLine(header);
-        if (BeidouCivilianNavigationMessage.CNV1.equals(message.getNavigationMessageType())) {
+        if (message.getBeidouType() == BeidouCivilianType.CNV1) {
             writer.writeDouble(message.getIscB1CD(), Unit.SECOND);
             writer.writeEmpty();
             writer.writeDouble(message.getTgdB1Cp(), Unit.SECOND);
             writer.writeDouble(message.getTgdB2ap(), Unit.SECOND);
-        } else if (BeidouCivilianNavigationMessage.CNV2.equals(message.getNavigationMessageType())) {
+        } else if (message.getBeidouType() == BeidouCivilianType.CNV2) {
             writer.writeEmpty();
             writer.writeDouble(message.getIscB2AD(), Unit.SECOND);
             writer.writeDouble(message.getTgdB1Cp(), Unit.SECOND);
@@ -99,10 +107,10 @@ public class BeidouCivilianNavigationMessageWriter
         // TYPE / SV / MSG, and lines 0 to 7
         super.writeMessage(identifier, message, header, writer);
 
-        if (BeidouCivilianNavigationMessage.CNV3.equals(message.getNavigationMessageType())) {
+        if (message.getBeidouType() == BeidouCivilianType.CNV3) {
             // EPH MESSAGE LINE - 8
             writer.indentLine(header);
-            writer.writeDouble(message.getTransmissionTime(), Unit.SECOND);
+            writer.writeDouble(message.getTransmissionTime().getSecondsInWeek(), Unit.SECOND);
             writer.finishLine();
         } else {
 
@@ -113,7 +121,7 @@ public class BeidouCivilianNavigationMessageWriter
 
             // EPH MESSAGE LINE - 9
             writer.indentLine(header);
-            writer.writeDouble(message.getTransmissionTime(), Unit.SECOND);
+            writer.writeDouble(message.getTransmissionTime().getSecondsInWeek(), Unit.SECOND);
             writer.writeEmpty();
             writer.writeEmpty();
             writer.writeInt(message.getIODE());

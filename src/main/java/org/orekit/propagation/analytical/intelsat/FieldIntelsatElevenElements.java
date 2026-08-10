@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 Airbus Defence and Space
+/* Copyright 2002-2026 Airbus Defence and Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,6 +25,7 @@ import org.orekit.time.FieldAbsoluteDate;
  * Intelsat's 11 elements are defined in ITU-R S.1525 standard.
  * </p>
  *
+ * @param <T> type of the field elements
  * @author Bryan Cazabonne
  * @since 12.1
  */

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,10 +18,14 @@ package org.orekit.files.ccsds.utils.generation;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 import org.orekit.files.ccsds.definitions.TimeConverter;
 import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.DateComponents;
+import org.orekit.time.DateTimeComponents;
+import org.orekit.time.TimeComponents;
 import org.orekit.utils.Formatter;
 import org.orekit.utils.units.Unit;
 
@@ -71,15 +75,32 @@ public interface Generator extends AutoCloseable {
      * @param key   the keyword to write
      * @param value the value to write
      * @param unit output unit (may be null)
-     * @param mandatory if true, null values triggers exception, otherwise they are silently ignored
+     * @param mandatory if true, null values triggers exception; otherwise they are silently ignored
      * @throws IOException if an I/O error occurs.
      */
     void writeEntry(String key, String value, Unit unit, boolean mandatory) throws IOException;
 
     /** Write a single key/value entry.
+     * <p>
+     * This method is a convenience method that allows to write an optional String value
+     * without having to call {@code orElse(null)} on it.
+     * </p>
+     * @param key   the keyword to write
+     * @param value the optional value to write
+     * @param unit output unit (may be null)
+     * @param mandatory if true, null values triggers exception; otherwise they are silently ignored
+     * @throws IOException if an I/O error occurs.
+     */
+    @SuppressWarnings("OptionalUsedAsFieldOrParameterType") // we want to use Optional here to avoid having to call orElse(null) everywhere
+    default void writeOptionalStringEntry(final String key, final Optional<String> value,
+                                          final Unit unit, final boolean mandatory) throws IOException {
+        writeEntry(key, value.orElse(null), unit, mandatory);
+    }
+
+    /** Write a single key/value entry.
      * @param key   the keyword to write
      * @param value the value to write
-     * @param mandatory if true, null values triggers exception, otherwise they are silently ignored
+     * @param mandatory if true, null values triggers exception; otherwise they are silently ignored
      * @throws IOException if an I/O error occurs.
      */
     void writeEntry(String key, List<String> value, boolean mandatory) throws IOException;
@@ -87,25 +108,60 @@ public interface Generator extends AutoCloseable {
     /** Write a single key/value entry.
      * @param key   the keyword to write
      * @param value the value to write
-     * @param mandatory if true, null values triggers exception, otherwise they are silently ignored
+     * @param mandatory if true, null values triggers exception; otherwise they are silently ignored
      * @throws IOException if an I/O error occurs.
      */
     void writeEntry(String key, Enum<?> value, boolean mandatory) throws IOException;
+
+    /** Write a single key/value entry.
+     * <p>
+     * This method is a convenience method that allows to write an optional enum value
+     * without having to map on it.
+     * </p>
+     * @param key   the keyword to write
+     * @param value the optional value to write
+     * @param mandatory if true, null values triggers exception; otherwise they are silently ignored
+     * @throws IOException if an I/O error occurs.
+     */
+    @SuppressWarnings("OptionalUsedAsFieldOrParameterType") // we want to use Optional here to avoid having to call value.map(Enum::name) everywhere
+    default void writeOptionalEnumEntry(final String key, final Optional<? extends Enum<?>> value,
+                                        final boolean mandatory) throws IOException {
+        writeEntry(key, value.map(Enum::name).orElse(null), null, mandatory);
+    }
 
     /** Write a single key/value entry.
      * @param key   the keyword to write
      * @param converter converter to use for dates
      * @param date the date to write
      * @param forceCalendar if true, the date is forced to calendar format
-     * @param mandatory if true, null values triggers exception, otherwise they are silently ignored
+     * @param mandatory if true, null values triggers exception; otherwise they are silently ignored
      * @throws IOException if an I/O error occurs.
      */
     void writeEntry(String key, TimeConverter converter, AbsoluteDate date, boolean forceCalendar, boolean mandatory) throws IOException;
 
     /** Write a single key/value entry.
+     * <p>
+     * This method is a convenience method that allows to write an optional String value
+     * without having to call {@code orElse(null)} on it.
+     * </p>
+     * @param key   the keyword to write
+     * @param converter converter to use for dates
+     * @param date the date to write
+     * @param forceCalendar if true, the date is forced to calendar format
+     * @param mandatory if true, null values triggers exception; otherwise they are silently ignored
+     * @throws IOException if an I/O error occurs.
+     */
+    @SuppressWarnings("OptionalUsedAsFieldOrParameterType") // we want to use Optional here to avoid having to call orElse(null) everywhere
+    default void writeOptionalDateEntry(final String key, final TimeConverter converter,
+                                        final Optional<AbsoluteDate> date, final boolean forceCalendar,
+                                        final boolean mandatory) throws IOException {
+        writeEntry(key, converter, date.orElse(null), forceCalendar, mandatory);
+    }
+
+    /** Write a single key/value entry.
      * @param key   the keyword to write
      * @param value the value to write
-     * @param mandatory if true, null values triggers exception, otherwise they are silently ignored
+     * @param mandatory if true, null values triggers exception; otherwise they are silently ignored
      * @throws IOException if an I/O error occurs.
      */
     void writeEntry(String key, char value, boolean mandatory) throws IOException;
@@ -119,7 +175,7 @@ public interface Generator extends AutoCloseable {
      *
      * @param key   the keyword to write
      * @param value the value to write
-     * @param mandatory if true, null values triggers exception, otherwise they are silently ignored.
+     * @param mandatory if true, null values triggers exception; otherwise they are silently ignored.
      * @throws IOException if an I/O error occurs.
      * @see #writeEntry(String, Integer, boolean)
      */
@@ -128,11 +184,27 @@ public interface Generator extends AutoCloseable {
     /** Write a single key/value entry.
      * @param key   the keyword to write
      * @param value the value to write
-     * @param mandatory if true, null values triggers exception, otherwise they are silently ignored
+     * @param mandatory if true, null values triggers exception; otherwise they are silently ignored
      * @throws IOException if an I/O error occurs.
      */
     default void writeEntry(final String key, final Integer value, final boolean mandatory) throws IOException {
         writeEntry(key, value == null ? null : value.toString(), null, mandatory);
+    }
+
+    /** Write a single key/value entry.
+     * <p>
+     * This method is a convenience method that allows to write an optional value
+     * without having to check presence on it.
+     * </p>
+     * @param key   the keyword to write
+     * @param value the optional value to write
+     * @param mandatory if true, null values triggers exception; otherwise they are silently ignored
+     * @throws IOException if an I/O error occurs.
+     */
+    @SuppressWarnings("OptionalUsedAsFieldOrParameterType") // we want to use Optional here to avoid having to call value.isPresent() everywhere
+    default void writeOptionalIntEntry(final String key, final Optional<Integer> value,
+                                       final boolean mandatory) throws IOException {
+        writeEntry(key, value.map(integer -> Integer.toString(integer)).orElse(null), null, mandatory);
     }
 
     /** Write a single key/value entry.
@@ -152,6 +224,23 @@ public interface Generator extends AutoCloseable {
      * @throws IOException if an I/O error occurs.
      */
     void writeEntry(String key, Double value, Unit unit, boolean mandatory) throws IOException;
+
+    /** Write a single key/value entry.
+     * <p>
+     * This method is a convenience method that allows to write an optional value
+     * without having to call {@code orElse(Double.NaN)} on it.
+     * </p>
+     * @param key   the keyword to write
+     * @param value the optional value to write
+     * @param unit output unit (may be null)
+     * @param mandatory if true, null values triggers exception, otherwise they are silently ignored
+     * @throws IOException if an I/O error occurs.
+     */
+    @SuppressWarnings("OptionalUsedAsFieldOrParameterType") // we want to use Optional here to avoid having to call orElse(Double.NaN) everywhere
+    default void writeOptionalDoubleEntry(final String key, final Optional<Double> value,
+                                          final Unit unit, final boolean mandatory) throws IOException {
+        writeEntry(key, value.orElse(Double.NaN), unit, mandatory);
+    }
 
     /** Finish current line.
      * @throws IOException if an I/O error occurs.
@@ -201,6 +290,19 @@ public interface Generator extends AutoCloseable {
      * @since 12.0
      */
     String dateToCalendarString(TimeConverter converter, AbsoluteDate date);
+
+    /**
+     * Convert a date to string value with high precision.
+     * @param dt date and time components to write
+     * @return date as a string
+     * @since 13.1.6
+     */
+    default String dateToString(final DateTimeComponents dt) {
+        final DateComponents date = dt.getDate();
+        final TimeComponents time = dt.getTime();
+        return dateToString(date.getYear(), date.getMonth(), date.getDay(),
+                            time.getHour(), time.getMinute(), time.getSecond());
+    }
 
     /** Convert a date to string value with high precision.
      * @param year year

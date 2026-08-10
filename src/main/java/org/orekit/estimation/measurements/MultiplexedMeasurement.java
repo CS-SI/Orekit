@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,13 +23,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
+import org.hipparchus.linear.MatrixUtils;
+import org.hipparchus.linear.RealMatrix;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.TimeSpanMap;
-import org.orekit.utils.TimeStampedPVCoordinates;
 import org.orekit.utils.TimeSpanMap.Span;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** Class multiplexing several measurements as one.
  * <p>
@@ -74,11 +76,9 @@ public class MultiplexedMeasurement extends AbstractMeasurement<MultiplexedMeasu
      * @since 10.1
      */
     public MultiplexedMeasurement(final List<ObservedMeasurement<?>> measurements) {
-        super(measurements.get(0).getDate(),
+        super(measurements.getFirst().getDate(),
               multiplex(measurements, ComparableMeasurement::getObservedValue),
-              multiplex(measurements, ObservedMeasurement::getTheoreticalStandardDeviation),
-              multiplex(measurements, ObservedMeasurement::getBaseWeight),
-              multiplex(measurements));
+              multiplexMeasurementQuality(measurements), multiplex(measurements));
 
         this.observedMeasurements                    = measurements;
         this.estimatedMeasurementsWithoutDerivatives = new ArrayList<>();
@@ -167,7 +167,8 @@ public class MultiplexedMeasurement extends AbstractMeasurement<MultiplexedMeasu
     @Override
     protected EstimatedMeasurementBase<MultiplexedMeasurement> theoreticalEvaluationWithoutDerivatives(final int iteration,
                                                                                                        final int evaluation,
-                                                                                                       final SpacecraftState[] states) {
+                                                                                                       final SpacecraftState[] states,
+                                                                                                       final boolean fillParticipants) {
 
         final SpacecraftState[]              evaluationStates = new SpacecraftState[nbSat];
         final double[]                       value            = new double[dimension];
@@ -184,7 +185,8 @@ public class MultiplexedMeasurement extends AbstractMeasurement<MultiplexedMeasu
             }
 
             // perform evaluation
-            final EstimatedMeasurementBase<?> eI = observedMeasurements.get(i).estimateWithoutDerivatives(iteration, evaluation, filteredStates);
+            final EstimatedMeasurementBase<?> eI = observedMeasurements.get(i).estimateWithoutDerivatives(iteration,
+                    evaluation, filteredStates);
             estimatedMeasurementsWithoutDerivatives.add(eI);
 
             // extract results
@@ -259,7 +261,7 @@ public class MultiplexedMeasurement extends AbstractMeasurement<MultiplexedMeasu
         multiplexed.setEstimatedValue(value);
 
         // combine derivatives
-        final int                            stateSize             = estimatedMeasurements.get(0).getStateSize();
+        final int                            stateSize             = estimatedMeasurements.getFirst().getStateSize();
         final double[]                       zeroDerivative        = new double[stateSize];
         final double[][][]                   stateDerivatives      = new double[nbSat][dimension][];
         for (final double[][] m : stateDerivatives) {
@@ -322,15 +324,33 @@ public class MultiplexedMeasurement extends AbstractMeasurement<MultiplexedMeasu
         }
 
         // set parameters derivatives
-        parametersDerivatives.
-            entrySet().
-            forEach(e -> multiplexed.setParameterDerivatives(e.getKey(), e.getValue()));
+        parametersDerivatives.forEach(multiplexed::setParameterDerivatives);
 
         return multiplexed;
 
     }
 
     /** Multiplex measurements data.
+     * @param measurements measurements to multiplex
+     * @return multiplexed data
+     */
+    private static MeasurementQuality multiplexMeasurementQuality(final List<ObservedMeasurement<?>> measurements) {
+
+        final int totalSize = measurements.stream().mapToInt(ObservedMeasurement::getDimension).sum();
+        final double[] weights = new double[totalSize];
+        final RealMatrix covarianceMatrix = MatrixUtils.createRealMatrix(totalSize, totalSize);
+        int n = 0;
+        for (final ObservedMeasurement<?> measurement : measurements) {
+            System.arraycopy(measurement.getBaseWeight(), 0, weights, n, measurement.getDimension());
+            covarianceMatrix.setSubMatrix(measurement.getMeasurementQuality().getCovarianceMatrix().getData(), n, n);
+            n += measurement.getDimension();
+        }
+
+        return new MeasurementQuality(covarianceMatrix.getData(), weights);
+
+    }
+
+    /** Multiplex measurements value.
      * @param measurements measurements to multiplex
      * @param extractor data extraction function
      * @return multiplexed data

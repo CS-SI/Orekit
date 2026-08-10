@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,8 +15,6 @@
  * limitations under the License.
  */
 package org.orekit.data;
-
-import java.io.IOException;
 
 /** Interface for filtering data (typically uncompressing it) in {@link DataProvider data providers}
  * before passing it to {@link DataLoader data loaders}.
@@ -58,8 +56,7 @@ public interface DataFilter {
      * @param original original data source
      * @return filtered data source, or {@code original} if this filter
      * does not apply to this data source
-     * @exception IOException if filtered stream cannot be created
      */
-    DataSource filter(DataSource original) throws IOException;
+    DataSource filter(DataSource original);
 
 }

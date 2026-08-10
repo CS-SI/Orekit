@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Thales Alenia Space
+/* Copyright 2022-2026 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -37,7 +37,7 @@ import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.time.clocks.QuadraticClockModel;
+import org.orekit.time.clocks.PolynomialClockModel;
 import org.orekit.files.rinex.AppliedDCBS;
 import org.orekit.files.rinex.AppliedPCVS;
 import org.orekit.files.rinex.section.RinexComment;
@@ -110,7 +110,7 @@ public class RinexObservationWriterTest {
         final CharArrayWriter  caw  = new CharArrayWriter();
         try (RinexObservationWriter writer = new RinexObservationWriter(caw, "dummy")) {
             writer.setReceiverClockModel(robs.extractClockModel(2));
-            writer.writeObservationDataSet(robs.getObservationDataSets().get(0));
+            writer.writeObservationDataSet(robs.getObservationDataSets().getFirst());
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.HEADER_NOT_WRITTEN, oe.getSpecifier());
@@ -228,7 +228,7 @@ public class RinexObservationWriterTest {
             RinexObservation patched = load(resourceName, typeBuilder, timeScaleBuilder, timeScales);
             patched.getHeader().setClockOffsetApplied(robs.getHeader().getClockOffsetApplied());
             if (FastMath.abs(expectedDt) > 1.0e-15) {
-                writer.setReceiverClockModel(new QuadraticClockModel(robs.getHeader().getTFirstObs(),
+                writer.setReceiverClockModel(new PolynomialClockModel(robs.getHeader().getTFirstObs(),
                                                                      expectedDt, 0.0, 0.0));
             }
             writer.writeCompleteFile(patched);

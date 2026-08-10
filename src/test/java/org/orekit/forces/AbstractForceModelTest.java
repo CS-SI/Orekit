@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,11 @@
  */
 package org.orekit.forces;
 
+import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
+
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
@@ -32,6 +37,7 @@ import org.hipparchus.random.Well19937a;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
 import org.junit.jupiter.api.Assertions;
+import org.orekit.OrekitMatchers;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
 import org.orekit.orbits.FieldCartesianOrbit;
@@ -56,9 +62,6 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedFieldAngularCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
-
-import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 
 
 public abstract class AbstractForceModelTest {
@@ -430,6 +433,8 @@ public abstract class AbstractForceModelTest {
     }
 
     private void checkdFdP(final Vector3D reference, final Vector3D result, final double checkTolerance) {
+        MatcherAssert.assertThat(result,
+                OrekitMatchers.vectorCloseTo(reference, Precision.SAFE_MIN, checkTolerance));
         if (reference.getNorm() == 0) {
             // if dF/dP is exactly zero (i.e. no dependency between F and P),
             // then the result should also be exactly zero
@@ -477,7 +482,10 @@ public abstract class AbstractForceModelTest {
         for (int j = 0; j < 6; ++j) {
             for (int k = 0; k < 6; ++k) {
                 double scale = integratorAbsoluteTolerances[j] / integratorAbsoluteTolerances[k];
-                Assertions.assertEquals(reference[j][k], dYdY0.get().getEntry(j, k), checkTolerance * scale);
+                final double actual = dYdY0.get().getEntry(j, k);
+                final double tol = checkTolerance * scale;
+                MatcherAssert.assertThat(actual, Matchers.closeTo(reference[j][k], tol));
+                Assertions.assertEquals(reference[j][k], actual, tol);
             }
         }
 
@@ -553,7 +561,7 @@ public abstract class AbstractForceModelTest {
         double a_R = initialOrbit.getA().getReal();
         double e_R = initialOrbit.getE().getReal();
         double i_R = initialOrbit.getI().getReal();
-        double R_R = initialOrbit.getPerigeeArgument().getReal();
+        double R_R = initialOrbit.getPeriapsisArgument().getReal();
         double O_R = initialOrbit.getRightAscensionOfAscendingNode().getReal();
         double n_R = initialOrbit.getAnomaly(positionAngleType).getReal();
 
@@ -730,7 +738,7 @@ public abstract class AbstractForceModelTest {
         double a_R = initialOrbit.getA().getReal();
         double e_R = initialOrbit.getE().getReal();
         double i_R = initialOrbit.getI().getReal();
-        double R_R = initialOrbit.getPerigeeArgument().getReal();
+        double R_R = initialOrbit.getPeriapsisArgument().getReal();
         double O_R = initialOrbit.getRightAscensionOfAscendingNode().getReal();
         double n_R = initialOrbit.getAnomaly(positionAngleType).getReal();
 

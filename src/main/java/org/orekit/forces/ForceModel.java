@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -45,7 +45,7 @@ import org.orekit.utils.ParameterDriversProvider;
  * TimeDerivativesEquations)} method. The force model instance will extract all the
  * state data it needs (date, position, velocity, frame, attitude, mass) from the first
  * parameter. From these state data, it will compute the perturbing acceleration. It
- * will then add this acceleration to the second parameter which will take thins
+ * will then add this acceleration to the second parameter which will take this
  * contribution into account and will use the Gauss equations to evaluate its impact
  * on the global state derivative.
  * </p>
@@ -153,7 +153,7 @@ public interface ForceModel extends ParameterDriversProvider, EventDetectorsProv
      * @return mass rate (kg/s)
      * @since 13.1
      */
-    default <T extends CalculusFieldElement<T>> T getMassDerivative(FieldSpacecraftState<T> state, T[] parameters) {
+    default <T extends CalculusFieldElement<T>> T getMassDerivative(final FieldSpacecraftState<T> state, final T[] parameters) {
         return state.getMass().getField().getZero();
     }
 

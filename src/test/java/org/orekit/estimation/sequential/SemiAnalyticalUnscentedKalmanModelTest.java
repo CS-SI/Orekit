@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,9 +26,9 @@ import org.hipparchus.util.MerweUnscentedTransform;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.orekit.estimation.DSSTContext;
-import org.orekit.estimation.DSSTEstimationTestUtils;
+import org.orekit.estimation.Context;
 import org.orekit.estimation.DSSTForce;
+import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.Range;
@@ -89,14 +89,14 @@ public class SemiAnalyticalUnscentedKalmanModelTest {
     @BeforeEach
     public void setup() {
         // Create context
-        final DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        final Context context = EstimationTestUtils.dsstEccentricContext("regular-data:potential:tides");
 
         // Initial orbit and date
         this.orbit0 = context.initialOrbit;
         ObservableSatellite sat = new ObservableSatellite(0);
 
         // Create propagator builder
-        this.propagatorBuilder = context.createBuilder(PropagationType.MEAN, PropagationType.OSCULATING, true,
+        this.propagatorBuilder = context.createDsst(PropagationType.MEAN, PropagationType.OSCULATING, true,
                                                        1.0e-6, 60.0, 10., DSSTForce.SOLAR_RADIATION_PRESSURE);
 
         //  t0
@@ -104,7 +104,7 @@ public class SemiAnalyticalUnscentedKalmanModelTest {
 
         // Create one 0m range measurement at t0 + 10s
         final AbsoluteDate date  = date0.shiftedBy(10.);
-        final GroundStation station = context.stations.get(0);
+        final GroundStation station = context.stations.getFirst();
         this.range = new Range(station, true, date, 18616150., 10., 1., sat);
         // Exact range value is 1.8616150246470984E7 m
 
@@ -114,7 +114,7 @@ public class SemiAnalyticalUnscentedKalmanModelTest {
                 new double[]{10.},
                 new double[]{0.},
                 new double[]{100.});
-        this.satRangeBiasDriver = satRangeBias.getParametersDrivers().get(0);
+        this.satRangeBiasDriver = satRangeBias.getParametersDrivers().getFirst();
         satRangeBiasDriver.setSelected(true);
         satRangeBiasDriver.setReferenceDate(date);
         range.addModifier(satRangeBias);
@@ -189,8 +189,8 @@ public class SemiAnalyticalUnscentedKalmanModelTest {
         expX.setSubVector(0, MatrixUtils.createRealVector(orbitState0));
         expX.setEntry(6, srpCoefDriver.getReferenceValue());
         expX.setEntry(7, satRangeBiasDriver.getReferenceValue());
-        Assertions.assertArrayEquals(model.getPhysicalEstimatedState().toArray(), expX.toArray(), tol);
-        Assertions.assertArrayEquals(model.getEstimate().getState().toArray(),    new double[8], tol);
+        Assertions.assertArrayEquals(expX.toArray(), model.getPhysicalEstimatedState().toArray(), tol);
+        Assertions.assertArrayEquals(new double[8],  model.getEstimate().getState().toArray(),    tol);
 
         // Normalized covariance - filled with 1
         final double[][] Pn = model.getEstimate().getCovariance().getData();
@@ -234,7 +234,7 @@ public class SemiAnalyticalUnscentedKalmanModelTest {
         final List<Double> scaleList = new ArrayList<>();
 
         // Orbital parameters
-        for (ParameterDriver driver : builder.getOrbitalParametersDrivers().getDrivers()) {
+        for (ParameterDriver driver : builder.getOrbitalParameterFactory().getOrbitalParametersDrivers().getDrivers()) {
             if (driver.isSelected()) {
                 scaleList.add(driver.getScale());
             }
@@ -281,7 +281,7 @@ public class SemiAnalyticalUnscentedKalmanModelTest {
 
 
     /** Observer allowing to get Kalman model after a measurement was processed in the Kalman filter. */
-    public class ModelLogger implements KalmanObserver {
+    public static class ModelLogger implements KalmanObserver {
         KalmanEstimation estimation;
 
         @Override

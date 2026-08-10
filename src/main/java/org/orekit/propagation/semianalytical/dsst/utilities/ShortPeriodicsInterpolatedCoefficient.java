@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -136,11 +136,11 @@ public class ShortPeriodicsInterpolatedCoefficient {
         final int closestNeighbor;
 
         //case where the date is before the available points
-        if (date.compareTo(abscissae.get(0)) <= 0) {
+        if (date.compareTo(abscissae.getFirst()) <= 0) {
             closestNeighbor = 0;
         }
         //case where the date is after the available points
-        else if (date.compareTo(abscissae.get(abscissae.size() - 1)) >= 0) {
+        else if (date.compareTo(abscissae.getLast()) >= 0) {
             closestNeighbor = abscissae.size() - 1;
         }
         //general case: one is looking for the two consecutives entries that surround the input date

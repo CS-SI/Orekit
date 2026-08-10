@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Thales Alenia Space
+/* Copyright 2022-2026 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -54,8 +54,8 @@ public class CustomType implements ObservationType {
 
     @Override
     public boolean equals(final Object type) {
-        if (type instanceof CustomType) {
-            return name.equals(((CustomType) type).name);
+        if (type instanceof CustomType customType) {
+            return name.equals(customType.name);
         }
         return false;
     }

@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Luc Maisonobe
+/* Copyright 2022-2026 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -35,10 +35,10 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 
-public class FrameAdapterTest {
+class FrameAdapterTest {
 
     @Test
-    public void testDouble() {
+    void testDouble() {
 
         final Frame                         eme2000        = FramesFactory.getEME2000();
         final CelestialBody                 moon           = CelestialBodyFactory.getMoon();
@@ -57,14 +57,14 @@ public class FrameAdapterTest {
             maxV = FastMath.max(maxV, Vector3D.distance(pvRef.getVelocity(),     pvAdapted.getVelocity()));
             maxA = FastMath.max(maxA, Vector3D.distance(pvRef.getAcceleration(), pvAdapted.getAcceleration()));
         }
-        Assertions.assertEquals(0.0, maxP, 7.6e-7);
+        Assertions.assertEquals(0.0, maxP, 8.2e-7);
         Assertions.assertEquals(0.0, maxV, 2.9e-12);
         Assertions.assertEquals(0.0, maxA, 1.1e-17);
 
     }
 
     @Test
-    public void testField() {
+    void testField() {
         doTestField(Binary64Field.getInstance());
     }
 
@@ -89,7 +89,7 @@ public class FrameAdapterTest {
             maxV = FastMath.max(maxV, FieldVector3D.distance(pvRef.getVelocity(),     pvAdapted.getVelocity()));
             maxA = FastMath.max(maxA, FieldVector3D.distance(pvRef.getAcceleration(), pvAdapted.getAcceleration()));
         }
-        Assertions.assertEquals(0.0, maxP.getReal(), 7.6e-7);
+        Assertions.assertEquals(0.0, maxP.getReal(), 8.2e-7);
         Assertions.assertEquals(0.0, maxV.getReal(), 2.9e-12);
         Assertions.assertEquals(0.0, maxA.getReal(), 1.1e-17);
 
@@ -110,8 +110,23 @@ public class FrameAdapterTest {
         Assertions.assertEquals(moonPVProvider.getPosition(date, eme2000), fieldPosition.toVector3D());
     }
 
+    @Test
+    void testGetVelocityField() {
+        // GIVEN
+        final Frame eme2000 = FramesFactory.getEME2000();
+        final CelestialBody moon = CelestialBodyFactory.getMoon();
+        final Frame moonFrame = moon.getBodyOrientedFrame();
+        final FrameAdapter moonPVProvider = new FrameAdapter(moonFrame);
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        final FieldAbsoluteDate<Binary64> fieldDate = new FieldAbsoluteDate<>(Binary64Field.getInstance(), date);
+        // WHEN
+        final FieldVector3D<Binary64> fieldVelocity = moonPVProvider.getVelocity(fieldDate, eme2000);
+        // THEN
+        Assertions.assertEquals(moonPVProvider.getVelocity(date, eme2000), fieldVelocity.toVector3D());
+    }
+
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 

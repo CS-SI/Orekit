@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,7 +29,7 @@ import org.orekit.utils.FieldAbsolutePVCoordinates;
  * Abstract class for integrator builder using variable step size.
  *
  * @param <T> type of the field elements
- *
+ * @param <W> type of the field integrator
  * @author Vincent Cucchietti
  */
 public abstract class AbstractVariableStepFieldIntegratorBuilder<T extends CalculusFieldElement<T>, W extends AdaptiveStepsizeFieldIntegrator<T>>

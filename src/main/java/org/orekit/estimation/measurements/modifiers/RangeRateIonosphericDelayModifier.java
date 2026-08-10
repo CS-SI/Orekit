@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,7 +21,7 @@ import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
-import org.orekit.estimation.measurements.GroundStation;
+import org.orekit.estimation.measurements.Observer;
 import org.orekit.estimation.measurements.RangeRate;
 import org.orekit.models.earth.ionosphere.IonosphericModel;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -68,26 +68,26 @@ public class RangeRateIonosphericDelayModifier extends BaseRangeRateIonosphericD
 
     /** {@inheritDoc} */
     @Override
-    protected double rangeRateErrorIonosphericModel(final GroundStation station, final SpacecraftState state) {
-        return fTwoWay * super.rangeRateErrorIonosphericModel(station, state);
+    protected double rangeRateErrorIonosphericModel(final Observer observer, final SpacecraftState state) {
+        return fTwoWay * super.rangeRateErrorIonosphericModel(observer, state);
     }
 
     /** {@inheritDoc} */
     @Override
-    protected <T extends CalculusFieldElement<T>> T rangeRateErrorIonosphericModel(final GroundStation station,
+    protected <T extends CalculusFieldElement<T>> T rangeRateErrorIonosphericModel(final Observer observer,
                                                                                    final FieldSpacecraftState<T> state,
                                                                                    final T[] parameters) {
-        return super.rangeRateErrorIonosphericModel(station, state, parameters).multiply(fTwoWay);
+        return super.rangeRateErrorIonosphericModel(observer, state, parameters).multiply(fTwoWay);
     }
 
     /** {@inheritDoc} */
     @Override
     public void modifyWithoutDerivatives(final EstimatedMeasurementBase<RangeRate> estimated) {
 
-        final RangeRate       measurement = estimated.getObservedMeasurement();
-        final GroundStation   station     = measurement.getStation();
+        final RangeRate  measurement = estimated.getObservedMeasurement();
+        final Observer   observer    = measurement.getObserver();
 
-        RangeModifierUtil.modifyWithoutDerivatives(estimated,  station,
+        RangeModifierUtil.modifyWithoutDerivatives(estimated, observer,
                                                    this::rangeRateErrorIonosphericModel,
                                                    this);
 
@@ -98,12 +98,12 @@ public class RangeRateIonosphericDelayModifier extends BaseRangeRateIonosphericD
     public void modify(final EstimatedMeasurement<RangeRate> estimated) {
 
         final RangeRate       measurement = estimated.getObservedMeasurement();
-        final GroundStation   station     = measurement.getStation();
+        final Observer        observer    = measurement.getObserver();
         final SpacecraftState state       = estimated.getStates()[0];
 
         RangeModifierUtil.modify(estimated, getIonoModel(),
                                  new ModifierGradientConverter(state, 6, new FrameAlignedProvider(state.getFrame())),
-                                 station,
+                                 observer,
                                  this::rangeRateErrorIonosphericModel,
                                  this::rangeRateErrorIonosphericModel,
                                  this);

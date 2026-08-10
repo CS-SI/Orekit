@@ -20,7 +20,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -81,7 +81,7 @@ public interface EphemerisFileWriter {
         void write(final String outputFilePath, final EphemerisFile<C, S> ephemerisFile)
             throws IOException {
         try (BufferedWriter writer =
-                        Files.newBufferedWriter(Paths.get(outputFilePath), StandardCharsets.UTF_8)) {
+                        Files.newBufferedWriter(Path.of(outputFilePath), StandardCharsets.UTF_8)) {
             write(writer, ephemerisFile);
         }
     }

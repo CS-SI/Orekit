@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,14 +16,13 @@
  */
 package org.orekit.control.indirect.adjoint.cost;
 
-import org.hipparchus.ode.events.Action;
+import java.util.List;
+import java.util.stream.Stream;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.propagation.events.EventDetector;
-
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import org.orekit.propagation.events.handlers.ResetDerivativesOnEvent;
 
 class UnboundedCartesianEnergyTest {
 
@@ -46,12 +45,10 @@ class UnboundedCartesianEnergyTest {
         // WHEN
         final Stream<EventDetector> eventDetectorStream = unboundedCartesianEnergy.getEventDetectors();
         // THEN
-        final List<EventDetector> eventDetectors = eventDetectorStream.collect(Collectors.toList());
+        final List<EventDetector> eventDetectors = eventDetectorStream.toList();
         Assertions.assertEquals(1, eventDetectors.size());
-        Assertions.assertInstanceOf(CartesianEnergyConsideringMass.SingularityDetector.class, eventDetectors.get(0));
-        final CartesianEnergyConsideringMass.SingularityDetector singularityDetector =
-                (CartesianEnergyConsideringMass.SingularityDetector) eventDetectors.get(0);
-        Assertions.assertEquals(Action.RESET_DERIVATIVES, singularityDetector.getHandler().eventOccurred(null, null, false));
+        Assertions.assertInstanceOf(CartesianEnergyConsideringMass.SingularitySwitchFunction.class, eventDetectors.getFirst().getEventFunction());
+        Assertions.assertInstanceOf(ResetDerivativesOnEvent.class, eventDetectors.getFirst().getHandler());
     }
 
 }

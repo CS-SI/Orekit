@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,6 +28,7 @@ import org.junit.jupiter.api.Test;
 import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
 import org.orekit.attitudes.BodyCenterPointing;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -260,8 +261,7 @@ public class TLEPropagatorTest {
         final double shiftSign = isForward ? 1 : -1;
         final AbsoluteDate targetDate = epoch.shiftedBy(totalShift * shiftSign);
         final EventHandler stateResetter = (s, detector, increasing) -> Action.RESET_STATE;
-        final DateDetector detector = new DateDetector(targetDate)
-                .withThreshold(1e-8).withHandler(stateResetter);
+        final DateDetector detector = new DateDetector(targetDate).withThreshold(1e-8).withHandler(stateResetter);
         tlePropagator.addEventDetector(detector);
 
         // WHEN
@@ -271,10 +271,34 @@ public class TLEPropagatorTest {
         final SpacecraftState expectedState = TLEPropagator.selectExtrapolator(tle).propagate(targetDate);
         final Vector3D expectedPosition = expectedState.getPosition();
         final Vector3D actualPosition = actualState.getPosition();
-        final double tolerance = 1e-1;
+        final double tolerance = 2.3e-3;
         Assertions.assertEquals(expectedPosition.getX(), actualPosition.getX(), tolerance);
         Assertions.assertEquals(expectedPosition.getY(), actualPosition.getY(), tolerance);
         Assertions.assertEquals(expectedPosition.getZ(), actualPosition.getZ(), tolerance);
+    }
+
+    @Test
+    void testFourParamConstructorUsesDefaultGenerationAlgorithm() {
+        // Exercise TLEPropagator 4-param constructor delegation chain
+        // SGP4 public 4-param ctor -> TLEPropagator(TLE, ..., Frame) -> this(..., getDefaultTleGenerationAlgorithm(...))
+        final SGP4 propagator = new SGP4(tle,
+            FrameAlignedProvider.of(FramesFactory.getTEME()),
+            Propagator.DEFAULT_MASS);
+        final AbsoluteDate target = tle.getDate().shiftedBy(120.0);
+        final SpacecraftState result = propagator.propagate(target);
+        Assertions.assertNotNull(result);
+    }
+
+    @Test
+    void testDeepSDP4FourParamConstructor() {
+        final DeepSDP4 propagator = new DeepSDP4(tle,
+            FrameAlignedProvider.of(FramesFactory.getTEME()),
+            Propagator.DEFAULT_MASS,
+            FramesFactory.getTEME());
+        Assertions.assertNotNull(propagator);
+        final AbsoluteDate target = tle.getDate().shiftedBy(120.0);
+        final SpacecraftState result = propagator.propagate(target);
+        Assertions.assertNotNull(result);
     }
 
     @BeforeEach

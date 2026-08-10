@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -44,6 +44,7 @@ import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
 import org.orekit.files.ccsds.definitions.FrameFacade;
+import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.SpacecraftBodyFrame;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
@@ -90,8 +91,8 @@ public class AttitudeWriterTest {
         header.setCreationDate(aem.getHeader().getCreationDate());
         header.setOriginator(aem.getHeader().getOriginator());
 
-        final AemSegment s0 = aem.getSegments().get(0);
-        AemMetadata metadata = new AemMetadata(s0.getInterpolationSamples() - 1);
+        final AemSegment s0 = aem.getSegments().getFirst();
+        AemMetadata metadata = new AemMetadata(s0.getInterpolationSamples() - 1, null);
         metadata.setObjectName(s0.getMetadata().getObjectName());
         metadata.setObjectID(s0.getMetadata().getObjectID());
         metadata.getEndpoints().setFrameA(s0.getMetadata().getEndpoints().getFrameA());
@@ -102,8 +103,8 @@ public class AttitudeWriterTest {
         metadata.setStopTime(s0.getMetadata().getStop());
         metadata.setAttitudeType(s0.getMetadata().getAttitudeType());
         metadata.setIsFirst(s0.getMetadata().isFirst());
-        metadata.setCenter(s0.getMetadata().getCenter());
-        metadata.setInterpolationMethod(s0.getMetadata().getInterpolationMethod());
+        metadata.setCenter(s0.getMetadata().getCenter().orElse(null));
+        metadata.setInterpolationMethod(s0.getMetadata().getInterpolationMethod().orElse(null));
         AemWriter writer = new WriterBuilder().
                            withConventions(IERSConventions.IERS_2010).
                            withDataContext(DataContext.getDefault()).
@@ -146,7 +147,7 @@ public class AttitudeWriterTest {
                                                    withDataContext(aem.getDataContext()).
                                                    buildAemWriter(),
                                                    aem.getHeader(),
-                                                   aem.getSegments().get(0).getMetadata(),
+                                                   aem.getSegments().getFirst().getMetadata(),
                                                    FileFormat.KVN,
                                                    "dummy", Constants.JULIAN_DAY, 0);
         try {
@@ -181,12 +182,12 @@ public class AttitudeWriterTest {
 
         final File temp = temporaryFolderPath.resolve("writeAEMExample01.xml").toFile();
         AttitudeWriter writer = new AttitudeWriter(new WriterBuilder().buildAemWriter(),
-                                                   aem.getHeader(), aem.getSegments().get(0).getMetadata(),
+                                                   aem.getHeader(), aem.getSegments().getFirst().getMetadata(),
                                                    FileFormat.XML, temp.getName(), Constants.JULIAN_DAY, 1);
         writer.write(temp.getAbsolutePath(), aem);
         final Aem generatedAem = new ParserBuilder().buildAemParser().parseMessage(new DataSource(temp));
-        Assertions.assertEquals(aem.getSegments().get(0).getMetadata().getObjectID(),
-                     generatedAem.getSegments().get(0).getMetadata().getObjectID());
+        Assertions.assertEquals(aem.getSegments().getFirst().getMetadata().getObjectID(),
+                     generatedAem.getSegments().getFirst().getMetadata().getObjectID());
     }
 
     @Test
@@ -241,7 +242,7 @@ public class AttitudeWriterTest {
         final Aem aem = new ParserBuilder().buildAemParser().parseMessage(source);
 
         AttitudeWriter writer = new AttitudeWriter(new WriterBuilder().buildAemWriter(),
-                                                   aem.getHeader(), aem.getSegments().get(0).getMetadata(),
+                                                   aem.getHeader(), aem.getSegments().getFirst().getMetadata(),
                                                    FileFormat.KVN, "TestAEMIssue723.aem",
                                                    Constants.JULIAN_DAY, 0);
         final CharArrayWriter caw = new CharArrayWriter();
@@ -250,7 +251,7 @@ public class AttitudeWriterTest {
 
         final Aem generatedAem = new ParserBuilder().buildAemParser().
                         parseMessage(new DataSource("", () -> new ByteArrayInputStream(bytes)));
-        Assertions.assertEquals(aem.getHeader().getComments().get(0), generatedAem.getHeader().getComments().get(0));
+        Assertions.assertEquals(aem.getHeader().getComments().getFirst(), generatedAem.getHeader().getComments().getFirst());
     }
 
     @Test
@@ -278,7 +279,7 @@ public class AttitudeWriterTest {
         AemMetadata meta2 = segment2.getMetadata();
         Assertions.assertEquals(meta1.getObjectID(),                            meta2.getObjectID());
         Assertions.assertEquals(meta1.getObjectName(),                          meta2.getObjectName());
-        Assertions.assertEquals(meta1.getCenter().getName(),                    meta2.getCenter().getName());
+        Assertions.assertEquals(meta1.getCenter().orElseThrow().getName(),      meta2.getCenter().orElseThrow().getName());
         Assertions.assertEquals(meta1.getTimeSystem().name(), meta2.getTimeSystem().name());
         Assertions.assertEquals(meta1.getLaunchYear(),                          meta2.getLaunchYear());
         Assertions.assertEquals(meta1.getLaunchNumber(),                        meta2.getLaunchNumber());
@@ -362,7 +363,7 @@ public class AttitudeWriterTest {
     }
 
     private AemMetadata dummyMetadata() {
-        AemMetadata metadata = new AemMetadata(4);
+        AemMetadata metadata = new AemMetadata(4, new OrekitCcsdsFrameMapper());
         metadata.setTimeSystem(TimeSystem.TT);
         metadata.setObjectID("9999-999ZZZ");
         metadata.setObjectName("transgalactic");

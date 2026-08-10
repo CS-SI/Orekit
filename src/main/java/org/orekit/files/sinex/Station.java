@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -242,7 +242,7 @@ public class Station {
         List<PsdCorrection> corrections = psdMap.get(earliestValidityDate.shiftedBy(1.0e-3));
 
         if (corrections == null ||
-            earliestValidityDate.durationFrom(corrections.get(0).getEarthquakeDate()) > 1.0e-3) {
+            earliestValidityDate.durationFrom(corrections.getFirst().getEarthquakeDate()) > 1.0e-3) {
             // either this is the first earthquake we consider or
             // this earthquake is after another one already considered
             // we need to create a new list of corrections for this new earthquake

@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Luc Maisonobe
+/* Copyright 2022-2026 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -126,7 +126,7 @@ public class EphemerisOcmWriterTest {
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitIllegalArgumentException oiae) {
             Assertions.assertEquals(OrekitMessages.VALUE_NOT_FOUND, oiae.getSpecifier());
-            Assertions.assertEquals(dummyMetadata().getInternationalDesignator(), oiae.getParts()[0]);
+            Assertions.assertEquals(dummyMetadata().getInternationalDesignator().orElseThrow(), oiae.getParts()[0]);
         }
 
     }
@@ -139,8 +139,8 @@ public class EphemerisOcmWriterTest {
         final Ocm ocm = parser.parseMessage(source);
         EphemerisOcmWriter writer = new EphemerisOcmWriter(new WriterBuilder().buildOcmWriter(),
                                                            ocm.getHeader(),
-                                                           ocm.getSegments().get(0).getMetadata(),
-                                                           ocm.getSegments().get(0).getData().getTrajectoryBlocks().get(0).getMetadata(),
+                                                           ocm.getSegments().getFirst().getMetadata(),
+                                                           ocm.getSegments().getFirst().getData().getTrajectoryBlocks().getFirst().getMetadata(),
                                                            FileFormat.KVN, "dummy",
                                                            Constants.JULIAN_DAY, 0);
         try {
@@ -165,12 +165,12 @@ public class EphemerisOcmWriterTest {
 
     @Test
     public void testGenerateKVN() throws IOException {
-        doTestGenerate(FileFormat.KVN, 45);
+        doTestGenerate(FileFormat.KVN, 47);
     }
 
     @Test
     public void testGenerateXML() throws IOException {
-        doTestGenerate(FileFormat.XML, 55);
+        doTestGenerate(FileFormat.XML, 57);
     }
 
     private void doTestGenerate(FileFormat format, int expectedLines) throws IOException {
@@ -252,11 +252,11 @@ public class EphemerisOcmWriterTest {
 
     static void compareOcms(Ocm file1, Ocm file2) {
         Assertions.assertEquals(file1.getHeader().getOriginator(), file2.getHeader().getOriginator());
-        Assertions.assertEquals(file1.getSegments().get(0).getData().getTrajectoryBlocks().size(),
-                                file2.getSegments().get(0).getData().getTrajectoryBlocks().size());
-        for (int i = 0; i < file1.getSegments().get(0).getData().getTrajectoryBlocks().size(); i++) {
-            compareOcmEphemerisBlocks(file1.getSegments().get(0).getData().getTrajectoryBlocks().get(i),
-                                      file2.getSegments().get(0).getData().getTrajectoryBlocks().get(i));
+        Assertions.assertEquals(file1.getSegments().getFirst().getData().getTrajectoryBlocks().size(),
+                                file2.getSegments().getFirst().getData().getTrajectoryBlocks().size());
+        for (int i = 0; i < file1.getSegments().getFirst().getData().getTrajectoryBlocks().size(); i++) {
+            compareOcmEphemerisBlocks(file1.getSegments().getFirst().getData().getTrajectoryBlocks().get(i),
+                                      file2.getSegments().getFirst().getData().getTrajectoryBlocks().get(i));
         }
     }
 
@@ -305,20 +305,20 @@ public class EphemerisOcmWriterTest {
     }
 
     private OcmMetadata dummyMetadata() {
-        OcmMetadata metadata = new OcmMetadata(DataContext.getDefault());
+        OcmMetadata metadata = new OcmMetadata(DataContext.getDefault(), null);
         metadata.addComment("dummy metadata comment");
         metadata.setTimeSystem(TimeSystem.TT);
         metadata.setInternationalDesignator("9999-999ZZZ");
         metadata.setObjectName("transgalactic");
         metadata.setEpochT0(AbsoluteDate.J2000_EPOCH.shiftedBy(80 * Constants.JULIAN_CENTURY));
         metadata.setStartTime(metadata.getEpochT0());
-        metadata.setStopTime(metadata.getStartTime().shiftedBy(Constants.JULIAN_YEAR));
+        metadata.setStopTime(metadata.getStartTime().orElseThrow().shiftedBy(Constants.JULIAN_YEAR));
         return metadata;
     }
 
     private TrajectoryStateHistoryMetadata dummyTrajectoryMetadata() {
         final AbsoluteDate t0 = new AbsoluteDate(2003, 5, 7, 19, 43, 56.75, TimeScalesFactory.getUTC());
-        TrajectoryStateHistoryMetadata metadata = new TrajectoryStateHistoryMetadata(t0, DataContext.getDefault());
+        TrajectoryStateHistoryMetadata metadata = new TrajectoryStateHistoryMetadata(t0, DataContext.getDefault(), null);
         metadata.addComment("dummy trajectory comment");
         metadata.setTrajID("traj 17");
         metadata.setTrajBasis("PREDICTED");

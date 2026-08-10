@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Luc Maisonobe
+/* Copyright 2022-2026 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,8 @@
  */
 package org.orekit.attitudes;
 
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.UnivariateVectorFunction;
@@ -311,7 +313,7 @@ class AlignedAndConstrainedTest {
                 rotation.getQ0(), rotation.getQ1(), rotation.getQ2(), rotation.getQ3()
             };
         };
-        final UnivariateDerivative1[] qDot = new FiniteDifferencesDifferentiator(8, 0.1).
+        final UnivariateDerivative1[] qDot = new FiniteDifferencesDifferentiator(8, 1).
                                              differentiate(q).
                                              value(new UnivariateDerivative1(0.0, 1.0));
 
@@ -321,10 +323,10 @@ class AlignedAndConstrainedTest {
                                                        getOrientation().
                                                        toUnivariateDerivative1Rotation();
 
-        Assertions.assertEquals(qDot[0].getDerivative(1), r.getQ0().getDerivative(1), tolerance);
-        Assertions.assertEquals(qDot[1].getDerivative(1), r.getQ1().getDerivative(1), tolerance);
-        Assertions.assertEquals(qDot[2].getDerivative(1), r.getQ2().getDerivative(1), tolerance);
-        Assertions.assertEquals(qDot[3].getDerivative(1), r.getQ3().getDerivative(1), tolerance);
+        MatcherAssert.assertThat(qDot[0].getDerivative(1), Matchers.closeTo(r.getQ0().getDerivative(1), tolerance));
+        MatcherAssert.assertThat(qDot[1].getDerivative(1), Matchers.closeTo(r.getQ1().getDerivative(1), tolerance));
+        MatcherAssert.assertThat(qDot[2].getDerivative(1), Matchers.closeTo(r.getQ2().getDerivative(1), tolerance));
+        MatcherAssert.assertThat(qDot[3].getDerivative(1), Matchers.closeTo(r.getQ3().getDerivative(1), tolerance));
 
     }
 

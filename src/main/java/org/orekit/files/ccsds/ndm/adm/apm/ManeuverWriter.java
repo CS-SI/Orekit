@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -78,10 +78,10 @@ class ManeuverWriter extends AbstractWriter {
             generator.writeEntry(ManeuverKey.MAN_TOR_2.name(), torque.getY(), Units.N_M, true);
             generator.writeEntry(ManeuverKey.MAN_TOR_3.name(), torque.getZ(), Units.N_M, true);
         } else {
-            generator.writeEntry(ManeuverKey.MAN_TOR_X.name(),      torque.getX(),           Units.N_M,     true);
-            generator.writeEntry(ManeuverKey.MAN_TOR_Y.name(),      torque.getY(),           Units.N_M,     true);
-            generator.writeEntry(ManeuverKey.MAN_TOR_Z.name(),      torque.getZ(),           Units.N_M,     true);
-            generator.writeEntry(ManeuverKey.MAN_DELTA_MASS.name(), maneuver.getDeltaMass(), Unit.KILOGRAM, true);
+            generator.writeEntry(ManeuverKey.MAN_TOR_X.name(),                    torque.getX(),           Units.N_M,     true);
+            generator.writeEntry(ManeuverKey.MAN_TOR_Y.name(),                    torque.getY(),           Units.N_M,     true);
+            generator.writeEntry(ManeuverKey.MAN_TOR_Z.name(),                    torque.getZ(),           Units.N_M,     true);
+            generator.writeOptionalDoubleEntry(ManeuverKey.MAN_DELTA_MASS.name(), maneuver.getDeltaMass(), Unit.KILOGRAM, false);
         }
 
     }

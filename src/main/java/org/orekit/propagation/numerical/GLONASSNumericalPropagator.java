@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -267,7 +267,7 @@ public class GLONASSNumericalPropagator extends AbstractIntegratedPropagator {
         final double t2 = t * t;
         // Mean inclination of Earth equator to ecliptic (rad)
         final double eps = 0.4090926006 - 0.0002270711 * t;
-        // Mean longitude of the Moon's orbit perigee (rad)
+        // Mean longitude of the Moon's orbit periapsis (rad)
         final double gammaM = 1.4547885346 + 71.0176852437 * t - 0.0001801481 * t2;
         // Mean longitude of the ascending node of the Moon (rad)
         final double omegaM = 2.1824391966 - 33.7570459536 * t + 0.0000362262 * t2;
@@ -346,7 +346,7 @@ public class GLONASSNumericalPropagator extends AbstractIntegratedPropagator {
         final double t2 = t * t;
         // Mean inclination of Earth equator to ecliptic (rad)
         final double eps = 0.4090926006 - 0.0002270711 * t;
-        // Mean tropic longitude of the Sun orbit perigee (rad)
+        // Mean tropic longitude of the Sun orbit periapsis (rad)
         final double ws = -7.6281824375 + 0.0300101976 * t + 0.0000079741 * t2;
         // Mean anomaly of the Sun (rad)
         final double qs = 6.2400601269 + 628.3019551714 * t - 0.0000026820 * t2;

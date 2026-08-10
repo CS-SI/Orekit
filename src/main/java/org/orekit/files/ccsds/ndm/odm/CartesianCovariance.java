@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,15 +17,19 @@
 
 package org.orekit.files.ccsds.ndm.odm;
 
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
+import org.orekit.annotation.Nullable;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.section.CommentsContainer;
 import org.orekit.files.ccsds.section.Data;
+import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 
 /** Container for OPM/OMM/OCM Cartesian covariance matrix.
@@ -56,21 +60,31 @@ public class CartesianCovariance extends CommentsContainer implements Data {
     /** Supplier for default reference frame. */
     private final Supplier<FrameFacade> defaultFrameSupplier;
 
+    /** For creating a {@link Frame}. */
+    private final CcsdsFrameMapper frameMapper;
+
     /** Matrix epoch. */
     private AbsoluteDate epoch;
 
     /** Reference frame in which data are given. */
+    @Nullable
     private FrameFacade referenceFrame;
 
     /** Position/Velocity covariance matrix. */
     private final RealMatrix covarianceMatrix;
 
-    /** Create an empty data set.
-     * @param defaultFrameSupplier supplier for default reference frame
-     * if no frame is specified in the CCSDS message
+    /**
+     * Create an empty data set.
+     *
+     * @param defaultFrameSupplier supplier for default reference frame if no
+     *                             frame is specified in the CCSDS message
+     * @param frameMapper          for creating a {@link Frame}.
+     * @since 13.1.5
      */
-    public CartesianCovariance(final Supplier<FrameFacade> defaultFrameSupplier) {
+    public CartesianCovariance(final Supplier<FrameFacade> defaultFrameSupplier,
+                               final CcsdsFrameMapper frameMapper) {
         this.defaultFrameSupplier = defaultFrameSupplier;
+        this.frameMapper = frameMapper;
         covarianceMatrix = MatrixUtils.createRealMatrix(6, 6);
         for (int i = 0; i < covarianceMatrix.getRowDimension(); ++i) {
             for (int j = 0; j <= i; ++j) {
@@ -110,13 +124,13 @@ public class CartesianCovariance extends CommentsContainer implements Data {
     }
 
     /**
-     * Get the reference frame.
+     * Get the reference frame, falling back to the default if not explicitly set.
      *
      * @return The reference frame specified by the {@code COV_REF_FRAME} keyword
      * or inherited from metadata
      */
     public FrameFacade getReferenceFrame() {
-        return referenceFrame == null ? defaultFrameSupplier.get() : referenceFrame;
+        return Optional.ofNullable(referenceFrame).orElse(defaultFrameSupplier.get());
     }
 
     /** Set the reference frame in which data are given.
@@ -125,6 +139,32 @@ public class CartesianCovariance extends CommentsContainer implements Data {
     public void setReferenceFrame(final FrameFacade referenceFrame) {
         refuseFurtherComments();
         this.referenceFrame = referenceFrame;
+    }
+
+    /**
+     * Get the mapping between a CCSDS frame and a {@link Frame}.
+     *
+     * @return the frame mapper.
+     * @since 13.1.5
+     */
+    public CcsdsFrameMapper getFrameMapper() {
+        return frameMapper;
+    }
+
+    /**
+     * Get the frame in which this covariance matrix is defined. Note that only
+     * the orientation of the returned frame is significant, the position of the
+     * returned frame is irrelevant and should be ignored.
+     *
+     * @return Orekit frame for this covariance matrix.
+     * @see #getReferenceFrame()
+     * @see #getFrameMapper()
+     * @since 13.1.5
+     */
+    public Frame getFrame() {
+        // OEM, OMM, and OPM don't allow a COV_FRAME_EPOCH, but OCM does.
+        // This class is not used for OCM, which allows non-Cartesian covariance
+        return getFrameMapper().buildCcsdsFrame(getReferenceFrame(), null);
     }
 
     /** Get the Position/Velocity covariance matrix.

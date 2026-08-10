@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -35,8 +35,8 @@ public enum EulerKey {
     rotationRates((token, context, container) -> true),
 
     /** Comment entry. */
-    COMMENT((token, context, container) ->
-            token.getType() == TokenType.ENTRY ? container.addComment(token.getContentAsNormalizedString()) : true),
+    COMMENT((token, context, container) -> token.getType() != TokenType.ENTRY ||
+                                           container.addComment(token.getContentAsNormalizedString())),
 
     /** First reference frame entry (only for ADM V1). */
     EULER_FRAME_A((token, context, container) -> token.processAsFrame(container.getEndpoints()::setFrameA, context, true, true, true)),
@@ -50,7 +50,7 @@ public enum EulerKey {
     EULER_FRAME_B((token, context, container) -> {
         if (token.getType() == TokenType.ENTRY) {
             container.checkNotNull(container.getEndpoints().getFrameA(), EULER_FRAME_A.name());
-            final boolean aIsSpaceraftBody = container.getEndpoints().getFrameA().asSpacecraftBodyFrame() != null;
+            final boolean aIsSpaceraftBody = container.getEndpoints().getFrameA().asSpacecraftBodyFrame().isPresent();
             return token.processAsFrame(container.getEndpoints()::setFrameB, context,
                                         aIsSpaceraftBody, aIsSpaceraftBody, !aIsSpaceraftBody);
         }
@@ -63,7 +63,7 @@ public enum EulerKey {
     REF_FRAME_B((token, context, container) -> {
         if (token.getType() == TokenType.ENTRY) {
             container.checkNotNull(container.getEndpoints().getFrameA(), EULER_FRAME_A.name());
-            final boolean aIsSpaceraftBody = container.getEndpoints().getFrameA().asSpacecraftBodyFrame() != null;
+            final boolean aIsSpaceraftBody = container.getEndpoints().getFrameA().asSpacecraftBodyFrame().isPresent();
             return token.processAsFrame(container.getEndpoints()::setFrameB, context,
                                         aIsSpaceraftBody, aIsSpaceraftBody, !aIsSpaceraftBody);
         }

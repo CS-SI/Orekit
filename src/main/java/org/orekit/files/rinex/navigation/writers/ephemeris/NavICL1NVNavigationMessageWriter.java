@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Thales Alenia Space
+/* Copyright 2022-2026 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,7 +19,6 @@ package org.orekit.files.rinex.navigation.writers.ephemeris;
 import org.orekit.files.rinex.navigation.RinexNavigationHeader;
 import org.orekit.files.rinex.navigation.RinexNavigationParser;
 import org.orekit.files.rinex.navigation.RinexNavigationWriter;
-import org.orekit.files.rinex.navigation.parsers.ephemeris.NavICLnavParser;
 import org.orekit.propagation.analytical.gnss.data.NavICL1NvNavigationMessage;
 import org.orekit.utils.units.Unit;
 
@@ -30,7 +29,12 @@ import java.io.IOException;
  * @since 14.0
  */
 public class NavICL1NVNavigationMessageWriter
-    extends CivilianNavigationMessageWriter<NavICL1NvNavigationMessage> {
+    extends CivilianLevel1NavigationMessageWriter<NavICL1NvNavigationMessage> {
+
+    /** Simple constructor. */
+    public NavICL1NVNavigationMessageWriter() {
+        // nothing to do
+    }
 
     /** {@inheritDoc} */
     @Override
@@ -43,8 +47,8 @@ public class NavICL1NVNavigationMessageWriter
 
         // EPH MESSAGE LINE - 8
         writer.indentLine(header);
-        writer.writeDouble(message.getTransmissionTime(), Unit.SECOND);
-        writer.writeInt(message.getWeek());
+        writer.writeDouble(message.getTransmissionTime().getSecondsInWeek(), Unit.SECOND);
+        writer.writeInt(message.getTransmissionTime().getWeekNumber());
         writer.finishLine();
 
     }
@@ -69,18 +73,9 @@ public class NavICL1NVNavigationMessageWriter
         throws IOException {
         writer.indentLine(header);
 
-        // convert accuracy to index
-        int index = 0;
-        while (index < NavICLnavParser.NAVIC_URA.length - 1) {
-            if (message.getSvAccuracy() <= NavICLnavParser.NAVIC_URA[index]) {
-                break;
-            }
-            ++index;
-        }
-        writer.writeInt(index);
-
-        writer.writeInt(message.getSvHealth());
-        writer.writeDouble(message.getTGD(),    Unit.SECOND);
+        writer.writeInt(message.getUrai());
+        writer.writeInt(message.getL1SpsHealth());
+        writer.writeDouble(message.getTgd(),    Unit.SECOND);
         writer.writeDouble(message.getTGDSL5(), Unit.SECOND);
         writer.finishLine();
     }

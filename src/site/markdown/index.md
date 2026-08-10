@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2025 CS GROUP
+<!--- Copyright 2002-2026 CS GROUP
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -152,7 +152,7 @@
     * predefined discrete events
         * eclipse (both umbra and penumbra)
         * ascending and descending node crossing
-        * apogee and perigee crossing
+        * apoapsis and periapsis crossing
         * alignment with some body in the orbital plane
           (with customizable threshold angle)
         * angular separation thresholds crossing between spacecraft and a beacon (typically the Sun)

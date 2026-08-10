@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,10 +16,9 @@
  */
 package org.orekit.propagation.events;
 
-import org.hipparchus.analysis.differentiation.UnivariateDerivative2;
 import org.orekit.bodies.BodyShape;
-import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.functions.LatitudeExtremumEventFunction;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnIncreasing;
 
@@ -29,7 +28,7 @@ import org.orekit.propagation.events.handlers.StopOnIncreasing;
  * @author Luc Maisonobe
  * @since 7.1
  */
-public class LatitudeExtremumDetector extends AbstractGeodeticExtremumDetector<LatitudeExtremumDetector> {
+public class LatitudeExtremumDetector extends AbstractGeographicalDetector<LatitudeExtremumDetector> {
 
     /** Build a new detector.
      * <p>The new instance uses default values for maximal checking interval
@@ -48,7 +47,16 @@ public class LatitudeExtremumDetector extends AbstractGeodeticExtremumDetector<L
      */
     public LatitudeExtremumDetector(final double maxCheck, final double threshold,
                                     final BodyShape body) {
-        this(new EventDetectionSettings(maxCheck, threshold, DEFAULT_MAX_ITER), new StopOnIncreasing(), body);
+        this(new LatitudeExtremumEventFunction(body), new EventDetectionSettings(maxCheck, threshold, DEFAULT_MAX_ITER),
+                new StopOnIncreasing());
+    }
+
+    /** Constructor with event function.
+     * @param latitudeExtremumEventFunction event function
+     * @since 14.0
+     */
+    public LatitudeExtremumDetector(final LatitudeExtremumEventFunction latitudeExtremumEventFunction) {
+        this(latitudeExtremumEventFunction, EventDetectionSettings.getDefaultEventDetectionSettings(), new StopOnIncreasing());
     }
 
     /** Protected constructor with full parameters.
@@ -57,20 +65,21 @@ public class LatitudeExtremumDetector extends AbstractGeodeticExtremumDetector<L
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
+     * @param latitudeExtremumEventFunction event function
      * @param detectionSettings event detection settings
      * @param handler event handler to call at event occurrences
-     * @param body body on which the latitude is defined
      */
-    protected LatitudeExtremumDetector(final EventDetectionSettings detectionSettings, final EventHandler handler,
-                                       final BodyShape body) {
-        super(detectionSettings, handler, body);
+    protected LatitudeExtremumDetector(final LatitudeExtremumEventFunction latitudeExtremumEventFunction,
+                                       final EventDetectionSettings detectionSettings, final EventHandler handler) {
+        super(latitudeExtremumEventFunction, detectionSettings, handler, latitudeExtremumEventFunction.getBodyShape());
     }
 
     /** {@inheritDoc} */
     @Override
     protected LatitudeExtremumDetector create(final EventDetectionSettings detectionSettings,
                                               final EventHandler newHandler) {
-        return new LatitudeExtremumDetector(detectionSettings, newHandler, getBodyShape());
+        return new LatitudeExtremumDetector((LatitudeExtremumEventFunction) getEventFunction(), detectionSettings,
+                newHandler);
     }
 
     /** Compute the value of the detection function.
@@ -81,12 +90,7 @@ public class LatitudeExtremumDetector extends AbstractGeodeticExtremumDetector<L
      * @return spacecraft latitude time derivative
      */
     public double g(final SpacecraftState s) {
-        // convert state to geodetic coordinates
-        final FieldGeodeticPoint<UnivariateDerivative2> gp = transformToFieldGeodeticPoint(s);
-
-        // latitude time derivative
-        return gp.getLatitude().getFirstDerivative();
-
+        return getEventFunction().value(s);
     }
 
 }

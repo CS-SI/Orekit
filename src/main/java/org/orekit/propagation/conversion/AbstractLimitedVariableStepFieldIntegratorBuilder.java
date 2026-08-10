@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,7 +24,7 @@ import org.orekit.propagation.ToleranceProvider;
  * Abstract class for integrator using a limited number of variable steps.
  *
  * @param <T> type of the field elements
- *
+ * @param <W> type of the field integrator
  * @author Vincent Cucchietti
  */
 public abstract class AbstractLimitedVariableStepFieldIntegratorBuilder<T extends CalculusFieldElement<T>, W extends MultistepFieldIntegrator<T>>

@@ -63,7 +63,7 @@ public class FunctionalDetector extends AbstractDetector<FunctionalDetector> {
     protected FunctionalDetector(final EventDetectionSettings detectionSettings,
                                  final EventHandler handler,
                                  final ToDoubleFunction<SpacecraftState> function) {
-        super(detectionSettings, handler);
+        super(function::applyAsDouble, detectionSettings, handler);
         this.function = function;
     }
 

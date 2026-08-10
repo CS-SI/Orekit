@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Luc Maisonobe
+/* Copyright 2022-2026 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,7 +23,7 @@ import java.util.Collections;
  * @author Luc Maisonobe
  * @since 13.0
  */
-class FooterParser<T extends ParseInfo<?>> implements LineParser<T> {
+public class FooterParser<T extends ParseInfo<?>> implements LineParser<T> {
 
     /** Fixed footer line. */
     private final String footer;
@@ -31,7 +31,7 @@ class FooterParser<T extends ParseInfo<?>> implements LineParser<T> {
     /** Simple constructor.
      * @param footer footer line
      */
-    protected FooterParser(final String footer) {
+    public FooterParser(final String footer) {
         this.footer = footer;
     }
 

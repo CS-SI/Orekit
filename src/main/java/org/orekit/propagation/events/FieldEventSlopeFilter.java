@@ -23,6 +23,8 @@ import java.util.Arrays;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.ode.events.Action;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.events.functions.EventFunction;
+import org.orekit.propagation.events.functions.EventFunctionModifier;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.time.FieldAbsoluteDate;
 
@@ -89,6 +91,9 @@ public class FieldEventSlopeFilter<D extends FieldEventDetector<T>, T extends Ca
     /** Specialized event handler. */
     private final LocalHandler<D, T> handler;
 
+    /** Specialized event function. */
+    private final EventFunction eventFunction;
+
     /** Indicator for forward integration. */
     private boolean forward;
 
@@ -118,6 +123,7 @@ public class FieldEventSlopeFilter<D extends FieldEventDetector<T>, T extends Ca
         this.filterType = filterType;
         this.transformers = new Transformer[HISTORY_SIZE];
         this.updates      = (FieldAbsoluteDate<T>[]) Array.newInstance(FieldAbsoluteDate.class, HISTORY_SIZE);
+        this.eventFunction = new LocalEventFunction();
     }
 
     /**
@@ -135,6 +141,11 @@ public class FieldEventSlopeFilter<D extends FieldEventDetector<T>, T extends Ca
      */
     public FilterType getFilterType() {
         return filterType;
+    }
+
+    @Override
+    public EventFunction getEventFunction() {
+        return eventFunction;
     }
 
     @Override
@@ -285,6 +296,35 @@ public class FieldEventSlopeFilter<D extends FieldEventDetector<T>, T extends Ca
         return forward;
     }
 
+    /**
+     * Local event function.
+     * @since 14.0
+     */
+    private class LocalEventFunction implements EventFunctionModifier {
+
+        /** Wrapped event function. */
+        private final EventFunction eventSlopeEventFunction;
+
+        LocalEventFunction() {
+            eventSlopeEventFunction = EventFunction.of(getThreshold().getField(), FieldEventSlopeFilter.this::g);
+        }
+
+        @Override
+        public EventFunction getBaseFunction() {
+            return eventSlopeEventFunction;
+        }
+
+        @Override
+        public boolean dependsOnTimeOnly() {
+            return rawDetector.getEventFunction().dependsOnTimeOnly();
+        }
+
+        @Override
+        public boolean dependsOnMainVariablesOnly() {
+            return rawDetector.getEventFunction().dependsOnMainVariablesOnly();
+        }
+    }
+
     /** Local handler. */
     private static class LocalHandler<D extends FieldEventDetector<T>, T extends CalculusFieldElement<T>> implements FieldEventHandler<T> {
 
@@ -306,7 +346,6 @@ public class FieldEventSlopeFilter<D extends FieldEventDetector<T>, T extends Ca
          * @param detector sloped filter detector
          * @return cast detector
          */
-        @SuppressWarnings("unchecked")
         private FieldEventSlopeFilter<D, T> castDetector(final FieldEventDetector<T> detector) {
             return (FieldEventSlopeFilter<D, T>) detector;
         }

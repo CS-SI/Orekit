@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Thales Alenia Space
+/* Copyright 2022-2026 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -41,22 +41,22 @@ import java.util.List;
 public abstract class BaseRinexWriter<T extends RinexBaseHeader> implements AutoCloseable {
 
     /** Format for one 2 digits integer field. */
-    public static final FastLongFormatter TWO_DIGITS_INTEGER = new FastLongFormatter(2, false);
+    public static final FastLongFormatter TWO_DIGITS_INTEGER = new FastLongFormatter(2, false, true);
 
     /** Format for one 2 digits integer field. */
-    public static final FastLongFormatter PADDED_TWO_DIGITS_INTEGER = new FastLongFormatter(2, true);
+    public static final FastLongFormatter PADDED_TWO_DIGITS_INTEGER = new FastLongFormatter(2, true, true);
 
     /** Format for one 3 digits integer field. */
-    public static final FastLongFormatter THREE_DIGITS_INTEGER = new FastLongFormatter(3, false);
+    public static final FastLongFormatter THREE_DIGITS_INTEGER = new FastLongFormatter(3, false, true);
 
     /** Format for one 4 digits integer field. */
-    public static final FastLongFormatter FOUR_DIGITS_INTEGER = new FastLongFormatter(4, false);
+    public static final FastLongFormatter FOUR_DIGITS_INTEGER = new FastLongFormatter(4, false, true);
 
     /** Format for one 4 digits integer field. */
-    public static final FastLongFormatter PADDED_FOUR_DIGITS_INTEGER = new FastLongFormatter(4, true);
+    public static final FastLongFormatter PADDED_FOUR_DIGITS_INTEGER = new FastLongFormatter(4, true, true);
 
     /** Format for one 6 digits integer field. */
-    public static final FastLongFormatter SIX_DIGITS_INTEGER = new FastLongFormatter(6, false);
+    public static final FastLongFormatter SIX_DIGITS_INTEGER = new FastLongFormatter(6, false, true);
 
     /** Format for one 9.2 digits float field. */
     public static final FastDoubleFormatter NINE_TWO_DIGITS_FLOAT = new FastDecimalFormatter(9, 2);
@@ -103,8 +103,8 @@ public abstract class BaseRinexWriter<T extends RinexBaseHeader> implements Auto
     @Override
     public void close() throws IOException {
         try {
-            if (!closed && output instanceof AutoCloseable) {
-                ((AutoCloseable) output).close();
+            if (!closed && output instanceof AutoCloseable closeable) {
+                closeable.close();
             }
             closed = true;
         // CHECKSTYLE: stop IllegalCatch check

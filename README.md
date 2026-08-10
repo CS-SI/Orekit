@@ -281,7 +281,7 @@ The following documentation is available:
 
 The main communication channel is our [forum](https://forum.orekit.org/). You
 can report bugs and suggest new features in our
-[issues tracking system](https://gitlab.orekit.org/orekit/orekit/issues).
+[issues tracking system](https://gitlab.orekit.org/orekit/orekit/-/issues).
 
 > **Note:** When
 > reporting security issues check the "This issue is confidential" box.
@@ -323,7 +323,7 @@ __Note:__ Our official repository is
 ## Contributing
 
 Orekit exists thanks to the contribution of
-[many people](https://gitlab.orekit.org/orekit/orekit/graphs/develop).
+[many people](https://gitlab.orekit.org/orekit/orekit/-/graphs/develop).
 Please take a look at our
 [contributing guidelines](src/site/markdown/contributing.md) if you're
 interested in helping!
@@ -341,7 +341,7 @@ libraries, all released under business friendly FOSS licenses.
 
 ### Test-time dependencies
 
-* [JUnit 5](https://junit.org/), a widely used unit test framework released
+* [JUnit 6](https://junit.org/), a widely used unit test framework released
   under the Eclipse Public License, version 1.0.
 
 * [Mockito](https://site.mockito.org/), a mocking framework for unit tests,

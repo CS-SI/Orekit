@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -101,7 +101,7 @@ class FieldEventsLoggerTest {
         Assertions.assertEquals(Action.CONTINUE, action);
         final List<FieldEventsLogger.FieldLoggedEvent<Binary64>> loggedEvents = eventsLogger.getLoggedEvents();
         Assertions.assertEquals(loggedEvents.size(), counterHandler.getCount());
-        final FieldEventsLogger.FieldLoggedEvent<Binary64> event = loggedEvents.get(0);
+        final FieldEventsLogger.FieldLoggedEvent<Binary64> event = loggedEvents.getFirst();
         Assertions.assertEquals(mockedState, event.getState());
         Assertions.assertNull(event.getResetState());
         Assertions.assertEquals(action, event.getAction());
@@ -146,7 +146,7 @@ class FieldEventsLoggerTest {
         final Action action = detector.getHandler().eventOccurred(mockedState, dateDetector, true);
         // THEN
         Assertions.assertEquals(Action.RESET_STATE, action);
-        Assertions.assertNull(eventsLogger.getLoggedEvents().get(0).getResetState());
+        Assertions.assertNull(eventsLogger.getLoggedEvents().getFirst().getResetState());
     }
 
     private static class FailingResetHandler implements FieldEventHandler<Binary64> {

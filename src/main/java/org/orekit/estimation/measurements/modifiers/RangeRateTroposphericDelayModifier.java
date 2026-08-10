@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,7 +21,7 @@ import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
-import org.orekit.estimation.measurements.GroundStation;
+import org.orekit.estimation.measurements.Observer;
 import org.orekit.estimation.measurements.RangeRate;
 import org.orekit.models.earth.troposphere.TroposphericModel;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -62,39 +62,39 @@ public class RangeRateTroposphericDelayModifier extends BaseRangeRateTropospheri
     }
 
     /** Compute the measurement error due to Troposphere.
-     * @param station station
+     * @param observer measurement observer
      * @param state spacecraft state
      * @return the measurement error due to Troposphere
      */
     @Override
-    public double rangeRateErrorTroposphericModel(final GroundStation station,
+    public double rangeRateErrorTroposphericModel(final Observer observer,
                                                   final SpacecraftState state) {
-        return fTwoWay * super.rangeRateErrorTroposphericModel(station, state);
+        return fTwoWay * super.rangeRateErrorTroposphericModel(observer, state);
     }
 
 
     /** Compute the measurement error due to Troposphere.
      * @param <T> type of the element
-     * @param station station
+     * @param observer measurement observer
      * @param state spacecraft state
      * @param parameters tropospheric model parameters
      * @return the measurement error due to Troposphere
      */
     @Override
-    public <T extends CalculusFieldElement<T>> T rangeRateErrorTroposphericModel(final GroundStation station,
+    public <T extends CalculusFieldElement<T>> T rangeRateErrorTroposphericModel(final Observer observer,
                                                                                  final FieldSpacecraftState<T> state,
                                                                                  final T[] parameters) {
-        return super.rangeRateErrorTroposphericModel(station, state, parameters).multiply(fTwoWay);
+        return super.rangeRateErrorTroposphericModel(observer, state, parameters).multiply(fTwoWay);
     }
 
     /** {@inheritDoc} */
     @Override
     public void modifyWithoutDerivatives(final EstimatedMeasurementBase<RangeRate> estimated) {
 
-        final RangeRate       measurement = estimated.getObservedMeasurement();
-        final GroundStation   station     = measurement.getStation();
+        final RangeRate measurement = estimated.getObservedMeasurement();
+        final Observer  observer    = measurement.getObserver();
 
-        RangeRateModifierUtil.modifyWithoutDerivatives(estimated,  station, this::rangeRateErrorTroposphericModel, this);
+        RangeRateModifierUtil.modifyWithoutDerivatives(estimated, observer, this::rangeRateErrorTroposphericModel, this);
 
 
     }
@@ -104,12 +104,12 @@ public class RangeRateTroposphericDelayModifier extends BaseRangeRateTropospheri
     public void modify(final EstimatedMeasurement<RangeRate> estimated) {
 
         final RangeRate       measurement = estimated.getObservedMeasurement();
-        final GroundStation   station     = measurement.getStation();
+        final Observer        observer    = measurement.getObserver();
         final SpacecraftState state       = estimated.getStates()[0];
 
         RangeRateModifierUtil.modify(estimated, getTropoModel(),
                                      new ModifierGradientConverter(state, 6, new FrameAlignedProvider(state.getFrame())),
-                                     station,
+                                     observer,
                                      this::rangeRateErrorTroposphericModel,
                                      this::rangeRateErrorTroposphericModel,
                                      this);

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,9 +16,9 @@
  */
 package org.orekit.gnss.antenna;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
@@ -75,11 +75,7 @@ public class Antenna {
      * @since 13.0
      */
     public List<RadioWave> getRadioWaves() {
-        return patterns.
-               entrySet().
-               stream().
-               map(Map.Entry::getKey).
-               collect(Collectors.toList());
+        return new ArrayList<>(patterns.keySet());
     }
 
     /**

@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,6 +21,7 @@ import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.events.functions.EventFunction;
 import org.orekit.propagation.events.handlers.FieldContinueOnEvent;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.time.FieldAbsoluteDate;
@@ -101,8 +102,13 @@ class FieldBooleanDetectorTest {
         }
 
         @Override
+        public EventFunction getEventFunction() {
+            return state -> 1.;
+        }
+
+        @Override
         public Binary64 g(FieldSpacecraftState<Binary64> s) {
-            return Binary64.ONE;
+            return getEventFunction().value(s);
         }
 
         @Override

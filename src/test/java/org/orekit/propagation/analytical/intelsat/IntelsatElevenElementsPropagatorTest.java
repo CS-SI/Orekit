@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 Airbus Defence and Space
+/* Copyright 2002-2026 Airbus Defence and Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -89,7 +89,7 @@ class IntelsatElevenElementsPropagatorTest {
         Assertions.assertEquals(0.000296, orbit.getE(), 1.0e-6);
         Assertions.assertEquals(0.037825, FastMath.toDegrees(orbit.getI()), 1.0e-6);
         Assertions.assertEquals(282.488, FastMath.toDegrees(MathUtils.normalizeAngle(orbit.getRightAscensionOfAscendingNode(), FastMath.PI)), 4.0e-3);
-        Assertions.assertEquals(333.151, FastMath.toDegrees(MathUtils.normalizeAngle(orbit.getPerigeeArgument(), FastMath.PI)), 4.0e-3);
+        Assertions.assertEquals(333.151, FastMath.toDegrees(MathUtils.normalizeAngle(orbit.getPeriapsisArgument(), FastMath.PI)), 4.0e-3);
         Assertions.assertEquals(118.919, FastMath.toDegrees(MathUtils.normalizeAngle(orbit.getAnomaly(PositionAngleType.MEAN), FastMath.PI)), 1.0e-3);
     }
 

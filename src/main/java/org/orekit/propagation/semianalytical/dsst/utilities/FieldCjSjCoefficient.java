@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -125,7 +125,7 @@ public class FieldCjSjCoefficient <T extends CalculusFieldElement<T>> {
      * @param j order
      */
     private void updateCjSj(final int j) {
-        FieldComplex<T> last = cjsj.get(cjsj.size() - 1);
+        FieldComplex<T> last = cjsj.getLast();
         for (int i = jLast; i < j; i++) {
             final FieldComplex<T> next = last.multiply(kih);
             cjsj.add(next);

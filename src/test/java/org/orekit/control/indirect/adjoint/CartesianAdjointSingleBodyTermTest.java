@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -175,6 +175,11 @@ class CartesianAdjointSingleBodyTermTest {
 
     private static CelestialBody getCelestialBody(final Vector3D position) {
         return new CelestialBody() {
+            @Override
+            public Frame getIcrfAlignedFrame() {
+                return getInertiallyOrientedFrame();
+            }
+
             @Override
             public Frame getInertiallyOrientedFrame() {
                 return FramesFactory.getGCRF();

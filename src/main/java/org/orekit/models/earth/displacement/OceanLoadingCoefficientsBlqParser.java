@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -110,6 +110,11 @@ public class OceanLoadingCoefficientsBlqParser {
     private static final int[] J = {
         1, 2, 0, 3, 3, 1, 2, 0, 2, 1, 0
     };
+
+    /** Simple constructor. */
+    public OceanLoadingCoefficientsBlqParser() {
+        // nothing to do
+    }
 
     /** Parse a BLQ file.
      * <p>

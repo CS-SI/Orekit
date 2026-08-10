@@ -123,7 +123,7 @@ public class SortedListTrimmerTest {
 
         // before fist data
         try {
-            trimmer.getNeighborsSubList(data.get(0).shiftedBy(-1), data);
+            trimmer.getNeighborsSubList(data.getFirst().shiftedBy(-1), data);
             Assertions.fail("Expected Exception");
         } catch (TimeStampedCacheException e) {
             // expected
@@ -131,10 +131,10 @@ public class SortedListTrimmerTest {
         }
 
         // on fist date
-        Assertions.assertArrayEquals(trimmer.getNeighborsSubList(data.get(0), data).toArray(),
+        Assertions.assertArrayEquals(trimmer.getNeighborsSubList(data.getFirst(), data).toArray(),
                                      data.subList(0, 3).toArray());
         // between fist and second date
-        Assertions.assertArrayEquals(trimmer.getNeighborsSubList(data.get(0).shiftedBy(0.5), data).toArray(),
+        Assertions.assertArrayEquals(trimmer.getNeighborsSubList(data.getFirst().shiftedBy(0.5), data).toArray(),
                                      data.subList(0, 3).toArray());
         // in the middle on a date
         Assertions.assertArrayEquals(trimmer.getNeighborsSubList(data.get(2), data).toArray(),
@@ -170,11 +170,11 @@ public class SortedListTrimmerTest {
         // actions + verify
         // on fist date
         Assertions.assertArrayEquals(
-                trimmer.getNeighborsSubList(data.get(0), data).toArray(),
+                trimmer.getNeighborsSubList(data.getFirst(), data).toArray(),
                 data.subList(0, 1).toArray());
         // between fist and second date
         Assertions.assertArrayEquals(
-                trimmer.getNeighborsSubList(data.get(0).shiftedBy(0.5), data).toArray(),
+                trimmer.getNeighborsSubList(data.getFirst().shiftedBy(0.5), data).toArray(),
                 data.subList(0, 1).toArray());
         // in the middle on a date
         Assertions.assertArrayEquals(
@@ -225,7 +225,7 @@ public class SortedListTrimmerTest {
                                 final double offset) {
         List<AbsoluteDate> s = nonLinearTrimmer.getNeighborsSubList(date.shiftedBy(offset), nonLinearCache);
         Assertions.assertEquals(2, s.size());
-        Assertions.assertTrue(s.get(0).durationFrom(date) <= offset);
+        Assertions.assertTrue(s.getFirst().durationFrom(date) <= offset);
         Assertions.assertTrue(s.get(1).durationFrom(date) >  offset);
     }
 

@@ -1,0 +1,112 @@
+' Copyright 2002-2026 CS GROUP
+' Licensed to CS GROUP (CS) under one or more
+' contributor license agreements.  See the NOTICE file distributed with
+' this work for additional information regarding copyright ownership.
+' CS licenses this file to You under the Apache License, Version 2.0
+' (the "License"); you may not use this file except in compliance with
+' the License.  You may obtain a copy of the License at
+'
+'   http://www.apache.org/licenses/LICENSE-2.0
+'
+' Unless required by applicable law or agreed to in writing, software
+' distributed under the License is distributed on an "AS IS" BASIS,
+' WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+' See the License for the specific language governing permissions and
+' limitations under the License.
+
+@startuml
+
+  skinparam svek                  true
+  skinparam ClassBackgroundColor  #F3EFEB/CCC9C5
+  skinparam ClassArrowColor       #691616
+  skinparam ClassBorderColor      #691616
+  skinparam NoteBackgroundColor   #F3EFEB
+  skinparam NoteBorderColor       #691616
+  skinparam NoteFontColor         #691616
+  skinparam ClassFontSize         11
+  skinparam PackageFontSize       12
+  skinparam linetype              ortho
+
+  package org.orekit #ECEBD8 {
+
+    package time #DDEBD8 {
+      interface TimeStamped
+      interface "TimeShiftable<T>" as TimeShiftable_T_
+    }
+
+    package frames #DDEBD8 {
+      class Frame
+    }
+
+    package orbits #DDEBD8 {
+      abstract class Orbit
+    }
+
+    package attitudes #DDEBD8 {
+      class Attitude
+    }
+
+    package utils #DDEBD8 {
+      class AbsolutePVCoordinates
+      class DataDictionary
+      class DoubleArrayDictionary
+    }
+
+    package propagation #DDEBD8 {
+
+      class SpacecraftState {
+        +{static} double DEFAULT_MASS
+        - Orbit orbit
+        - AbsolutePVCoordinates absPva
+        - Attitude attitude
+        - double mass
+        - double massRate
+        - DataDictionary additional
+        - DoubleArrayDictionary additionalDot
+        +boolean isOrbitDefined()
+        +AbsoluteDate getDate()
+        +Frame getFrame()
+        +Orbit getOrbit()
+        +AbsolutePVCoordinates getAbsPVA()
+        +Attitude getAttitude()
+        +double getMass()
+        +double getMassRate()
+        +Vector3D getPosition()
+        +Vector3D getVelocity()
+        +TimeStampedPVCoordinates getPVCoordinates()
+        +Transform toTransform()
+        +StaticTransform toStaticTransform()
+        +SpacecraftState withMass(double newMass)
+        +SpacecraftState withMassRate(double newMassRate)
+        +SpacecraftState withAttitude(Attitude newAttitude)
+        +SpacecraftState addAdditionalData(String name, Object value)
+        +SpacecraftState addAdditionalStateDerivative(String name, double ... value)
+        +boolean hasAdditionalData(String name)
+        +Object getAdditionalData(String name)
+        +double[] getAdditionalState(String name)
+        +double[] getAdditionalStateDerivative(String name)
+        +DataDictionary getAdditionalDataValues()
+        +DoubleArrayDictionary getAdditionalStatesDerivatives()
+      }
+      note bottom of SpacecraftState
+        immutable: all with/add methods
+        return new instances
+        holds either Orbit or
+        AbsolutePVCoordinates
+      end note
+
+      TimeStamped              <|.. SpacecraftState
+      TimeShiftable_T_         <|.. SpacecraftState
+
+      SpacecraftState          *--> "0..1" Orbit
+      SpacecraftState          *--> "0..1" AbsolutePVCoordinates
+      SpacecraftState          *--> "1" Attitude
+      SpacecraftState          *--> "1" DataDictionary
+      SpacecraftState          *--> "1" DoubleArrayDictionary
+      SpacecraftState          --> Frame
+
+    }
+
+  }
+
+@enduml

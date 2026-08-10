@@ -47,9 +47,6 @@ import org.orekit.utils.IERSConventions;
  */
 public class EclipticProvider implements TransformProvider {
 
-    /** IERS conventions. */
-    private final IERSConventions conventions;
-
     /** the obliquity of the ecliptic, in radians as a function of time. */
     private final TimeScalarFunction obliquity;
 
@@ -74,7 +71,6 @@ public class EclipticProvider implements TransformProvider {
      */
     public EclipticProvider(final IERSConventions conventions,
                             final TimeScales timeScales) {
-        this.conventions = conventions;
         this.obliquity   = conventions.getMeanObliquityFunction(timeScales);
     }
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -73,6 +73,16 @@ public class CommentsContainer implements Section {
      */
     public void checkNotNull(final Object field, final String key) {
         if (field == null) {
+            throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, key);
+        }
+    }
+
+    /** Complain if a field is null.
+     * @param field field to check
+     * @param key key associated with the field
+     */
+    public void checkNotEmpty(final List<?> field, final String key) {
+        if (field.isEmpty()) {
             throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, key);
         }
     }

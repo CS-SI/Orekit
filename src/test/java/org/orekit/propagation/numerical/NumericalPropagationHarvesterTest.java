@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -120,11 +120,11 @@ public class NumericalPropagationHarvesterTest {
         Assertions.assertTrue(harvester.getJacobiansColumnsNames().isEmpty());
 
         triggers.getParametersDrivers().get(1).setSelected(true);
-        propulsion.getParametersDrivers().get(0).setSelected(true);
+        propulsion.getParametersDrivers().getFirst().setSelected(true);
         List<String> columnsNames = harvester.getJacobiansColumnsNames();
         Assertions.assertEquals(2, columnsNames.size());
-        Assertions.assertEquals("SpanABM-" + BasicConstantThrustPropulsionModel.THRUST + Integer.toString(0), columnsNames.get(0));
-        Assertions.assertEquals("Spanapogee_boost_STOP" + Integer.toString(0), columnsNames.get(1));
+        Assertions.assertEquals("SpanABM-" + BasicConstantThrustPropulsionModel.THRUST + 0, columnsNames.getFirst());
+        Assertions.assertEquals("Spanapogee_boost_STOP" + 0, columnsNames.get(1));
 
     }
 
@@ -144,6 +144,7 @@ public class NumericalPropagationHarvesterTest {
         Assertions.assertEquals(deltaId, stm.subtract(identity7).getNorm1(), 1.0e-3);
         Assertions.assertEquals(type, harvester.getOrbitType());
         Assertions.assertEquals(angle, harvester.getPositionAngleType());
+        Assertions.assertNull(harvester.getStateJacobianVsBuilderParameters(s));
     }
 
     @BeforeEach

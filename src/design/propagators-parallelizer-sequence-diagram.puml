@@ -1,0 +1,103 @@
+' Copyright 2002-2026 CS GROUP
+' Licensed to CS GROUP (CS) under one or more
+' contributor license agreements.  See the NOTICE file distributed with
+' this work for additional information regarding copyright ownership.
+' CS licenses this file to You under the Apache License, Version 2.0
+' (the "License"); you may not use this file except in compliance with
+' the License.  You may obtain a copy of the License at
+'
+'   http://www.apache.org/licenses/LICENSE-2.0
+'
+' Unless required by applicable law or agreed to in writing, software
+' distributed under the License is distributed on an "AS IS" BASIS,
+' WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+' See the License for the specific language governing permissions and
+' limitations under the License.
+
+@startuml
+
+  skinparam svek                                true
+  skinparam NoteBackgroundColor                 #F3EFEB
+  skinparam NoteBorderColor                     #691616
+  skinparam NoteFontColor                       #691616
+  skinparam SequenceActorBorderColor            #6A584B
+  skinparam SequenceParticipantBackgroundColor  #F3EFEB/CCC9C5
+  skinparam SequenceParticipantBorderColor      #6A584B
+  skinparam SequenceLifeLineBackgroundColor     #CCC9C5/F3EFEB
+  skinparam SequenceLifeLineBorderColor         #6A584B
+  skinparam SequenceArrowColor                  #6A584B
+  skinparam SequenceBorderColor                 #6A584B
+  skinparam SequenceFontSize                    11
+
+  hide footbox
+
+  box "User application" #F3EDF7
+    participant "Main" as M
+  end box
+  participant PropagatorsParallelizer as PP
+  participant "Propagator 1" as P1
+  participant "Propagator 2" as P2
+  participant "Propagator n" as Pn
+  participant MultiSatStepHandler as GH
+
+  activate M
+  M -> PP : propagate(start, target)
+    activate PP
+
+    note over PP
+      create ExecutorService
+      with n threads
+    end note
+
+    PP -> P1 : submit propagate(start, target)
+      activate P1
+    PP -> P2 : submit propagate(start, target)
+      activate P2
+    PP -> Pn : submit propagate(start, target)
+      activate Pn
+
+    note over P1, Pn
+      each propagator runs in its own thread;
+      blocked at each step boundary via SynchronousQueue
+    end note
+
+    PP -> GH : init(initialStates, target)
+      activate GH
+      deactivate GH
+
+    loop #DDEBD8 until all propagators reach end
+
+      note over PP
+        select earliest ending propagator;
+        restrict all interpolators to
+        common time range
+      end note
+
+      PP -> P1 : wait for step completion
+      P1 --> PP : interpolator
+      PP -> P2 : wait for step completion
+      P2 --> PP : interpolator
+      PP -> Pn : wait for step completion
+      Pn --> PP : interpolator
+
+      PP -> GH : handleStep(interpolators)
+        activate GH
+        deactivate GH
+
+      PP -> PP : resume most late propagator
+
+    end
+
+    PP -> GH : finish(finalStates)
+      activate GH
+      deactivate GH
+
+      deactivate P1
+      deactivate P2
+      deactivate Pn
+
+    PP --> M : List<SpacecraftState>
+    deactivate PP
+  deactivate M
+
+@enduml

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -61,7 +61,7 @@ public class CommonMetadataWriter extends AbstractWriter {
         // frames
         generator.writeEntry(CommonMetadataKey.CENTER_NAME.name(),     metadata.getCenter().getName(),          null, true);
         generator.writeEntry(CommonMetadataKey.REF_FRAME.name(),       metadata.getReferenceFrame().getName(),  null, true);
-        generator.writeEntry(CommonMetadataKey.REF_FRAME_EPOCH.name(), timeConverter, metadata.getFrameEpoch(), true, false);
+        generator.writeOptionalDateEntry(CommonMetadataKey.REF_FRAME_EPOCH.name(), timeConverter, metadata.getFrameEpoch(), true, false);
 
         // time
         generator.writeEntry(MetadataKey.TIME_SYSTEM.name(),   metadata.getTimeSystem(), true);

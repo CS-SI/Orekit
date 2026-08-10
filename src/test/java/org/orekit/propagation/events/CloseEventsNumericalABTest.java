@@ -17,11 +17,10 @@
 
 package org.orekit.propagation.events;
 
+import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.ode.nonstiff.AdamsBashforthIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.orekit.orbits.OrbitType;
-import org.orekit.propagation.Propagator;
-import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.numerical.NumericalPropagator;
 
@@ -31,16 +30,10 @@ import org.orekit.propagation.numerical.NumericalPropagator;
  *
  * @author Evan Ward
  */
-public class CloseEventsNumericalABTest extends CloseEventsAbstractTest {
+public class CloseEventsNumericalABTest extends AbstractCloseEventsNumericalTest {
 
-    /**
-     * Create a propagator using the {@link #initialOrbit}.
-     *
-     * @param stepSize   of integrator.
-     * @return a usable propagator.
-     */
-    public Propagator getPropagator(double stepSize) {
-        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(10000).getTolerances(initialOrbit, OrbitType.CARTESIAN);
+    public ODEIntegrator getIntegrator(double stepSize, final OrbitType orbitType) {
+        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(10000).getTolerances(initialOrbit, orbitType);
         final AdamsBashforthIntegrator integrator =
                         new AdamsBashforthIntegrator(4, stepSize, stepSize, tol[0], tol[1]);
         final DormandPrince853Integrator starter =
@@ -48,10 +41,7 @@ public class CloseEventsNumericalABTest extends CloseEventsAbstractTest {
                                                        tol[0], tol[1]);
         starter.setInitialStepSize(stepSize / 20);
         integrator.setStarterIntegrator(starter);
-        final NumericalPropagator propagator = new NumericalPropagator(integrator);
-        propagator.setInitialState(new SpacecraftState(initialOrbit));
-        propagator.setOrbitType(OrbitType.CARTESIAN);
-        return propagator;
+        return integrator;
     }
 
 }

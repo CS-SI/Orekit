@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -56,6 +56,7 @@ public class SinexParserTest {
 
         final Sinex sinex = load("/sinex/cod20842-small.snx");
 
+        assertEquals(2.01, sinex.getVersion(), 1.0e-6);
         assertEquals(2, sinex.getStations().size());
 
         checkStation(sinex.getStations().get("ABMF"), 2019, 350, 0.0, 2019, 352, 86370, 2019, 351, 43185,
@@ -76,7 +77,7 @@ public class SinexParserTest {
         final Sinex sinex = load("/sinex/SLRF2008_150928_2015.09.28.snx");
 
         // Test date computation using format description
-        ParseInfo<AbstractSinex> parseInfo = new ParseInfo<AbstractSinex>(TimeScalesFactory.getTimeScales()) {
+        ParseInfo<AbstractSinex> parseInfo = new ParseInfo<>(TimeScalesFactory.getTimeScales()) {
             /** {@inheritDoc} */
             @Override
             protected AbstractSinex build() {
@@ -179,7 +180,8 @@ public class SinexParserTest {
         assertEquals(0.0, refStation7237.distance(station7237.getEccentricities(new AbsoluteDate("2021-12-06T17:30:00.000", TimeScalesFactory.getUTC()))), 1.0e-15);
         assertEquals(0.0, refStation7237.distance(station7237.getEccentricities(new AbsoluteDate("2999-12-06T17:30:00.000", TimeScalesFactory.getUTC()))), 1.0e-15);
         assertEquals(0.0, station7237.getEccentricitiesTimeSpanMap().getFirstTransition().getDate().durationFrom(new AbsoluteDate("1988-01-01T00:00:00.000", TimeScalesFactory.getUTC())), 1.0e-15);
-        Assertions.assertSame(station7237.getEccentricitiesTimeSpanMap().getLastTransition().getDate(), AbsoluteDate.FUTURE_INFINITY);
+        Assertions.assertSame(AbsoluteDate.FUTURE_INFINITY,
+                              station7237.getEccentricitiesTimeSpanMap().getLastTransition().getDate());
 
         // Verify station 7090
         final Station station7090 = sinex.getStations().get("7090");
@@ -213,7 +215,8 @@ public class SinexParserTest {
         assertEquals(0.0, refStation7090.distance(station7090.getEccentricities(new AbsoluteDate("2999-07-05T07:50:00.000", TimeScalesFactory.getUTC()))), 1.0e-15);
         assertEquals(0.0, station7090.getEccentricitiesTimeSpanMap().getFirstTransition().getDate().durationFrom(new AbsoluteDate("1979-07-01T00:00:00.000", TimeScalesFactory.getUTC())), 1.0e-15);
 
-        Assertions.assertSame(station7090.getEccentricitiesTimeSpanMap().getLastTransition().getDate(), AbsoluteDate.FUTURE_INFINITY);
+        Assertions.assertSame(AbsoluteDate.FUTURE_INFINITY,
+                              station7090.getEccentricitiesTimeSpanMap().getLastTransition().getDate());
 
         // Verify station 7092
         final Station station7092 = sinex.getStations().get("7092");
@@ -390,12 +393,14 @@ public class SinexParserTest {
 
         // Verify end epoch for station "7035" is equal future infinity
         final Station station7035 = sinex.getStations().get("7035");
-        Assertions.assertSame(station7035.getEccentricitiesTimeSpanMap().getLastTransition().getDate(), AbsoluteDate.FUTURE_INFINITY);
+        Assertions.assertSame(AbsoluteDate.FUTURE_INFINITY,
+                              station7035.getEccentricitiesTimeSpanMap().getLastTransition().getDate());
 
         // Verify start epoch for station "7120" is equal to the file start epoch
         final Station station7120 = sinex.getStations().get("7120");
         assertEquals(0.0, sinex.getFileEpochStartTime().durationFrom(station7120.getEccentricitiesTimeSpanMap().getFirstTransition().getDate()));
-        Assertions.assertSame(station7120.getEccentricitiesTimeSpanMap().getLastTransition().getDate(), AbsoluteDate.FUTURE_INFINITY);
+        Assertions.assertSame(AbsoluteDate.FUTURE_INFINITY,
+                              station7120.getEccentricitiesTimeSpanMap().getLastTransition().getDate());
 
     }
 
@@ -434,11 +439,11 @@ public class SinexParserTest {
         assertEquals(2, psdAntuco.getSpansNumber());
         final List<PsdCorrection> corr2010 = psdAntuco.getFirstNonNullSpan().getData();
         assertEquals(5, corr2010.size());
-        assertEquals(0, corr2010.get(0).getEarthquakeDate().durationFrom(date2010));
-        assertEquals(PsdCorrection.TimeEvolution.LOG, corr2010.get(0).getEvolution());
-        assertEquals(PsdCorrection.Axis.EAST, corr2010.get(0).getAxis());
-        assertEquals(-1.28699198121674e-01, corr2010.get(0).getAmplitude(), 1.0e-14);
-        assertEquals(8.08455225832410e-01, corr2010.get(0).getRelaxationTime() / Constants.JULIAN_YEAR, 1.0e-14);
+        assertEquals(0, corr2010.getFirst().getEarthquakeDate().durationFrom(date2010));
+        assertEquals(PsdCorrection.TimeEvolution.LOG, corr2010.getFirst().getEvolution());
+        assertEquals(PsdCorrection.Axis.EAST, corr2010.getFirst().getAxis());
+        assertEquals(-1.28699198121674e-01, corr2010.getFirst().getAmplitude(), 1.0e-14);
+        assertEquals(8.08455225832410e-01, corr2010.getFirst().getRelaxationTime() / Constants.JULIAN_YEAR, 1.0e-14);
         assertEquals(0, corr2010.get(1).getEarthquakeDate().durationFrom(date2010));
         assertEquals(PsdCorrection.TimeEvolution.LOG, corr2010.get(1).getEvolution());
         assertEquals(PsdCorrection.Axis.EAST, corr2010.get(1).getAxis());
@@ -468,18 +473,18 @@ public class SinexParserTest {
         assertEquals(3, psdAtkaIsland.getSpansNumber());
         final List<PsdCorrection> corr2013 = psdAtkaIsland.getFirstNonNullSpan().getData();
         assertEquals(1, corr2013.size());
-        assertEquals(0, corr2013.get(0).getEarthquakeDate().durationFrom(date2013));
-        assertEquals(PsdCorrection.TimeEvolution.EXP, corr2013.get(0).getEvolution());
-        assertEquals(PsdCorrection.Axis.NORTH, corr2013.get(0).getAxis());
-        assertEquals(-1.16779196624443e-02, corr2013.get(0).getAmplitude(), 1.0e-14);
-        assertEquals(5.02510982822891e-01, corr2013.get(0).getRelaxationTime() / Constants.JULIAN_YEAR, 1.0e-14);
+        assertEquals(0, corr2013.getFirst().getEarthquakeDate().durationFrom(date2013));
+        assertEquals(PsdCorrection.TimeEvolution.EXP, corr2013.getFirst().getEvolution());
+        assertEquals(PsdCorrection.Axis.NORTH, corr2013.getFirst().getAxis());
+        assertEquals(-1.16779196624443e-02, corr2013.getFirst().getAmplitude(), 1.0e-14);
+        assertEquals(5.02510982822891e-01, corr2013.getFirst().getRelaxationTime() / Constants.JULIAN_YEAR, 1.0e-14);
         final List<PsdCorrection> corr2016 = psdAtkaIsland.getFirstNonNullSpan().next().getData();
         assertEquals(1, corr2016.size());
-        assertEquals(0, corr2016.get(0).getEarthquakeDate().durationFrom(date2016));
-        assertEquals(PsdCorrection.TimeEvolution.EXP, corr2016.get(0).getEvolution());
-        assertEquals(PsdCorrection.Axis.NORTH, corr2016.get(0).getAxis());
-        assertEquals(-1.31981162574364e-02, corr2016.get(0).getAmplitude(), 1.0e-14);
-        assertEquals(1.02131561331021e+00, corr2016.get(0).getRelaxationTime() / Constants.JULIAN_YEAR, 1.0e-14);
+        assertEquals(0, corr2016.getFirst().getEarthquakeDate().durationFrom(date2016));
+        assertEquals(PsdCorrection.TimeEvolution.EXP, corr2016.getFirst().getEvolution());
+        assertEquals(PsdCorrection.Axis.NORTH, corr2016.getFirst().getAxis());
+        assertEquals(-1.31981162574364e-02, corr2016.getFirst().getAmplitude(), 1.0e-14);
+        assertEquals(1.02131561331021e+00, corr2016.getFirst().getRelaxationTime() / Constants.JULIAN_YEAR, 1.0e-14);
 
     }
 

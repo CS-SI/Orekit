@@ -170,7 +170,7 @@ public class GeoidTest {
             double expected = row[2];
             // System.out.format("%10g %10g %10g %10g%n", lat, lon, expected,
             // undulation - expected);
-            Assertions.assertEquals(undulation, expected, maxError, String.format("lat: %5g, lon: %5g", lat, lon));
+            Assertions.assertEquals(undulation, expected, maxError, "lat: %5g, lon: %5g".formatted(lat, lon));
         }
     }
 
@@ -205,7 +205,7 @@ public class GeoidTest {
                     otherDirection, close, frame, date);
 
             // verify
-            String message = String.format("point: %s%n",
+            String message = "point: %s%n".formatted(
                     Arrays.toString(point));
             // position accuracy on Earth's surface to 1.3 um.
             assertThat(message, actualReversed, geodeticPointCloseTo(gp, 1.3e-6));

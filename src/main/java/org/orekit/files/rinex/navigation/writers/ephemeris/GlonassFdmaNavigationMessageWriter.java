@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Thales Alenia Space
+/* Copyright 2022-2026 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -37,13 +37,18 @@ public class GlonassFdmaNavigationMessageWriter
     /** Format for one 5.1 digits float field. */
     public static final FastDoubleFormatter FIVE_ONE_DIGITS_FLOAT = new FastDecimalFormatter(5, 1);
 
+    /** Simple constructor. */
+    public GlonassFdmaNavigationMessageWriter() {
+        // nothing to do
+    }
+
     /** {@inheritDoc} */
     @Override
     protected void writeEphLine0(final GLONASSFdmaNavigationMessage message, final String identifier,
                                  final RinexNavigationHeader header, final RinexNavigationWriter writer)
         throws IOException {
 
-        final DateTimeComponents dtc = message.getEpochToc().getComponents(writer.getTimeScales().getUTC());
+        final DateTimeComponents dtc = message.getToc().getComponents(writer.getTimeScales().getUTC());
         if (header.getFormatVersion() < 3.0) {
 
             writer.outputField(BaseRinexWriter.TWO_DIGITS_INTEGER, message.getPRN(), 2);

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,7 +21,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.SphericalCoordinates;
@@ -279,6 +278,10 @@ public class HolmesFeatherstoneAttractionModel implements ForceModel, TideSystem
     }
 
     /** Compute the gradient of the non-central part of the gravity field.
+     * <p>
+     * If U represents the non-central part of the gravity field,
+     * this method returns the negative gradient of U (-grad(U)).
+     * </p>
      * @param date current date
      * @param position position at which gravity field is desired in body frame
      * @param mu central attraction coefficient to use
@@ -393,6 +396,10 @@ public class HolmesFeatherstoneAttractionModel implements ForceModel, TideSystem
     }
 
     /** Compute the gradient of the non-central part of the gravity field.
+     * <p>
+     * If U represents the non-central part of the gravity field,
+     * this method returns the negative gradient of U (-grad(U)).
+     * </p>
      * @param date current date
      * @param position position at which gravity field is desired in body frame
      * @param mu central attraction coefficient to use
@@ -537,6 +544,10 @@ public class HolmesFeatherstoneAttractionModel implements ForceModel, TideSystem
     }
 
     /** Compute both the gradient and the hessian of the non-central part of the gravity field.
+     * <p>
+     * If U represents the non-central part of the gravity field,
+     * this method returns the negative gradient and hessian of U (-grad(U) and -hessian(U)).
+     * </p>
      * @param date current date
      * @param position position at which gravity field is desired in body frame
      * @param mu central attraction coefficient to use
@@ -1062,14 +1073,14 @@ public class HolmesFeatherstoneAttractionModel implements ForceModel, TideSystem
 
         final T mu = parameters[0];
 
-        // check for faster computation dedicated to derivatives with respect to state
-        if (isGradientStateDerivative(s)) {
+        // check for faster computation dedicated to derivatives with respect to state and gravitational parameter
+        if (s.getDate().hasZeroField() && isGradientStateDerivative(s) && isGradientConstantOrMuDerivative(mu)) {
             @SuppressWarnings("unchecked")
             final FieldVector3D<Gradient> p = (FieldVector3D<Gradient>) s.getPosition();
             @SuppressWarnings("unchecked")
             final FieldVector3D<T> a = (FieldVector3D<T>) accelerationWrtState(s.getDate().toAbsoluteDate(),
-                                                                               s.getFrame(), p,
-                                                                               (Gradient) mu);
+                    s.getFrame(), p,
+                    (Gradient) mu);
             return a;
         }
 
@@ -1097,12 +1108,35 @@ public class HolmesFeatherstoneAttractionModel implements ForceModel, TideSystem
             if (p < 3) {
                 return false;
             }
-            @SuppressWarnings("unchecked")
-            final FieldPVCoordinates<Gradient> pv = (FieldPVCoordinates<Gradient>) state.getPVCoordinates();
+            @SuppressWarnings("unchecked") final FieldPVCoordinates<Gradient> pv = (FieldPVCoordinates<Gradient>) state.getPVCoordinates();
             return isVariable(pv.getPosition().getX(), 0) &&
-                   isVariable(pv.getPosition().getY(), 1) &&
-                   isVariable(pv.getPosition().getZ(), 2);
+                    isVariable(pv.getPosition().getY(), 1) &&
+                    isVariable(pv.getPosition().getZ(), 2);
         } else {
+            return false;
+        }
+    }
+
+    /**
+     * Check if a field gravitational parameter is constant or represents an independent variable.
+     * @param mu field gravitational parameter
+     * @return true if the field gravitational parameter is constant or represents an independent variable
+     * @param <T> type of field
+     * @since 13.1.3
+     */
+    private <T extends CalculusFieldElement<T>> boolean isGradientConstantOrMuDerivative(final T mu) {
+        try {
+            final double[] derivatives = ((Gradient) mu).getGradient();
+            boolean check = true;
+            for (int i = 0; i < derivatives.length; i++) {
+                if (i == 3) {
+                    check &= derivatives[i] == 0.0 || derivatives[i] == 1.0;
+                } else {
+                    check &= derivatives[i] == 0.0;
+                }
+            }
+            return check;
+        } catch (ClassCastException cce) {
             return false;
         }
     }
@@ -1126,7 +1160,7 @@ public class HolmesFeatherstoneAttractionModel implements ForceModel, TideSystem
      * <p>
      * From a theoretical point of view, this method computes the same values
      * as {@link #acceleration(FieldSpacecraftState, CalculusFieldElement[])} in the
-     * specific case of {@link DerivativeStructure} with respect to state, so
+     * specific case of {@link Gradient} with respect to state, so
      * it is less general. However, it is *much* faster in this important case.
      * <p>
      * <p>

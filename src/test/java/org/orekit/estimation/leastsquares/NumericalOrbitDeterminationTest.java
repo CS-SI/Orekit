@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -61,7 +61,6 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -92,8 +91,9 @@ class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<Numeric
     protected NumericalPropagatorBuilder createPropagatorBuilder(final Orbit referenceOrbit,
                                                                  final ODEIntegratorBuilder builder,
                                                                  final double positionScale) {
-        return new NumericalPropagatorBuilder(referenceOrbit, builder, PositionAngleType.MEAN,
-                                              positionScale);
+        return new NumericalPropagatorBuilder(referenceOrbit.factory(PositionAngleType.MEAN,
+                                                                     positionScale),
+                                              builder);
     }
 
     /** {@inheritDoc} */
@@ -303,8 +303,7 @@ class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<Numeric
     @Test
     // Orbit determination for range, azimuth elevation measurements
     void testW3B()
-        throws URISyntaxException, IllegalArgumentException, IOException,
-              OrekitException, ParseException {
+        throws URISyntaxException, IllegalArgumentException, IOException, OrekitException {
 
     	// input in resources directory
         final String inputPath = NumericalOrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/W3B/od_test_W3.in").toURI().getPath();
@@ -337,7 +336,7 @@ class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<Numeric
         //test on propagator parameters
         final double dragCoef  = -0.2154;
         final ParameterDriversList propagatorParameters = odsatW3.getPropagatorParameters();
-        Assertions.assertEquals(dragCoef, propagatorParameters.getDrivers().get(0).getValue(), 1e-3);
+        Assertions.assertEquals(dragCoef, propagatorParameters.getDrivers().getFirst().getValue(), 1e-3);
         final Vector3D leakAcceleration0 =
                         new Vector3D(propagatorParameters.getDrivers().get(1).getValue(),
                                      propagatorParameters.getDrivers().get(3).getValue(),
@@ -357,7 +356,7 @@ class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<Numeric
         //station CastleRock
         final double[] CastleAzElBias  = { 0.062701342, -0.003613508 };
         final double   CastleRangeBias = 11274.4195;
-        Assertions.assertEquals(CastleAzElBias[0], FastMath.toDegrees(list.get(0).getValue()), angleAccuracy);
+        Assertions.assertEquals(CastleAzElBias[0], FastMath.toDegrees(list.getFirst().getValue()), angleAccuracy);
         Assertions.assertEquals(CastleAzElBias[1], FastMath.toDegrees(list.get(1).getValue()), angleAccuracy);
         Assertions.assertEquals(CastleRangeBias,   list.get(2).getValue(),                     distanceAccuracy);
 

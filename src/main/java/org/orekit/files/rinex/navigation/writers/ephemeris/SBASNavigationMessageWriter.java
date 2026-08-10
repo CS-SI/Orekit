@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Thales Alenia Space
+/* Copyright 2022-2026 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -33,6 +33,11 @@ import java.io.IOException;
 public class SBASNavigationMessageWriter
     extends AbstractEphemerisMessageWriter<SBASNavigationMessage> {
 
+    /** Simple constructor. */
+    public SBASNavigationMessageWriter() {
+        // nothing to do
+    }
+
     /** {@inheritDoc} */
     @Override
     protected void writeEphLine0(final SBASNavigationMessage message, final String identifier,
@@ -45,7 +50,7 @@ public class SBASNavigationMessageWriter
         final TimeScale timeScale = (version100 == 301) ?
                                     writer.getTimeScales().getUTC() :
                                     writer.getTimeScales().getGPS();
-        writer.writeDate(message.getEpochToc().getComponents(timeScale));
+        writer.writeDate(message.getToc().getComponents(timeScale));
         writer.writeDouble(message.getAGf0(), Unit.SECOND);
         writer.writeDouble(message.getAGf1(), RinexNavigationParser.S_PER_S);
         writer.writeDouble(message.getTime(), Unit.SECOND);

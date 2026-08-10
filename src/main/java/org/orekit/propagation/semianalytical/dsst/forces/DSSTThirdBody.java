@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -1393,7 +1393,7 @@ public class DSSTThirdBody implements DSSTForceModel {
      * Starting from Danielson 4.2-9,10,11 and taking into account that fact that: <br />
      * c = e / (1 + (1 - e²)<sup>1/2</sup>) = e / (1 + B) = e * b <br/>
      * the expression e<sup>-|j-s|</sup>*w<sub>j</sub><sup>n, s</sup>
-     * can be written as: <br/ >
+     * can be written as: <br />
      * - for |s| > |j| <br />
      * e<sup>-|j-s|</sup>*w<sub>j</sub><sup>n, s</sup> =
      *          (((n + s)!(n - s)!)/((n + j)!(n - j)!)) *
@@ -1463,7 +1463,7 @@ public class DSSTThirdBody implements DSSTForceModel {
             //Compute derivatives of c
             if (auxiliaryElements.getEcc() == 0.0) {
                 // we are at a perfectly circular orbit singularity here
-                // we arbitrarily consider the perigee is along the X axis,
+                // we arbitrarily consider the periapsis is along the X axis,
                 // i.e cos(ω + Ω) = h/ecc 1 and sin(ω + Ω) = k/ecc = 0
                 dcdh = auxiliaryElements.getEcc() * dbdh + context.getb();
                 dcdk = auxiliaryElements.getEcc() * dbdk;
@@ -1579,7 +1579,7 @@ public class DSSTThirdBody implements DSSTForceModel {
     * Starting from Danielson 4.2-9,10,11 and taking into account that fact that: <br />
     * c = e / (1 + (1 - e²)<sup>1/2</sup>) = e / (1 + B) = e * b <br/>
     * the expression e<sup>-|j-s|</sup>*w<sub>j</sub><sup>n, s</sup>
-    * can be written as: <br/ >
+    * can be written as: <br />
     * - for |s| > |j| <br />
     * e<sup>-|j-s|</sup>*w<sub>j</sub><sup>n, s</sup> =
     *          (((n + s)!(n - s)!)/((n + j)!(n - j)!)) *
@@ -1653,7 +1653,7 @@ public class DSSTThirdBody implements DSSTForceModel {
             //Compute derivatives of c
             if (auxiliaryElements.getEcc().getReal() == 0.0) {
                 // we are at a perfectly circular orbit singularity here
-                // we arbitrarily consider the perigee is along the X axis,
+                // we arbitrarily consider the periapsis is along the X axis,
                 // i.e cos(ω + Ω) = h/ecc 1 and sin(ω + Ω) = k/ecc = 0
                 dcdh = auxiliaryElements.getEcc().multiply(dbdh).add(context.getb());
                 dcdk = auxiliaryElements.getEcc().multiply(dbdk);
@@ -2016,7 +2016,7 @@ public class DSSTThirdBody implements DSSTForceModel {
     /** This class computes the terms containing the coefficients C<sub>j</sub> and S<sub>j</sub> of (α, β) or (k, h).
      *
      * <p>
-     * The following terms and their derivatives by k, h, alpha and beta are considered: <br/ >
+     * The following terms and their derivatives by k, h, alpha and beta are considered: <br />
      * - sign(j-s) * C<sub>s</sub>(α, β) * S<sub>|j-s|</sub>(k, h) + S<sub>s</sub>(α, β) * C<sub>|j-s|</sub>(k, h) <br />
      * - C<sub>s</sub>(α, β) * S<sub>j+s</sub>(k, h) - S<sub>s</sub>(α, β) * C<sub>j+s</sub>(k, h) <br />
      * - C<sub>s</sub>(α, β) * C<sub>|j-s|</sub>(k, h) - sign(j-s) * S<sub>s</sub>(α, β) * S<sub>|j-s|</sub>(k, h) <br />
@@ -2274,7 +2274,7 @@ public class DSSTThirdBody implements DSSTForceModel {
      /** This class computes the terms containing the coefficients C<sub>j</sub> and S<sub>j</sub> of (α, β) or (k, h).
      *
      * <p>
-     * The following terms and their derivatives by k, h, alpha and beta are considered: <br/ >
+     * The following terms and their derivatives by k, h, alpha and beta are considered: <br />
      * - sign(j-s) * C<sub>s</sub>(α, β) * S<sub>|j-s|</sub>(k, h) + S<sub>s</sub>(α, β) * C<sub>|j-s|</sub>(k, h) <br />
      * - C<sub>s</sub>(α, β) * S<sub>j+s</sub>(k, h) - S<sub>s</sub>(α, β) * C<sub>j+s</sub>(k, h) <br />
      * - C<sub>s</sub>(α, β) * C<sub>|j-s|</sub>(k, h) - sign(j-s) * S<sub>s</sub>(α, β) * S<sub>|j-s|</sub>(k, h) <br />

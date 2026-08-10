@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,6 +32,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Serial;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.Iterator;
@@ -127,9 +128,7 @@ public class MarshallSolarActivityFutureEstimationLoader
         builder.append(")");
 
         // third to eighth group: data fields
-        for (int i = 0; i < 6; ++i) {
-            builder.append("\\p{Blank}+([-+]?[0-9]+\\.[0-9]+)");
-        }
+        builder.repeat("\\p{Blank}+([-+]?[0-9]+\\.[0-9]+)", 6);
 
         // end of line
         builder.append("\\p{Blank}*$");
@@ -145,21 +144,20 @@ public class MarshallSolarActivityFutureEstimationLoader
 
         // select the groups we want to store
         final int f107Group;
-        final int apGroup;
-        switch (strengthLevel) {
-            case STRONG:
+        final int apGroup = switch (strengthLevel) {
+            case STRONG -> {
                 f107Group = 3;
-                apGroup = 6;
-                break;
-            case AVERAGE:
+                yield 6;
+            }
+            case AVERAGE -> {
                 f107Group = 4;
-                apGroup = 7;
-                break;
-            default:
+                yield 7;
+            }
+            default -> {
                 f107Group = 5;
-                apGroup = 8;
-                break;
-        }
+                yield 8;
+            }
+        };
 
         boolean        inData   = false;
         DateComponents fileDate = null;
@@ -235,12 +233,14 @@ public class MarshallSolarActivityFutureEstimationLoader
         if (data.isEmpty()) {
             throw new OrekitException(OrekitMessages.NOT_A_MARSHALL_SOLAR_ACTIVITY_FUTURE_ESTIMATION_FILE, name);
         }
-        setMinDate(data.first().getDate());
-        setMaxDate(data.last().getDate());
+        setMinDate(data.getFirst().getDate());
+        setMaxDate(data.getLast().getDate());
 
     }
 
-    /** @return the data set */
+    /** Get the data set.
+     * @return the data set
+     */
     @Override
     public SortedSet<LineParameters> getDataSet() {
         return data.stream().map(value -> (LineParameters) value).collect(Collectors.toCollection(TreeSet::new));
@@ -250,6 +250,7 @@ public class MarshallSolarActivityFutureEstimationLoader
     public static class LineParameters extends AbstractSolarActivityDataLoader.LineParameters {
 
         /** Serializable UID. */
+        @Serial
         private static final long serialVersionUID = 6607862001953526475L;
 
         /** File date. */

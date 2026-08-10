@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 Mark Rutten
+/* Copyright 2002-2026 Mark Rutten
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,14 +16,10 @@
  */
 package org.orekit.estimation.measurements;
 
-import org.hipparchus.analysis.UnivariateFunction;
-import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
-import org.hipparchus.analysis.solvers.UnivariateSolver;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.estimation.Context;
 import org.orekit.frames.Frame;
-import org.orekit.frames.Transform;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
@@ -59,16 +55,7 @@ public class FDOAMeasurementCreator extends MeasurementCreator {
     public void init(SpacecraftState s0, AbsoluteDate t, double step) {
         for (final GroundStation station : Arrays.asList(context.TDOAstations.getKey(),
                                                          context.TDOAstations.getValue())) {
-            for (ParameterDriver driver : Arrays.asList(station.getClockOffsetDriver(),
-                                                        station.getEastOffsetDriver(),
-                                                        station.getNorthOffsetDriver(),
-                                                        station.getZenithOffsetDriver(),
-                                                        station.getPrimeMeridianOffsetDriver(),
-                                                        station.getPrimeMeridianDriftDriver(),
-                                                        station.getPolarOffsetXDriver(),
-                                                        station.getPolarDriftXDriver(),
-                                                        station.getPolarOffsetYDriver(),
-                                                        station.getPolarDriftYDriver())) {
+            for (ParameterDriver driver : station.getParametersDrivers()) {
                 if (driver.getReferenceDate() == null) {
                     driver.setReferenceDate(s0.getDate());
                 }
@@ -87,19 +74,9 @@ public class FDOAMeasurementCreator extends MeasurementCreator {
         if ((secondary.getBaseFrame().getTrackingCoordinates(position, inertial, date).getElevation()  > FastMath.toRadians(30.0)) &&
             (primary.getBaseFrame().getTrackingCoordinates(position, inertial, date).getElevation() > FastMath.toRadians(30.0))) {
 
-            // The solver used
-            final UnivariateSolver solver = new BracketingNthOrderBrentSolver(1.0e-12, 5);
-
-            final double primaryDelay  = solver.solve(1000, new UnivariateFunction() {
-                public double value(final double x) {
-                    final Transform t = primary.getOffsetToInertial(inertial, date.shiftedBy(x), false);
-                    final double d = Vector3D.distance(position, t.transformPosition(Vector3D.ZERO));
-                    return d - x * Constants.SPEED_OF_LIGHT;
-                }
-            }, -1.0, 1.0);
-
+            final double primaryDelay = solveDownlinkDelay(primary, currentState, Vector3D.ZERO);
             final AbsoluteDate primaryReceptionDate = currentState.getDate().shiftedBy(primaryDelay);
-            final PVCoordinates primaryPV   = primary.getOffsetToInertial(inertial, primaryReceptionDate, false)
+            final PVCoordinates primaryPV   = primary.getOffsetToInertial(inertial, primaryReceptionDate, true)
                                                        .transformPVCoordinates(PVCoordinates.ZERO);
 
             // line of sight at primary
@@ -108,16 +85,9 @@ public class FDOAMeasurementCreator extends MeasurementCreator {
             // relative velocity, spacecraft-station, at the date of primary reception
             final Vector3D deltaVp = velocity.subtract(primaryPV.getVelocity());
 
-            final double secondaryDelay = solver.solve(1000, new UnivariateFunction() {
-                public double value(final double x) {
-                    final Transform t = secondary.getOffsetToInertial(inertial, date.shiftedBy(x), false);
-                    final double d = Vector3D.distance(position, t.transformPosition(Vector3D.ZERO));
-                    return d - x * Constants.SPEED_OF_LIGHT;
-                }
-            }, -1.0, 1.0);
-
+            final double secondaryDelay = solveDownlinkDelay(secondary, currentState, Vector3D.ZERO);
             final AbsoluteDate secondaryReceptionDate = currentState.getDate().shiftedBy(secondaryDelay);
-            final PVCoordinates secondaryPV   = secondary.getOffsetToInertial(inertial, secondaryReceptionDate, false)
+            final PVCoordinates secondaryPV   = secondary.getOffsetToInertial(inertial, secondaryReceptionDate, true)
                                                      .transformPVCoordinates(PVCoordinates.ZERO);
 
             // line of sight at secondary
@@ -130,7 +100,8 @@ public class FDOAMeasurementCreator extends MeasurementCreator {
             final double rrDifference = deltaVp.dotProduct(primaryLOS) - deltaVs.dotProduct(secondaryLOS);
             final double fdoa = rrDifference * centreFrequency / Constants.SPEED_OF_LIGHT;
 
-            addMeasurement(new FDOA(secondary, primary, centreFrequency, primaryReceptionDate,
+            final double clockOffset = primary.getOffsetValue(primaryReceptionDate);
+            addMeasurement(new FDOA(secondary, primary, centreFrequency, primaryReceptionDate.shiftedBy(clockOffset),
                     fdoa, 1.0, 10, satellite));
 
         }

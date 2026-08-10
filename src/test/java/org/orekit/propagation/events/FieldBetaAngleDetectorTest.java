@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 Joseph Reed
+/* Copyright 2002-2026 Joseph Reed
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,8 +15,6 @@
  * limitations under the License.
  */
 package org.orekit.propagation.events;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
@@ -40,6 +38,7 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.FieldPVCoordinatesProvider;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class FieldBetaAngleDetectorTest {
     private FieldPropagator<Binary64> propagator;
@@ -104,13 +103,13 @@ class FieldBetaAngleDetectorTest {
         propagator.addEventDetector(detector);
         
         final FieldSpacecraftState<Binary64> state = propagator.propagate(date, date.shiftedBy(30 * 86400));
-        assertEquals(1883928.588393031, state.getDate().durationFrom(date).getReal(), 1e-9);
+        assertEquals(1883928.588771722, state.getDate().durationFrom(date).getReal(), 1e-9);
 
         assertEquals(0, FieldBetaAngleDetector.calculateBetaAngle(state, sun).getReal(), 1e-9);
     }
 
     @Test
-    void record() {
+    void TestRecord() {
         final FieldPVCoordinatesProvider<Binary64> sun = CelestialBodyFactory.getSun().toFieldPVCoordinatesProvider(Binary64Field.getInstance());
         final FieldRecordAndContinue<Binary64> handler = new FieldRecordAndContinue<>();
         final FieldBetaAngleDetector<Binary64> detector = new FieldBetaAngleDetector<>(

@@ -1,4 +1,4 @@
-/* Copyright 2020-2025 Exotrail
+/* Copyright 2020-2026 Exotrail
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -98,7 +98,7 @@ public class SGP4OrbitalState extends AbstractAveragedOrbitalState {
     public static SGP4OrbitalState of(final TLE tle, final Frame teme) {
         final double semiMajorAxis = computeSemiMajorAxis(tle);
         final AveragedKeplerianWithMeanAngle elements = new AveragedKeplerianWithMeanAngle(
-                semiMajorAxis, tle.getE(), tle.getI(), tle.getPerigeeArgument(), tle.getRaan(),
+                semiMajorAxis, tle.getE(), tle.getI(), tle.getPeriapsisArgument(), tle.getRaan(),
                 tle.getMeanAnomaly());
         return new SGP4OrbitalState(tle.getDate(), elements, teme, tle.getUtc());
     }
@@ -161,11 +161,11 @@ public class SGP4OrbitalState extends AbstractAveragedOrbitalState {
         final double averagedEccentricity = getAveragedElements().getAveragedEccentricity();
         final double averagedInclination = getAveragedElements().getAveragedInclination();
         final double averagedRAAN = getAveragedElements().getAveragedRightAscensionOfTheAscendingNode();
-        final double averagedPerigeeArgument = getAveragedElements().getAveragedPerigeeArgument();
+        final double averagedPeriapsisArgument = getAveragedElements().getAveragedPeriapsisArgument();
         final double averagedMeanAnomaly = getAveragedElements().getAveragedMeanAnomaly();
         return new TLE(0, (char) 0, 2000, 1, "1", 0, 0,
                 getDate(), averagedMeanMotion, 0., 0., averagedEccentricity,
-                averagedInclination, averagedPerigeeArgument, averagedRAAN, averagedMeanAnomaly,
+                averagedInclination, averagedPeriapsisArgument, averagedRAAN, averagedMeanAnomaly,
                 1, B_STAR, utc);
     }
 

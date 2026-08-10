@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -49,6 +49,8 @@ import org.orekit.propagation.conversion.osc2mean.DSSTTheory;
 import org.orekit.propagation.conversion.osc2mean.FixedPointConverter;
 import org.orekit.propagation.conversion.osc2mean.MeanTheory;
 import org.orekit.propagation.conversion.osc2mean.OsculatingToMeanConverter;
+import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.propagation.integration.StateMapper;
@@ -410,10 +412,10 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         // add the STM generator corresponding to the current settings, and setup state accordingly
         DSSTStateTransitionMatrixGenerator stmGenerator = null;
         for (final AdditionalDerivativesProvider equations : getAdditionalDerivativesProviders()) {
-            if (equations instanceof DSSTStateTransitionMatrixGenerator &&
+            if (equations instanceof DSSTStateTransitionMatrixGenerator generator &&
                 equations.getName().equals(dsstHarvester.getStmName())) {
                 // the STM generator has already been set up in a previous propagation
-                stmGenerator = (DSSTStateTransitionMatrixGenerator) equations;
+                stmGenerator = generator;
                 break;
             }
         }
@@ -467,10 +469,10 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
 
                 // check if we already have set up the providers
                 for (final AdditionalDerivativesProvider provider : getAdditionalDerivativesProviders()) {
-                    if (provider instanceof DSSTIntegrableJacobianColumnGenerator &&
+                    if (provider instanceof DSSTIntegrableJacobianColumnGenerator columnGenerator &&
                         provider.getName().equals(span.getData())) {
                         // the Jacobian column generator has already been set up in a previous propagation
-                        generator = (DSSTIntegrableJacobianColumnGenerator) provider;
+                        generator = columnGenerator;
                         break;
                     }
                 }
@@ -553,7 +555,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
             // we want to add the central attraction force model
 
             // ensure we are notified of any mu change
-            force.getParametersDrivers().get(0).addObserver(new ParameterObserver() {
+            force.getParametersDrivers().getFirst().addObserver(new ParameterObserver() {
                 /** {@inheritDoc} */
                 @Override
                 public void valueChanged(final double previousValue, final ParameterDriver driver, final AbsoluteDate date) {
@@ -966,6 +968,17 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         return sptValue;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    protected SpacecraftState resetIntegrationStateAtEvent(final EventHandler handler, final EventDetector detector, final SpacecraftState oldState) {
+        final SpacecraftState newState = super.resetIntegrationStateAtEvent(handler, detector, oldState);
+        if (PropagationType.MEAN.equals(getPropagationType())) {
+            // newState is a mean state, no need to convert it
+            return newState;
+        }
+        // newState is an osculating state, it must be converted to mean state because DSST integrates mean elements
+        return computeMeanState(newState, getAttitudeProvider(), forceModels);
+    }
 
     /** Internal mapper using mean parameters plus short periodic terms. */
     private static class MeanPlusShortPeriodicMapper extends StateMapper {
@@ -1186,8 +1199,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
 
         /** {@inheritDoc} */
         @Override
-        public void handleStep(final ODEStateInterpolator interpolator) {
-
+        public void updateOnStep(final ODEStateInterpolator interpolator) {
             // Get the grid points to compute
             final double[] interpolationPoints =
                     interpolationgrid.getGridPoints(interpolator.getPreviousState().getTime(),
@@ -1209,6 +1221,12 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
             for (DSSTForceModel forceModel : forceModels) {
                 forceModel.updateShortPeriodTerms(forceModel.getParametersAllValues(), meanStates);
             }
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public void handleStep(final ODEStateInterpolator interpolator) {
+
         }
     }
 }

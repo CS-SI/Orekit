@@ -102,7 +102,7 @@ class SphericalConstantThrustPropulsionModelTest {
         final List<ParameterDriver> parameterDriverList = propulsionModel.getParametersDrivers();
         // THEN
         assertEquals(3, parameterDriverList.size());
-        assertEquals(thrustVector.getNorm(), parameterDriverList.get(0).getValue());
+        assertEquals(thrustVector.getNorm(), parameterDriverList.getFirst().getValue());
         assertEquals(thrustVector.getAlpha(), parameterDriverList.get(1).getValue());
         assertEquals(thrustVector.getDelta(), parameterDriverList.get(2).getValue());
     }

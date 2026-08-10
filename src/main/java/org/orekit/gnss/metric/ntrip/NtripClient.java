@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -47,6 +47,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.frames.Frame;
 import org.orekit.gnss.metric.messages.ParsedMessage;
 import org.orekit.time.TimeScales;
 
@@ -147,6 +148,16 @@ public class NtripClient {
      */
     private final TimeScales timeScales;
 
+    /** Reference inertial frame.
+     * @since 14.0
+     */
+    private final Frame inertial;
+
+    /** Body fixed frame.
+     * @since 14.0
+     */
+    private final Frame bodyFixed;
+
     /** Build a client for NTRIP.
      * <p>
      * The default configuration uses default timeout, default reconnection
@@ -155,10 +166,14 @@ public class NtripClient {
      * @param host caster host providing the source table
      * @param port port to use for connection
      * @param timeScales known time scales
-     * @since 13.0
+     * @param maxRetries maximum number of reconnect attempts without reading any data
+     * @param inertial reference inertial frame
+     * @param bodyFixed body fixed frame (will be frozen at {@code date} to build the orbital elements
+     * @since 14.0
      * see {@link #DEFAULT_PORT}
      */
-    public NtripClient(final String host, final int port, final TimeScales timeScales) {
+    public NtripClient(final String host, final int port, final TimeScales timeScales,
+                       final int maxRetries, final Frame inertial, final Frame bodyFixed) {
         this.host         = host;
         this.port         = port;
         this.observers    = new ArrayList<>();
@@ -166,12 +181,14 @@ public class NtripClient {
         setTimeout(DEFAULT_TIMEOUT);
         setReconnectParameters(DEFAULT_RECONNECT_DELAY,
                                DEFAULT_RECONNECT_DELAY_FACTOR,
-                               DEFAULT_MAX_RECONNECT);
+                               maxRetries);
         setProxy(Type.DIRECT, null, -1);
         this.gga             = new AtomicReference<>(null);
         this.sourceTable     = null;
         this.executorService = null;
         this.timeScales      = timeScales;
+        this.inertial        = inertial;
+        this.bodyFixed       = bodyFixed;
     }
 
     /** Get the caster host.
@@ -206,7 +223,7 @@ public class NtripClient {
     /** Set Reconnect parameters.
      * @param delay delay before we reconnect after connection close
      * @param delayFactor factor by which reconnection delay is multiplied after each attempt
-     * @param max max number of reconnect a attempts without reading any data
+     * @param max max number of reconnect attempts without reading any data
      */
     public void setReconnectParameters(final double delay,
                                        final double delayFactor,
@@ -365,7 +382,7 @@ public class NtripClient {
 
                         ++lineNumber;
                         line = line.trim();
-                        if (line.length() == 0) {
+                        if (line.isEmpty()) {
                             continue;
                         }
 
@@ -430,7 +447,8 @@ public class NtripClient {
 
         // create the monitor
         final StreamMonitor monitor = new StreamMonitor(this, mountPoint, type, requiresNMEA, ignoreUnknownMessageTypes,
-                                                        reconnectDelay, reconnectDelayFactor, maxRetries);
+                                                        reconnectDelay, reconnectDelayFactor, maxRetries,
+                                                        inertial, bodyFixed);
         monitors.put(mountPoint, monitor);
 
         // set up the already known observers

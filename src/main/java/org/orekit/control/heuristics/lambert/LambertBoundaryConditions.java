@@ -1,4 +1,4 @@
-/* Copyright 2020-2025 Exotrail
+/* Copyright 2020-2026 Exotrail
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,6 +17,7 @@
 package org.orekit.control.heuristics.lambert;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 
@@ -100,4 +101,18 @@ public class LambertBoundaryConditions {
     public Frame getReferenceFrame() {
         return referenceFrame;
     }
+
+    /** {@inheritDoc} */
+    @Override
+    @DefaultDataContext
+    public String toString() {
+        return "LambertBoundaryConditions{" +
+                "initialDate=" + initialDate.toString() +
+                ", initialPosition=" + initialPosition +
+                ", terminalDate=" + terminalDate.toString() +
+                ", terminalPosition=" + terminalPosition +
+                ", referenceFrame=" + referenceFrame +
+                '}';
+    }
+
 }

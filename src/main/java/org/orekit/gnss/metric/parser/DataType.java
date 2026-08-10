@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -57,6 +57,9 @@ public enum DataType {
 
     /** 32 bits. */
     BIT_32(m -> m.extractBits(32)),
+
+    /** 64 bits. */
+    BIT_64(m -> m.extractBits(64)),
 
     /** 6 bits signed integer. */
     INT_6(m -> {

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,12 +16,8 @@
  */
 package org.orekit.forces.maneuvers.trigger;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Stream;
-
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
+import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -30,39 +26,21 @@ import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
 
-public class ManeuverTriggersTest {
+import java.util.List;
+import java.util.stream.Stream;
+
+class ManeuverTriggersTest {
 
     @Test
     void testNoOpDefault() {
         // just test the default no-op implementation can be called without side effects
-        ManeuverTriggers dummy = new ManeuverTriggers() {
-            public <T extends CalculusFieldElement<T>> boolean isFiring(FieldAbsoluteDate<T> date, T[] parameters) {
-                return false;
-            }
-            public boolean isFiring(AbsoluteDate date, double[] parameters) {
-                return false;
-            }
-            @Override
-            public List<ParameterDriver> getParametersDrivers() {
-                return Collections.emptyList();
-            }
-            @Override
-            public Stream<EventDetector> getEventDetectors() {
-                return Stream.empty();
-            }
-            @Override
-            public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(Field<T> field) {
-                return Stream.empty();
-            }
-        };
-
+        ManeuverTriggers dummy = new TestTriggers();
         SpacecraftState state = new SpacecraftState(new KeplerianOrbit(7e6, 0.1, 0.2, 0.3, 0.4, 0.5,
                                                                        PositionAngleType.MEAN, FramesFactory.getGCRF(),
                                                                        AbsoluteDate.J2000_EPOCH,
@@ -72,6 +50,35 @@ public class ManeuverTriggersTest {
                    new FieldAbsoluteDate<>(Binary64Field.getInstance(), state.getDate().shiftedBy(60)));
         Assertions.assertEquals("", dummy.getName());
 
+    }
+
+    @Test
+    void testGetFieldEventDetectors() {
+        // GIVEN
+        final ManeuverTriggers triggers = new TestTriggers();
+        // WHEN
+        final Stream<FieldEventDetector<Binary64>> fieldEventDetectorStream = triggers.getFieldEventDetectors(Binary64Field.getInstance());
+        // THEN
+        Assertions.assertEquals(triggers.getEventDetectors().count(), fieldEventDetectorStream.count());
+    }
+
+    @Test
+    void testGetParametersDrivers() {
+        // GIVEN
+        final ManeuverTriggers triggers = new TestTriggers();
+        // WHEN
+        final List<ParameterDriver> driverList = triggers.getParametersDrivers();
+        // THEN
+        Assertions.assertTrue(driverList.isEmpty());
+    }
+
+    private static class TestTriggers implements ManeuverTriggers {
+        public <T extends CalculusFieldElement<T>> boolean isFiring(FieldAbsoluteDate<T> date, T[] parameters) {
+            return false;
+        }
+        public boolean isFiring(AbsoluteDate date, double[] parameters) {
+            return false;
+        }
     }
 
 }

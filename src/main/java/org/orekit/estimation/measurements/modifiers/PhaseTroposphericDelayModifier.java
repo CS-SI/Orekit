@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,10 +23,13 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.attitudes.FrameAlignedProvider;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
-import org.orekit.estimation.measurements.GroundStation;
+import org.orekit.estimation.measurements.GroundObserver;
+import org.orekit.estimation.measurements.Observer;
 import org.orekit.estimation.measurements.gnss.Phase;
 import org.orekit.models.earth.troposphere.TroposphericModel;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -60,71 +63,79 @@ public class PhaseTroposphericDelayModifier implements EstimationModifier<Phase>
         tropoModel = model;
     }
 
-/** {@inheritDoc} */
+    /** {@inheritDoc} */
     @Override
-        public String getEffectName() {
+    public String getEffectName() {
         return "troposphere";
     }
 
     /** Compute the measurement error due to Troposphere.
-     * @param station station
+     * @param observer measurement observer
      * @param state spacecraft state
      * @param wavelength wavelength of the signal
      * @return the measurement error due to Troposphere
      */
-    private double phaseErrorTroposphericModel(final GroundStation station, final SpacecraftState state, final double wavelength) {
+    private double phaseErrorTroposphericModel(final Observer observer, final SpacecraftState state, final double wavelength) {
 
-        // tracking
-        final TrackingCoordinates trackingCoordinates =
-                        station.getBaseFrame().getTrackingCoordinates(state.getPosition(), state.getFrame(), state.getDate());
+        // Check to make sure Observer is NOT space-based
+        if (observer instanceof GroundObserver groundObserver) {
 
-        // only consider measures above the horizon
-        if (trackingCoordinates.getElevation() > 0) {
-            // delay in meters
-            final double delay = tropoModel.pathDelay(trackingCoordinates,
-                                                      station.getOffsetGeodeticPoint(state.getDate()),
-                                                      tropoModel.getParameters(state.getDate()), state.getDate()).
-                                 getDelay();
+            // tracking
+            final TrackingCoordinates trackingCoordinates = groundObserver.getTrackingCoordinates(state);
 
-            return delay / wavelength;
+            // only consider measures above the horizon
+            if (trackingCoordinates.getElevation() > 0) {
+                // delay in meters
+                final double delay = tropoModel.pathDelay(trackingCoordinates, groundObserver.getOffsetGeodeticPoint(state.getDate()),
+                                tropoModel.getParameters(state.getDate()), state.getDate()).
+                        getDelay();
+
+                return delay / wavelength;
+            }
+
+            return 0;
+        } else {
+            throw new OrekitException(OrekitMessages.WRONG_OBSERVER_TYPE);
         }
-
-        return 0;
     }
 
     /** Compute the measurement error due to Troposphere.
      * @param <T> type of the element
-     * @param station station
+     * @param observer measurement observer
      * @param state spacecraft state
      * @param parameters tropospheric model parameters
      * @param wavelength of the measurements
      * @return the measurement error due to Troposphere
      */
-    private <T extends CalculusFieldElement<T>> T phaseErrorTroposphericModel(final GroundStation station,
-                                                                          final FieldSpacecraftState<T> state,
-                                                                          final T[] parameters, final double wavelength) {
+    private <T extends CalculusFieldElement<T>> T phaseErrorTroposphericModel(final Observer observer,
+                                                                              final FieldSpacecraftState<T> state,
+                                                                              final T[] parameters, final double wavelength) {
 
-        // Field
-        final Field<T> field = state.getDate().getField();
-        final T zero         = field.getZero();
+        // Check to make sure Observer is NOT space-based
+        if (observer instanceof GroundObserver groundObserver) {
 
-        // tracking
-        final FieldTrackingCoordinates<T> trackingCoordinates =
-                        station.getBaseFrame().getTrackingCoordinates(state.getPosition(), state.getFrame(), state.getDate());
+            // Field
+            final Field<T> field = state.getDate().getField();
+            final T zero = field.getZero();
+
+            // tracking
+            final FieldTrackingCoordinates<T> trackingCoordinates = groundObserver.getTrackingCoordinates(state);
 
 
-        // only consider measures above the horizon
-        if (trackingCoordinates.getElevation().getReal() > 0) {
-            // delay in meters
-            final T delay = tropoModel.pathDelay(trackingCoordinates,
-                                                 station.getOffsetGeodeticPoint(state.getDate()),
-                                                 parameters, state.getDate()).
-                            getDelay();
+            // only consider measures above the horizon
+            if (trackingCoordinates.getElevation().getReal() > 0) {
+                // delay in meters
+                final T delay = tropoModel.pathDelay(trackingCoordinates, groundObserver.getOffsetGeodeticPoint(state.getDate()),
+                                parameters, state.getDate()).
+                        getDelay();
 
-            return delay.divide(wavelength);
+                return delay.divide(wavelength);
+            }
+
+            return zero;
+        } else {
+            throw new OrekitException(OrekitMessages.WRONG_OBSERVER_TYPE);
         }
-
-        return zero;
     }
 
     /** Compute the Jacobian of the delay term wrt state using
@@ -142,17 +153,17 @@ public class PhaseTroposphericDelayModifier implements EstimationModifier<Phase>
 
     /** Compute the derivative of the delay term wrt parameters.
      *
-     * @param station ground station
-     * @param driver driver for the station offset parameter
+     * @param observer measurement observer
+     * @param driver driver for the observer offset parameter
      * @param state spacecraft state
      * @param wavelength wavelength of the signal
-     * @return derivative of the delay wrt station offset parameter
+     * @return derivative of the delay wrt observer offset parameter
      */
-    private double phaseErrorParameterDerivative(final GroundStation station,
+    private double phaseErrorParameterDerivative(final Observer observer,
                                                  final ParameterDriver driver,
                                                  final SpacecraftState state,
                                                  final double wavelength) {
-        final ParameterFunction rangeError = (parameterDriver, date) -> phaseErrorTroposphericModel(station, state, wavelength);
+        final ParameterFunction rangeError = (parameterDriver, date) -> phaseErrorTroposphericModel(observer, state, wavelength);
         final ParameterFunction phaseErrorDerivative =
                         Differentiation.differentiate(rangeError, 3, 10.0 * driver.getScale());
         return phaseErrorDerivative.value(driver, state.getDate());
@@ -183,13 +194,13 @@ public class PhaseTroposphericDelayModifier implements EstimationModifier<Phase>
     public void modifyWithoutDerivatives(final EstimatedMeasurementBase<Phase> estimated) {
 
         final Phase           measurement = estimated.getObservedMeasurement();
-        final GroundStation   station     = measurement.getStation();
+        final Observer        observer    = measurement.getObserver();
         final SpacecraftState state       = estimated.getStates()[0];
 
         // Update estimated value taking into account the tropospheric delay.
         // The tropospheric delay is directly added to the phase.
         final double[] newValue = estimated.getEstimatedValue();
-        final double delay = phaseErrorTroposphericModel(station, state, measurement.getWavelength());
+        final double delay = phaseErrorTroposphericModel(observer, state, measurement.getWavelength());
         newValue[0] = newValue[0] + delay;
         estimated.modifyEstimatedValue(this, newValue);
 
@@ -199,14 +210,14 @@ public class PhaseTroposphericDelayModifier implements EstimationModifier<Phase>
     @Override
     public void modify(final EstimatedMeasurement<Phase> estimated) {
         final Phase           measurement = estimated.getObservedMeasurement();
-        final GroundStation   station     = measurement.getStation();
+        final Observer        observer    = measurement.getObserver();
         final SpacecraftState state       = estimated.getStates()[0];
 
         // update estimated derivatives with Jacobian of the measure wrt state
         final ModifierGradientConverter converter = new ModifierGradientConverter(state, 6, new FrameAlignedProvider(state.getFrame()));
         final FieldSpacecraftState<Gradient> gState = converter.getState(tropoModel);
         final Gradient[] gParameters = converter.getParametersAtStateDate(gState, tropoModel);
-        final Gradient gDelay = phaseErrorTroposphericModel(station, gState, gParameters, measurement.getWavelength());
+        final Gradient gDelay = phaseErrorTroposphericModel(observer, gState, gParameters, measurement.getWavelength());
         final double[] derivatives = gDelay.getGradient();
 
         // Update state derivatives
@@ -236,16 +247,13 @@ public class PhaseTroposphericDelayModifier implements EstimationModifier<Phase>
             }
         }
 
-        // Update station parameter derivatives
-        for (final ParameterDriver driver : Arrays.asList(station.getClockOffsetDriver(),
-                                                          station.getEastOffsetDriver(),
-                                                          station.getNorthOffsetDriver(),
-                                                          station.getZenithOffsetDriver())) {
+        // Update observer parameter derivatives
+        for (final ParameterDriver driver : observer.getParametersDrivers()) {
             if (driver.isSelected()) {
                 for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                    // update estimated derivatives with derivative of the modification wrt station parameters
+                    // update estimated derivatives with derivative of the modification wrt observer parameters
                     double parameterDerivative = estimated.getParameterDerivatives(driver, span.getStart())[0];
-                    parameterDerivative += phaseErrorParameterDerivative(station, driver, state, measurement.getWavelength());
+                    parameterDerivative += phaseErrorParameterDerivative(observer, driver, state, measurement.getWavelength());
                     estimated.setParameterDerivatives(driver, span.getStart(), parameterDerivative);
                 }
             }

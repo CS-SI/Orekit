@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Luc Maisonobe
+/* Copyright 2022-2026 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,7 +24,7 @@ import java.util.regex.Pattern;
  * @author Luc Maisonobe
  * @since 13.0
  */
-abstract class VersionParser<T extends ParseInfo<?>> implements LineParser<T> {
+public abstract class VersionParser<T extends ParseInfo<?>> implements LineParser<T> {
 
     /** Pattern for version line. */
     private final Pattern pattern;
@@ -33,7 +33,7 @@ abstract class VersionParser<T extends ParseInfo<?>> implements LineParser<T> {
      * @param key file format key
      */
     protected VersionParser(final String key) {
-        pattern = Pattern.compile("%=" + key + " \\d\\.\\d\\d .+" +
+        pattern = Pattern.compile("%=" + key + " (\\d\\.\\d\\d) .+" +
                                   " (\\d{2,4}:\\d{3}:\\d{5}) .+" +
                                   " (\\d{2,4}:\\d{3}:\\d{5}) (\\d{2,4}:\\d{3}:\\d{5})" +
                                   " . .*");
@@ -45,10 +45,11 @@ abstract class VersionParser<T extends ParseInfo<?>> implements LineParser<T> {
         final Matcher matcher = pattern.matcher(parseInfo.getLine());
         if (matcher.matches()) {
             // we have recognized a SINEX file first line
-            // parse the various dates it contains
-            parseInfo.setCreationDate(matcher.group(1));
-            parseInfo.setStartDateIfEarlier(matcher.group(2));
-            parseInfo.setEndDateIfLater(matcher.group(3));
+            // parse the various fields it contains
+            parseInfo.setVersion(Double.parseDouble(matcher.group(1)));
+            parseInfo.setCreationDate(matcher.group(2));
+            parseInfo.setStartDateIfEarlier(matcher.group(3));
+            parseInfo.setEndDateIfLater(matcher.group(4));
             return true;
         } else {
             // this is not an expected SINEX file

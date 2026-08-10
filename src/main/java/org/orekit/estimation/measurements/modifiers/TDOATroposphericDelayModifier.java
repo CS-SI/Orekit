@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,17 +20,19 @@ import java.util.List;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.attitudes.FrameAlignedProvider;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
-import org.orekit.estimation.measurements.GroundStation;
+import org.orekit.estimation.measurements.GroundObserver;
+import org.orekit.estimation.measurements.Observer;
 import org.orekit.estimation.measurements.TDOA;
 import org.orekit.models.earth.troposphere.TroposphericModel;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldTrackingCoordinates;
 import org.orekit.utils.ParameterDriver;
@@ -67,62 +69,70 @@ public class TDOATroposphericDelayModifier implements EstimationModifier<TDOA> {
     }
 
     /** Compute the measurement error due to Troposphere on a single downlink.
-     * @param station station
-     * @param state spacecraft state
+     * @param observer object that observes signal
+     * @param state    estimated spacecraft state
      * @return the measurement error due to Troposphere (s)
      */
-    private double timeErrorTroposphericModel(final GroundStation station, final SpacecraftState state) {
-        final Vector3D position = state.getPosition();
+    private double timeErrorTroposphericModel(final Observer observer, final SpacecraftState state) {
 
-        // tracking
-        final TrackingCoordinates trackingCoordinates =
-                        station.getBaseFrame().getTrackingCoordinates(position, state.getFrame(), state.getDate());
+        // Currently not calculating tropospheric delays for this type of observer
+        if (observer instanceof GroundObserver groundObserver) {
 
-        // only consider measurements above the horizon
-        if (trackingCoordinates.getElevation() > 0) {
-            // Delay in meters
-            final double delay = tropoModel.pathDelay(trackingCoordinates,
-                                                      station.getOffsetGeodeticPoint(state.getDate()),
-                                                      tropoModel.getParameters(state.getDate()), state.getDate()).
-                                 getDelay();
-            // return delay in seconds
-            return delay / Constants.SPEED_OF_LIGHT;
+            // tracking
+            final TrackingCoordinates trackingCoordinates = groundObserver.getTrackingCoordinates(state);
+
+            // only consider measurements above the horizon
+            if (trackingCoordinates.getElevation() > 0) {
+                // Delay in meters
+                final double delay = tropoModel.pathDelay(trackingCoordinates, groundObserver.getOffsetGeodeticPoint(state.getDate()),
+                                tropoModel.getParameters(state.getDate()), state.getDate()).
+                        getDelay();
+                // return delay in seconds
+                return delay / Constants.SPEED_OF_LIGHT;
+            }
+
+            return 0;
+        } else {
+            throw new OrekitException(OrekitMessages.WRONG_OBSERVER_TYPE);
         }
-
-        return 0;
     }
 
     /** Compute the measurement error due to Troposphere on a single downlink.
-     * @param <T> type of the element
-     * @param station station
-     * @param state spacecraft state
+     * @param <T>        type of the element
+     * @param observer   object that observes signal
+     * @param state      estimated spacecraft state
      * @param parameters tropospheric model parameters
      * @return the measurement error due to Troposphere (s)
      */
-    private <T extends CalculusFieldElement<T>> T timeErrorTroposphericModel(final GroundStation station,
+    private <T extends CalculusFieldElement<T>> T timeErrorTroposphericModel(final Observer observer,
                                                                              final FieldSpacecraftState<T> state,
                                                                              final T[] parameters) {
-        // Field
-        final Field<T> field = state.getDate().getField();
-        final T zero         = field.getZero();
 
-        // tracking
-        final FieldVector3D<T> pos = state.getPosition();
-        final FieldTrackingCoordinates<T> trackingCoordinates =
-                        station.getBaseFrame().getTrackingCoordinates(pos, state.getFrame(), state.getDate());
+        // Currently not calculating tropospheric delays for this type of observer
+        if (observer instanceof GroundObserver groundObserver) {
 
-        // only consider measurements above the horizon
-        if (trackingCoordinates.getElevation().getReal() > 0) {
-            // delay in meters
-            final T delay = tropoModel.pathDelay(trackingCoordinates,
-                                                 station.getOffsetGeodeticPoint(state.getDate()),
-                                                 parameters, state.getDate()).
-                            getDelay();
-            // return delay in seconds
-            return delay.divide(Constants.SPEED_OF_LIGHT);
+            // Field
+            final FieldAbsoluteDate<T> date = state.getDate();
+            final Field<T> field = date.getField();
+            final T zero = field.getZero();
+
+            // tracking
+            final FieldTrackingCoordinates<T> trackingCoordinates = groundObserver.getTrackingCoordinates(state);
+
+            // only consider measurements above the horizon
+            if (trackingCoordinates.getElevation().getReal() > 0) {
+                // delay in meters
+                final T delay = tropoModel.pathDelay(trackingCoordinates, groundObserver.getOffsetGeodeticPoint(date),
+                                parameters, date).
+                        getDelay();
+                // return delay in seconds
+                return delay.divide(Constants.SPEED_OF_LIGHT);
+            }
+
+            return zero;
+        } else {
+            throw new OrekitException(OrekitMessages.WRONG_OBSERVER_TYPE);
         }
-
-        return zero;
     }
 
     /** {@inheritDoc} */
@@ -135,11 +145,11 @@ public class TDOATroposphericDelayModifier implements EstimationModifier<TDOA> {
     @Override
     public void modifyWithoutDerivatives(final EstimatedMeasurementBase<TDOA> estimated) {
 
-        final TDOA            measurement   = estimated.getObservedMeasurement();
-        final GroundStation   primeStation  = measurement.getPrimeStation();
-        final GroundStation   secondStation = measurement.getSecondStation();
+        final TDOA     measurement    = estimated.getObservedMeasurement();
+        final Observer primeObserver  = measurement.getPrimeObserver();
+        final Observer secondObserver = measurement.getSecondObserver();
 
-        TDOAModifierUtil.modifyWithoutDerivatives(estimated,  primeStation, secondStation,
+        TDOAModifierUtil.modifyWithoutDerivatives(estimated,  primeObserver, secondObserver,
                                                   this::timeErrorTroposphericModel, this);
 
     }
@@ -148,14 +158,14 @@ public class TDOATroposphericDelayModifier implements EstimationModifier<TDOA> {
     @Override
     public void modify(final EstimatedMeasurement<TDOA> estimated) {
 
-        final TDOA            measurement   = estimated.getObservedMeasurement();
-        final GroundStation   primeStation  = measurement.getPrimeStation();
-        final GroundStation   secondStation = measurement.getSecondStation();
-        final SpacecraftState state         = estimated.getStates()[0];
+        final TDOA            measurement    = estimated.getObservedMeasurement();
+        final Observer        primeObserver  = measurement.getPrimeObserver();
+        final Observer        secondObserver = measurement.getSecondObserver();
+        final SpacecraftState state          = estimated.getStates()[0];
 
         TDOAModifierUtil.modify(estimated, tropoModel,
                                 new ModifierGradientConverter(state, 6, new FrameAlignedProvider(state.getFrame())),
-                                primeStation, secondStation,
+                                primeObserver, secondObserver,
                                 this::timeErrorTroposphericModel,
                                 this::timeErrorTroposphericModel,
                                 this);

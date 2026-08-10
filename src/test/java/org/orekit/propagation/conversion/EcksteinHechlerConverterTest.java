@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,7 +32,6 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -48,7 +47,7 @@ public class EcksteinHechlerConverterTest {
 
     @Test
     public void testConversionPositionVelocity() {
-        checkFit(orbit, 86400, 300, 1.0e-3, false, 2.447e-8);
+        checkFit(orbit, 86400, 300, 1.0e-3, false, 1.778e-8);
     }
 
     @Test
@@ -78,18 +77,16 @@ public class EcksteinHechlerConverterTest {
         }
 
         UnnormalizedSphericalHarmonics harmonics = provider.onDate(orbit.getDate());
-        PropagatorBuilder builder = new EcksteinHechlerPropagatorBuilder(orbit,
-                                                                         provider.getAe(),
-                                                                         provider.getMu(),
-                                                                         provider.getTideSystem(),
-                                                                         harmonics.getUnnormalizedCnm(2, 0),
-                                                                         harmonics.getUnnormalizedCnm(3, 0),
-                                                                         harmonics.getUnnormalizedCnm(4, 0),
-                                                                         harmonics.getUnnormalizedCnm(5, 0),
-                                                                         harmonics.getUnnormalizedCnm(6, 0),
-                                                                         OrbitType.CIRCULAR,
-                                                                         PositionAngleType.TRUE,
-                                                                         1.0);
+        PropagatorBuilder builder =
+            new EcksteinHechlerPropagatorBuilder(orbit.factory(PositionAngleType.TRUE, 1.0),
+                                                 provider.getAe(),
+                                                 provider.getMu(),
+                                                 provider.getTideSystem(),
+                                                 harmonics.getUnnormalizedCnm(2, 0),
+                                                 harmonics.getUnnormalizedCnm(3, 0),
+                                                 harmonics.getUnnormalizedCnm(4, 0),
+                                                 harmonics.getUnnormalizedCnm(5, 0),
+                                                 harmonics.getUnnormalizedCnm(6, 0));
 
         FiniteDifferencePropagatorConverter fitter = new FiniteDifferencePropagatorConverter(builder,
                                                                                              threshold,

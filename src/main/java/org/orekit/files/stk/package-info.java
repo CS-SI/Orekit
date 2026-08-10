@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 Andrew Goetz
+/* Copyright 2002-2026 Andrew Goetz
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.

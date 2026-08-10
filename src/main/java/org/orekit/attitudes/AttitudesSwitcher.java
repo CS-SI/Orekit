@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,10 @@
  */
 package org.orekit.attitudes;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Stream;
+
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.ode.events.Action;
@@ -23,10 +27,6 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.time.AbsoluteDate;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Stream;
 
 /** This classes manages a sequence of different attitude providers that are activated
  * in turn according to switching events. Changes in attitude mode are instantaneous, so state derivatives need to be
@@ -44,7 +44,6 @@ public class AttitudesSwitcher extends AbstractSwitchingAttitudeProvider {
     /** Constructor for an initially empty sequence.
      */
     public AttitudesSwitcher() {
-        super();
         instantaneousSwitches = new ArrayList<>();
     }
 

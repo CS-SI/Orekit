@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 Mark Rutten
+/* Copyright 2002-2026 Mark Rutten
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,7 +21,7 @@ import org.orekit.estimation.measurements.BistaticRange;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
-import org.orekit.estimation.measurements.GroundStation;
+import org.orekit.estimation.measurements.Observer;
 import org.orekit.models.earth.ionosphere.IonosphericModel;
 import org.orekit.propagation.SpacecraftState;
 
@@ -60,8 +60,8 @@ public class BistaticRangeIonosphericDelayModifier extends BaseRangeIonosphericD
     public void modifyWithoutDerivatives(final EstimatedMeasurementBase<BistaticRange> estimated) {
 
         final BistaticRange measurement = estimated.getObservedMeasurement();
-        final GroundStation emitter     = measurement.getEmitterStation();
-        final GroundStation receiver    = measurement.getReceiverStation();
+        final Observer emitter     = measurement.getEmitter();
+        final Observer receiver    = measurement.getReceiver();
 
         BistaticModifierUtil.modify(estimated, emitter, receiver,
                                     this::rangeErrorIonosphericModel, this);
@@ -73,8 +73,8 @@ public class BistaticRangeIonosphericDelayModifier extends BaseRangeIonosphericD
     public void modify(final EstimatedMeasurement<BistaticRange> estimated) {
 
         final BistaticRange measurement = estimated.getObservedMeasurement();
-        final GroundStation emitter     = measurement.getEmitterStation();
-        final GroundStation receiver    = measurement.getReceiverStation();
+        final Observer emitter     = measurement.getEmitter();
+        final Observer receiver    = measurement.getReceiver();
         final SpacecraftState state     = estimated.getStates()[0];
 
         BistaticModifierUtil.modify(estimated, getIonoModel(),

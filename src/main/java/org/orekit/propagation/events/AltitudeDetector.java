@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,9 +18,8 @@ package org.orekit.propagation.events;
 
 import org.hipparchus.ode.events.Action;
 import org.orekit.bodies.BodyShape;
-import org.orekit.bodies.GeodeticPoint;
-import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.functions.AltitudeEventFunction;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnDecreasing;
 
@@ -97,7 +96,7 @@ public class AltitudeDetector extends AbstractGeographicalDetector<AltitudeDetec
     protected AltitudeDetector(final EventDetectionSettings detectionSettings, final EventHandler handler,
                                final double altitude,
                                final BodyShape bodyShape) {
-        super(detectionSettings, handler, bodyShape);
+        super(new AltitudeEventFunction(bodyShape, altitude), detectionSettings, handler, bodyShape);
         this.altitude  = altitude;
     }
 
@@ -121,9 +120,7 @@ public class AltitudeDetector extends AbstractGeographicalDetector<AltitudeDetec
      * @return value of the switching function
      */
     public double g(final SpacecraftState s) {
-        final Frame bodyFrame      = getBodyShape().getBodyFrame();
-        final GeodeticPoint point  = getBodyShape().transform(s.getPosition(bodyFrame), bodyFrame, s.getDate());
-        return point.getAltitude() - altitude;
+        return getEventFunction().value(s);
     }
 
 }

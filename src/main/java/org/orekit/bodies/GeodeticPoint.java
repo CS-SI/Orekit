@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,7 @@
  */
 package org.orekit.bodies;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.text.NumberFormat;
 
@@ -44,6 +45,7 @@ public class GeodeticPoint implements Serializable {
     public static final GeodeticPoint SOUTH_POLE = new GeodeticPoint(-0.5 * FastMath.PI, 0.0, 0.0);
 
     /** Serializable UID. */
+    @Serial
     private static final long serialVersionUID = 7862466825590075399L;
 
     /** Latitude of the point (rad). */
@@ -124,9 +126,7 @@ public class GeodeticPoint implements Serializable {
      */
     public Vector3D getZenith() {
         if (zenith == null) {
-            final SinCos scLat = FastMath.sinCos(latitude);
-            final SinCos scLon = FastMath.sinCos(longitude);
-            zenith = new Vector3D(scLon.cos() * scLat.cos(), scLon.sin() * scLat.cos(), scLat.sin());
+            zenith = new Vector3D(longitude, latitude);
         }
         return zenith;
     }
@@ -198,8 +198,7 @@ public class GeodeticPoint implements Serializable {
 
     @Override
     public boolean equals(final Object object) {
-        if (object instanceof GeodeticPoint) {
-            final GeodeticPoint other = (GeodeticPoint) object;
+        if (object instanceof GeodeticPoint other) {
             return this.getLatitude() == other.getLatitude() &&
                    this.getLongitude() == other.getLongitude() &&
                    this.getAltitude() == other.getAltitude();

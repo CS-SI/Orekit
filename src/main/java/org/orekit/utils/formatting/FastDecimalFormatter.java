@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Thales Alenia Space
+/* Copyright 2022-2026 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -83,9 +83,9 @@ public class FastDecimalFormatter extends FastDoubleFormatter {
 
         this.scaling         = SCALING[precision];
         this.beforeFormatter = precision == 0 ?
-                               new FastLongFormatter(width, false) :
-                               new FastLongFormatter(width - precision - 1, false);
-        this.afterFormatter  = new FastLongFormatter(precision, true);
+                               new FastLongFormatter(width, false, false) :
+                               new FastLongFormatter(width - precision - 1, false, false);
+        this.afterFormatter  = new FastLongFormatter(precision, true, false);
     }
 
     /** Get the precision.

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,8 +17,11 @@
 package org.orekit.gnss.metric.messages.ssr;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.orekit.Utils;
 import org.orekit.data.DataContext;
+import org.orekit.data.LazyLoadedDataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.gnss.SatelliteSystem;
@@ -27,12 +30,18 @@ import org.orekit.gnss.metric.messages.ssr.igm.SsrIgm02Data;
 import org.orekit.gnss.metric.parser.ByteArrayEncodedMessage;
 import org.orekit.gnss.metric.parser.EncodedMessage;
 import org.orekit.gnss.metric.parser.IgsSsrMessagesParser;
+import org.orekit.utils.IERSConventions;
 
 import java.util.ArrayList;
 
 public class SsrIgm02Test {
 
-    private double eps = 1.0e-13;
+    private final double eps = 1.0e-13;
+
+    @BeforeEach
+    public void setUp() {
+        Utils.setDataRoot("gnss");
+    }
 
     @Test
     public void testPerfectValueGlonass() {
@@ -58,7 +67,11 @@ public class SsrIgm02Test {
         ArrayList<Integer> messages = new ArrayList<>();
         messages.add(42);
 
-        final SsrIgm02 igm02 = (SsrIgm02) new IgsSsrMessagesParser(messages, DataContext.getDefault().getTimeScales()).
+        final LazyLoadedDataContext context = DataContext.getDefault();
+        final SsrIgm02 igm02 = (SsrIgm02) new IgsSsrMessagesParser(messages,
+                                                                   context.getTimeScales(),
+                                                                   context.getFrames().getEME2000(),
+                                                                   context.getFrames().getITRF(IERSConventions.IERS_2010, false)).
                                parse(message, false);
 
         // Verify size
@@ -76,7 +89,7 @@ public class SsrIgm02Test {
         Assertions.assertEquals(1,                            igm02.getHeader().getNumberOfSatellites());
 
         // Verify data for satellite G12
-        final SsrIgm02Data r12 = igm02.getSsrIgm02Data().get("R12").get(0);
+        final SsrIgm02Data r12 = igm02.getSsrIgm02Data().get("R12").getFirst();
         Assertions.assertEquals(12,                           r12.getSatelliteID());
         Assertions.assertEquals(96.6527,                      r12.getClockCorrection().getDeltaClockC0(), eps);
         Assertions.assertEquals(0.483263,                     r12.getClockCorrection().getDeltaClockC1(), eps);
@@ -108,7 +121,11 @@ public class SsrIgm02Test {
         ArrayList<Integer> messages = new ArrayList<>();
         messages.add(62);
 
-        final SsrIgm02 igm02 = (SsrIgm02) new IgsSsrMessagesParser(messages, DataContext.getDefault().getTimeScales()).
+        final LazyLoadedDataContext context = DataContext.getDefault();
+        final SsrIgm02 igm02 = (SsrIgm02) new IgsSsrMessagesParser(messages,
+                                                                   context.getTimeScales(),
+                                                                   context.getFrames().getEME2000(),
+                                                                   context.getFrames().getITRF(IERSConventions.IERS_2010, false)).
                                parse(message, false);
 
         // Verify size
@@ -126,7 +143,7 @@ public class SsrIgm02Test {
         Assertions.assertEquals(1,                            igm02.getHeader().getNumberOfSatellites());
 
         // Verify data for satellite E01
-        final SsrIgm02Data e01 = igm02.getSsrIgm02Data().get("E01").get(0);
+        final SsrIgm02Data e01 = igm02.getSsrIgm02Data().get("E01").getFirst();
         Assertions.assertEquals(1,                            e01.getSatelliteID());
         Assertions.assertEquals(96.6527,                      e01.getClockCorrection().getDeltaClockC0(), eps);
         Assertions.assertEquals(0.483263,                     e01.getClockCorrection().getDeltaClockC1(), eps);
@@ -158,7 +175,11 @@ public class SsrIgm02Test {
        ArrayList<Integer> messages = new ArrayList<>();
        messages.add(9999999);
 
-       final SsrIgm02 igm02 = (SsrIgm02) new IgsSsrMessagesParser(messages, DataContext.getDefault().getTimeScales()).
+       final LazyLoadedDataContext context = DataContext.getDefault();
+      final SsrIgm02 igm02 = (SsrIgm02) new IgsSsrMessagesParser(messages,
+                                                                 context.getTimeScales(),
+                                                                 context.getFrames().getEME2000(),
+                                                                 context.getFrames().getITRF(IERSConventions.IERS_2010, false)).
                               parse(message, false);
 
        Assertions.assertNull(igm02);
@@ -169,7 +190,11 @@ public class SsrIgm02Test {
         try {
             final byte[] array = new byte[0];
             final EncodedMessage emptyMessage = new ByteArrayEncodedMessage(array);
-            new IgsSsrMessagesParser(new ArrayList<>(), DataContext.getDefault().getTimeScales()).
+            final LazyLoadedDataContext context = DataContext.getDefault();
+            new IgsSsrMessagesParser(new ArrayList<>(),
+                                     context.getTimeScales(),
+                                     context.getFrames().getEME2000(),
+                                     context.getFrames().getITRF(IERSConventions.IERS_2010, false)).
                 parse(emptyMessage, false);
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {

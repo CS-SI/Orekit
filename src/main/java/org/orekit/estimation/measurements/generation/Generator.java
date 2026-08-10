@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -162,8 +162,8 @@ public class Generator {
             final StepHandlerMultiplexer multiplexer = propagators.get(entry.getKey().getPropagatorIndex()).getMultiplexer();
             final List<OrekitStepHandler> toBeRemoved = new ArrayList<>();
             for (final OrekitStepHandler handler : multiplexer.getHandlers()) {
-                if (handler instanceof SingleSatGeneratorHandler &&
-                    ((SingleSatGeneratorHandler<?>) handler).globalHandler == globalHandler) {
+                if (handler instanceof SingleSatGeneratorHandler<?> generatorHandler &&
+                    generatorHandler.globalHandler == globalHandler) {
                     toBeRemoved.add(handler);
                 }
             }
@@ -277,7 +277,7 @@ public class Generator {
         @Override
         public void init(final List<SpacecraftState> states0, final AbsoluteDate t) {
 
-            final AbsoluteDate start = states0.get(0).getDate();
+            final AbsoluteDate start = states0.getFirst().getDate();
 
             // initialize schedulers
             for (final Scheduler<?> scheduler : schedulers) {
@@ -301,7 +301,7 @@ public class Generator {
             for (int i = 0; i < interpolators.size(); ++i) {
                 interpolatorsMap.put(observableSatellites.get(i), interpolators.get(i));
             }
-            final AbsoluteDate lastDate = interpolators.get(0).getCurrentState().getDate();
+            final AbsoluteDate lastDate = interpolators.getFirst().getCurrentState().getDate();
 
             synchronized (generated) {
 

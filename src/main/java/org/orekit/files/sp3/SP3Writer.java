@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Luc Maisonobe
+/* Copyright 2022-2026 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -56,10 +56,10 @@ public class SP3Writer {
     private static final String ADDITIONAL_PARAMETERS_LINE = "%i    0    0    0    0      0      0      0      0         0";
 
     /** Format for one 2 digits integer field. */
-    private static final FastLongFormatter TWO_DIGITS_INTEGER = new FastLongFormatter(2, false);
+    private static final FastLongFormatter TWO_DIGITS_INTEGER = new FastLongFormatter(2, false, true);
 
     /** Format for one 3 digits integer field. */
-    private static final FastLongFormatter THREE_DIGITS_INTEGER = new FastLongFormatter(3, false);
+    private static final FastLongFormatter THREE_DIGITS_INTEGER = new FastLongFormatter(3, false, true);
 
     /** Format for one 14.6 digits float field. */
     private static final FastDoubleFormatter FOURTEEN_SIX_DIGITS_FLOAT = new FastDecimalFormatter(14, 6);
@@ -292,7 +292,7 @@ public class SP3Writer {
         final DateTimeComponents dtc = header.getEpoch().getComponents(timeScale).roundIfNeeded(60, 8);
         final StringBuilder dataUsedBuilder = new StringBuilder();
         for (final DataUsed du : header.getDataUsed()) {
-            if (dataUsedBuilder.length() > 0) {
+            if (!dataUsedBuilder.isEmpty()) {
                 dataUsedBuilder.append('+');
             }
             dataUsedBuilder.append(du.getKey());

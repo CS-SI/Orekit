@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -70,6 +70,7 @@ import org.orekit.time.AbsoluteDate;
  * equations will be initialized too), and they will be triggered in the second case as soon as user attempts
  * to retrieve an additional data that was not added.
  * </p>
+ * @param <T> type of the additional data
  * @see org.orekit.propagation.Propagator
  * @see org.orekit.propagation.integration.AdditionalDerivativesProvider
  * @author Luc Maisonobe

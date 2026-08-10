@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -135,7 +135,9 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
             SpacecraftState state   = updateAdditionalData(basicPropagate(start));
 
             // initialize event detectors
-            eventStates = getAttitudeProvider().getEventDetectors().map(EventState::new).collect(Collectors.toList());
+            eventStates = getAttitudeProvider() == null ?
+                          Collections.emptyList() :
+                          getAttitudeProvider().getEventDetectors().map(EventState::new).collect(Collectors.toList());
             eventStates.addAll(userEventStates);
             for (final EventState<?> es : eventStates) {
                 es.init(state, target);
@@ -220,7 +222,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
 
         // search for next events that may occur during the step
         final int orderingSign = interpolator.isForward() ? +1 : -1;
-        final Queue<EventState<?>> occurringEvents = new PriorityQueue<>(new Comparator<EventState<?>>() {
+        final Queue<EventState<?>> occurringEvents = new PriorityQueue<>(new Comparator<>() {
             /** {@inheritDoc} */
             @Override
             public int compare(final EventState<?> es0, final EventState<?> es1) {

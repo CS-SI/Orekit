@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,7 +25,6 @@ import org.hipparchus.linear.RealVector;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.orekit.errors.OrekitIllegalArgumentException;
-import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
@@ -58,7 +57,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author V&eacute;ronique Pommier-Maurussane
  */
 public abstract class Orbit
-    implements ShiftablePVCoordinatesHolder<Orbit> {
+    implements ShiftablePVCoordinatesHolder<Orbit>, OrbitalParameters {
 
     /** Absolute tolerance when checking if the rate of the position angle is Keplerian or not. */
     protected static final double TOLERANCE_POSITION_ANGLE_RATE = 1e-15;
@@ -242,6 +241,17 @@ public abstract class Orbit
      * @return orbit type
      */
     public abstract OrbitType getType();
+
+    /**
+     * Get a factory for the current orbit type.
+     *
+     * @param positionAngleType position angle type to use
+     * @param positionScale     position scale used to scale the orbital drivers
+     * @return factory building orbit instance of the correct type
+     * @since 14.0
+     */
+    public abstract AbstractOrbitFactory<? extends Orbit> factory(PositionAngleType positionAngleType,
+                                                                  double positionScale);
 
     /** Ensure the defining frame is a pseudo-inertial frame.
      * @param frame frame to check
@@ -557,31 +567,29 @@ public abstract class Orbit
 
         final double[][] cachedJacobian;
         synchronized (this) {
-            switch (type) {
-                case MEAN :
+            cachedJacobian = switch (type) {
+                case MEAN -> {
                     if (jacobianMeanWrtCartesian == null) {
                         // first call, we need to compute the Jacobian and cache it
                         jacobianMeanWrtCartesian = computeJacobianMeanWrtCartesian();
                     }
-                    cachedJacobian = jacobianMeanWrtCartesian;
-                    break;
-                case ECCENTRIC :
+                    yield jacobianMeanWrtCartesian;
+                }
+                case ECCENTRIC -> {
                     if (jacobianEccentricWrtCartesian == null) {
                         // first call, we need to compute the Jacobian and cache it
                         jacobianEccentricWrtCartesian = computeJacobianEccentricWrtCartesian();
                     }
-                    cachedJacobian = jacobianEccentricWrtCartesian;
-                    break;
-                case TRUE :
+                    yield jacobianEccentricWrtCartesian;
+                }
+                case TRUE -> {
                     if (jacobianTrueWrtCartesian == null) {
                         // first call, we need to compute the Jacobian and cache it
                         jacobianTrueWrtCartesian = computeJacobianTrueWrtCartesian();
                     }
-                    cachedJacobian = jacobianTrueWrtCartesian;
-                    break;
-                default :
-                    throw new OrekitInternalError(null);
-            }
+                    yield jacobianTrueWrtCartesian;
+                }
+            };
         }
 
         // fill the user provided array
@@ -605,31 +613,29 @@ public abstract class Orbit
 
         final double[][] cachedJacobian;
         synchronized (this) {
-            switch (type) {
-                case MEAN :
+            cachedJacobian = switch (type) {
+                case MEAN -> {
                     if (jacobianWrtParametersMean == null) {
                         // first call, we need to compute the Jacobian and cache it
                         jacobianWrtParametersMean = createInverseJacobian(type);
                     }
-                    cachedJacobian = jacobianWrtParametersMean;
-                    break;
-                case ECCENTRIC :
+                    yield jacobianWrtParametersMean;
+                }
+                case ECCENTRIC -> {
                     if (jacobianWrtParametersEccentric == null) {
                         // first call, we need to compute the Jacobian and cache it
                         jacobianWrtParametersEccentric = createInverseJacobian(type);
                     }
-                    cachedJacobian = jacobianWrtParametersEccentric;
-                    break;
-                case TRUE :
+                    yield jacobianWrtParametersEccentric;
+                }
+                case TRUE -> {
                     if (jacobianWrtParametersTrue == null) {
                         // first call, we need to compute the Jacobian and cache it
                         jacobianWrtParametersTrue = createInverseJacobian(type);
                     }
-                    cachedJacobian = jacobianWrtParametersTrue;
-                    break;
-                default :
-                    throw new OrekitInternalError(null);
-            }
+                    yield jacobianWrtParametersTrue;
+                }
+            };
         }
 
         // fill the user-provided array
@@ -711,7 +717,7 @@ public abstract class Orbit
      */
     protected abstract double[][] computeJacobianTrueWrtCartesian();
 
-    /** Add the contribution of the Keplerian motion to parameters derivatives
+    /** Add the contribution of the Keplerian motion to parameters derivatives.
      * <p>
      * This method is used by integration-based propagators to evaluate the part of Keplerian
      * motion to evolution of the orbital state.

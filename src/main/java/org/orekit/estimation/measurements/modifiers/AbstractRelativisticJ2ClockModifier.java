@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,12 +17,17 @@
 
 package org.orekit.estimation.measurements.modifiers;
 
+import java.util.Collections;
+import java.util.List;
+
 import org.hipparchus.util.FastMath;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.utils.Constants;
+import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterDriversProvider;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 /**
@@ -42,7 +47,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @see "Teunissen, Peter, and Oliver Montenbruck, eds. Springer handbook of global navigation
  * satellite systems. Chapter 19.2. Equation 19.18 Springer, 2017."
  */
-public class AbstractRelativisticJ2ClockModifier {
+public class AbstractRelativisticJ2ClockModifier implements ParameterDriversProvider {
 
     /**
      * Relativistic J2 effect constant.
@@ -64,6 +69,12 @@ public class AbstractRelativisticJ2ClockModifier {
         this.cJ2 = 1.5 * c20 * equatorialRadius * equatorialRadius /
                 (Constants.SPEED_OF_LIGHT * Constants.SPEED_OF_LIGHT);
         this.gm = gm;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public List<ParameterDriver> getParametersDrivers() {
+        return Collections.emptyList();
     }
 
     /** Get the name of the effect modifying the measurement.
@@ -106,8 +117,8 @@ public class AbstractRelativisticJ2ClockModifier {
         final KeplerianOrbit remoteOrbit = new KeplerianOrbit(pvRemote, remoteFrame, gm);
         final double orbitInclination = remoteOrbit.getI();
 
-        // u = perigee argument + true anomaly
-        final double orbitU = remoteOrbit.getTrueAnomaly() + remoteOrbit.getPerigeeArgument();
+        // u = periapsis argument + true anomaly
+        final double orbitU = remoteOrbit.getTrueAnomaly() + remoteOrbit.getPeriapsisArgument();
         final double n = remoteOrbit.getKeplerianMeanMotion();
 
         // Returning the value of the time delay

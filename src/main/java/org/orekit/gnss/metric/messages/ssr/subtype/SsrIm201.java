@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,8 +18,14 @@ package org.orekit.gnss.metric.messages.ssr.subtype;
 
 import java.util.List;
 
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.data.DataContext;
+import org.orekit.frames.Frame;
 import org.orekit.gnss.metric.messages.ssr.SsrMessage;
 import org.orekit.models.earth.ionosphere.SsrVtecIonosphericModel;
+import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 
 /**
  * SSR Ionosphere VTEC Spherical Harmonics Message.
@@ -41,10 +47,27 @@ public class SsrIm201 extends SsrMessage<SsrIm201Header, SsrIm201Data> {
 
     /**
      * Get the ionospheric model adapted to the current IM201 message.
+     * <p>
+     * This method uses the {@link DefaultDataContext default data context} for
+     * ITRF frame.
+     * </p>
+     * @see #getIonosphericModel(Frame)
      * @return the ionospheric model
      */
+    @DefaultDataContext
     public SsrVtecIonosphericModel getIonosphericModel() {
-        return new SsrVtecIonosphericModel(this);
+        return getIonosphericModel(DataContext.getDefault().getFrames().getITRF(IERSConventions.IERS_2010, true));
     }
 
+    /**
+     * Get the ionospheric model adapted to the current IM201 message.
+     * @return the ionospheric model
+     * @param itrf ITRF frame to use for Earth shape
+     */
+    @DefaultDataContext
+    public SsrVtecIonosphericModel getIonosphericModel(final Frame itrf) {
+        final OneAxisEllipsoid earthBodyShape  = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                Constants.WGS84_EARTH_FLATTENING, itrf);
+        return new SsrVtecIonosphericModel(earthBodyShape, this);
+    }
 }

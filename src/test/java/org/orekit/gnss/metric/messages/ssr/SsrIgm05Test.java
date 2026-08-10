@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,8 +17,11 @@
 package org.orekit.gnss.metric.messages.ssr;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.orekit.Utils;
 import org.orekit.data.DataContext;
+import org.orekit.data.LazyLoadedDataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.gnss.SatelliteSystem;
@@ -27,12 +30,18 @@ import org.orekit.gnss.metric.messages.ssr.igm.SsrIgm05Data;
 import org.orekit.gnss.metric.parser.ByteArrayEncodedMessage;
 import org.orekit.gnss.metric.parser.EncodedMessage;
 import org.orekit.gnss.metric.parser.IgsSsrMessagesParser;
+import org.orekit.utils.IERSConventions;
 
 import java.util.ArrayList;
 
 public class SsrIgm05Test {
 
-    private double eps = 1.0e-13;
+    private final double eps = 1.0e-13;
+
+    @BeforeEach
+    public void setUp() {
+        Utils.setDataRoot("gnss");
+    }
 
     @Test
     public void testPerfectValueBeidou() {
@@ -59,8 +68,11 @@ public class SsrIgm05Test {
 
         ArrayList<Integer> messages = new ArrayList<>();
         messages.add(105);
-
-        final SsrIgm05 igm05 = (SsrIgm05) new IgsSsrMessagesParser(messages, DataContext.getDefault().getTimeScales()).
+        final LazyLoadedDataContext context = DataContext.getDefault();
+        final SsrIgm05 igm05 = (SsrIgm05) new IgsSsrMessagesParser(messages,
+                                                                   context.getTimeScales(),
+                                                                   context.getFrames().getEME2000(),
+                                                                   context.getFrames().getITRF(IERSConventions.IERS_2010, false)).
                                parse(message, false);
 
         // Verify size
@@ -78,7 +90,7 @@ public class SsrIgm05Test {
         Assertions.assertEquals(1,                            igm05.getHeader().getNumberOfSatellites());
 
         // Verify data for satellite C01
-        final SsrIgm05Data c01 = igm05.getSsrIgm05Data().get("C01").get(0);
+        final SsrIgm05Data c01 = igm05.getSsrIgm05Data().get("C01").getFirst();
         Assertions.assertEquals(1,                          c01.getSatelliteID());
         Assertions.assertEquals(2,                          c01.getNumberOfBiasesProcessed());
         Assertions.assertEquals(2,                          c01.getCodeBiases().size());
@@ -115,7 +127,12 @@ public class SsrIgm05Test {
         ArrayList<Integer> messages = new ArrayList<>();
         messages.add(65);
 
-        final SsrIgm05 igm05 = (SsrIgm05) new IgsSsrMessagesParser(messages, DataContext.getDefault().getTimeScales()).
+        final LazyLoadedDataContext context = DataContext.getDefault();
+        final SsrIgm05 igm05 = (SsrIgm05) new IgsSsrMessagesParser(messages,
+                                                                   context.getTimeScales(),
+                                                                   context.getFrames().getEME2000(),
+                                                                   context.getFrames().getITRF(IERSConventions.IERS_2010,
+                                                                                               false)).
                                parse(message, false);
 
         // Verify size
@@ -133,7 +150,7 @@ public class SsrIgm05Test {
         Assertions.assertEquals(1,                            igm05.getHeader().getNumberOfSatellites());
 
         // Verify data for satellite E12
-        final SsrIgm05Data e12 = igm05.getSsrIgm05Data().get("E12").get(0);
+        final SsrIgm05Data e12 = igm05.getSsrIgm05Data().get("E12").getFirst();
         Assertions.assertEquals(12,                         e12.getSatelliteID());
         Assertions.assertEquals(2,                          e12.getNumberOfBiasesProcessed());
         Assertions.assertEquals(2,                          e12.getCodeBiases().size());
@@ -171,7 +188,12 @@ public class SsrIgm05Test {
        ArrayList<Integer> messages = new ArrayList<>();
        messages.add(9999999);
 
-       final SsrIgm05 igm05 = (SsrIgm05) new IgsSsrMessagesParser(messages, DataContext.getDefault().getTimeScales()).
+       final LazyLoadedDataContext context = DataContext.getDefault();
+       final SsrIgm05 igm05 = (SsrIgm05) new IgsSsrMessagesParser(messages,
+                                                                  context.getTimeScales(),
+                                                                  context.getFrames().getEME2000(),
+                                                                  context.getFrames().getITRF(IERSConventions.IERS_2010,
+                                                                                              false)).
                               parse(message, false);
 
        Assertions.assertNull(igm05);
@@ -182,7 +204,12 @@ public class SsrIgm05Test {
         try {
             final byte[] array = new byte[0];
             final EncodedMessage emptyMessage = new ByteArrayEncodedMessage(array);
-            new IgsSsrMessagesParser(new ArrayList<>(), DataContext.getDefault().getTimeScales()).
+            final LazyLoadedDataContext context = DataContext.getDefault();
+            new IgsSsrMessagesParser(new ArrayList<>(),
+                                     context.getTimeScales(),
+                                     context.getFrames().getEME2000(),
+                                     context.getFrames().getITRF(IERSConventions.IERS_2010,
+                                                                 false)).
                 parse(emptyMessage, false);
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {

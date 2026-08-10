@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Luc Maisonobe
+/* Copyright 2022-2026 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,13 +20,13 @@ package org.orekit.files.ccsds.ndm.adm.apm;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.orekit.files.ccsds.definitions.FrameFacade;
-import org.orekit.files.ccsds.ndm.CommonPhysicalProperties;
+import org.orekit.files.ccsds.section.CommentsContainer;
 
 /** Inertia.
  * @author Luc Maisonobe
  * @since 12.0
  */
-public class Inertia extends CommonPhysicalProperties {
+public class Inertia extends CommentsContainer {
 
     /** Inertia reference frame. */
     private FrameFacade frame;

@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -42,7 +42,7 @@ public class TestCost implements CartesianCost {
 
     @Override
     public void updateAdjointDerivatives(double[] adjointVariables, double mass, double[] adjointDerivatives) {
-
+        // nothing to do
     }
 
     @Override

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -98,5 +98,14 @@ public interface IAUPole extends Serializable {
      * @since 9.0
      */
     <T extends CalculusFieldElement<T>> T getPrimeMeridianAngle(FieldAbsoluteDate<T> date);
+
+    /**
+     * Returns {@code true} if this pole and prime meridian is the same as the
+     * GCRF (and therefore ICRF) pole and prime meridian.
+     *
+     * @return {@code true} iff aligned with GCRF.
+     * @since 14.0
+     */
+    boolean isGcrfAligned();
 
 }

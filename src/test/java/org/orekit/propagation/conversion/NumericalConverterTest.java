@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -58,7 +58,6 @@ import java.util.List;
 
 public class NumericalConverterTest {
 
-    private double mu;
     private double minStep;
     private double maxStep;
     private double dP;
@@ -76,9 +75,9 @@ public class NumericalConverterTest {
         final ODEIntegratorBuilder dp54Builder = new DormandPrince54IntegratorBuilder(minStep, maxStep, dP);
         // Propagator builder
         final NumericalPropagatorBuilder builder =
-                        new NumericalPropagatorBuilder(OrbitType.CIRCULAR.convertType(orbit),
-                                                       dp54Builder,
-                                                       PositionAngleType.TRUE, 1.0);
+                        new NumericalPropagatorBuilder(OrbitType.CIRCULAR.convertType(orbit).
+                                                       factory(PositionAngleType.TRUE, 1.0),
+                                                       dp54Builder);
         builder.addForceModel(gravity);
         // Verify that there is no Newtonian attraction force model
         Assertions.assertFalse(hasNewtonianAttraction(builder.getAllForceModels()));
@@ -94,9 +93,9 @@ public class NumericalConverterTest {
     @Test
     public void testOnlyCartesianAllowed() {
         NumericalPropagatorBuilder builder =
-                        new NumericalPropagatorBuilder(OrbitType.CIRCULAR.convertType(orbit),
-                                                       new LutherIntegratorBuilder(100.0),
-                                                       PositionAngleType.TRUE, 1.0);
+                        new NumericalPropagatorBuilder(OrbitType.CIRCULAR.convertType(orbit).
+                                                       factory(PositionAngleType.TRUE, 1.0),
+                                                       new LutherIntegratorBuilder(100.0));
         builder.addForceModel(drag);
         builder.addForceModel(gravity);
         try {
@@ -111,12 +110,12 @@ public class NumericalConverterTest {
 
     @Test
     public void testConversionWithoutParameters() throws IOException, ParseException {
-        checkFit(orbit, 6000, 300, 1.0e-3, 0.855);
+        checkFit(orbit, 6000, 300, 1.0e-3, 0.874);
     }
 
     @Test
     public void testConversionWithFreeParameter() throws IOException, ParseException {
-        checkFit(orbit, 6000, 300, 1.0e-3, 0.826,
+        checkFit(orbit, 6000, 300, 1.0e-3, 0.845,
                  DragSensitive.DRAG_COEFFICIENT, NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT);
     }
 
@@ -215,9 +214,9 @@ public class NumericalConverterTest {
         final ODEIntegratorBuilder dp54Builder = new DormandPrince54IntegratorBuilder(minStep, maxStep, dP);
         // Propagator builder
         final NumericalPropagatorBuilder builder =
-                        new NumericalPropagatorBuilder(OrbitType.CIRCULAR.convertType(orbit),
-                                                       dp54Builder,
-                                                       PositionAngleType.TRUE, 1.0);
+                        new NumericalPropagatorBuilder(OrbitType.CIRCULAR.convertType(orbit).
+                                                       factory(PositionAngleType.TRUE, 1.0),
+                                                       dp54Builder);
         builder.addForceModel(drag);
         builder.addForceModel(gravity);
 
@@ -259,7 +258,7 @@ public class NumericalConverterTest {
             builder.buildPropagator();
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE);
+            Assertions.assertEquals(OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE, oe.getSpecifier());
         }
     }
 
@@ -269,14 +268,14 @@ public class NumericalConverterTest {
         final ODEIntegratorBuilder dp54Builder = new DormandPrince54IntegratorBuilder(minStep, maxStep, dP);
         // Propagator builder
         final NumericalPropagatorBuilder builder =
-                        new NumericalPropagatorBuilder(OrbitType.CIRCULAR.convertType(orbit),
-                                                       dp54Builder,
-                                                       PositionAngleType.TRUE, 1.0);
-        for (ParameterDriver driver : builder.getOrbitalParametersDrivers().getDrivers()) {
+                        new NumericalPropagatorBuilder(OrbitType.CIRCULAR.convertType(orbit).
+                                                       factory(PositionAngleType.TRUE, 1.0),
+                                                       dp54Builder);
+        for (ParameterDriver driver : builder.getOrbitalParameterFactory().getOrbitalParametersDrivers().getDrivers()) {
             Assertions.assertTrue(driver.isSelected());
         }
         builder.deselectDynamicParameters();
-        for (ParameterDriver driver : builder.getOrbitalParametersDrivers().getDrivers()) {
+        for (ParameterDriver driver : builder.getOrbitalParameterFactory().getOrbitalParametersDrivers().getDrivers()) {
             Assertions.assertFalse(driver.isSelected());
         }
     }
@@ -288,9 +287,9 @@ public class NumericalConverterTest {
         throws IOException, ParseException {
 
         NumericalPropagatorBuilder builder =
-                        new NumericalPropagatorBuilder(OrbitType.CARTESIAN.convertType(orbit),
-                                                       new DormandPrince853IntegratorBuilder(minStep, maxStep, dP),
-                                                       PositionAngleType.TRUE, dP);
+                        new NumericalPropagatorBuilder(OrbitType.CARTESIAN.convertType(orbit).
+                                                       factory(PositionAngleType.TRUE, dP),
+                                                       new DormandPrince853IntegratorBuilder(minStep, maxStep, dP));
 
         ForceModel guessedDrag = drag;
         ForceModel guessedGravity = gravity;
@@ -359,10 +358,9 @@ public class NumericalConverterTest {
 
     protected void checkFit(final ODEIntegratorBuilder foiBuilder) {
 
-        NumericalPropagatorBuilder builder = new NumericalPropagatorBuilder(OrbitType.CARTESIAN.convertType(orbit),
-                                                                            foiBuilder,
-                                                                            PositionAngleType.TRUE,
-                                                                            1.0);
+        NumericalPropagatorBuilder builder = new NumericalPropagatorBuilder(OrbitType.CARTESIAN.convertType(orbit).
+                                                                            factory(PositionAngleType.TRUE, 1.0),
+                                                                            foiBuilder);
 
         builder.addForceModel(drag);
         builder.addForceModel(gravity);
@@ -405,7 +403,7 @@ public class NumericalConverterTest {
         Utils.setDataRoot("regular-data:potential/shm-format");
         gravity = new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true),
                                                         GravityFieldFactory.getNormalizedProvider(2, 0));
-        mu = gravity.getParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT).getValue();
+        final double mu = gravity.getParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT).getValue();
         minStep = 1.0;
         maxStep = 600.0;
         dP = 10.0;

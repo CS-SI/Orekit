@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -152,7 +152,7 @@ public class PhaseTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // Create perfect phase measurements
@@ -160,7 +160,7 @@ public class PhaseTest {
                                                                            propagatorBuilder);
         final double groundClockOffset =  12.0e-6;
         for (final GroundStation station : context.stations) {
-            station.getClockOffsetDriver().setValue(groundClockOffset);
+            station.getClockModel().getBiasDriver().setValue(groundClockOffset);
         }
         final int    ambiguity         = 1234;
         final double satClockOffset    = 345.0e-6;
@@ -198,7 +198,7 @@ public class PhaseTest {
 
                     // Values of the Phase & errors
                     final double phaseObserved  = measurement.getObservedValue()[0];
-                    final EstimatedMeasurementBase<?> estimated = measurement.estimateWithoutDerivatives(new SpacecraftState[] { state });
+                    final EstimatedMeasurementBase<?> estimated = ((Phase) measurement).theoreticalEvaluationWithoutDerivatives(0, 0, new SpacecraftState[] { state }, true);
 
                     final TimeStampedPVCoordinates[] participants = estimated.getParticipants();
                     Assertions.assertEquals(2, participants.length);
@@ -215,7 +215,7 @@ public class PhaseTest {
                     // Print results on console ?
                     if (printResults) {
                         final AbsoluteDate measurementDate = measurement.getDate();
-                        String stationName = ((Phase) measurement).getStation().getBaseFrame().getName();
+                        String stationName = ((Phase) measurement).getObserver().getName();
 
                         System.out.format(Locale.US, "%-15s  %-23s  %-23s     %19.6f      %19.6f    %13.6e   %13.6e%n",
                                          stationName, measurementDate, date,
@@ -243,7 +243,7 @@ public class PhaseTest {
         measurements.sort(Comparator.naturalOrder());
 
         // Propagate to final measurement's date
-        propagator.propagate(measurements.get(measurements.size()-1).getDate());
+        propagator.propagate(measurements.getLast().getDate());
 
         // Convert lists to double array
         final double[] absErrors = absoluteErrors.stream().mapToDouble(Double::doubleValue).toArray();
@@ -273,7 +273,7 @@ public class PhaseTest {
         Assertions.assertEquals(0.0, relErrorsMax,    2.8e-14);
 
         // Test measurement type
-        Assertions.assertEquals(Phase.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
+        Assertions.assertEquals(Phase.MEASUREMENT_TYPE, measurements.getFirst().getMeasurementType());
     }
 
     void genericTestStateDerivatives(final boolean printResults,
@@ -283,7 +283,7 @@ public class PhaseTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // Create perfect range measurements
@@ -291,7 +291,7 @@ public class PhaseTest {
                                                                            propagatorBuilder);
         final double groundClockOffset =  12.0e-6;
         for (final GroundStation station : context.stations) {
-            station.getClockOffsetDriver().setValue(groundClockOffset);
+            station.getClockModel().getBiasDriver().setValue(groundClockOffset);
         }
         final int    ambiguity         = 1234;
         final double satClockOffset    = 345.0e-6;
@@ -339,7 +339,7 @@ public class PhaseTest {
                             state1
                         }).
                                getEstimatedValue(), measurement.getDimension(), propagator.getAttitudeProvider(),
-                        OrbitType.CARTESIAN, PositionAngleType.TRUE, 2.0, 3).value(state);
+                        OrbitType.CARTESIAN, PositionAngleType.TRUE, 20.0, 3).value(state);
 
                     Assertions.assertEquals(jacobianRef.length, jacobian.length);
                     Assertions.assertEquals(jacobianRef[0].length, jacobian[0].length);
@@ -358,7 +358,7 @@ public class PhaseTest {
                     }
                     // Print values in console ?
                     if (printResults) {
-                        String stationName  = ((Phase) measurement).getStation().getBaseFrame().getName();
+                        String stationName  = ((Phase) measurement).getObserver().getName();
                         System.out.format(Locale.US, "%-15s  %-23s  %-23s  " +
                                           "%10.3e  %10.3e  %10.3e  " +
                                           "%10.3e  %10.3e  %10.3e  " +
@@ -394,7 +394,7 @@ public class PhaseTest {
         measurements.sort(Comparator.naturalOrder());
 
         // Propagate to final measurement's date
-        propagator.propagate(measurements.get(measurements.size()-1).getDate());
+        propagator.propagate(measurements.getLast().getDate());
 
         // Convert lists to double[] and evaluate some statistics
         final double[] relErrorsP = errorsP.stream().mapToDouble(Double::doubleValue).toArray();
@@ -430,13 +430,13 @@ public class PhaseTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // Create perfect range measurements
         final double groundClockOffset =  12.0e-6;
         for (final GroundStation station : context.stations) {
-            station.getClockOffsetDriver().setValue(groundClockOffset);
+            station.getClockModel().getBiasDriver().setValue(groundClockOffset);
         }
         final int    ambiguity         = 1234;
         final double satClockOffset    = 345.0e-6;
@@ -444,9 +444,9 @@ public class PhaseTest {
                                                                             PredefinedGnssSignal.E01,
                                                                             ambiguity,
                                                                             satClockOffset);
-        creator.getSatellite().getClockOffsetDriver().setSelected(true);
+        creator.getSatellite().getClockModel().getBiasDriver().setSelected(true);
         for (final GroundStation station : context.stations) {
-            station.getClockOffsetDriver().setSelected(true);
+            station.getClockModel().getBiasDriver().setSelected(true);
             station.getEastOffsetDriver().setSelected(true);
             station.getNorthOffsetDriver().setSelected(true);
             station.getZenithOffsetDriver().setSelected(true);
@@ -469,7 +469,7 @@ public class PhaseTest {
                     (measurement.getDate().durationFrom(interpolator.getCurrentState().getDate())  <=  0.)) {
 
                     // Parameter corresponding to station position offset
-                    final GroundStation stationParameter = ((Phase) measurement).getStation();
+                    final GroundStation stationParameter = (GroundStation) ((Phase) measurement).getObserver();
 
                     // We intentionally propagate to a date which is close to the
                     // real spacecraft state but is *not* the accurate date, by
@@ -482,15 +482,15 @@ public class PhaseTest {
                     final AbsoluteDate    date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
                     final SpacecraftState state     = interpolator.getInterpolatedState(date);
                     final ParameterDriver[] drivers = new ParameterDriver[] {
-                        stationParameter.getClockOffsetDriver(),
+                        stationParameter.getClockModel().getBiasDriver(),
                         stationParameter.getEastOffsetDriver(),
                         stationParameter.getNorthOffsetDriver(),
                         stationParameter.getZenithOffsetDriver(),
-                        measurement.getSatellites().get(0).getClockOffsetDriver()
+                        measurement.getSatellites().getFirst().getClockModel().getBiasDriver()
                     };
 
                     if (printResults) {
-                        String stationName  = ((Phase) measurement).getStation().getBaseFrame().getName();
+                        String stationName  = ((Phase) measurement).getObserver().getName();
                         System.out.format(Locale.US, "%-15s  %-23s  %-23s  ",
                                           stationName, measurement.getDate(), date);
                     }
@@ -548,7 +548,7 @@ public class PhaseTest {
          }
 
         // Propagate to final measurement's date
-        propagator.propagate(measurements.get(measurements.size()-1).getDate());
+        propagator.propagate(measurements.getLast().getDate());
 
         // Convert error list to double[]
         final double[] relErrors = relErrorList.stream().mapToDouble(Double::doubleValue).toArray();
@@ -585,7 +585,7 @@ public class PhaseTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // Create perfect range measurements
@@ -593,7 +593,7 @@ public class PhaseTest {
                                                                            propagatorBuilder);
         final double groundClockOffset =  12.0e-6;
         for (final GroundStation station : context.stations) {
-            station.getClockOffsetDriver().setValue(groundClockOffset);
+            station.getClockModel().getBiasDriver().setValue(groundClockOffset);
         }
         final int    ambiguity         = 1234;
         final double satClockOffset    = 345.0e-6;
@@ -619,15 +619,15 @@ public class PhaseTest {
                 if ((measurement.getDate().durationFrom(interpolator.getPreviousState().getDate()) > 0.) &&
                     (measurement.getDate().durationFrom(interpolator.getCurrentState().getDate())  <=  0.)) {
 
-                    String stationName  = ((Phase) measurement).getStation().getBaseFrame().getName();
+                    String stationName  = ((Phase) measurement).getObserver().getName();
 
                     // Add modifier
                     final NiellMappingFunctionModel      mappingFunction = new NiellMappingFunctionModel();
                     final EstimatedModel                 tropoModel      = new EstimatedModel(mappingFunction, 5.0);
                     final PhaseTroposphericDelayModifier modifier        = new PhaseTroposphericDelayModifier(tropoModel);
                     final List<ParameterDriver>          parameters      = modifier.getParametersDrivers();
-                    parameters.get(0).setName(stationName + "/" + EstimatedModel.TOTAL_ZENITH_DELAY);
-                    parameters.get(0).setSelected(true);
+                    parameters.getFirst().setName(stationName + "/" + EstimatedModel.TOTAL_ZENITH_DELAY);
+                    parameters.getFirst().setSelected(true);
                     ((Phase) measurement).addModifier(modifier);
 
                     // We intentionally propagate to a date which is close to the
@@ -652,7 +652,7 @@ public class PhaseTest {
                             state1
                         }).
                                getEstimatedValue(), measurement.getDimension(), propagator.getAttitudeProvider(),
-                        OrbitType.CARTESIAN, PositionAngleType.TRUE, 2.0, 3).value(state);
+                        OrbitType.CARTESIAN, PositionAngleType.TRUE, 20.0, 3).value(state);
 
                     Assertions.assertEquals(jacobianRef.length, jacobian.length);
                     Assertions.assertEquals(jacobianRef[0].length, jacobian[0].length);
@@ -706,7 +706,7 @@ public class PhaseTest {
         measurements.sort(Comparator.naturalOrder());
 
         // Propagate to final measurement's date
-        propagator.propagate(measurements.get(measurements.size()-1).getDate());
+        propagator.propagate(measurements.getLast().getDate());
 
         // Convert lists to double[] and evaluate some statistics
         final double[] relErrorsP = errorsP.stream().mapToDouble(Double::doubleValue).toArray();
@@ -750,7 +750,7 @@ public class PhaseTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // Create perfect range measurements
@@ -758,7 +758,7 @@ public class PhaseTest {
                                                                            propagatorBuilder);
         final double groundClockOffset =  12.0e-6;
         for (final GroundStation station : context.stations) {
-            station.getClockOffsetDriver().setValue(groundClockOffset);
+            station.getClockModel().getBiasDriver().setValue(groundClockOffset);
         }
         final int    ambiguity         = 1234;
         final double satClockOffset    = 345.0e-6;
@@ -774,9 +774,14 @@ public class PhaseTest {
         // "final" value to be seen by "handleStep" function of the propagator
         final List<Double> errorsP = new ArrayList<>();
         final List<Double> errorsV = new ArrayList<>();
-
-        final IonosphericModel model = new KlobucharIonoModel(new double[]{.3820e-07, .1490e-07, -.1790e-06, 0},
+        
+        // Create the ionospheric model
+        final OneAxisEllipsoid earthBodyShape  = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                 Constants.WGS84_EARTH_FLATTENING,
+                                                 FramesFactory.getITRF(IERSConventions.IERS_2010, true));
+        final IonosphericModel model = new KlobucharIonoModel(earthBodyShape, new double[]{.3820e-07, .1490e-07, -.1790e-06, 0},
                                                               new double[]{.1430e+06, 0, -.3280e+06, .1130e+06});
+
         final double frequency = PredefinedGnssSignal.G01.getFrequency();
         final PhaseIonosphericDelayModifier modifier = new PhaseIonosphericDelayModifier(model, frequency);
 
@@ -815,7 +820,7 @@ public class PhaseTest {
                             state1
                         }).
                                getEstimatedValue(), measurement.getDimension(), propagator.getAttitudeProvider(),
-                        OrbitType.CARTESIAN, PositionAngleType.TRUE, 2.0, 3).value(state);
+                        OrbitType.CARTESIAN, PositionAngleType.TRUE, 20.0, 3).value(state);
 
                     Assertions.assertEquals(jacobianRef.length, jacobian.length);
                     Assertions.assertEquals(jacobianRef[0].length, jacobian[0].length);
@@ -839,7 +844,7 @@ public class PhaseTest {
                                           "%10.3e  %10.3e  %10.3e  " +
                                           "%10.3e  %10.3e  %10.3e  " +
                                           "%10.3e  %10.3e  %10.3e%n",
-                                          phase.getStation().getBaseFrame().getName(), measurement.getDate(), date,
+                                          phase.getObserver().getName(), measurement.getDate(), date,
                                           dJacobian[0][0], dJacobian[0][1], dJacobian[0][2],
                                           dJacobian[0][3], dJacobian[0][4], dJacobian[0][5],
                                           dJacobianRelative[0][0], dJacobianRelative[0][1], dJacobianRelative[0][2],
@@ -869,7 +874,7 @@ public class PhaseTest {
         measurements.sort(Comparator.naturalOrder());
 
         // Propagate to final measurement's date
-        propagator.propagate(measurements.get(measurements.size()-1).getDate());
+        propagator.propagate(measurements.getLast().getDate());
 
         // Convert lists to double[] and evaluate some statistics
         final double[] relErrorsP = errorsP.stream().mapToDouble(Double::doubleValue).toArray();

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,6 @@
  */
 package org.orekit.files.rinex.clock;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -122,7 +121,7 @@ public class ClockFileParserTest {
                               id, type, timeScale, dataEpoch, numberOfValues,
                               clockBias, clockBiasSigma, clockRate, clockRateSigma, clockAcceleration, clockAccelerationSigma);
 
-        final ClockDataLine dataLine = file.getClockData().get(id).get(0);
+        final ClockDataLine dataLine = file.getClockData().get(id).getFirst();
         Assertions.assertEquals(new AbsoluteDate(1994, 7, 14, 20, 59, 0.0, TimeScalesFactory.getGPS()),
                                 dataLine.getDate());
 
@@ -397,12 +396,12 @@ public class ClockFileParserTest {
         // points exactly on files entries
         final ClockOffset c1 = clockModel.getOffset(new AbsoluteDate(2013, 4, 29, 0, 0,  0.0, file.getHeader().getTimeScale()));
         final ClockOffset c2 = clockModel.getOffset(new AbsoluteDate(2013, 4, 29, 0, 0, 30.0, file.getHeader().getTimeScale()));
-        Assertions.assertEquals(0.192309152524E-08, c1.getOffset(), 1.0e-21);
-        Assertions.assertEquals(0.192333320310E-08, c2.getOffset(), 1.0e-21);
+        Assertions.assertEquals(0.192309152524E-08, c1.getBias(), 1.0e-21);
+        Assertions.assertEquals(0.192333320310E-08, c2.getBias(), 1.0e-21);
 
         // intermediate point
         final ClockOffset c = clockModel.getOffset(new AbsoluteDate(2013, 4, 29, 0, 0, 12.0, file.getHeader().getTimeScale()));
-        Assertions.assertEquals(0.1923188196384e-08, c.getOffset(),       1.0e-21);
+        Assertions.assertEquals(0.1923188196384e-08, c.getBias(),       1.0e-21);
         Assertions.assertEquals(8.05592866666e-15,   c.getRate(),         1.0e-26);
         Assertions.assertEquals( 0.0,                c.getAcceleration(), 1.0e-40);
 
@@ -716,9 +715,9 @@ public class ClockFileParserTest {
         Assertions.assertEquals(2, totalReferenceClockNumber);
 
         // Check contents
-        checkReferenceClock(referenceClocks1.get(0),
+        checkReferenceClock(referenceClocks1.getFirst(),
                             referenceName1, clockId1, clockConstraint1, startDate1, endDate1);
-        checkReferenceClock(referenceClocks2.get(0),
+        checkReferenceClock(referenceClocks2.getFirst(),
                             referenceName2, clockId2, clockConstraint2, startDate2, endDate2);
     }
 
@@ -852,7 +851,7 @@ public class ClockFileParserTest {
 
         final AbsoluteDate between1And2 = new AbsoluteDate(2020, 9, 1, 0, 4, 45.0, spliced.getHeader().getTimeScale());
         Assertions.assertEquals(-1.83536264242e-4,
-                                spliced.extractClockModel("J01", 4).getOffset(between1And2).getOffset(),
+                                spliced.extractClockModel("J01", 4).getOffset(between1And2).getBias(),
                                 1.0e-12);
 
         final AbsoluteDate between2And3 = new AbsoluteDate(2020, 9, 1, 0,  9, 45.0, spliced.getHeader().getTimeScale());
@@ -869,7 +868,7 @@ public class ClockFileParserTest {
             Assertions.assertEquals(OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_BEFORE, oe.getSpecifier());
         }
         Assertions.assertEquals(-1.83535202897e-4,
-                                spliced.extractClockModel("J01", 2).getOffset(between2And3).getOffset(),
+                                spliced.extractClockModel("J01", 2).getOffset(between2And3).getBias(),
                                 1.0e-12);
 
 
@@ -1019,7 +1018,7 @@ public class ClockFileParserTest {
                                 PredefinedTimeSystem.UNKNOWN.getTimeScale(DataContext.getDefault().getTimeScales()));
     }
 
-    /** Test parsing file of issue #845 (https://gitlab.orekit.org/orekit/orekit/-/issues/845). */
+    /** Test parsing file of <a href="https://gitlab.orekit.org/orekit/orekit/-/issues/845>issue #845</a>. */
     @Test
     public void testIssue845() throws URISyntaxException {
 
@@ -1036,7 +1035,7 @@ public class ClockFileParserTest {
     }
 
     @Test
-    public void testMixedSystem() throws IOException {
+    public void testMixedSystem() {
 
         // Parse file
         final String ex = "/gnss/clock/issue1356.clk.gz";
@@ -1052,11 +1051,11 @@ public class ClockFileParserTest {
         Assertions.assertEquals(54, file.getHeader().getSatellites().size());
         Assertions.assertEquals(10, file.getHeader().getReceivers().size());
         Assertions.assertEquals(1, file.getHeader().getListAppliedDCBS().size());
-        Assertions.assertEquals(SatelliteSystem.MIXED, file.getHeader().getListAppliedDCBS().get(0).getSatelliteSystem());
-        Assertions.assertEquals("P1C1_RINEX_20200830.DCB", file.getHeader().getListAppliedDCBS().get(0).getSourceDCBS());
+        Assertions.assertEquals(SatelliteSystem.MIXED, file.getHeader().getListAppliedDCBS().getFirst().getSatelliteSystem());
+        Assertions.assertEquals("P1C1_RINEX_20200830.DCB", file.getHeader().getListAppliedDCBS().getFirst().getSourceDCBS());
         Assertions.assertEquals(1, file.getHeader().getListAppliedPCVS().size());
-        Assertions.assertEquals(SatelliteSystem.MIXED, file.getHeader().getListAppliedPCVS().get(0).getSatelliteSystem());
-        Assertions.assertEquals("igs14_20200830.atx", file.getHeader().getListAppliedPCVS().get(0).getSourcePCVS());
+        Assertions.assertEquals(SatelliteSystem.MIXED, file.getHeader().getListAppliedPCVS().getFirst().getSatelliteSystem());
+        Assertions.assertEquals("igs14_20200830.atx", file.getHeader().getListAppliedPCVS().getFirst().getSourcePCVS());
     }
 
     /** Check the content of a clock file. */

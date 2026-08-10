@@ -32,7 +32,7 @@ import org.junit.jupiter.api.Test;
  * @author Evan Ward
  *
  */
-public class FieldGeodeticPointTest {
+class FieldGeodeticPointTest {
 
     /**
      * check {@link FieldGeodeticPoint#FieldGeodeticPoint(CalculusFieldElement, CalculusFieldElement, CalculusFieldElement)} angle
@@ -57,6 +57,21 @@ public class FieldGeodeticPointTest {
         Assertions.assertEquals(0, Vector3D.distance(point.getZenith().toVector3D(), new Vector3D(-0.50 * FastMath.PI,  0.25 * FastMath.PI)), 1.0e-15);
         Assertions.assertEquals(0, Vector3D.distance(point.getNadir().toVector3D(),  new Vector3D( 0.50 * FastMath.PI, -0.25 * FastMath.PI)), 1.0e-15);
 
+    }
+
+    @Test
+    void testGetDirections() {
+        // GIVEN
+        final GeodeticPoint geodeticPoint = new GeodeticPoint(1., 2., 100.);
+        final Binary64Field field = Binary64Field.getInstance();
+        final FieldGeodeticPoint<Binary64> fieldGeodeticPoint = new FieldGeodeticPoint<>(field, geodeticPoint);
+        // WHEN & THEN
+        Assertions.assertEquals(geodeticPoint.getEast(), fieldGeodeticPoint.getEast().toVector3D());
+        Assertions.assertEquals(geodeticPoint.getNadir(), fieldGeodeticPoint.getNadir().toVector3D());
+        Assertions.assertEquals(geodeticPoint.getNorth(), fieldGeodeticPoint.getNorth().toVector3D());
+        Assertions.assertEquals(geodeticPoint.getSouth(), fieldGeodeticPoint.getSouth().toVector3D());
+        Assertions.assertEquals(geodeticPoint.getWest(), fieldGeodeticPoint.getWest().toVector3D());
+        Assertions.assertEquals(geodeticPoint.getZenith(), fieldGeodeticPoint.getZenith().toVector3D());
     }
 
     /**

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -100,9 +100,12 @@ public class Rtcm1020Data extends RtcmEphemerisData {
     /** Glonass l<sub>n</sub> (fifth string). */
     private int lNFifthString;
 
-    /** Constructor. */
-    public Rtcm1020Data() {
-        // Nothing to do ...
+    /** Constructor.
+     * @param satelliteId satellite ID
+     * @since 14.0
+     */
+    public Rtcm1020Data(final int satelliteId) {
+        super(satelliteId);
     }
 
     /**
@@ -139,7 +142,7 @@ public class Rtcm1020Data extends RtcmEphemerisData {
         // Set the ephemeris reference data
         final AbsoluteDate refDate = new GLONASSDate(nt, n4, tb, timeScales.getGLONASS()).getDate();
         glonassNavigationMessage.setDate(refDate);
-        glonassNavigationMessage.setEpochToc(refDate);
+        glonassNavigationMessage.setToc(refDate);
 
         // Return the navigation message
         return glonassNavigationMessage;

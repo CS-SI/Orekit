@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Luc Maisonobe
+/* Copyright 2022-2026 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,6 +20,8 @@ package org.orekit.files.ccsds.ndm.adm.acm;
 import java.util.Collections;
 import java.util.List;
 
+import org.orekit.files.ccsds.utils.Initializer;
+
 /** Covariance history.
  * @author Luc Maisonobe
  * @since 12.0
@@ -39,7 +41,7 @@ public class AttitudeCovarianceHistory {
     public AttitudeCovarianceHistory(final AttitudeCovarianceHistoryMetadata metadata,
                              final List<AttitudeCovariance> covariances) {
         this.metadata    = metadata;
-        this.covariances = covariances;
+        this.covariances = Initializer.emptyListIfNull(covariances);
     }
 
     /** Get metadata.

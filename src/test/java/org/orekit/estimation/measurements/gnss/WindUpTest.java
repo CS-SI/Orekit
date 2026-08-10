@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -137,7 +137,7 @@ public class WindUpTest {
         // generate phase measurements from the ground station
         Generator           generator = new Generator();
         ObservableSatellite obsSat    = generator.addPropagator(new KeplerianPropagator(orbit, attitudeProvider));
-        PhaseBuilder        builder   = new PhaseBuilder(null, station,
+        PhaseBuilder        builder   = new PhaseBuilder(station,
                                                          PredefinedGnssSignal.G01.getWavelength(),
                                                          0.01 * PredefinedGnssSignal.G01.getWavelength(),
                                                          1.0, obsSat,
@@ -161,12 +161,11 @@ public class WindUpTest {
         double max = Double.NEGATIVE_INFINITY;
         for (EstimatedMeasurementBase<?> m : measurements) {
             Phase phase = (Phase) m.getObservedMeasurement();
-            @SuppressWarnings("unchecked")
-            EstimatedMeasurementBase<Phase> estimated = (EstimatedMeasurementBase<Phase>) m.
-                getObservedMeasurement().
-                estimateWithoutDerivatives(new SpacecraftState[] {
+            EstimatedMeasurementBase<Phase> estimated = ((Phase) m.
+                getObservedMeasurement()).
+                theoreticalEvaluationWithoutDerivatives(0, 0, new SpacecraftState[] {
                                                propagator.propagate(phase.getDate())
-                                           });
+                                           }, true);
             final double original = estimated.getEstimatedValue()[0];
             windUp.modifyWithoutDerivatives(estimated);
             final double modified = estimated.getEstimatedValue()[0];

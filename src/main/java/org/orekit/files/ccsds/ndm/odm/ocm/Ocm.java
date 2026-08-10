@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -75,14 +75,14 @@ public class Ocm extends NdmConstituent<OdmHeader, Segment<OcmMetadata, OcmData>
      * @return metadata from the single {@link #getSegments() segment}
      */
     public OcmMetadata getMetadata() {
-        return getSegments().get(0).getMetadata();
+        return getSegments().getFirst().getMetadata();
     }
 
     /** Get the data from the single {@link #getSegments() segment}.
      * @return data from the single {@link #getSegments() segment}
      */
     public OcmData getData() {
-        return getSegments().get(0).getData();
+        return getSegments().getFirst().getData();
     }
 
     /** {@inheritDoc}
@@ -104,14 +104,14 @@ public class Ocm extends NdmConstituent<OdmHeader, Segment<OcmMetadata, OcmData>
         final String name;
         if (getMetadata().getObjectName() != null) {
             name = getMetadata().getObjectName();
-        } else if (getMetadata().getInternationalDesignator() != null) {
-            name = getMetadata().getInternationalDesignator();
-        } else if (getMetadata().getObjectDesignator() != null) {
-            name = getMetadata().getObjectDesignator();
+        } else if (getMetadata().getInternationalDesignator().isPresent()) {
+            name = getMetadata().getInternationalDesignator().get();
+        } else if (getMetadata().getObjectDesignator().isPresent()) {
+            name = getMetadata().getObjectDesignator().get();
         } else {
             name = UNKNOWN_OBJECT;
         }
-        final List<TrajectoryStateHistory> histories = getSegments().get(0).getData().getTrajectoryBlocks();
+        final List<TrajectoryStateHistory> histories = getSegments().getFirst().getData().getTrajectoryBlocks();
         final OcmSatelliteEphemeris        ose       = new OcmSatelliteEphemeris(name, mu, histories);
         return Collections.singletonMap(name, ose);
     }

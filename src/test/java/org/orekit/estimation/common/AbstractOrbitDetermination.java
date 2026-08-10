@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -62,6 +62,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.leastsquares.BatchLSEstimator;
 import org.orekit.estimation.leastsquares.SequentialBatchLSEstimator;
 import org.orekit.estimation.measurements.AngularAzEl;
+import org.orekit.estimation.measurements.EarthBasedStation;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.MultiplexedMeasurement;
@@ -80,7 +81,16 @@ import org.orekit.estimation.measurements.modifiers.RangeIonosphericDelayModifie
 import org.orekit.estimation.measurements.modifiers.RangeRateIonosphericDelayModifier;
 import org.orekit.estimation.measurements.modifiers.RangeTroposphericDelayModifier;
 import org.orekit.estimation.measurements.modifiers.ShapiroRangeModifier;
-import org.orekit.estimation.sequential.*;
+import org.orekit.estimation.sequential.AbstractKalmanEstimator;
+import org.orekit.estimation.sequential.ConstantProcessNoise;
+import org.orekit.estimation.sequential.KalmanEstimation;
+import org.orekit.estimation.sequential.KalmanEstimator;
+import org.orekit.estimation.sequential.KalmanEstimatorBuilder;
+import org.orekit.estimation.sequential.KalmanObserver;
+import org.orekit.estimation.sequential.PhysicalEstimatedState;
+import org.orekit.estimation.sequential.RtsSmoother;
+import org.orekit.estimation.sequential.UnscentedKalmanEstimator;
+import org.orekit.estimation.sequential.UnscentedKalmanEstimatorBuilder;
 import org.orekit.files.ilrs.CPF;
 import org.orekit.files.ilrs.CPF.CPFCoordinate;
 import org.orekit.files.ilrs.CPF.CPFEphemeris;
@@ -103,7 +113,6 @@ import org.orekit.files.sinex.SinexParser;
 import org.orekit.files.sinex.Station;
 import org.orekit.forces.drag.DragSensitive;
 import org.orekit.forces.drag.IsotropicDrag;
-import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.radiation.IsotropicRadiationSingleCoefficient;
 import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.frames.EOPHistory;
@@ -115,8 +124,6 @@ import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.antenna.FrequencyPattern;
 import org.orekit.models.AtmosphericRefractionModel;
 import org.orekit.models.earth.ITURP834AtmosphericRefraction;
-import org.orekit.models.earth.Geoid;
-import org.orekit.models.earth.ReferenceEllipsoid;
 import org.orekit.models.earth.atmosphere.Atmosphere;
 import org.orekit.models.earth.atmosphere.DTM2000;
 import org.orekit.models.earth.atmosphere.data.MarshallSolarActivityFutureEstimation;
@@ -140,7 +147,6 @@ import org.orekit.models.earth.troposphere.TroposphereMappingFunction;
 import org.orekit.models.earth.troposphere.TroposphericModel;
 import org.orekit.models.earth.troposphere.TroposphericModelUtils;
 import org.orekit.models.earth.weather.ConstantPressureTemperatureHumidityProvider;
-import org.orekit.models.earth.weather.GlobalPressureTemperature;
 import org.orekit.models.earth.weather.PressureTemperatureHumidity;
 import org.orekit.models.earth.weather.PressureTemperatureHumidityProvider;
 import org.orekit.models.earth.weather.water.CIPM2007;
@@ -442,7 +448,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                           rangeLog, rangeRateLog, azimuthLog, elevationLog, positionOnlyLog, positionLog, velocityLog);
         }
 
-        final ParameterDriversList propagatorParameters   = estimator.getPropagatorParametersDrivers(true);
+        final ParameterDriversList propagatorParameters   = estimator.getPropagationParametersDrivers(true);
         final ParameterDriversList measurementsParameters = estimator.getMeasurementsParametersDrivers(true);
         return new ResultBatchLeastSquares(propagatorParameters, measurementsParameters,
                                            estimator.getIterationsCount(), estimator.getEvaluationsCount(), estimated.getPVCoordinates(),
@@ -524,8 +530,10 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
         }
 
         if (print) {
-            final String headerBLS = "\nBatch Least Square Estimator :\n"
-                            + "iteration evaluations      ΔP(m)        ΔV(m/s)           RMS          nb Range    nb Range-rate nb Angular   nb Position     nb PV%n";
+            final String headerBLS = """
+                            
+                            Batch Least Square Estimator :
+                            iteration evaluations      ΔP(m)        ΔV(m/s)           RMS          nb Range    nb Range-rate nb Angular   nb Position     nb PV%n""";
             estimator.setObserver(new BatchLeastSquaresObserver(initialGuess, estimator, headerBLS, print));
         }
 
@@ -566,8 +574,10 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
         }
 
         if (print) {
-            final String headerSBLS = "\nSequentiel Batch Least Square Estimator :\n"
-                            + "iteration evaluations      ΔP(m)        ΔV(m/s)           RMS          nb Range    nb Range-rate nb Angular   nb Position     nb PV%n";
+            final String headerSBLS = """
+                            
+                            Sequentiel Batch Least Square Estimator :
+                            iteration evaluations      ΔP(m)        ΔV(m/s)           RMS          nb Range    nb Range-rate nb Angular   nb Position     nb PV%n""";
 
             estimator.setObserver(new BatchLeastSquaresObserver(initialGuess, estimator, headerSBLS, print));
         }
@@ -580,7 +590,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                           rangeLog, rangeRateLog, azimuthLog, elevationLog, positionOnlyLog, positionLog, velocityLog);
         }
 
-        final ParameterDriversList propagatorParameters   = estimator.getPropagatorParametersDrivers(true);
+        final ParameterDriversList propagatorParameters   = estimator.getPropagationParametersDrivers(true);
         final ParameterDriversList measurementsParameters = estimator.getMeasurementsParametersDrivers(true);
 
         return new ResultSequentialBatchLeastSquares(propagatorParameters, measurementsParameters,
@@ -712,7 +722,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
         // We want to test with all propagations in the same direction.
         // Propagate to just before first measurement.
         SpacecraftState initialState = propagatorBuilder.buildPropagator()
-                .propagate(multiplexed.get(0).getDate().shiftedBy(-10.0 * 60.0));
+                .propagate(multiplexed.getFirst().getDate().shiftedBy(-10.0 * 60.0));
         propagatorBuilder.resetOrbit(initialState.getOrbit());
 
         // Ensure all measurements are in time-order
@@ -741,10 +751,10 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
         estimatedMeasurementsParameters.sort();
 
         // Orbital covariance matrix initialization
-        // Jacobian of the orbital parameters w/r to Cartesian
-        final double[][] dYdC = new double[6][6];
-        initialGuess.getJacobianWrtCartesian(propagatorBuilder.getPositionAngleType(), dYdC);
-        final RealMatrix Jac = MatrixUtils.createRealMatrix(dYdC);
+        // Jacobian of the builder parameters w/r to Cartesian. It is asked to the builder
+        // rather than to the orbit, as the builder parameters are not necessarily an orbit
+        // type: TLE and specialized GNSS propagators use their own orbital elements.
+        final RealMatrix Jac = propagatorBuilder.getOrbitalParameterFactory().getJacobianWrtCartesian();
         RealMatrix orbitalP = Jac.multiply(cartesianOrbitalP.multiply(Jac.transpose()));
 
         // Orbital process noise matrix
@@ -860,7 +870,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                                 rangeLog.createStatisticsSummary(),  rangeRateLog.createStatisticsSummary(),
                                 azimuthLog.createStatisticsSummary(),  elevationLog.createStatisticsSummary(),
                                 positionLog.createStatisticsSummary(),  velocityLog.createStatisticsSummary(),
-                                covarianceMatrix, smoothedStates.get(0));
+                                covarianceMatrix, smoothedStates.getFirst());
 
     }
 
@@ -1296,7 +1306,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                                                 new double[] { 1.0 },
                                                 new double[] { transponderDelayBiasMin },
                                                 new double[] { transponderDelayBiasMax });
-            bias.getParametersDrivers().get(0).setSelected(transponderDelayBiasEstimated);
+            bias.getParametersDrivers().getFirst().setSelected(transponderDelayBiasEstimated);
             return bias;
         } else {
             // fixed zero bias, we don't need any modifier
@@ -1426,9 +1436,6 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
         }
 
         final EOPHistory eopHistory = FramesFactory.findEOP(body.getBodyFrame());
-        Geoid geoid = new Geoid(GravityFieldFactory.getNormalizedProvider(9, 9),
-                                ReferenceEllipsoid.getWgs84(body.getBodyFrame()));
-        final GlobalPressureTemperature gpt = new GlobalPressureTemperature(geoid, TimeScalesFactory.getUTC());
         for (int i = 0; i < stationNames.length; ++i) {
 
             // displacements
@@ -1469,12 +1476,12 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
             final TopocentricFrame topo = new TopocentricFrame(body, position, stationNames[i]);
             final PressureTemperatureHumidityProvider pth0Provider =
                             TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER;
-            final GroundStation station = new GroundStation(topo, eopHistory, displacements);
-            station.getClockOffsetDriver().setReferenceValue(stationClockOffsets[i]);
-            station.getClockOffsetDriver().setValue(stationClockOffsets[i]);
-            station.getClockOffsetDriver().setMinValue(stationClockOffsetsMin[i]);
-            station.getClockOffsetDriver().setMaxValue(stationClockOffsetsMax[i]);
-            station.getClockOffsetDriver().setSelected(stationClockOffsetEstimated[i]);
+            final GroundStation station = new EarthBasedStation(topo, eopHistory, displacements);
+            station.getClockModel().getBiasDriver().setReferenceValue(stationClockOffsets[i]);
+            station.getClockModel().getBiasDriver().setValue(stationClockOffsets[i]);
+            station.getClockModel().getBiasDriver().setMinValue(stationClockOffsetsMin[i]);
+            station.getClockModel().getBiasDriver().setMaxValue(stationClockOffsetsMax[i]);
+            station.getClockModel().getBiasDriver().setSelected(stationClockOffsetEstimated[i]);
             station.getEastOffsetDriver().setSelected(stationPositionEstimated[i]);
             station.getNorthOffsetDriver().setSelected(stationPositionEstimated[i]);
             station.getZenithOffsetDriver().setSelected(stationPositionEstimated[i]);
@@ -1508,7 +1515,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                                        new double[] { rangeSigma },
                                        new double[] { stationRangeBiasMin[i] },
                                        new double[] { stationRangeBiasMax[i] });
-                rangeBias.getParametersDrivers().get(0).setSelected(stationRangeBiasEstimated[i]);
+                rangeBias.getParametersDrivers().getFirst().setSelected(stationRangeBiasEstimated[i]);
             } else {
                 // bias fixed to zero, we don't need to create a modifier for this
                 rangeBias = null;
@@ -1525,7 +1532,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                                            new double[] {
                                                stationRangeRateBiasMax[i]
                                            });
-                rangeRateBias.getParametersDrivers().get(0).setSelected(stationRangeRateBiasEstimated[i]);
+                rangeRateBias.getParametersDrivers().getFirst().setSelected(stationRangeRateBiasEstimated[i]);
             } else {
                 // bias fixed to zero, we don't need to create a modifier for this
                 rangeRateBias = null;
@@ -1545,7 +1552,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                                       azELSigma,
                                       new double[] { stationAzimuthBiasMin[i], stationElevationBiasMin[i] },
                                       new double[] { stationAzimuthBiasMax[i], stationElevationBiasMax[i] });
-                azELBias.getParametersDrivers().get(0).setSelected(stationAzElBiasesEstimated[i]);
+                azELBias.getParametersDrivers().getFirst().setSelected(stationAzElBiasesEstimated[i]);
                 azELBias.getParametersDrivers().get(1).setSelected(stationAzElBiasesEstimated[i]);
             } else {
                 // bias fixed to zero, we don't need to create a modifier for this
@@ -1597,7 +1604,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                         final EstimatedModel modelBefore = new EstimatedModel(new ModifiedSaastamoinenModel(pth0Provider),
                                                                               mappingModel,
                                                                               stationTroposphericZenithDelay[i]);
-                        final ParameterDriver totalDelayBefore = modelBefore.getParametersDrivers().get(0);
+                        final ParameterDriver totalDelayBefore = modelBefore.getParametersDrivers().getFirst();
                         totalDelayBefore.setSelected(stationZenithDelayEstimated[i]);
                         totalDelayBefore.setName(subName + TimeSpanEstimatedModel.DATE_BEFORE + epoch.toString(TimeScalesFactory.getUTC()) + " " + EstimatedModel.TOTAL_ZENITH_DELAY);
 
@@ -1605,7 +1612,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                         final EstimatedModel modelAfter = new EstimatedModel(new ModifiedSaastamoinenModel(pth0Provider),
                                                                              mappingModel,
                                                                              stationTroposphericZenithDelay[i]);
-                        final ParameterDriver totalDelayAfter = modelAfter.getParametersDrivers().get(0);
+                        final ParameterDriver totalDelayAfter = modelAfter.getParametersDrivers().getFirst();
                         totalDelayAfter.setSelected(stationZenithDelayEstimated[i]);
                         totalDelayAfter.setName(subName + TimeSpanEstimatedModel.DATE_AFTER +
                                                 epoch.toString(TimeScalesFactory.getUTC()) + " " +
@@ -1635,7 +1642,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
 
                         model = new EstimatedModel(new ModifiedSaastamoinenModel(pth0Provider),
                                                    mappingModel, stationTroposphericZenithDelay[i]);
-                        final ParameterDriver driver = model.getParametersDrivers().get(0);
+                        final ParameterDriver driver = model.getParametersDrivers().getFirst();
                         driver.setName(stationNames[i].substring(0, 4) + "/ " + EstimatedModel.TOTAL_ZENITH_DELAY);
                         driver.setSelected(stationZenithDelayEstimated[i]);
 
@@ -1657,8 +1664,8 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                 if (stationIonosphericModelEstimated[i]) {
                     // Estimated ionospheric model
                     final IonosphericMappingFunction mapping = new SingleLayerModelMappingFunction(stationIonosphericHIon[i]);
-                    ionosphericModel  = new EstimatedIonosphericModel(mapping, stationIonosphericVTEC[i]);
-                    final ParameterDriver  ionosphericDriver = ionosphericModel.getParametersDrivers().get(0);
+                    ionosphericModel  = new EstimatedIonosphericModel(body, mapping, stationIonosphericVTEC[i]);
+                    final ParameterDriver  ionosphericDriver = ionosphericModel.getParametersDrivers().getFirst();
                     ionosphericDriver.setSelected(stationVTECEstimated[i]);
                     ionosphericDriver.setName(stationNames[i].substring(0, 5) + EstimatedIonosphericModel.VERTICAL_TOTAL_ELECTRON_CONTENT);
                 } else {
@@ -1666,7 +1673,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                     // Klobuchar model
                     final KlobucharIonoCoefficientsLoader loader = new KlobucharIonoCoefficientsLoader();
                     loader.loadKlobucharIonosphericCoefficients(parser.getDate(ParameterKey.ORBIT_DATE, utc).getComponents(utc).getDate());
-                    ionosphericModel = new KlobucharIonoModel(loader.getAlpha(), loader.getBeta());
+                    ionosphericModel = new KlobucharIonoModel(body, loader.getAlpha(), loader.getBeta());
                 }
             } else {
                 ionosphericModel = null;
@@ -1783,20 +1790,20 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
     private ObservableSatellite createObservableSatellite(final KeyValueFileParser<ParameterKey> parser)
         throws NoSuchElementException {
         final ObservableSatellite obsSat = new ObservableSatellite(0);
-        final ParameterDriver clockOffsetDriver = obsSat.getClockOffsetDriver();
+        final ParameterDriver clockBiasDriver = obsSat.getClockModel().getBiasDriver(); // TODO this is not a good long term solution
         if (parser.containsKey(ParameterKey.ON_BOARD_CLOCK_OFFSET)) {
         	// date = null okay if validity period is infinite = only 1 estimation over the all period
-            clockOffsetDriver.setReferenceValue(parser.getDouble(ParameterKey.ON_BOARD_CLOCK_OFFSET));
-            clockOffsetDriver.setValue(parser.getDouble(ParameterKey.ON_BOARD_CLOCK_OFFSET));
+            clockBiasDriver.setReferenceValue(parser.getDouble(ParameterKey.ON_BOARD_CLOCK_OFFSET));
+            clockBiasDriver.setValue(parser.getDouble(ParameterKey.ON_BOARD_CLOCK_OFFSET));
         }
         if (parser.containsKey(ParameterKey.ON_BOARD_CLOCK_OFFSET_MIN)) {
-            clockOffsetDriver.setMinValue(parser.getDouble(ParameterKey.ON_BOARD_CLOCK_OFFSET_MIN));
+            clockBiasDriver.setMinValue(parser.getDouble(ParameterKey.ON_BOARD_CLOCK_OFFSET_MIN));
         }
         if (parser.containsKey(ParameterKey.ON_BOARD_CLOCK_OFFSET_MAX)) {
-            clockOffsetDriver.setMaxValue(parser.getDouble(ParameterKey.ON_BOARD_CLOCK_OFFSET_MAX));
+            clockBiasDriver.setMaxValue(parser.getDouble(ParameterKey.ON_BOARD_CLOCK_OFFSET_MAX));
         }
         if (parser.containsKey(ParameterKey.ON_BOARD_CLOCK_OFFSET_ESTIMATED)) {
-            clockOffsetDriver.setSelected(parser.getBoolean(ParameterKey.ON_BOARD_CLOCK_OFFSET_ESTIMATED));
+            clockBiasDriver.setSelected(parser.getBoolean(ParameterKey.ON_BOARD_CLOCK_OFFSET_ESTIMATED));
         }
         return obsSat;
     }
@@ -2072,19 +2079,13 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
         final String notConfigured = " not configured";
         final List<ObservedMeasurement<?>> measurements = new ArrayList<>();
         final SatelliteSystem system = SatelliteSystem.parseSatelliteSystem(satId);
-        final int prnNumber;
-        switch (system) {
+        final int prnNumber = switch (system) {
             case GPS:
             case GLONASS:
-            case GALILEO:
-                prnNumber = Integer.parseInt(satId.substring(1));
-                break;
-            case SBAS:
-                prnNumber = Integer.parseInt(satId.substring(1)) + 100;
-                break;
-            default:
-                prnNumber = -1;
-        }
+            case GALILEO: yield Integer.parseInt(satId.substring(1));
+            case SBAS: yield Integer.parseInt(satId.substring(1)) + 100;
+            default: yield -1;
+        };
         final RinexObservation rinexObs = new RinexObservationParser().parse(source);
         for (final ObservationDataSet observationDataSet : rinexObs.getObservationDataSets()) {
             if (observationDataSet.getSatellite().getSystem() == system    &&
@@ -2330,11 +2331,11 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
         independentMeasurements.sort(new ChronologicalComparator());
         List<ObservedMeasurement<?>> clump = new ArrayList<>();
         for (final ObservedMeasurement<?> measurement : independentMeasurements) {
-            if (!clump.isEmpty() && measurement.getDate().durationFrom(clump.get(0).getDate()) > tol) {
+            if (!clump.isEmpty() && measurement.getDate().durationFrom(clump.getFirst().getDate()) > tol) {
 
                 // previous clump is finished
                 if (clump.size() == 1) {
-                    multiplexed.add(clump.get(0));
+                    multiplexed.add(clump.getFirst());
                 } else {
                     multiplexed.add(new MultiplexedMeasurement(clump));
                 }
@@ -2347,7 +2348,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
         }
         // final clump is finished
         if (clump.size() == 1) {
-            multiplexed.add(clump.get(0));
+            multiplexed.add(clump.getFirst());
         } else {
             multiplexed.add(new MultiplexedMeasurement(clump));
         }
@@ -2503,13 +2504,13 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                          kalman.getCurrentDate().toString(TimeScalesFactory.getUTC()));
 
         // Covariances
-        String strFormat = String.format("%%%2ds  ", paramSize);
+        String strFormat = "%%%2ds  ".formatted(paramSize);
         logStream.format(strFormat, "Covariances:");
         for (int i = 0; i < P.getRowDimension(); i++) {
             logStream.format(Locale.US, strFormat, paramNames[i]);
         }
         logStream.println();
-        String numFormat = String.format("%%%2d.6f  ", paramSize);
+        String numFormat = "%%%2d.6f  ".formatted(paramSize);
         for (int i = 0; i < P.getRowDimension(); i++) {
             logStream.format(Locale.US, strFormat, paramNames[i]);
             for (int j = 0; j <= i; j++) {
@@ -2688,12 +2689,12 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                 case Range.MEASUREMENT_TYPE:
                     measType = "RANGE";
                     stationName = ((EstimatedMeasurement<Range>) estimatedMeasurement).
-                            getObservedMeasurement().getStation().getBaseFrame().getName();
+                            getObservedMeasurement().getObserver().getName();
                     break;
                 case RangeRate.MEASUREMENT_TYPE:
                     measType = "RANGE_RATE";
                     stationName = ((EstimatedMeasurement<RangeRate>) estimatedMeasurement).
-                            getObservedMeasurement().getStation().getBaseFrame().getName();
+                            getObservedMeasurement().getObserver().getName();
                     break;
                 case AngularAzEl.MEASUREMENT_TYPE:
                     measType = "AZ_EL";

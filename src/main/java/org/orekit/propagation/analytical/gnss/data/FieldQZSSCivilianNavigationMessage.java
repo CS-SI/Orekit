@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Luc Maisonobe
+/* Copyright 2022-2026 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,9 @@
 package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
+import org.orekit.orbits.FieldKeplerianOrbit;
+import org.orekit.time.FieldGNSSDate;
+import org.orekit.time.TimeScales;
 
 import java.util.function.Function;
 
@@ -30,22 +32,49 @@ import java.util.function.Function;
 public class FieldQZSSCivilianNavigationMessage<T extends CalculusFieldElement<T>>
     extends FieldCivilianNavigationMessage<T, QZSSCivilianNavigationMessage> {
 
-    /** Constructor from non-field instance.
-     * @param field    field to which elements belong
-     * @param original regular non-field instance
+    /** Creates a new instance.
+     * @param cnv2             indicator for CNV2 messages
+     * @param angularVelocity  mean angular velocity of the Earth for the GNSS model
+     * @param weeksInCycle     number of weeks in the GNSS cycle
+     * @param timeScales       known time scales
+     * @param type             type (null if not a navigation message)
+     * @param prn              PRN number of the satellite
+     * @param toe              time of ephemeris (<em>must</em> be consistent with {@code orbit})
+     * @param orbit            Keplerian orbit in Earth-frozen frame
+     * @param nonKeplerian     15 non-Keplerian parameters (in the order given by {@link NonKeplerianDriversFactory}
+     * @param tgd              group delay differential TGD for L1-L2 correction
+     * @param toc              time of clock
+     * @param transmissionTime transmission time
+     * @param svAccuracy       user SV accuracy (m)
+     * @param svHealth         satellite health status
+     * @param iscL1CA          inter signal delay for L1 C/A
+     * @param iscL1CD          inter signal delay for L1 CD
+     * @param iscL1CP          inter signal delay for L1 CP
+     * @param iscL2C           inter signal delay for L2 C
+     * @param iscL5I5          inter signal delay for L5I
+     * @param iscL5Q5          inter signal delay for L5Q
+     * @param uraiEd           elevation-dependent user range accuracy
+     * @param uraiNed0         term 0 of non-elevation-dependent user range accuracy
+     * @param uraiNed1         term 1 of non-elevation-dependent user range accuracy
+     * @param uraiNed2         term 2 of non-elevation-dependent user range accuracy
+     * @param flags            flags
+     * @since 14.0
      */
-    public FieldQZSSCivilianNavigationMessage(final Field<T> field, final QZSSCivilianNavigationMessage original) {
-        super(field, original);
-    }
-
-    /** Constructor from different field instance.
-     * @param <V> type of the old field elements
-     * @param original regular non-field instance
-     * @param converter for field elements
-     */
-    public <V extends CalculusFieldElement<V>> FieldQZSSCivilianNavigationMessage(final Function<V, T> converter,
-                                                                                  final FieldQZSSCivilianNavigationMessage<V> original) {
-        super(converter, original);
+    public FieldQZSSCivilianNavigationMessage(final boolean cnv2,
+                                              final double angularVelocity, final int weeksInCycle,
+                                              final TimeScales timeScales, final String type, final int prn,
+                                              final FieldGNSSDate<T> toe, final FieldKeplerianOrbit<T> orbit,
+                                              final T[] nonKeplerian, final T tgd,
+                                              final FieldGNSSDate<T> toc, final FieldGNSSDate<T>  transmissionTime,
+                                              final T svAccuracy, final int svHealth,
+                                              final T iscL1CA, final T iscL1CD, final T iscL1CP,
+                                              final T iscL2C, final T iscL5I5, final T iscL5Q5,
+                                              final int uraiEd, final int uraiNed0, final int uraiNed1, final int uraiNed2,
+                                              final int flags) {
+        super(cnv2, angularVelocity, weeksInCycle, timeScales, type, prn, toe, orbit, nonKeplerian,
+              tgd, toc, transmissionTime, svAccuracy, svHealth,
+              iscL1CA, iscL1CD, iscL1CP, iscL2C, iscL5I5, iscL5Q5,
+              uraiEd, uraiNed0, uraiNed1, uraiNed2, flags);
     }
 
     /** {@inheritDoc} */
@@ -55,11 +84,31 @@ public class FieldQZSSCivilianNavigationMessage<T extends CalculusFieldElement<T
     }
 
     /** {@inheritDoc} */
-    @SuppressWarnings("unchecked")
     @Override
-    public <U extends CalculusFieldElement<U>, G extends FieldGnssOrbitalElements<U, QZSSCivilianNavigationMessage>>
-        G changeField(final Function<T, U> converter) {
-        return (G) new FieldQZSSCivilianNavigationMessage<>(converter, this);
+    public <U extends CalculusFieldElement<U>>
+        FieldQZSSCivilianNavigationMessage<U> toField(final FieldKeplerianOrbit<U> orbit,
+                                                      final U[] nonKeplerian,
+                                                      final Function<T, U> converter) {
+        return new FieldQZSSCivilianNavigationMessage<>(isCnv2(),
+                                                        getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
+                                                        getType(), getPrn(),
+                                                        new FieldGNSSDate<>(orbit.getDate().getField(),
+                                                                            getTimeOfEphemeris().getGnssDate()),
+                                                        orbit, nonKeplerian,
+                                                        converter.apply(getTgd()),
+                                                        new FieldGNSSDate<>(orbit.getDate().getField(),
+                                                                            getTimeOfClock().getGnssDate()),
+                                                        new FieldGNSSDate<>(orbit.getDate().getField(),
+                                                                           getTransmissionTime().getGnssDate()),
+                                                        converter.apply(getSvAccuracy()), getSvHealth(),
+                                                        converter.apply(getIscL1CA()),
+                                                        converter.apply(getIscL1CD()),
+                                                        converter.apply(getIscL1CP()),
+                                                        converter.apply(getIscL2C()),
+                                                        converter.apply(getIscL5I5()),
+                                                        converter.apply(getIscL5Q5()),
+                                                        getUraiEd(), getUraiNed0(), getUraiNed1(), getUraiNed2(),
+                                                        getFlags());
     }
 
 }

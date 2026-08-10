@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Thales Alenia Space
+/* Copyright 2022-2026 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -31,6 +31,11 @@ import java.io.IOException;
  */
 public class GlonassCDMSMessageWriter
     extends NavigationMessageWriter<IonosphereGlonassCdmsMessage> {
+
+    /** Simple constructor. */
+    public GlonassCDMSMessageWriter() {
+        // nothing to do
+    }
 
     /** {@inheritDoc} */
     @Override

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -53,17 +53,17 @@ class OsculationgKeplerianElementsWriter extends AbstractWriter {
 
         // Keplerian elements block
         generator.writeComments(keplerianElements.getComments());
-        generator.writeEntry(KeplerianElementsKey.SEMI_MAJOR_AXIS.name(),   keplerianElements.getA(), Unit.KILOMETRE, true);
-        generator.writeEntry(KeplerianElementsKey.ECCENTRICITY.name(),      keplerianElements.getE(), Unit.ONE,       true);
-        generator.writeEntry(KeplerianElementsKey.INCLINATION.name(),       keplerianElements.getI(), Unit.DEGREE,    true);
-        generator.writeEntry(KeplerianElementsKey.RA_OF_ASC_NODE.name(),    keplerianElements.getRaan(), Unit.DEGREE, true);
-        generator.writeEntry(KeplerianElementsKey.ARG_OF_PERICENTER.name(), keplerianElements.getPa(), Unit.DEGREE,   true);
+        generator.writeOptionalDoubleEntry(KeplerianElementsKey.SEMI_MAJOR_AXIS.name(),   keplerianElements.getA(),    Unit.KILOMETRE, true);
+        generator.writeEntry(KeplerianElementsKey.ECCENTRICITY.name(),                    keplerianElements.getE(),    Unit.ONE,       true);
+        generator.writeEntry(KeplerianElementsKey.INCLINATION.name(),                     keplerianElements.getI(),    Unit.DEGREE,    true);
+        generator.writeEntry(KeplerianElementsKey.RA_OF_ASC_NODE.name(),                  keplerianElements.getRaan(), Unit.DEGREE,    true);
+        generator.writeEntry(KeplerianElementsKey.ARG_OF_PERICENTER.name(),               keplerianElements.getPa(),   Unit.DEGREE,    true);
         generator.writeEntry(keplerianElements.getAnomalyType() == PositionAngleType.TRUE ?
                                                                    KeplerianElementsKey.TRUE_ANOMALY.name() : KeplerianElementsKey.MEAN_ANOMALY.name(),
                                                                    keplerianElements.getAnomaly(),
                                                                    Unit.DEGREE,
                                                                    true);
-        generator.writeEntry(KeplerianElementsKey.GM.name(), keplerianElements.getMu(), Units.KM3_PER_S2, true);
+        generator.writeOptionalDoubleEntry(KeplerianElementsKey.GM.name(), keplerianElements.getMu(), Units.KM3_PER_S2, true);
 
     }
 

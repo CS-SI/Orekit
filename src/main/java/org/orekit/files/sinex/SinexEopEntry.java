@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,6 +17,7 @@
 package org.orekit.files.sinex;
 
 import org.orekit.frames.EOPEntry;
+import org.orekit.frames.EopDataType;
 import org.orekit.frames.ITRFVersion;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
@@ -222,7 +223,7 @@ public class SinexEopEntry implements TimeStamped {
                             xPo, yPo, Double.NaN, Double.NaN,
                             equinox[0], equinox[1],
                             nro[0], nro[1],
-                            version, epoch);
+                            version, epoch, EopDataType.RAPID);
 
     }
 

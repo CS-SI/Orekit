@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -46,24 +46,27 @@ public class SinexBias extends AbstractSinex {
     private final Map<SatInSystem, SatelliteObservableSpecificSignalBias> satellitesOsb;
 
     /** Simple constructor.
-     * @param timeScales time scales
-     * @param creationDate SINEX file creation date
-     * @param startDate start time of the data used in the Sinex solution
-     * @param endDate end time of the data used in the Sinex solution
-     * @param description bias description
-     * @param stationsDsb DSB data for stations
+     * @param version       version number
+     * @param timeScales    time scales
+     * @param creationDate  SINEX file creation date
+     * @param startDate     start time of the data used in the Sinex solution
+     * @param endDate       end time of the data used in the Sinex solution
+     * @param description   bias description
+     * @param stationsDsb   DSB data for stations
      * @param satellitesDsb DSB data for satellites
-     * @param stationsOsb OSB data for stations
+     * @param stationsOsb   OSB data for stations
      * @param satellitesOsb OSB data for satellites
+     * @since 14.0
      */
-    public SinexBias(final TimeScales timeScales, final AbsoluteDate creationDate,
+    public SinexBias(final double version, final TimeScales timeScales,
+                     final AbsoluteDate creationDate,
                      final AbsoluteDate startDate, final AbsoluteDate endDate,
                      final BiasDescription description,
                      final Map<String, StationDifferentialSignalBias> stationsDsb,
                      final Map<SatInSystem, SatelliteDifferentialSignalBias> satellitesDsb,
                      final Map<String, StationObservableSpecificSignalBias> stationsOsb,
                      final Map<SatInSystem, SatelliteObservableSpecificSignalBias> satellitesOsb) {
-        super(timeScales, creationDate, startDate, endDate);
+        super(version, timeScales, creationDate, startDate, endDate);
         this.description   = description;
         this.stationsDsb   = stationsDsb;
         this.satellitesDsb = satellitesDsb;

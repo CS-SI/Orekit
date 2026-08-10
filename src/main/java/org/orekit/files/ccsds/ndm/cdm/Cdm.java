@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,6 +17,7 @@
 package org.orekit.files.ccsds.ndm.cdm;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.ndm.NdmConstituent;
@@ -53,14 +54,14 @@ public class Cdm extends NdmConstituent<CdmHeader, CdmSegment> {
      * @return file metadata
      */
     public CdmRelativeMetadata getRelativeMetadata() {
-        return getSegments().get(0).getMetadata().getRelativeMetadata();
+        return getSegments().getFirst().getMetadata().getRelativeMetadata();
     }
 
     /** Get the file metadata.
      * @return file metadata
      */
     public CdmMetadata getMetadataObject1() {
-        return getSegments().get(0).getMetadata();
+        return getSegments().getFirst().getMetadata();
     }
 
     /** Get the file metadata.
@@ -74,7 +75,7 @@ public class Cdm extends NdmConstituent<CdmHeader, CdmSegment> {
      * @return file data
      */
     public CdmData getDataObject1() {
-        return getSegments().get(0).getData();
+        return getSegments().getFirst().getData();
     }
 
     /** Get the file data.
@@ -88,8 +89,8 @@ public class Cdm extends NdmConstituent<CdmHeader, CdmSegment> {
      * <p> This method will return null if the user defined block is not present in the CDM</p>
      * @return file data
      */
-    public UserDefined getUserDefinedParameters() {
-        return getSegments().get(0).getData().getUserDefinedBlock();
+    public Optional<UserDefined> getUserDefinedParameters() {
+        return getSegments().getFirst().getData().getUserDefinedBlock();
     }
 
 }

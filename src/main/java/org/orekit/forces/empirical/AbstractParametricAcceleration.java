@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -48,6 +48,12 @@ public abstract class AbstractParametricAcceleration implements ForceModel {
     /** The attitude to override, if set. */
     private final AttitudeProvider attitudeOverride;
 
+    /**
+     * Constructor.
+     * @param direction direction of the acceleration
+     * @param isInertial flag defining if the acceleration direction is already defined in inertial frame (true)
+     * @param attitudeOverride override for the attitude provider.
+     */
     protected AbstractParametricAcceleration(final Vector3D direction, final boolean isInertial,
                                              final AttitudeProvider attitudeOverride) {
         this.direction = direction;

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,10 +17,9 @@
 package org.orekit.frames;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Collection;
-import java.util.SortedSet;
 
+import org.orekit.data.DataSource;
 import org.orekit.time.TimeScales;
 import org.orekit.utils.IERSConventions;
 
@@ -35,7 +34,7 @@ public interface EopHistoryLoader {
      * @param history history to fill up
      */
     void fillHistory(IERSConventions.NutationCorrectionConverter converter,
-                     SortedSet<EOPEntry> history);
+                     Collection<EOPEntry> history);
 
     /**
      * Interface for parsing EOP data files.
@@ -45,15 +44,12 @@ public interface EopHistoryLoader {
      */
     interface Parser {
 
-        /**
-         * Parse EOP from the given input stream.
-         *
-         * @param input stream to parse.
-         * @param name  of the stream for error messages.
+        /** Parse EOP from the given source.
+         * @param source source of the EOP data
          * @return parsed EOP entries.
-         * @throws IOException if {@code input} throws one during parsing.
+         * @exception IOException if {@code input} throws one during parsing.
          */
-        Collection<EOPEntry> parse(InputStream input, String name) throws IOException;
+        Collection<EOPEntry> parse(DataSource source) throws IOException;
 
         /**
          * Create a new parser for EOP data in the rapid and predicted XML format.
@@ -121,16 +117,33 @@ public interface EopHistoryLoader {
          *
          * @param conventions         used to convert between equinox-based and
          *                            non-rotating-origin-based paradigms.
-         * @param itrfVersionProvider used to determine the ITRF version of parsed EOP.
          * @param timeScales          used to parse the EOP data.
          * @return a new parser.
          */
         static Parser newEopC04Parser(
                 final IERSConventions conventions,
-                final ItrfVersionProvider itrfVersionProvider,
                 final TimeScales timeScales) {
             return new EopC04FilesLoader.Parser(conventions.getNutationCorrectionConverter(timeScales),
                                                 timeScales.getUTC());
+        }
+
+        /**
+         * Create a new parser for EOP data in the Bulletin A format.
+         *
+         * @param conventions         used to convert between equinox-based and
+         *                            non-rotating-origin-based paradigms.
+         * @param itrfVersionProvider used to determine the ITRF version of parsed EOP.
+         * @param timeScales          used to parse the EOP data.
+         * @return a new parser.
+         * @since 14.0
+         */
+        static Parser newBulletinAParser(
+                final IERSConventions conventions,
+                final ItrfVersionProvider itrfVersionProvider,
+                final TimeScales timeScales) {
+            return new BulletinAFilesLoader.Parser(conventions.getNutationCorrectionConverter(timeScales),
+                                                   itrfVersionProvider,
+                                                   timeScales.getUTC());
         }
 
         /**
@@ -151,7 +164,6 @@ public interface EopHistoryLoader {
                     itrfVersionProvider,
                     timeScales.getUTC());
         }
-
 
     }
 

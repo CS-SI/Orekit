@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -67,9 +67,7 @@ public class AlternatingSamplerTest {
                       Assertions.assertTrue(sampler.getCurrent() >= a - r);
                       Assertions.assertTrue(sampler.getCurrent() <= a + r);
                       sampler.generateNext();
-                  };
-
-                  // once range has been exceeded, all generated numbers
+                  }// once range has been exceeded, all generated numbers
                   // are out of range
                   Assertions.assertFalse(sampler.inRange());
                   sampler.generateNext();
@@ -99,9 +97,7 @@ public class AlternatingSamplerTest {
                       Assertions.assertTrue(sampler.getCurrent() >= a - r);
                       Assertions.assertTrue(sampler.getCurrent() <= a + r);
                       sampler.generateNext();
-                  };
-
-                  // once range has been exceeded, all generated numbers
+                  }// once range has been exceeded, all generated numbers
                   // are out of range
                   Assertions.assertFalse(sampler.inRange());
                   sampler.generateNext();

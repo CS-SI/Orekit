@@ -130,7 +130,7 @@ public class FieldSortedListTrimmerTest {
 
         // before fist data
         try {
-            trimmer.getNeighborsSubList(data.get(0).shiftedBy(-1), data);
+            trimmer.getNeighborsSubList(data.getFirst().shiftedBy(-1), data);
             Assertions.fail("Expected Exception");
         }
         catch (TimeStampedCacheException e) {
@@ -139,10 +139,10 @@ public class FieldSortedListTrimmerTest {
         }
 
         // on fist date
-        Assertions.assertArrayEquals(trimmer.getNeighborsSubList(data.get(0), data).toArray(),
+        Assertions.assertArrayEquals(trimmer.getNeighborsSubList(data.getFirst(), data).toArray(),
                                      data.subList(0, 3).toArray());
         // between fist and second date
-        Assertions.assertArrayEquals(trimmer.getNeighborsSubList(data.get(0).shiftedBy(0.5), data).toArray(),
+        Assertions.assertArrayEquals(trimmer.getNeighborsSubList(data.getFirst().shiftedBy(0.5), data).toArray(),
                                      data.subList(0, 3).toArray());
         // in the middle on a date
         Assertions.assertArrayEquals(trimmer.getNeighborsSubList(data.get(2), data).toArray(),
@@ -200,7 +200,7 @@ public class FieldSortedListTrimmerTest {
                                 final double offset) {
         List<FieldAbsoluteDate<Binary64>> s = nonLinearTrimmer.getNeighborsSubList(date.shiftedBy(offset), nonLinearCache);
         Assertions.assertEquals(2, s.size());
-        Assertions.assertTrue(s.get(0).durationFrom(date).getReal() <= offset);
+        Assertions.assertTrue(s.getFirst().durationFrom(date).getReal() <= offset);
         Assertions.assertTrue(s.get(1).durationFrom(date).getReal() >  offset);
     }
     

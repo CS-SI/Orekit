@@ -1,4 +1,4 @@
-/* Copyright 2020-2025 CS GROUP
+/* Copyright 2020-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -38,6 +38,8 @@ import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.TimeSpanMap;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class SinexBiasParserTest {
 
@@ -211,6 +213,7 @@ public class SinexBiasParserTest {
     @Test
     public void testOsbSatellite() {
         SinexBias sinexBias = load("/sinex/code.bia");
+        assertEquals(1.00, sinexBias.getVersion(), 1.0e-6);
         SatelliteObservableSpecificSignalBias satOsb = sinexBias.getSatellitesOsb().get(new SatInSystem("E08"));
         ObservableSpecificSignalBias osb = satOsb.getOsb();
         Assertions.assertTrue(sinexBias.getSatellitesDsb().isEmpty());

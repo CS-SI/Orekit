@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,14 +20,14 @@ import org.hipparchus.util.FastMath;
 import org.hipparchus.util.SinCos;
 import org.orekit.bodies.GeodeticPoint;
 
-/** Container for ray-perigee parameters.
+/** Container for ray-periapsis parameters.
  * <p>By convention, point 1 is at lower height.</p>
  * @author Bryan Cazabonne
  * @since 13.0
  */
 public class Ray {
 
-    /** Threshold for ray-perigee parameters computation. */
+    /** Threshold for ray-periapsis parameters computation. */
     private static final double THRESHOLD = 1.0e-10;
 
     /** Receiver altitude [m].
@@ -40,28 +40,28 @@ public class Ray {
      */
     private final double satH;
 
-    /** Distance of the first point from the ray perigee [m]. */
+    /** Distance of the first point from the ray periapsis [m]. */
     private final double s1;
 
-    /** Distance of the second point from the ray perigee [m]. */
+    /** Distance of the second point from the ray periapsis [m]. */
     private final double s2;
 
-    /** Ray-perigee radius [m]. */
+    /** Ray-periapsis radius [m]. */
     private final double rp;
 
-    /** Ray-perigee latitude [rad]. */
+    /** Ray-periapsis latitude [rad]. */
     private final double latP;
 
-    /** Ray-perigee longitude [rad]. */
+    /** Ray-periapsis longitude [rad]. */
     private final double lonP;
 
-    /** Sine and cosine of ray-perigee latitude. */
+    /** Sine and cosine of ray-periapsis latitude. */
     private final SinCos scLatP;
 
-    /** Sine of azimuth of satellite as seen from ray-perigee. */
+    /** Sine of azimuth of satellite as seen from ray-periapsis. */
     private final double sinAzP;
 
-    /** Cosine of azimuth of satellite as seen from ray-perigee. */
+    /** Cosine of azimuth of satellite as seen from ray-periapsis. */
     private final double cosAzP;
 
     /**
@@ -103,17 +103,17 @@ public class Ray {
         final double sinZ     = u * inv;
         final double cosZ     = v * inv;
 
-        // Ray-perigee computation in meters (Eq. 156)
+        // Ray-periapsis computation in meters (Eq. 156)
         this.rp = r1 * sinZ;
 
-        // Ray-perigee latitude and longitude
+        // Ray-periapsis latitude and longitude
         if (FastMath.abs(FastMath.abs(lat1) - 0.5 * FastMath.PI) < THRESHOLD) {
             // receiver is almost at North or South pole
 
-            // Ray-perigee latitude (Eq. 157)
+            // Ray-periapsis latitude (Eq. 157)
             this.latP = FastMath.copySign(FastMath.atan2(u, v), lat1);
 
-            // Ray-perigee longitude (Eq. 164)
+            // Ray-periapsis longitude (Eq. 164)
             this.lonP = lon2 + FastMath.PI;
 
         } else if (FastMath.abs(sinZ) < THRESHOLD) {
@@ -124,14 +124,14 @@ public class Ray {
 
         } else {
 
-            // Ray-perigee latitude (Eq. 158 to 163)
+            // Ray-periapsis latitude (Eq. 158 to 163)
             final double sinAz   = scLon21.sin() * scLatSat.cos() / sinD;
             final double cosAz   = (scLatSat.sin() - cosD * scLatRec.sin()) / (sinD * scLatRec.cos());
             final double sinLatP = scLatRec.sin() * sinZ - scLatRec.cos() * cosZ * cosAz;
             final double cosLatP = FastMath.sqrt(1.0 - sinLatP * sinLatP);
             this.latP = FastMath.atan2(sinLatP, cosLatP);
 
-            // Ray-perigee longitude (Eq. 165 to 167, plus protection against ray-perigee along polar axis)
+            // Ray-periapsis longitude (Eq. 165 to 167, plus protection against ray-periapsis along polar axis)
             if (cosLatP < THRESHOLD) {
                 this.lonP = 0.0;
             } else {
@@ -142,7 +142,7 @@ public class Ray {
 
         }
 
-        // Sine and cosine of ray-perigee latitude
+        // Sine and cosine of ray-periapsis latitude
         this.scLatP = FastMath.sinCos(latP);
 
         if (FastMath.abs(FastMath.abs(latP) - 0.5 * FastMath.PI) < THRESHOLD || FastMath.abs(sinZ) < THRESHOLD) {
@@ -151,7 +151,7 @@ public class Ray {
             this.cosAzP = -FastMath.copySign(1, latP);
         } else {
             final SinCos scLon = FastMath.sinCos(lon2 - lonP);
-            // Sine and cosine of azimuth of satellite as seen from ray-perigee
+            // Sine and cosine of azimuth of satellite as seen from ray-periapsis
             final SinCos scPsi = FastMath.sinCos(greatCircleAngle(scLatSat, scLon));
             // Eq. 174 and 175
             this.sinAzP = scLatSat.cos() * scLon.sin() / scPsi.sin();
@@ -182,7 +182,7 @@ public class Ray {
     }
 
     /**
-     * Get the distance of the first point from the ray perigee.
+     * Get the distance of the first point from the ray periapsis.
      *
      * @return s1 in meters
      */
@@ -191,7 +191,7 @@ public class Ray {
     }
 
     /**
-     * Get the distance of the second point from the ray perigee.
+     * Get the distance of the second point from the ray periapsis.
      *
      * @return s2 in meters
      */
@@ -200,27 +200,27 @@ public class Ray {
     }
 
     /**
-     * Get the ray-perigee radius.
+     * Get the ray-periapsis radius.
      *
-     * @return the ray-perigee radius in meters
+     * @return the ray-periapsis radius in meters
      */
     public double getRadius() {
         return rp;
     }
 
     /**
-     * Get the ray-perigee latitude.
+     * Get the ray-periapsis latitude.
      *
-     * @return the ray-perigee latitude in radians
+     * @return the ray-periapsis latitude in radians
      */
     public double getLatitude() {
         return latP;
     }
 
     /**
-     * Get the ray-perigee latitude sin/cos.
+     * Get the ray-periapsis latitude sin/cos.
      *
-     * @return the ray-perigee latitude sin/cos
+     * @return the ray-periapsis latitude sin/cos
      * @since 13.0
      */
     public SinCos getScLat() {
@@ -228,16 +228,16 @@ public class Ray {
     }
 
     /**
-     * Get the ray-perigee longitude.
+     * Get the ray-periapsis longitude.
      *
-     * @return the ray-perigee longitude in radians
+     * @return the ray-periapsis longitude in radians
      */
     public double getLongitude() {
         return lonP;
     }
 
     /**
-     * Get the sine of azimuth of satellite as seen from ray-perigee.
+     * Get the sine of azimuth of satellite as seen from ray-periapsis.
      *
      * @return the sine of azimuth
      */
@@ -246,7 +246,7 @@ public class Ray {
     }
 
     /**
-     * Get the cosine of azimuth of satellite as seen from ray-perigee.
+     * Get the cosine of azimuth of satellite as seen from ray-periapsis.
      *
      * @return the cosine of azimuth
      */
@@ -255,7 +255,7 @@ public class Ray {
     }
 
     /**
-     * Compute the great circle angle from ray-perigee to satellite.
+     * Compute the great circle angle from ray-periapsis to satellite.
      * <p>
      * This method used the equations 168 to 171 of the reference document.
      * </p>

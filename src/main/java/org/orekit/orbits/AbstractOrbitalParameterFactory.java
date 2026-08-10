@@ -1,0 +1,207 @@
+/* Copyright 2022-2026 Thales Alenia Space
+ * Licensed to CS GROUP (CS) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * CS licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.orekit.orbits;
+
+import org.hipparchus.linear.QRDecomposition;
+import org.hipparchus.linear.RealMatrix;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
+import org.orekit.frames.Frame;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterDriversList;
+
+/** Factory for orbital parameters.
+ * @param <P> type of the orbital parameters
+ * @since 14.0
+ */
+public abstract class AbstractOrbitalParameterFactory<P extends OrbitalParameters>
+    implements OrbitalParameterFactory<P> {
+
+    /** Orbit type. */
+    private final OrbitType orbitType;
+
+    /** Drivers for orbital parameters. */
+    private ParameterDriversList orbitalDrivers;
+
+    /** Frame in which the orbital parameters are defined. */
+    private Frame frame;
+
+    /** Position angle type to use. */
+    private PositionAngleType positionAngleType;
+
+    /** Date of the orbital parameters. */
+    private AbsoluteDate date;
+
+    /** Central attraction coefficient (m³/s²). */
+    private double mu;
+
+    /**
+     * Simple constructor.
+     *
+     * @param orbitType         orbit type
+     * @param orbitalDrivers    drivers for orbital parameters
+     * @param frame             frame in which the orbital parameters are defined
+     * @param positionAngleType position angle type to use
+     * @param date              date of the orbital parameters
+     * @param mu                central attraction coefficient (m³/s²)
+     */
+    protected AbstractOrbitalParameterFactory(final OrbitType orbitType,
+                                              final ParameterDriversList orbitalDrivers,
+                                              final Frame frame,
+                                              final PositionAngleType positionAngleType,
+                                              final AbsoluteDate date, final double mu) {
+        this.orbitType         = orbitType;
+        this.orbitalDrivers    = orbitalDrivers;
+        this.date              = date;
+        this.frame             = frame;
+        this.positionAngleType = positionAngleType;
+        this.mu                = mu;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public OrbitType getOrbitType() {
+        return orbitType;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public ParameterDriversList getOrbitalParametersDrivers() {
+        return orbitalDrivers;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public ParameterDriversList getNonKeplerianParametersDrivers() {
+        // return an empty list
+        return new ParameterDriversList();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public AbsoluteDate getDate() {
+        return date;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void setDate(final AbsoluteDate date) {
+        this.date = date;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Frame getFrame() {
+        return frame;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void setFrame(final Frame frame) {
+        this.frame = frame;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public PositionAngleType getPositionAngleType() {
+        return positionAngleType;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void setPositionAngleType(final PositionAngleType positionAngleType) {
+        this.positionAngleType = positionAngleType;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public double getMu() {
+        return mu;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void setMu(final double mu) {
+        this.mu = mu;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void reset(final Orbit orbit) {
+
+        // fix orbital parameters
+        final double[] stateVector = toArray(orbit);
+        for (int i = 0; i < 6; i++) {
+            final ParameterDriver driver = orbitalDrivers.getDrivers().get(i);
+            driver.setReferenceValue(stateVector[i]);
+            driver.setValue(stateVector[i]);
+        }
+
+        // fix date
+        setDate(orbit.getDate());
+
+        // fix mu
+        setMu(orbit.getMu());
+
+    }
+
+    /** {@inheritDoc}.
+     * <p>
+     * This implementation inverts {@link #getJacobianWrtParameters()} numerically, using the
+     * same decomposition as {@link Orbit} does for its own Jacobian matrices.
+     * </p>
+     */
+    @Override
+    public RealMatrix getJacobianWrtCartesian() {
+        return new QRDecomposition(getJacobianWrtParameters()).getSolver().getInverse();
+    }
+
+    /** Convert an input into an array suitable to feed orbital parameters drivers.
+     * @param orbit orbit to convert
+     * @return arrays corresponding to orbit
+     */
+    protected abstract double[] toArray(Orbit orbit);
+
+    /** {@inheritDoc} */
+    @Override
+    public AbstractOrbitalParameterFactory<P> clone() {
+        try {
+
+            @SuppressWarnings("unchecked")
+            final AbstractOrbitalParameterFactory<P> clone = (AbstractOrbitalParameterFactory<P>) super.clone();
+
+            // de-couple orbital parameters drivers
+            final ParameterDriversList oldDrivers = orbitalDrivers;
+            final ParameterDriversList newDrivers = new ParameterDriversList();
+            for (final ParameterDriver oldDriver : oldDrivers.getDrivers()) {
+                final ParameterDriver newDriver =
+                    new ParameterDriver(oldDriver.getName(), oldDriver.getValue(), oldDriver.getScale(),
+                                        oldDriver.getMinValue(), oldDriver.getMaxValue());
+                newDriver.setSelected(oldDriver.isSelected());
+                newDrivers.add(newDriver);
+            }
+            clone.orbitalDrivers = newDrivers;
+
+            return clone;
+
+        } catch (CloneNotSupportedException cnse) {
+            throw new OrekitException(OrekitMessages.ORBITAL_PARAMETER_FACTORY_NOT_CLONEABLE);
+        }
+    }
+
+}

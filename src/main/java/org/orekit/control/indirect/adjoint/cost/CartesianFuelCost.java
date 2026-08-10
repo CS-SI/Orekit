@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,12 +17,12 @@
 package org.orekit.control.indirect.adjoint.cost;
 
 
+import java.util.stream.Stream;
+
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetectionSettings;
 import org.orekit.propagation.events.EventDetector;
-
-import java.util.stream.Stream;
 
 /**
  * Class for fuel cost with Cartesian coordinates.
@@ -135,25 +135,17 @@ public class CartesianFuelCost extends AbstractCartesianCost {
     /** {@inheritDoc} */
     @Override
     public Stream<EventDetector> getEventDetectors() {
-        return Stream.of(new FuelCostSwitchDetector(eventDetectionSettings));
+        return Stream.of(buildSwitchDetector(new FuelCostSwitchFunction(), eventDetectionSettings));
     }
 
     /**
-     * Event detector for bang-bang switches.
+     * Event function for bang-bang switches.
      */
-    private class FuelCostSwitchDetector extends ControlSwitchDetector {
-
-        /**
-         * Constructor.
-         * @param detectionSettings detection settings.
-         */
-        FuelCostSwitchDetector(final EventDetectionSettings detectionSettings) {
-            super(detectionSettings);
-        }
+    private class FuelCostSwitchFunction extends ControlSwitchFunction {
 
         /** {@inheritDoc} */
         @Override
-        public double g(final SpacecraftState state) {
+        public double value(final SpacecraftState state) {
             final double[] adjoint = state.getAdditionalState(getAdjointName());
             return evaluateSwitchFunction(adjoint, state.getMass());
         }

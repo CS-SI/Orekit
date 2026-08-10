@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,6 +17,7 @@
 package org.orekit.errors;
 
 import java.io.IOException;
+import java.io.Serial;
 import java.text.MessageFormat;
 import java.util.Locale;
 
@@ -28,6 +29,7 @@ import org.hipparchus.exception.Localizable;
 public class OrekitIOException extends IOException implements LocalizedException {
 
     /** Serializable UID. */
+    @Serial
     private static final long serialVersionUID = 20180427L;
 
     /** Format specifier (to be translated). */

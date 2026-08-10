@@ -258,7 +258,7 @@ public class Geoid implements EarthShape {
          */
         private final ReferenceEllipsoid ellipsoid;
 
-        /**
+        /** Simple constructor.
          * @param provider  potential used for GM<sub>g</sub> and a<sub>g</sub>,
          *                  and of course the coefficients Cnm, and Snm.
          * @param ellipsoid Used to calculate the fully normalized
@@ -301,7 +301,7 @@ public class Geoid implements EarthShape {
         public NormalizedSphericalHarmonics onDate(final AbsoluteDate date) {
             return new NormalizedSphericalHarmonics() {
 
-                /** the original harmonics */
+                /** the original harmonics. */
                 private final NormalizedSphericalHarmonics delegate = provider.onDate(date);
 
                 @Override

@@ -85,7 +85,7 @@ public class OceanLoadingCoefficientsBLQFactoryTest {
         OceanLoadingCoefficientsBLQFactory factory = new OceanLoadingCoefficientsBLQFactory("^hardisp\\.blq$");
         List<String> sites = factory.getSites();
         Assertions.assertEquals(2, sites.size());
-        Assertions.assertEquals("Onsala", sites.get(0));
+        Assertions.assertEquals("Onsala", sites.getFirst());
         Assertions.assertEquals("Reykjavik", sites.get(1));
 
         OceanLoadingCoefficients onsalaCoeffs = factory.getCoefficients("OnSaLa");
@@ -136,7 +136,7 @@ public class OceanLoadingCoefficientsBLQFactoryTest {
         OceanLoadingCoefficientsBLQFactory factory = new OceanLoadingCoefficientsBLQFactory("^complete-format\\.blq$");
         List<String> sites = factory.getSites();
         Assertions.assertEquals(4, sites.size());
-        Assertions.assertEquals("GMRT",           sites.get(0));
+        Assertions.assertEquals("GMRT",           sites.getFirst());
         Assertions.assertEquals("Goldstone",      sites.get(1));
         Assertions.assertEquals("Noumea",         sites.get(2));
         Assertions.assertEquals("Pleumeur-Bodou", sites.get(3));
@@ -167,7 +167,7 @@ public class OceanLoadingCoefficientsBLQFactoryTest {
                             new OceanLoadingCoefficientsBLQFactory("^(?:(?:hardisp)|(?:complete-format))\\.blq$");
             List<String> sites = factory.getSites();
             Assertions.assertEquals(6, sites.size());
-            Assertions.assertEquals("GMRT",           sites.get(0));
+            Assertions.assertEquals("GMRT",           sites.getFirst());
             Assertions.assertEquals("Goldstone",      sites.get(1));
             Assertions.assertEquals("Noumea",         sites.get(2));
             Assertions.assertEquals("Onsala",         sites.get(3));

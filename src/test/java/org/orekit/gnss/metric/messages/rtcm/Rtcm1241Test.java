@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,15 +22,15 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.data.DataContext;
+import org.orekit.data.LazyLoadedDataContext;
 import org.orekit.gnss.metric.messages.rtcm.correction.Rtcm1241;
 import org.orekit.gnss.metric.messages.rtcm.correction.RtcmClockCorrectionData;
 import org.orekit.gnss.metric.parser.ByteArrayEncodedMessage;
 import org.orekit.gnss.metric.parser.EncodedMessage;
 import org.orekit.gnss.metric.parser.RtcmMessagesParser;
+import org.orekit.utils.IERSConventions;
 
 public class Rtcm1241Test {
-
-    private double eps = 1.0e-13;
 
     private EncodedMessage message;
 
@@ -62,7 +62,11 @@ public class Rtcm1241Test {
 
     @Test
     public void testPerfectValue() {
-        final Rtcm1241 rtcm1241 = (Rtcm1241) new RtcmMessagesParser(messages, DataContext.getDefault().getTimeScales()).
+        final LazyLoadedDataContext context = DataContext.getDefault();
+        final Rtcm1241 rtcm1241 = (Rtcm1241) new RtcmMessagesParser(messages,
+                                                                    context.getTimeScales(),
+                                                                    context.getFrames().getEME2000(),
+                                                                    context.getFrames().getITRF(IERSConventions.IERS_2010, false)).
                                   parse(message, false);
 
         // Verify size
@@ -70,8 +74,9 @@ public class Rtcm1241Test {
 
         // Verify header
         Assertions.assertEquals(1241,                         rtcm1241.getTypeCode());
-        Assertions.assertEquals(64711.0,                      rtcm1241.getHeader().getEpochTime1s(), eps);
-        Assertions.assertEquals(30.0,                         rtcm1241.getHeader().getSsrUpdateInterval().getUpdateInterval(), eps);
+        final double eps = 1.0e-13;
+        Assertions.assertEquals(64711.0, rtcm1241.getHeader().getEpochTime1s(), eps);
+        Assertions.assertEquals(30.0, rtcm1241.getHeader().getSsrUpdateInterval().getUpdateInterval(), eps);
         Assertions.assertEquals(0,                            rtcm1241.getHeader().getMultipleMessageIndicator());
         Assertions.assertEquals(7,                            rtcm1241.getHeader().getIodSsr());
         Assertions.assertEquals(3951,                         rtcm1241.getHeader().getSsrProviderId());
@@ -79,11 +84,11 @@ public class Rtcm1241Test {
         Assertions.assertEquals(1,                            rtcm1241.getHeader().getNumberOfSatellites());
 
         // Verify data for satellite E01
-        final RtcmClockCorrectionData e01 = rtcm1241.getDataMap().get("E01").get(0);
+        final RtcmClockCorrectionData e01 = rtcm1241.getDataMap().get("E01").getFirst();
         Assertions.assertEquals(1,                            e01.getSatelliteID());
-        Assertions.assertEquals(96.6527,                      e01.getClockCorrection().getDeltaClockC0(),            eps);
-        Assertions.assertEquals(0.483263,                     e01.getClockCorrection().getDeltaClockC1(),            eps);
-        Assertions.assertEquals(0.61857734,                   e01.getClockCorrection().getDeltaClockC2(),            eps);
+        Assertions.assertEquals(96.6527, e01.getClockCorrection().getDeltaClockC0(), eps);
+        Assertions.assertEquals(0.483263, e01.getClockCorrection().getDeltaClockC1(), eps);
+        Assertions.assertEquals(0.61857734, e01.getClockCorrection().getDeltaClockC2(), eps);
     }
 
     private byte[] byteArrayFromBinary(String radix2Value) {

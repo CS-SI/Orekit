@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2025 CS GROUP
+<!--- Copyright 2002-2026 CS GROUP
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -186,6 +186,20 @@ The following code snippet shows how to parse an OEM, in this case using a file
 name to create the data source, and using the default values for the parser builder:
 
     Oem oem = new ParserBuilder().buildOemParser().parseMessage(new DataSource(fileName));
+
+### Optional Fields
+
+Since version 14.0, getters for not-mandatory fields in CCSDS data classes
+return `java.util.Optional<T>` instead of using `null` (for object types)
+or `Double.NaN` (for numeric types) as sentinel values.
+
+Mandatory fields continue to return their values directly (non-optional).
+Callers should use `Optional.isEmpty()` to check if a field was present
+in the parsed file, or `Optional.get()` / `Optional.orElse(default)` to
+access the value.
+
+Setters still accept the raw type (including `null`), maintaining backward
+compatibility for programmatic construction of messages.
 
 ### Writing
 

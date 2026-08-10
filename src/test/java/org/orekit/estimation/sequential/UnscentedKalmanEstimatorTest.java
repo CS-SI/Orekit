@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,7 @@
  */
 package org.orekit.estimation.sequential;
 
+import java.io.Serial;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -30,8 +31,21 @@ import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.estimation.*;
-import org.orekit.estimation.measurements.*;
+import org.orekit.estimation.Context;
+import org.orekit.estimation.EstimationTestUtils;
+import org.orekit.estimation.Force;
+import org.orekit.estimation.measurements.AngularAzElMeasurementCreator;
+import org.orekit.estimation.measurements.GroundStation;
+import org.orekit.estimation.measurements.InterSatellitesRangeMeasurementCreator;
+import org.orekit.estimation.measurements.MultiplexedMeasurement;
+import org.orekit.estimation.measurements.ObservableSatellite;
+import org.orekit.estimation.measurements.ObservedMeasurement;
+import org.orekit.estimation.measurements.PV;
+import org.orekit.estimation.measurements.PVMeasurementCreator;
+import org.orekit.estimation.measurements.Position;
+import org.orekit.estimation.measurements.Range;
+import org.orekit.estimation.measurements.RangeRateMeasurementCreator;
+import org.orekit.estimation.measurements.TwoWayRangeMeasurementCreator;
 import org.orekit.estimation.measurements.modifiers.Bias;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
@@ -50,7 +64,7 @@ import org.orekit.propagation.analytical.tle.generation.FixedPointTleGenerationA
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.propagation.conversion.TLEPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.clocks.QuadraticClockModel;
+import org.orekit.time.clocks.PolynomialClockModel;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ParameterDriver;
@@ -63,19 +77,19 @@ public class UnscentedKalmanEstimatorTest {
     @Test
     void testEstimationStepWithBStarOnly() {
         // GIVEN
-        TLEEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        EstimationTestUtils.contextFromTle("regular-data:potential:tides");
         String line1 = "1 07276U 74026A   00055.48318287  .00000000  00000-0  22970+3 0  9994";
         String line2 = "2 07276  71.6273  78.7838 1248323  14.0598   3.8405  4.72707036231812";
         final TLE tle = new TLE(line1, line2);
-        final TLEPropagatorBuilder propagatorBuilder = new TLEPropagatorBuilder(tle,
-                PositionAngleType.TRUE, 1., new FixedPointTleGenerationAlgorithm());
-        for (final ParameterDriver driver: propagatorBuilder.getOrbitalParametersDrivers().getDrivers()) {
+        final TLEPropagatorBuilder propagatorBuilder =
+            new TLEPropagatorBuilder(new FixedPointTleGenerationAlgorithm(tle));
+        for (final ParameterDriver driver :
+            propagatorBuilder.getOrbitalParameterFactory().getOrbitalParametersDrivers().getDrivers()) {
             driver.setSelected(false);
         }
-        propagatorBuilder.getPropagationParametersDrivers().getDrivers().get(0).setSelected(true);
+        propagatorBuilder.getPropagationParametersDrivers().getDrivers().getFirst().setSelected(true);
         final UnscentedKalmanEstimatorBuilder builder = new UnscentedKalmanEstimatorBuilder();
-        builder.addPropagationConfiguration(propagatorBuilder,
-                new ConstantProcessNoise(MatrixUtils.createRealMatrix(1, 1)));
+        builder.addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(MatrixUtils.createRealMatrix(1, 1)));
         builder.unscentedTransformProvider(new MerweUnscentedTransform(1));
         final UnscentedKalmanEstimator estimator = builder.build();
         final AbsoluteDate measurementDate = tle.getDate().shiftedBy(1.0);
@@ -100,12 +114,10 @@ public class UnscentedKalmanEstimatorTest {
         final double maxStep = 60.;
         final double dP = 1.;
         final NumericalPropagatorBuilder propagatorBuilder =
-                context.createBuilder(orbitType, positionAngleType, perfectStart,
-                        minStep, maxStep, dP);
+                context.createNumerical(orbitType, positionAngleType, perfectStart, minStep, maxStep, dP);
 
         // Create an imperfect PV measurement
-        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
-                propagatorBuilder);
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit, propagatorBuilder);
         final AbsoluteDate measurementDate = context.initialOrbit.getDate().shiftedBy(600.0);
         final SpacecraftState state = propagator.propagate(measurementDate);
         final ObservedMeasurement<?> measurement = new PV(measurementDate,
@@ -114,12 +126,13 @@ public class UnscentedKalmanEstimatorTest {
                 5.0, 5.0, 1.0, new ObservableSatellite(0));
 
         // Unselect all orbital propagation parameters
-        propagatorBuilder.getOrbitalParametersDrivers().getDrivers()
-                .forEach(driver -> driver.setSelected(false));
+        final ParameterDriversList drivers =
+            propagatorBuilder.getOrbitalParameterFactory().getOrbitalParametersDrivers();
+        drivers.getDrivers().forEach(driver -> driver.setSelected(false));
 
         // Select eccentricity and anomaly
-        propagatorBuilder.getOrbitalParametersDrivers().findByName("e").setSelected(true);
-        propagatorBuilder.getOrbitalParametersDrivers().findByName("v").setSelected(true);
+        drivers.findByName("e").setSelected(true);
+        drivers.findByName("v").setSelected(true);
 
         // Covariance matrix initialization
         final RealMatrix initialP = MatrixUtils.createRealDiagonalMatrix(new double[]{
@@ -142,20 +155,14 @@ public class UnscentedKalmanEstimatorTest {
 
         // Unchanged orbital parameters (two body propagation)
         final KeplerianOrbit initialOrbit = (KeplerianOrbit) context.initialOrbit;
-        Assertions.assertEquals(initialOrbit.getA(),
-                propagatorBuilder.getOrbitalParametersDrivers().findByName("a").getValue(), 1e-8);
-        Assertions.assertEquals(initialOrbit.getI(),
-                propagatorBuilder.getOrbitalParametersDrivers().findByName("i").getValue());
-        Assertions.assertEquals(initialOrbit.getRightAscensionOfAscendingNode(),
-                propagatorBuilder.getOrbitalParametersDrivers().findByName("Ω").getValue());
-        Assertions.assertEquals(initialOrbit.getPerigeeArgument(),
-                propagatorBuilder.getOrbitalParametersDrivers().findByName("ω").getValue(), 1e-15);
+        Assertions.assertEquals(initialOrbit.getA(), drivers.findByName("a").getValue(), 1e-8);
+        Assertions.assertEquals(initialOrbit.getI(), drivers.findByName("i").getValue());
+        Assertions.assertEquals(initialOrbit.getRightAscensionOfAscendingNode(), drivers.findByName("Ω").getValue());
+        Assertions.assertEquals(initialOrbit.getPeriapsisArgument(), drivers.findByName("ω").getValue(), 1e-15);
 
         // Changed orbital parameters
-        Assertions.assertNotEquals(initialOrbit.getE(),
-                propagatorBuilder.getOrbitalParametersDrivers().findByName("e").getValue());
-        Assertions.assertNotEquals(initialOrbit.getTrueAnomaly(),
-                propagatorBuilder.getOrbitalParametersDrivers().findByName("v").getValue());
+        Assertions.assertNotEquals(initialOrbit.getE(), drivers.findByName("e").getValue());
+        Assertions.assertNotEquals(initialOrbit.getTrueAnomaly(), drivers.findByName("v").getValue());
     }
 
     @Test
@@ -172,16 +179,14 @@ public class UnscentedKalmanEstimatorTest {
         final double maxStep = 60.;
         final double dP = 1.;
         final NumericalPropagatorBuilder propagatorBuilder1 =
-                context.createBuilder(orbitType, positionAngleType, perfectStart,
-                        minStep, maxStep, dP, Force.POTENTIAL);
+                context.createNumerical(orbitType, positionAngleType, perfectStart, minStep, maxStep, dP, Force.POTENTIAL);
 
         final NumericalPropagatorBuilder propagatorBuilder2 =
-                context.createBuilder(orbitType, positionAngleType, perfectStart,
-                        minStep, maxStep, dP, Force.POTENTIAL, Force.SOLAR_RADIATION_PRESSURE);
+                context.createNumerical(orbitType, positionAngleType, perfectStart,
+                                        minStep, maxStep, dP, Force.POTENTIAL, Force.SOLAR_RADIATION_PRESSURE);
 
         // Create imperfect PV measurements
-        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
-                propagatorBuilder1);
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit, propagatorBuilder1);
         final AbsoluteDate measurementDate = context.initialOrbit.getDate().shiftedBy(600.0);
         final SpacecraftState state = propagator.propagate(measurementDate);
         final ObservedMeasurement<?> measurement1 = new PV(measurementDate,
@@ -196,17 +201,19 @@ public class UnscentedKalmanEstimatorTest {
                 new MultiplexedMeasurement(Arrays.asList(measurement1, measurement2));
 
         // Unselect all orbital propagation parameters
-        propagatorBuilder1.getOrbitalParametersDrivers().getDrivers()
-                .forEach(driver -> driver.setSelected(false));
-        propagatorBuilder2.getOrbitalParametersDrivers().getDrivers()
-                .forEach(driver -> driver.setSelected(false));
+        final ParameterDriversList oDrivers1 =
+            propagatorBuilder1.getOrbitalParameterFactory().getOrbitalParametersDrivers();
+        final ParameterDriversList oDrivers2 =
+            propagatorBuilder2.getOrbitalParameterFactory().getOrbitalParametersDrivers();
+        oDrivers1.getDrivers().forEach(driver -> driver.setSelected(false));
+        oDrivers2.getDrivers().forEach(driver -> driver.setSelected(false));
 
         // Select eccentricity and anomaly
-        propagatorBuilder1.getOrbitalParametersDrivers().findByName("e").setSelected(true);
-        propagatorBuilder1.getOrbitalParametersDrivers().findByName("v").setSelected(true);
+        oDrivers1.findByName("e").setSelected(true);
+        oDrivers1.findByName("v").setSelected(true);
 
-        propagatorBuilder2.getOrbitalParametersDrivers().findByName("e").setSelected(true);
-        propagatorBuilder2.getOrbitalParametersDrivers().findByName("v").setSelected(true);
+        oDrivers2.findByName("e").setSelected(true);
+        oDrivers2.findByName("v").setSelected(true);
 
         // Select reflection coefficient for second sat
         propagatorBuilder2.getPropagationParametersDrivers().findByName("reflection coefficient").setSelected(true);
@@ -254,34 +261,22 @@ public class UnscentedKalmanEstimatorTest {
         unscented.estimationStep(combinedMeasurement);
 
         // Unchanged orbital parameters
-        Assertions.assertEquals(refOrbit1.getA(),
-                propagatorBuilder1.getOrbitalParametersDrivers().findByName("a[0]").getValue(), 1e-8);
-        Assertions.assertEquals(refOrbit1.getI(),
-                propagatorBuilder1.getOrbitalParametersDrivers().findByName("i[0]").getValue());
-        Assertions.assertEquals(refOrbit1.getRightAscensionOfAscendingNode(),
-                propagatorBuilder1.getOrbitalParametersDrivers().findByName("Ω[0]").getValue());
-        Assertions.assertEquals(refOrbit1.getPerigeeArgument(),
-                propagatorBuilder1.getOrbitalParametersDrivers().findByName("ω[0]").getValue(), 1e-15);
+        Assertions.assertEquals(refOrbit1.getA(), oDrivers1.findByName("a[0]").getValue(), 1e-8);
+        Assertions.assertEquals(refOrbit1.getI(), oDrivers1.findByName("i[0]").getValue());
+        Assertions.assertEquals(refOrbit1.getRightAscensionOfAscendingNode(), oDrivers1.findByName("Ω[0]").getValue());
+        Assertions.assertEquals(refOrbit1.getPeriapsisArgument(), oDrivers1.findByName("ω[0]").getValue(), 1e-15);
 
-        Assertions.assertEquals(refOrbit2.getA(),
-                propagatorBuilder2.getOrbitalParametersDrivers().findByName("a[1]").getValue(), 1e-8);
-        Assertions.assertEquals(refOrbit2.getI(),
-                propagatorBuilder2.getOrbitalParametersDrivers().findByName("i[1]").getValue());
-        Assertions.assertEquals(refOrbit2.getRightAscensionOfAscendingNode(),
-                propagatorBuilder2.getOrbitalParametersDrivers().findByName("Ω[1]").getValue());
-        Assertions.assertEquals(refOrbit2.getPerigeeArgument(),
-                propagatorBuilder2.getOrbitalParametersDrivers().findByName("ω[1]").getValue(), 1e-15);
+        Assertions.assertEquals(refOrbit2.getA(), oDrivers2.findByName("a[1]").getValue(), 1e-8);
+        Assertions.assertEquals(refOrbit2.getI(), oDrivers2.findByName("i[1]").getValue());
+        Assertions.assertEquals(refOrbit2.getRightAscensionOfAscendingNode(), oDrivers2.findByName("Ω[1]").getValue());
+        Assertions.assertEquals(refOrbit2.getPeriapsisArgument(), oDrivers2.findByName("ω[1]").getValue(), 1e-15);
 
         // Changed orbital parameters
-        Assertions.assertNotEquals(refOrbit1.getE(),
-                propagatorBuilder1.getOrbitalParametersDrivers().findByName("e[0]").getValue());
-        Assertions.assertNotEquals(refOrbit1.getTrueAnomaly(),
-                propagatorBuilder1.getOrbitalParametersDrivers().findByName("v[0]").getValue());
+        Assertions.assertNotEquals(refOrbit1.getE(), oDrivers1.findByName("e[0]").getValue());
+        Assertions.assertNotEquals(refOrbit1.getTrueAnomaly(), oDrivers1.findByName("v[0]").getValue());
 
-        Assertions.assertNotEquals(refOrbit2.getE(),
-                propagatorBuilder2.getOrbitalParametersDrivers().findByName("e[1]").getValue());
-        Assertions.assertNotEquals(refOrbit2.getTrueAnomaly(),
-                propagatorBuilder2.getOrbitalParametersDrivers().findByName("v[1]").getValue());
+        Assertions.assertNotEquals(refOrbit2.getE(), oDrivers2.findByName("e[1]").getValue());
+        Assertions.assertNotEquals(refOrbit2.getTrueAnomaly(), oDrivers2.findByName("v[1]").getValue());
 
         // Propagation parameters
         final List<DelegatingDriver> drivers1 = propagatorBuilder1.getPropagationParametersDrivers().getDrivers();
@@ -315,7 +310,7 @@ public class UnscentedKalmanEstimatorTest {
     @Test
     public void testMissingUnscentedTransform() {
         try {
-            Context context = UnscentedEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+            Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
             final OrbitType     orbitType     = OrbitType.CARTESIAN;
             final PositionAngleType positionAngleType = PositionAngleType.TRUE;
             final boolean       perfectStart  = true;
@@ -323,7 +318,7 @@ public class UnscentedKalmanEstimatorTest {
             final double        maxStep       = 60.;
             final double        dP            = 1.;
             final NumericalPropagatorBuilder propagatorBuilder =
-                            context.createBuilder(orbitType, positionAngleType, perfectStart,
+                            context.createNumerical(orbitType, positionAngleType, perfectStart,
                                                   minStep, maxStep, dP);
             new UnscentedKalmanEstimatorBuilder().
             addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(MatrixUtils.createRealMatrix(6, 6))).
@@ -341,7 +336,7 @@ public class UnscentedKalmanEstimatorTest {
     public void testPV() {
 
         // Create context
-        Context context = UnscentedEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         // Create initial orbit and propagator builder
         final OrbitType     orbitType     = OrbitType.CARTESIAN;
@@ -351,22 +346,18 @@ public class UnscentedKalmanEstimatorTest {
         final double        maxStep       = 60.;
         final double        dP            = 1.;
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(orbitType, positionAngleType, perfectStart,
-                                              minStep, maxStep, dP);
+                        context.createNumerical(orbitType, positionAngleType, perfectStart, minStep, maxStep, dP);
 
         // Create perfect PV measurements
-        final Propagator propagator = UnscentedEstimationTestUtils.createPropagator(context.initialOrbit,
-                                                                           propagatorBuilder);
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit, propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
-                UnscentedEstimationTestUtils.createMeasurements(propagator,
-                                                               new PVMeasurementCreator(),
-                                                               0.0, 1.0, 300.0);
+                EstimationTestUtils.createMeasurements(propagator, new PVMeasurementCreator(), 0.0, 1.0, 300.0);
         // Reference propagator for estimation performances
         final Propagator referencePropagator = propagatorBuilder.buildPropagator();
         
         // Reference position/velocity at last measurement date
         final Orbit refOrbit = referencePropagator.
-                        propagate(measurements.get(measurements.size()-1).getDate()).getOrbit();
+                        propagate(measurements.getLast().getDate()).getOrbit();
         
         // Covariance matrix initialization
         final RealMatrix initialP = MatrixUtils.createRealMatrix(6, 6);
@@ -389,12 +380,11 @@ public class UnscentedKalmanEstimatorTest {
         final double   sigmaPosEps       = 1.0e-10;
         final double[] expectedSigmasVel = {0.0, 0.0, 0.0};
         final double   sigmaVelEps       = 1.0e-15;
-        UnscentedEstimationTestUtils.checkKalmanFit(context, kalman, measurements,
-                                           refOrbit, positionAngleType,
-                                           expectedDeltaPos, posEps,
-                                           expectedDeltaVel, velEps,
-                                           expectedsigmasPos, sigmaPosEps,
-                                           expectedSigmasVel, sigmaVelEps);
+        EstimationTestUtils.checkUnscentedKalmanFit(false, kalman, measurements,
+                                                    refOrbit, expectedDeltaPos, posEps,
+                                                    expectedDeltaVel, velEps,
+                                                    expectedsigmasPos, sigmaPosEps,
+                                                    expectedSigmasVel, sigmaVelEps);
     }
     
     /**
@@ -404,7 +394,7 @@ public class UnscentedKalmanEstimatorTest {
     public void testShiftedPV() {
 
         // Create context
-        Context context = UnscentedEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         // Create initial orbit and propagator builder
         final OrbitType     orbitType     = OrbitType.CARTESIAN;
@@ -417,8 +407,7 @@ public class UnscentedKalmanEstimatorTest {
         final double        sigmaVel      = 0.01;
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(orbitType, positionAngleType, perfectStart,
-                                              minStep, maxStep, dP);
+                        context.createNumerical(orbitType, positionAngleType, perfectStart, minStep, maxStep, dP);
         
         // Create shifted initial state
         final Vector3D initialPosShifted = context.initialOrbit.getPosition().add(new Vector3D(sigmaPos, sigmaPos, sigmaPos));
@@ -429,19 +418,17 @@ public class UnscentedKalmanEstimatorTest {
         final CartesianOrbit shiftedOrbit = new CartesianOrbit(pv, context.initialOrbit.getFrame(), context.initialOrbit.getMu());
         
         // Create perfect PV measurements
-        final Propagator propagator = UnscentedEstimationTestUtils.createPropagator(context.initialOrbit, propagatorBuilder);
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit, propagatorBuilder);
         
         final List<ObservedMeasurement<?>> measurements =
-                UnscentedEstimationTestUtils.createMeasurements(propagator,
-                                                               new PVMeasurementCreator(),
-                                                               0.0, 1.0, 300.0);
+                EstimationTestUtils.createMeasurements(propagator, new PVMeasurementCreator(), 0.0, 1.0, 300.0);
 
         // Reference propagator for estimation performances
         final Propagator referencePropagator = propagatorBuilder.buildPropagator();
         
         // Reference position/velocity at last measurement date
         final Orbit refOrbit = referencePropagator.
-                        propagate(measurements.get(measurements.size()-1).getDate()).getOrbit();
+                        propagate(measurements.getLast().getDate()).getOrbit();
 
         // Initial covariance matrix
         final RealMatrix initialP = MatrixUtils.createRealDiagonalMatrix(new double[] {sigmaPos*sigmaPos, sigmaPos*sigmaPos, sigmaPos*sigmaPos, sigmaVel*sigmaVel, sigmaVel*sigmaVel, sigmaVel*sigmaVel}); 
@@ -465,12 +452,11 @@ public class UnscentedKalmanEstimatorTest {
         final double   sigmaPosEps       = 1.0e-6;
         final double[] expectedSigmasVel = {6.93330E-5, 12.37128E-5, 4.11890E-5};
         final double   sigmaVelEps       = 1.0e-10;
-        UnscentedEstimationTestUtils.checkKalmanFit(context, kalman, measurements,
-                                           refOrbit, positionAngleType,
-                                           expectedDeltaPos, posEps,
-                                           expectedDeltaVel, velEps,
-                                           expectedsigmasPos, sigmaPosEps,
-                                           expectedSigmasVel, sigmaVelEps);
+        EstimationTestUtils.checkUnscentedKalmanFit(false, kalman, measurements,
+                                                    refOrbit, expectedDeltaPos, posEps,
+                                                    expectedDeltaVel, velEps,
+                                                    expectedsigmasPos, sigmaPosEps,
+                                                    expectedSigmasVel, sigmaVelEps);
 
         Assertions.assertEquals(6, kalman.getOrbitalParametersDrivers(false).getNbParams());
         Assertions.assertEquals(6, kalman.getOrbitalParametersDrivers(true).getNbParams());
@@ -489,7 +475,7 @@ public class UnscentedKalmanEstimatorTest {
     public void testCartesianRange() {
 
         // Create context
-        Context context = UnscentedEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         // Create initial orbit and propagator builder
         final OrbitType     orbitType     = OrbitType.CARTESIAN;
@@ -499,14 +485,12 @@ public class UnscentedKalmanEstimatorTest {
         final double        maxStep       = 60.;
         final double        dP            = 1.;
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(orbitType, positionAngleType, perfectStart,
-                                              minStep, maxStep, dP);
+                        context.createNumerical(orbitType, positionAngleType, perfectStart, minStep, maxStep, dP);
 
         // Create perfect PV measurements
-        final Propagator propagator = UnscentedEstimationTestUtils.createPropagator(context.initialOrbit,
-                                                                           propagatorBuilder);
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit, propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
-                UnscentedEstimationTestUtils.createMeasurements(propagator,
+                EstimationTestUtils.createMeasurements(propagator,
                                                                new TwoWayRangeMeasurementCreator(context),
                                                                0.0, 1.0, 60.0);
         // Reference propagator for estimation performances
@@ -514,7 +498,7 @@ public class UnscentedKalmanEstimatorTest {
         
         // Reference position/velocity at last measurement date
         final Orbit refOrbit = referencePropagator.
-                        propagate(measurements.get(measurements.size()-1).getDate()).getOrbit();
+                        propagate(measurements.getLast().getDate()).getOrbit();
         
         // Covariance matrix initialization
         final RealMatrix initialP = MatrixUtils.createRealMatrix(6, 6); 
@@ -538,9 +522,8 @@ public class UnscentedKalmanEstimatorTest {
         final double   sigmaPosEps       = 1.0e-15;
         final double[] expectedSigmasVel = {0.0, 0.0, 0.0};
         final double   sigmaVelEps       = 1.0e-15;
-        UnscentedEstimationTestUtils.checkKalmanFit(context, kalman, measurements,
-                                           refOrbit, positionAngleType,
-                                           expectedDeltaPos, posEps,
+        EstimationTestUtils.checkUnscentedKalmanFit(false, kalman, measurements,
+                                           refOrbit, expectedDeltaPos, posEps,
                                            expectedDeltaVel, velEps,
                                            expectedsigmasPos, sigmaPosEps,
                                            expectedSigmasVel, sigmaVelEps);
@@ -561,7 +544,7 @@ public class UnscentedKalmanEstimatorTest {
     public void testKeplerianRange() {
 
         // Create context
-        Context context = UnscentedEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         // Create initial orbit and propagator builder
         final OrbitType     orbitType     = OrbitType.KEPLERIAN;
@@ -571,22 +554,18 @@ public class UnscentedKalmanEstimatorTest {
         final double        maxStep       = 60.;
         final double        dP            = 1.;
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(orbitType, positionAngleType, perfectStart,
-                                              minStep, maxStep, dP);
+                        context.createNumerical(orbitType, positionAngleType, perfectStart, minStep, maxStep, dP);
 
         // Create perfect PV measurements
-        final Propagator propagator = UnscentedEstimationTestUtils.createPropagator(context.initialOrbit,
-                                                                           propagatorBuilder);
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit, propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
-                UnscentedEstimationTestUtils.createMeasurements(propagator,
-                                                               new TwoWayRangeMeasurementCreator(context),
-                                                               0.0, 1.0, 60.0);
+                EstimationTestUtils.createMeasurements(propagator, new TwoWayRangeMeasurementCreator(context), 0.0, 1.0, 60.0);
         // Reference propagator for estimation performances
         final Propagator referencePropagator = propagatorBuilder.buildPropagator();
         
         // Reference position/velocity at last measurement date
         final Orbit refOrbit = referencePropagator.
-                        propagate(measurements.get(measurements.size()-1).getDate()).getOrbit();
+                        propagate(measurements.getLast().getDate()).getOrbit();
 
         // Covariance matrix initialization
         final RealMatrix initialP = MatrixUtils.createRealMatrix(6, 6); 
@@ -610,12 +589,11 @@ public class UnscentedKalmanEstimatorTest {
         final double   sigmaPosEps       = 1.0e-15;
         final double[] expectedSigmasVel = {0.0, 0.0, 0.0};
         final double   sigmaVelEps       = 1.0e-15;
-        UnscentedEstimationTestUtils.checkKalmanFit(context, kalman, measurements,
-                                           refOrbit, positionAngleType,
-                                           expectedDeltaPos, posEps,
-                                           expectedDeltaVel, velEps,
-                                           expectedsigmasPos, sigmaPosEps,
-                                           expectedSigmasVel, sigmaVelEps);
+        EstimationTestUtils.checkUnscentedKalmanFit(false, kalman, measurements,
+                                                    refOrbit, expectedDeltaPos, posEps,
+                                                    expectedDeltaVel, velEps,
+                                                    expectedsigmasPos, sigmaPosEps,
+                                                    expectedSigmasVel, sigmaVelEps);
 
         Assertions.assertEquals(6, kalman.getOrbitalParametersDrivers(false).getNbParams());
         Assertions.assertEquals(6, kalman.getOrbitalParametersDrivers(true).getNbParams());
@@ -634,7 +612,7 @@ public class UnscentedKalmanEstimatorTest {
     public void testCartesianRangeRate() {
 
         // Create context
-        Context context = UnscentedEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         // Create initial orbit and propagator builder
         final OrbitType     orbitType     = OrbitType.CARTESIAN;
@@ -644,25 +622,21 @@ public class UnscentedKalmanEstimatorTest {
         final double        maxStep       = 60.;
         final double        dP            = 1.;
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(orbitType, positionAngleType, perfectStart,
-                                              minStep, maxStep, dP);
+                        context.createNumerical(orbitType, positionAngleType, perfectStart, minStep, maxStep, dP);
 
         // Create perfect range measurements
-        final Propagator propagator = UnscentedEstimationTestUtils.createPropagator(context.initialOrbit,
-                                                                           propagatorBuilder);
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit, propagatorBuilder);
         final double satClkDrift = 3.2e-10;
         final RangeRateMeasurementCreator creator = new RangeRateMeasurementCreator(context, false, satClkDrift);
         final List<ObservedMeasurement<?>> measurements =
-                UnscentedEstimationTestUtils.createMeasurements(propagator,
-                                                               creator,
-                                                               1.0, 3.0, 300.0);
+                EstimationTestUtils.createMeasurements(propagator, creator, 1.0, 3.0, 300.0);
 
         // Reference propagator for estimation performances
         final Propagator referencePropagator = propagatorBuilder.buildPropagator();
         
         // Reference position/velocity at last measurement date
         final Orbit refOrbit = referencePropagator.
-                        propagate(measurements.get(measurements.size()-1).getDate()).getOrbit();
+                        propagate(measurements.getLast().getDate()).getOrbit();
         
         // Cartesian covariance matrix initialization
         // 100m on position / 1e-2m/s on velocity 
@@ -693,19 +667,18 @@ public class UnscentedKalmanEstimatorTest {
         
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
-        final double   posEps            = 2.0e-6;
+        final double   posEps            = 3.2e-7;
         final double   expectedDeltaVel  = 0.;
-        final double   velEps            = 7.3e-10;
+        final double   velEps            = 1.5e-10;
         final double[] expectedSigmasPos = {0.324407, 1.347014, 1.743326};
         final double   sigmaPosEps       = 1e-6;
         final double[] expectedSigmasVel = {2.85688e-4,  5.765934e-4, 5.056124e-4};
         final double   sigmaVelEps       = 1e-10;
-        UnscentedEstimationTestUtils.checkKalmanFit(context, kalman, measurements,
-                                           refOrbit, positionAngleType,
-                                           expectedDeltaPos, posEps,
-                                           expectedDeltaVel, velEps,
-                                           expectedSigmasPos, sigmaPosEps,
-                                           expectedSigmasVel, sigmaVelEps);
+        EstimationTestUtils.checkUnscentedKalmanFit(false, kalman, measurements,
+                                                    refOrbit, expectedDeltaPos, posEps,
+                                                    expectedDeltaVel, velEps,
+                                                    expectedSigmasPos, sigmaPosEps,
+                                                    expectedSigmasVel, sigmaVelEps);
 
         Assertions.assertEquals(6, kalman.getOrbitalParametersDrivers(false).getNbParams());
         Assertions.assertEquals(6, kalman.getOrbitalParametersDrivers(true).getNbParams());
@@ -723,7 +696,7 @@ public class UnscentedKalmanEstimatorTest {
     public void testCartesianAzimuthElevation() {
 
         // Create context
-        Context context = UnscentedEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         // Create initial orbit and propagator builder
         final OrbitType     orbitType     = OrbitType.CARTESIAN;
@@ -733,23 +706,20 @@ public class UnscentedKalmanEstimatorTest {
         final double        maxStep       = 60.;
         final double        dP            = 1.;
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(orbitType, positionAngleType, perfectStart,
-                                              minStep, maxStep, dP);
+                        context.createNumerical(orbitType, positionAngleType, perfectStart, minStep, maxStep, dP);
 
         // Create perfect range measurements
-        final Propagator propagator = UnscentedEstimationTestUtils.createPropagator(context.initialOrbit,
-                                                                           propagatorBuilder);
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit, propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
-                UnscentedEstimationTestUtils.createMeasurements(propagator,
-                                                               new AngularAzElMeasurementCreator(context),
-                                                               0.0, 1.0, 60.0);
+                EstimationTestUtils.createMeasurements(propagator, new AngularAzElMeasurementCreator(context),
+                                                       0.0, 1.0, 60.0);
 
         // Reference propagator for estimation performances
         final Propagator referencePropagator = propagatorBuilder.buildPropagator();
         
         // Reference position/velocity at last measurement date
         final Orbit refOrbit = referencePropagator.
-                        propagate(measurements.get(measurements.size()-1).getDate()).getOrbit();
+                        propagate(measurements.getLast().getDate()).getOrbit();
 
         // Cartesian covariance matrix initialization
         final RealMatrix cartesianP = MatrixUtils.createRealDiagonalMatrix(new double [] {
@@ -781,19 +751,18 @@ public class UnscentedKalmanEstimatorTest {
         
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
-        final double   posEps            = 5.96e-7;
+        final double   posEps            = 3.0e-7;
         final double   expectedDeltaVel  = 0.;
-        final double   velEps            = 1.76e-10;
+        final double   velEps            = 7.8e-11;
         final double[] expectedSigmasPos = {0.043885, 0.600764, 0.279020};
         final double   sigmaPosEps       = 1.0e-6;
         final double[] expectedSigmasVel = {7.17260E-5, 3.037315E-5, 19.49047e-5};
         final double   sigmaVelEps       = 1.0e-10;
-        UnscentedEstimationTestUtils.checkKalmanFit(context, kalman, measurements,
-                                           refOrbit, positionAngleType,
-                                           expectedDeltaPos, posEps,
-                                           expectedDeltaVel, velEps,
-                                           expectedSigmasPos, sigmaPosEps,
-                                           expectedSigmasVel, sigmaVelEps);
+        EstimationTestUtils.checkUnscentedKalmanFit(false, kalman, measurements,
+                                                    refOrbit, expectedDeltaPos, posEps,
+                                                    expectedDeltaVel, velEps,
+                                                    expectedSigmasPos, sigmaPosEps,
+                                                    expectedSigmasVel, sigmaVelEps);
 
         Assertions.assertEquals(6, kalman.getOrbitalParametersDrivers(false).getNbParams());
         Assertions.assertEquals(6, kalman.getOrbitalParametersDrivers(true).getNbParams());
@@ -811,7 +780,7 @@ public class UnscentedKalmanEstimatorTest {
     public void testCircularAzimuthElevation() {
 
         // Create context
-        Context context = UnscentedEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         // Create initial orbit and propagator builder
         final OrbitType     orbitType     = OrbitType.CIRCULAR;
@@ -821,23 +790,20 @@ public class UnscentedKalmanEstimatorTest {
         final double        maxStep       = 60.;
         final double        dP            = 1.;
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(orbitType, positionAngleType, perfectStart,
-                                              minStep, maxStep, dP);
+                        context.createNumerical(orbitType, positionAngleType, perfectStart, minStep, maxStep, dP);
 
         // Create perfect range measurements
-        final Propagator propagator = UnscentedEstimationTestUtils.createPropagator(context.initialOrbit,
-                                                                           propagatorBuilder);
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit, propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
-                UnscentedEstimationTestUtils.createMeasurements(propagator,
-                                                               new AngularAzElMeasurementCreator(context),
-                                                               0.0, 1.0, 60.0);
+                EstimationTestUtils.createMeasurements(propagator, new AngularAzElMeasurementCreator(context),
+                                                       0.0, 1.0, 60.0);
 
         // Reference propagator for estimation performances
         final Propagator referencePropagator = propagatorBuilder.buildPropagator();
         
         // Reference position/velocity at last measurement date
         final Orbit refOrbit = referencePropagator.
-                        propagate(measurements.get(measurements.size()-1).getDate()).getOrbit();
+                        propagate(measurements.getLast().getDate()).getOrbit();
 
         // Cartesian covariance matrix initialization
         final RealMatrix cartesianP = MatrixUtils.createRealDiagonalMatrix(new double [] {
@@ -876,12 +842,11 @@ public class UnscentedKalmanEstimatorTest {
         final double   sigmaPosEps       = 1e-6;
         final double[] expectedSigmasVel = {7.25356E-5, 3.11525E-5, 19.81870E-5};
         final double   sigmaVelEps       = 1e-10;
-        UnscentedEstimationTestUtils.checkKalmanFit(context, kalman, measurements,
-                                           refOrbit, positionAngleType,
-                                           expectedDeltaPos, posEps,
-                                           expectedDeltaVel, velEps,
-                                           expectedSigmasPos, sigmaPosEps,
-                                           expectedSigmasVel, sigmaVelEps);
+        EstimationTestUtils.checkUnscentedKalmanFit(false, kalman, measurements,
+                                                    refOrbit, expectedDeltaPos, posEps,
+                                                    expectedDeltaVel, velEps,
+                                                    expectedSigmasPos, sigmaPosEps,
+                                                    expectedSigmasVel, sigmaVelEps);
 
         Assertions.assertEquals(6, kalman.getOrbitalParametersDrivers(false).getNbParams());
         Assertions.assertEquals(6, kalman.getOrbitalParametersDrivers(true).getNbParams());
@@ -895,15 +860,15 @@ public class UnscentedKalmanEstimatorTest {
     @Test
     public void testMultiSat() {
 
-        Context context = UnscentedEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder1 =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 1.0);
         final NumericalPropagatorBuilder propagatorBuilder2 =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 1.0);
-        final AbsoluteDate referenceDate = propagatorBuilder1.getInitialOrbitDate();
+        final AbsoluteDate referenceDate = propagatorBuilder1.getOrbitalParameterFactory().getDate();
 
         // Create perfect inter-satellites range measurements
         final TimeStampedPVCoordinates original = context.initialOrbit.getPVCoordinates();
@@ -912,28 +877,24 @@ public class UnscentedKalmanEstimatorTest {
                                                                                  original.getVelocity().add(new Vector3D(-0.03, 0.01, 0.02))),
                                                     context.initialOrbit.getFrame(),
                                                     context.initialOrbit.getMu());
-        final Propagator closePropagator = UnscentedEstimationTestUtils.createPropagator(closeOrbit,
-                                                                                         propagatorBuilder2);
+        final Propagator closePropagator = EstimationTestUtils.createPropagator(closeOrbit, propagatorBuilder2);
         final EphemerisGenerator generator = closePropagator.getEphemerisGenerator();
         closePropagator.propagate(context.initialOrbit.getDate().shiftedBy(3.5 * closeOrbit.getKeplerianPeriod()));
         final BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
-        Propagator propagator1 = UnscentedEstimationTestUtils.createPropagator(context.initialOrbit,
-                                                                               propagatorBuilder1);
+        Propagator propagator1 = EstimationTestUtils.createPropagator(context.initialOrbit, propagatorBuilder1);
         final double localClockOffset  = 0.137e-6;
         final double remoteClockOffset = 469.0e-6;
         final List<ObservedMeasurement<?>> measurements =
-        		UnscentedEstimationTestUtils.createMeasurements(propagator1,
-                                                                new InterSatellitesRangeMeasurementCreator(ephemeris,
-                                                                                                           localClockOffset,
-                                                                                                           remoteClockOffset),
-                                                                1.0, 3.0, 300.0);
+        		EstimationTestUtils.createMeasurements(propagator1,
+                                                       new InterSatellitesRangeMeasurementCreator(ephemeris,
+                                                                                                  localClockOffset,
+                                                                                                  remoteClockOffset),
+                                                       1.0, 3.0, 300.0);
 
         // create perfect range measurements for first satellite
-        propagator1 = UnscentedEstimationTestUtils.createPropagator(context.initialOrbit,
-                                                                    propagatorBuilder1);
-        measurements.addAll(UnscentedEstimationTestUtils.createMeasurements(propagator1,
-                                                                            new TwoWayRangeMeasurementCreator(context),
-                                                                            1.0, 3.0, 60.0));
+        propagator1 = EstimationTestUtils.createPropagator(context.initialOrbit, propagatorBuilder1);
+        measurements.addAll(EstimationTestUtils.createMeasurements(propagator1, new TwoWayRangeMeasurementCreator(context),
+                                                                   1.0, 3.0, 60.0));
         measurements.sort(Comparator.naturalOrder());
 
         // create orbit estimator
@@ -945,7 +906,7 @@ public class UnscentedKalmanEstimatorTest {
                         build();
 
         List<DelegatingDriver> parameters = kalman.getOrbitalParametersDrivers(true).getDrivers();
-        ParameterDriver a0Driver = parameters.get(0);
+        ParameterDriver a0Driver = parameters.getFirst();
         Assertions.assertEquals("a[0]", a0Driver.getName());
         a0Driver.setValue(a0Driver.getValue() + 1.2);
         a0Driver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
@@ -975,12 +936,11 @@ public class UnscentedKalmanEstimatorTest {
                             1.0e-6);
 
         Orbit[] refOrbits = new Orbit[] {
-            propagatorBuilder1.buildPropagator().propagate(measurements.get(measurements.size()-1).getDate()).getOrbit(),
-            propagatorBuilder2.buildPropagator().propagate(measurements.get(measurements.size()-1).getDate()).getOrbit()
+            propagatorBuilder1.buildPropagator().propagate(measurements.getLast().getDate()).getOrbit(),
+            propagatorBuilder2.buildPropagator().propagate(measurements.getLast().getDate()).getOrbit()
         };
-        UnscentedEstimationTestUtils.checkKalmanFit(context, kalman, measurements,
-                                           refOrbits, new PositionAngleType[] { PositionAngleType.TRUE, PositionAngleType.TRUE },
-                                           new double[] { 38.3,  172.3 }, new double[] { 0.1,  0.1 },
+        EstimationTestUtils.checkUnscentedKalmanFit(false, kalman, measurements,
+                                           refOrbits, new double[] { 38.3,  172.3 }, new double[] { 0.1,  0.1 },
                                            new double[] { 0.015, 0.068 }, new double[] { 1.0e-3, 1.0e-3 },
                                            new double[][] {
                                                { 0.0, 0.0, 0.0 },
@@ -1020,7 +980,7 @@ public class UnscentedKalmanEstimatorTest {
     public void testWrappedException() {
 
         // Create context
-        Context context = UnscentedEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         // Create initial orbit and propagator builder
         final OrbitType     orbitType     = OrbitType.KEPLERIAN;
@@ -1030,25 +990,25 @@ public class UnscentedKalmanEstimatorTest {
         final double        maxStep       = 60.;
         final double        dP            = 1.;
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(orbitType, positionAngleType, perfectStart,
+                        context.createNumerical(orbitType, positionAngleType, perfectStart,
                                               minStep, maxStep, dP);
 
         // estimated bias
         final Bias<Range> rangeBias = new Bias<>(new String[] {"rangeBias"}, new double[] {0.0},
         	                                     new double[] {1.0},
         	                                     new double[] {0.0}, new double[] {10000.0});
-        rangeBias.getParametersDrivers().get(0).setSelected(true);
+        rangeBias.getParametersDrivers().getFirst().setSelected(true);
 
 
         // List of estimated measurement parameters
         final ParameterDriversList drivers = new ParameterDriversList();
-        drivers.add(rangeBias.getParametersDrivers().get(0));
+        drivers.add(rangeBias.getParametersDrivers().getFirst());
 
         // Create perfect range measurements
-        final Propagator propagator = UnscentedEstimationTestUtils.createPropagator(context.initialOrbit,
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
-        		UnscentedEstimationTestUtils.createMeasurements(propagator,
+        		EstimationTestUtils.createMeasurements(propagator,
                                                                new TwoWayRangeMeasurementCreator(context,
                                                                                                  Vector3D.ZERO, null,
                                                                                                  Vector3D.ZERO, null,
@@ -1071,9 +1031,8 @@ public class UnscentedKalmanEstimatorTest {
 
         try {
             // Filter the measurements and expect an exception to occur
-        	UnscentedEstimationTestUtils.checkKalmanFit(context, kalman, measurements,
-                                               context.initialOrbit, positionAngleType,
-                                               0., 0.,
+        	EstimationTestUtils.checkUnscentedKalmanFit(false, kalman, measurements,
+                                               context.initialOrbit, 0., 0.,
                                                0., 0.,
                                                new double[3], 0.,
                                                new double[3], 0.);
@@ -1090,14 +1049,14 @@ public class UnscentedKalmanEstimatorTest {
     @Test
     public void testIssue1034() {
 
-        UnscentedEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         // Reference date
         final AbsoluteDate reference = AbsoluteDate.J2000_EPOCH;
 
         // Create a station
         final OneAxisEllipsoid shape = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.WGS84_EARTH_FLATTENING, FramesFactory.getITRF(IERSConventions.IERS_2010, false));
-        final QuadraticClockModel blankClock = new QuadraticClockModel(reference, 0.0, 0.0, 0.0);
+        final PolynomialClockModel blankClock = new PolynomialClockModel(reference);
         final GroundStation station = new GroundStation(new TopocentricFrame(shape, new GeodeticPoint(1.44, 0.2, 100.0), "topo"), blankClock);
 
         // Create three different measurement types
@@ -1139,7 +1098,7 @@ public class UnscentedKalmanEstimatorTest {
     public void testProcessNoiseStates() {
 
         // Create context
-        Context context = UnscentedEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         // Create initial orbit and propagator builder
         final OrbitType     orbitType     = OrbitType.CARTESIAN;
@@ -1149,14 +1108,12 @@ public class UnscentedKalmanEstimatorTest {
         final double        maxStep       = 60.;
         final double        dP            = 1.;
         final NumericalPropagatorBuilder propagatorBuilder =
-                context.createBuilder(orbitType, positionAngleType, perfectStart,
-                        minStep, maxStep, dP);
+                context.createNumerical(orbitType, positionAngleType, perfectStart, minStep, maxStep, dP);
 
         // Create perfect PV measurements
-        final Propagator propagator = UnscentedEstimationTestUtils.createPropagator(context.initialOrbit,
-                propagatorBuilder);
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit, propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
-                UnscentedEstimationTestUtils.createMeasurements(propagator,
+                EstimationTestUtils.createMeasurements(propagator,
                         new PVMeasurementCreator(),
                         0.0, 1.0, 300.0);
 
@@ -1173,13 +1130,14 @@ public class UnscentedKalmanEstimatorTest {
         kalman.estimationStep(measurements.get(10));
 
         // Make sure previous and current are not the same
-        Assertions.assertEquals(measurements.get(0).getDate(), processNoise.getPrevious().getDate());
+        Assertions.assertEquals(measurements.getFirst().getDate(), processNoise.getPrevious().getDate());
         Assertions.assertEquals(measurements.get(10).getDate(), processNoise.getCurrent().getDate());
         Assertions.assertNotEquals(processNoise.getPrevious().getPosition().getX(),
                                    processNoise.getCurrent().getPosition().getX());
     }
 
     private static class DummyException extends OrekitException {
+        @Serial
         private static final long serialVersionUID = 1L;
         public DummyException() {
             super(OrekitMessages.INTERNAL_ERROR);

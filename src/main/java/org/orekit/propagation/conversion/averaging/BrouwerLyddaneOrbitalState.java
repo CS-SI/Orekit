@@ -1,4 +1,4 @@
-/* Copyright 2020-2025 Exotrail
+/* Copyright 2020-2026 Exotrail
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -100,7 +100,7 @@ public class BrouwerLyddaneOrbitalState extends AbstractHarmonicsBasedOrbitalSta
     private KeplerianOrbit createOrekitOrbit() {
         return new KeplerianOrbit(averagedElements.getAveragedSemiMajorAxis(),
                 averagedElements.getAveragedEccentricity(), averagedElements.getAveragedInclination(),
-                averagedElements.getAveragedPerigeeArgument(),
+                averagedElements.getAveragedPeriapsisArgument(),
                 averagedElements.getAveragedRightAscensionOfTheAscendingNode(),
                 averagedElements.getAveragedMeanAnomaly(), getPositionAngleType(), getFrame(),
                 getDate(), getMu());

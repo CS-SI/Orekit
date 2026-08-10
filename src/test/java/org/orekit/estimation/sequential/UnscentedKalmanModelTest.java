@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -108,7 +108,7 @@ public class UnscentedKalmanModelTest {
         ObservableSatellite sat = new ObservableSatellite(0);
 
         // Create propagator builder
-        this.propagatorBuilder = context.createBuilder(orbitType, positionAngleType, true,
+        this.propagatorBuilder = context.createNumerical(orbitType, positionAngleType, true,
                                                        1.0e-6, 60.0, 10., Force.SOLAR_RADIATION_PRESSURE);
 
         // Create PV at t0
@@ -121,7 +121,7 @@ public class UnscentedKalmanModelTest {
 
         // Create one 0m range measurement at t0 + 10s
         final AbsoluteDate date  = date0.shiftedBy(10.);
-        final GroundStation station = context.stations.get(0);
+        final GroundStation station = context.stations.getFirst();
         this.range = new Range(station, true, date, 18616150., 10., 1., sat);
         // Exact range value is 1.8616150246470984E7 m
 
@@ -131,7 +131,7 @@ public class UnscentedKalmanModelTest {
                 new double[]{10.},
                 new double[]{0.},
                 new double[]{150.});
-        this.satRangeBiasDriver = satRangeBias.getParametersDrivers().get(0);
+        this.satRangeBiasDriver = satRangeBias.getParametersDrivers().getFirst();
         satRangeBiasDriver.setSelected(true);
         satRangeBiasDriver.setReferenceDate(date);
         range.addModifier(satRangeBias);
@@ -393,7 +393,7 @@ public class UnscentedKalmanModelTest {
         final List<Double> scaleList = new ArrayList<>();
 
         // Orbital parameters
-        for (ParameterDriver driver : builder.getOrbitalParametersDrivers().getDrivers()) {
+        for (ParameterDriver driver : builder.getOrbitalParameterFactory().getOrbitalParametersDrivers().getDrivers()) {
             if (driver.isSelected()) {
                 scaleList.add(driver.getScale());
             }
@@ -438,7 +438,7 @@ public class UnscentedKalmanModelTest {
 
 
     /** Observer allowing to get Kalman model after a measurement was processed in the Kalman filter. */
-    public class ModelLogger implements KalmanObserver {
+    public static class ModelLogger implements KalmanObserver {
         KalmanEstimation estimation;
 
         @Override
@@ -454,7 +454,7 @@ public class UnscentedKalmanModelTest {
     @Test
     public void MassDepletionTest()  {
         // Add a maneuver with nonzero mass expenditure between the first and second measurement dates.
-        AbsoluteDate initialDate = this.propagatorBuilder.getInitialOrbitDate();
+        AbsoluteDate initialDate = this.propagatorBuilder.getOrbitalParameterFactory().getDate();
         double initialMass = this.propagatorBuilder.getMass();
         AbsoluteDate maneuverDate = initialDate.shiftedBy(5.0);
 

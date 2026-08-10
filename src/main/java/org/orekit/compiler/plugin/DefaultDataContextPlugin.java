@@ -43,17 +43,12 @@ import org.orekit.annotation.DefaultDataContext;
  * Processes {@link DefaultDataContext} to issue warnings at compile time.
  *
  * <p>To use this plugin add {@code -Xplugin:dataContextPlugin} to the javac command line.
- * Tested with OpenJDK 8 and 11.
- *
- * <p>Do not reference this class unless executing within {@code javac} or you have added
- * {@code tools.jar} to the class path. {@code tools.jar} is part of the JDK, not JRE, and
- * is typically located at {@code JAVA_HOME/../lib/tools.jar}.
  *
  * @author Evan Ward
  * @since 10.1
  */
 @SupportedAnnotationTypes("org.orekit.annotation.DefaultDataContext")
-@SupportedSourceVersion(SourceVersion.RELEASE_8)
+@SupportedSourceVersion(SourceVersion.RELEASE_21)
 public class DefaultDataContextPlugin implements Plugin, TaskListener {
 
     /** Warning message. */

@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Luc Maisonobe
+/* Copyright 2022-2026 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,7 @@
  */
 package org.orekit.frames;
 
+import java.io.Serial;
 import java.io.Serializable;
 
 /** Earth Orientation Parameters fitter for {@link PredictedEOPHistory EOP prediction}.
@@ -27,6 +28,7 @@ import java.io.Serializable;
 public class EOPFitter implements Serializable {
 
     /** Serializable UID. */
+    @Serial
     private static final long serialVersionUID = 20230309L;
 
     /** Fitter for dut1 and LOD. */

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 Bryan Cazabonne
+/* Copyright 2002-2026 Bryan Cazabonne
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -35,6 +35,7 @@ import java.util.Map;
  * needs the regular {@code Map<String, Object>} should be preferred.
  * </p>
  *
+ * @param <T> type of the field elements
  * @see FieldArrayDictionary
  * @author Bryan Cazabonne
  * @since 13.0

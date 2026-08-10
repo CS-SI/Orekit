@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,13 +22,18 @@ import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.CelestialBodyFactory;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.BodyFacade;
+import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.CenterName;
 import org.orekit.files.ccsds.definitions.FrameFacade;
+import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.Transform;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 
 /** Tests for CdmMetaData class.
@@ -46,7 +51,7 @@ public class CdmMetaDataTest {
     @DefaultDataContext
     public void testGetFrame() {
         
-        final CdmMetadata meta = new CdmMetadata();
+        CdmMetadata meta = new CdmMetadata(DataContext.getDefault(), new OrekitCcsdsFrameMapper());
         
         // refFrame == null
         try {
@@ -64,7 +69,7 @@ public class CdmMetaDataTest {
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.NO_DATA_LOADED_FOR_CELESTIAL_BODY, oe.getSpecifier());
-            Assertions.assertEquals("No Orbit center name", oe.getParts()[0]);
+            Assertions.assertEquals("dummy center", oe.getParts()[0]);
         }
         
         // refFrame.asFrame() == null
@@ -91,14 +96,39 @@ public class CdmMetaDataTest {
         meta.setOrbitCenter(BodyFacade.create(CenterName.SOLAR_SYSTEM_BARYCENTER));
         meta.setRefFrame(FrameFacade.map(icrf));
         Assertions.assertEquals(icrf, meta.getFrame());
+
+        // check frame mapping.
+        BodyFacade bodyFacade = new BodyFacade("TEST_BODY", null);
+        FrameFacade frameFacade = new FrameFacade(null, null, null, null, "TEST_FRAME");
+        Frame frame = new Frame(Frame.getRoot(), (Transform) null, "TEST");
+        final CcsdsFrameMapper frameMapper = new CcsdsFrameMapper() {
+            @Override
+            public Frame buildCcsdsFrame(FrameFacade orientation, AbsoluteDate epoch) {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override
+            public Frame buildCcsdsFrame(BodyFacade center,
+                                         FrameFacade orientation,
+                                         AbsoluteDate epoch) {
+                Assertions.assertSame(center, bodyFacade);
+                Assertions.assertSame(orientation, frameFacade);
+                return frame;
+            }
+        };
+        meta = new CdmMetadata(DataContext.getDefault(), frameMapper);
+        meta.setOrbitCenter(bodyFacade);
+        meta.setRefFrame(frameFacade);
+        Assertions.assertSame(meta.getFrame(), frame);
+        Assertions.assertSame(meta.getFrameMapper(), frameMapper);
     }
-    
+
     /** Condition coverage on the setAltCovRefFrame method. */
     @Test
     @DefaultDataContext
     public void testSetAltCovRefFrame() {
         
-        final CdmMetadata meta = new CdmMetadata();
+        final CdmMetadata meta = new CdmMetadata(DataContext.getDefault(), null);
         final FrameFacade altCovRefFrame = new FrameFacade(null, null, null, null, null);
 
         // getAltCovType()
@@ -133,14 +163,14 @@ public class CdmMetaDataTest {
         // Test the 3 allowed frames
         frameFacade = FrameFacade.map(FramesFactory.getGCRF());
         meta.setAltCovRefFrame(frameFacade);
-        Assertions.assertEquals(frameFacade, meta.getAltCovRefFrame());
+        Assertions.assertEquals(frameFacade, meta.getAltCovRefFrame().orElseThrow());
         
         frameFacade = FrameFacade.map(FramesFactory.getEME2000());
         meta.setAltCovRefFrame(frameFacade);
-        Assertions.assertEquals(frameFacade, meta.getAltCovRefFrame());
+        Assertions.assertEquals(frameFacade, meta.getAltCovRefFrame().orElseThrow());
         
         frameFacade = FrameFacade.map(FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         meta.setAltCovRefFrame(frameFacade);
-        Assertions.assertEquals(frameFacade, meta.getAltCovRefFrame());
+        Assertions.assertEquals(frameFacade, meta.getAltCovRefFrame().orElseThrow());
     }
 }

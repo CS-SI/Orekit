@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,16 +17,21 @@
 
 package org.orekit.files.ccsds.ndm.odm.ocm;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
+import org.orekit.annotation.Nullable;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.BodyFacade;
+import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.ndm.odm.oem.InterpolationMethod;
 import org.orekit.files.ccsds.section.CommentsContainer;
+import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.units.Unit;
 
@@ -61,18 +66,23 @@ public class TrajectoryStateHistoryMetadata extends CommentsContainer {
     public static final int DEFAULT_INTERPOLATION_DEGREE = 3;
 
     /** Trajectory identification number. */
+    @Nullable
     private String trajID;
 
     /** Identification number of previous trajectory. */
+    @Nullable
     private String trajPrevID;
 
     /** Identification number of next trajectory. */
+    @Nullable
     private String trajNextID;
 
     /** Basis of this trajectory state time history data. */
+    @Nullable
     private String trajBasis;
 
     /** Identification number of the orbit determination or simulation upon which this trajectory is based. */
+    @Nullable
     private String trajBasisID;
 
     /** Interpolation method. */
@@ -84,6 +94,7 @@ public class TrajectoryStateHistoryMetadata extends CommentsContainer {
     /** Orbit propagator used to generate this trajectory.
      * @since 11.2
      */
+    @Nullable
     private String propagator;
 
     /** Origin of reference frame. */
@@ -97,17 +108,21 @@ public class TrajectoryStateHistoryMetadata extends CommentsContainer {
 
     /** Start of useable time span covered by ephemerides data, it may be
      * necessary to allow for proper interpolation. */
+    @Nullable
     private AbsoluteDate useableStartTime;
 
     /** End of useable time span covered by ephemerides data, it may be
      * necessary to allow for proper interpolation. */
+    @Nullable
     private AbsoluteDate useableStopTime;
 
     /** Integer orbit revolution number. */
-    private int orbRevNum;
+    @Nullable
+    private Integer orbRevNum;
 
     /** Basis for orbit revolution counter (i.e is first launch/deployment on orbit 0 or 1). */
-    private int orbRevNumBasis;
+    @Nullable
+    private Integer orbRevNumBasis;
 
     /** Trajectory element set type. */
     private OrbitElementsType trajType;
@@ -123,14 +138,26 @@ public class TrajectoryStateHistoryMetadata extends CommentsContainer {
      */
     private final DataContext dataContext;
 
-    /** Simple constructor.
-     * @param epochT0 T0 epoch from file metadata
-     * @param dataContext data context
+    /**
+     * Used to create a {@link Frame} from the CCSDS specification.
+     *
+     * @since 13.1.5
      */
-    public TrajectoryStateHistoryMetadata(final AbsoluteDate epochT0, final DataContext dataContext) {
+    private final CcsdsFrameMapper frameMapper;
+
+    /**
+     * Simple constructor.
+     *
+     * @param epochT0     T0 epoch from file metadata
+     * @param dataContext data context
+     * @param frameMapper for building an Orekit {@link Frame}.
+     * @since 13.1.5
+     */
+    public TrajectoryStateHistoryMetadata(final AbsoluteDate epochT0,
+                                          final DataContext dataContext,
+                                          final CcsdsFrameMapper frameMapper) {
         // we don't call the setXxx() methods in order to avoid
         // calling refuseFurtherComments as a side effect
-        trajBasis           = null;
         interpolationMethod = DEFAULT_INTERPOLATION_METHOD;
         interpolationDegree = DEFAULT_INTERPOLATION_DEGREE;
         orbAveraging        = "OSCULATING";
@@ -141,20 +168,43 @@ public class TrajectoryStateHistoryMetadata extends CommentsContainer {
                                               CelestialBodyFrame.ICRF.name());
         trajFrameEpoch      = epochT0;
         trajType            = OrbitElementsType.CARTPV;
-        orbRevNum           = -1;
-        orbRevNumBasis      = -1;
-
+        trajUnits           = new ArrayList<>();
         this.dataContext    = dataContext;
+        this.frameMapper    = frameMapper;
+    }
 
+    /**
+     * Get the frame mapper used to create a {@link Frame} from {@link #getCenter()},
+     * {@link #getTrajReferenceFrame()}, and {@link #getTrajFrameEpoch()}.
+     *
+     * @return the frame mapper.
+     * @see #getFrame()
+     * @since 13.1.5
+     */
+    public CcsdsFrameMapper getFrameMapper() {
+        return frameMapper;
+    }
+
+    /**
+     * Use the {@link #getFrameMapper()} to create a {@link Frame} from
+     * {@link #getCenter()}, {@link #getTrajReferenceFrame()}, and
+     * {@link #getTrajFrameEpoch()}.
+     *
+     * @return the frame for this trajectory state history.
+     * @since 13.1.5
+     */
+    public Frame getFrame() {
+        return getFrameMapper().buildCcsdsFrame(getCenter(), getTrajReferenceFrame(), getTrajFrameEpoch());
     }
 
     /** {@inheritDoc} */
     @Override
     public void validate(final double version) {
         checkMandatoryEntriesExceptOrbitsCounter(version);
-        if (orbRevNum >= 0 && orbRevNumBasis < 0) {
-            throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY,
-                                      TrajectoryStateHistoryMetadataKey.ORB_REVNUM_BASIS.name());
+        if (getOrbRevNum().isPresent()) {
+            getOrbRevNumBasis().
+                orElseThrow(() -> new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY,
+                                                      TrajectoryStateHistoryMetadataKey.ORB_REVNUM_BASIS.name()));
         }
     }
 
@@ -171,7 +221,7 @@ public class TrajectoryStateHistoryMetadata extends CommentsContainer {
             trajType != OrbitElementsType.CARTPVA) {
             checkNotNull(orbAveraging, TrajectoryStateHistoryMetadataKey.ORB_AVERAGING.name());
         }
-        if (trajUnits != null) {
+        if (!trajUnits.isEmpty()) {
             Unit.ensureCompatible(trajType.toString(), trajType.getUnits(), false, trajUnits);
         }
     }
@@ -213,8 +263,8 @@ public class TrajectoryStateHistoryMetadata extends CommentsContainer {
         final int    index    = end < original.length() ? Integer.parseInt(original.substring(end)) : 0;
 
         // build offset index, taking care to use at least the same number of digits
-        final String newIndex = String.format(String.format("%%0%dd", original.length() - end),
-                                              index + 1);
+        final String newIndex = "%%0%dd".formatted(original.length() - end).formatted(
+                index + 1);
 
         return prefix + newIndex;
 
@@ -223,8 +273,8 @@ public class TrajectoryStateHistoryMetadata extends CommentsContainer {
     /** Get trajectory identification number.
      * @return trajectory identification number
      */
-    public String getTrajID() {
-        return trajID;
+    public Optional<String> getTrajID() {
+        return Optional.ofNullable(trajID);
     }
 
     /** Set trajectory identification number.
@@ -238,8 +288,8 @@ public class TrajectoryStateHistoryMetadata extends CommentsContainer {
     /** Get identification number of previous trajectory.
      * @return identification number of previous trajectory
      */
-    public String getTrajPrevID() {
-        return trajPrevID;
+    public Optional<String> getTrajPrevID() {
+        return Optional.ofNullable(trajPrevID);
     }
 
     /** Set identification number of previous trajectory.
@@ -253,8 +303,8 @@ public class TrajectoryStateHistoryMetadata extends CommentsContainer {
     /** Get identification number of next trajectory.
      * @return identification number of next trajectory
      */
-    public String getTrajNextID() {
-        return trajNextID;
+    public Optional<String> getTrajNextID() {
+        return Optional.ofNullable(trajNextID);
     }
 
     /** Set identification number of next trajectory.
@@ -268,8 +318,8 @@ public class TrajectoryStateHistoryMetadata extends CommentsContainer {
     /** Get basis of this trajectory state time history data.
      * @return basis of this trajectory state time history data
      */
-    public String getTrajBasis() {
-        return trajBasis;
+    public Optional<String> getTrajBasis() {
+        return Optional.ofNullable(trajBasis);
     }
 
     /** Set basis of this trajectory state time history data.
@@ -283,8 +333,8 @@ public class TrajectoryStateHistoryMetadata extends CommentsContainer {
     /** Get identification number of the orbit determination or simulation upon which this trajectory is based.
      * @return identification number of the orbit determination or simulation upon which this trajectory is based
      */
-    public String getTrajBasisID() {
-        return trajBasisID;
+    public Optional<String> getTrajBasisID() {
+        return Optional.ofNullable(trajBasisID);
     }
 
     /** Set identification number of the orbit determination or simulation upon which this trajectory is based.
@@ -329,8 +379,8 @@ public class TrajectoryStateHistoryMetadata extends CommentsContainer {
      * @return orbit propagator used to generate this trajectory
      * @since 11.2
      */
-    public String getPropagator() {
-        return propagator;
+    public Optional<String> getPropagator() {
+        return Optional.ofNullable(propagator);
     }
 
     /** Set the orbit propagator used to generate this trajectory.
@@ -391,11 +441,11 @@ public class TrajectoryStateHistoryMetadata extends CommentsContainer {
      * necessary to allow for proper interpolation.
      * @return the useable start time
      */
-    public AbsoluteDate getUseableStartTime() {
-        return useableStartTime;
+    public Optional<AbsoluteDate> getUseableStartTime() {
+        return Optional.ofNullable(useableStartTime);
     }
 
-    /** Set start of useable time span covered by ephemerides data, it may be
+    /** Set start of useable time span covered by ephemerides data; it may be
      * necessary to allow for proper interpolation.
      * @param useableStartTime the time to be set
      */
@@ -408,8 +458,8 @@ public class TrajectoryStateHistoryMetadata extends CommentsContainer {
      * necessary to allow for proper interpolation.
      * @return the useable stop time
      */
-    public AbsoluteDate getUseableStopTime() {
-        return useableStopTime;
+    public Optional<AbsoluteDate> getUseableStopTime() {
+        return Optional.ofNullable(useableStopTime);
     }
 
     /** Set end of useable time span covered by ephemerides data, it may be
@@ -422,10 +472,10 @@ public class TrajectoryStateHistoryMetadata extends CommentsContainer {
     }
 
     /** Get the integer orbit revolution number.
-     * @return integer orbit revolution number (-1 if not set)
+     * @return integer orbit revolution number
      */
-    public int getOrbRevNum() {
-        return orbRevNum;
+    public Optional<Integer> getOrbRevNum() {
+        return Optional.ofNullable(orbRevNum);
     }
 
     /** Set the integer orbit revolution number.
@@ -439,10 +489,10 @@ public class TrajectoryStateHistoryMetadata extends CommentsContainer {
      * <p>
      * This specifies if first launch/deployment is on orbit 0 or 1.
      * </p>
-     * @return basis for orbit revolution number (-1 if not set)
+     * @return basis for orbit revolution number
      */
-    public int getOrbRevNumBasis() {
-        return orbRevNumBasis;
+    public Optional<Integer> getOrbRevNumBasis() {
+        return Optional.ofNullable(orbRevNumBasis);
     }
 
     /** Set the basis for orbit revolution number.
@@ -513,7 +563,10 @@ public class TrajectoryStateHistoryMetadata extends CommentsContainer {
         checkMandatoryEntriesExceptOrbitsCounter(version);
 
         // allocate new instance
-        final TrajectoryStateHistoryMetadata copy = new TrajectoryStateHistoryMetadata(trajFrameEpoch, dataContext);
+        final TrajectoryStateHistoryMetadata copy = new TrajectoryStateHistoryMetadata(
+                trajFrameEpoch,
+                dataContext,
+                getFrameMapper());
 
         // copy comments
         for (String comment : getComments()) {
@@ -521,18 +574,19 @@ public class TrajectoryStateHistoryMetadata extends CommentsContainer {
         }
 
         // copy metadata
-        copy.setTrajPrevID(getTrajPrevID());
-        copy.setTrajID(getTrajID());
-        copy.setTrajNextID(getTrajNextID());
-        copy.setTrajBasis(getTrajBasis());
-        copy.setTrajBasisID(getTrajBasisID());
+        getTrajPrevID().ifPresent(copy::setTrajPrevID);
+        getTrajID().ifPresent(copy::setTrajID);
+        getTrajNextID().ifPresent(copy::setTrajNextID);
+        getTrajBasis().ifPresent(copy::setTrajBasis);
+        getTrajBasisID().ifPresent(copy::setTrajBasisID);
         copy.setInterpolationMethod(getInterpolationMethod());
         copy.setInterpolationDegree(getInterpolationDegree());
-        copy.setPropagator(getPropagator());
+        getPropagator().ifPresent(copy::setPropagator);
         copy.setCenter(getCenter());
         copy.setTrajReferenceFrame(getTrajReferenceFrame());
         copy.setTrajFrameEpoch(getTrajFrameEpoch());
-        copy.setOrbRevNumBasis(getOrbRevNumBasis());
+        getOrbRevNum().ifPresent(copy::setOrbRevNum);
+        getOrbRevNumBasis().ifPresent(copy::setOrbRevNumBasis);
         copy.setOrbAveraging(getOrbAveraging());
         copy.setTrajType(getTrajType());
         copy.setTrajUnits(getTrajUnits());

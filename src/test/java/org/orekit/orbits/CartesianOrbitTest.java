@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 package org.orekit.orbits;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.function.Function;
 
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.differentiation.DSFactory;
@@ -38,10 +42,6 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.function.Function;
 
 
 public class CartesianOrbitTest {
@@ -149,7 +149,7 @@ public class CartesianOrbitTest {
         Assertions.assertEquals(22979265.3030773,  p.getA(), Utils.epsilonTest  * p.getA());
         Assertions.assertEquals(0.743502611664700, p.getE(), Utils.epsilonE     * FastMath.abs(p.getE()));
         Assertions.assertEquals(0.122182096220906, p.getI(), Utils.epsilonAngle * FastMath.abs(p.getI()));
-        double pa = kep.getPerigeeArgument();
+        double pa = kep.getPeriapsisArgument();
         Assertions.assertEquals(MathUtils.normalizeAngle(3.09909041016672, pa), pa,
                      Utils.epsilonAngle * FastMath.abs(pa));
         double raan = kep.getRightAscensionOfAscendingNode();
@@ -201,20 +201,18 @@ public class CartesianOrbitTest {
 
         EquinoctialOrbit p = new EquinoctialOrbit(pvCoordinates, FramesFactory.getEME2000(), date, mu);
 
-        double apogeeRadius  = p.getA() * (1 + p.getE());
-        double perigeeRadius = p.getA() * (1 - p.getE());
+        double apoapsisRadius  = p.getA() * (1 + p.getE());
+        double periapsisRadius = p.getA() * (1 - p.getE());
 
         for (double lv = 0; lv <= 2 * FastMath.PI; lv += 2 * FastMath.PI/100.) {
             p = new EquinoctialOrbit(p.getA(), p.getEquinoctialEx(), p.getEquinoctialEy(),
                                           p.getHx(), p.getHy(), lv, PositionAngleType.TRUE, p.getFrame(), date, mu);
             position = p.getPosition();
 
-            // test if the norm of the position is in the range [perigee radius, apogee radius]
+            // test if the norm of the position is in the range [periapsis radius, apoapsis radius]
             // Warning: these tests are without absolute value by choice
-            Assertions.assertTrue((position.getNorm() - apogeeRadius)  <= (  apogeeRadius * Utils.epsilonTest));
-            Assertions.assertTrue((position.getNorm() - perigeeRadius) >= (- perigeeRadius * Utils.epsilonTest));
-            // Assertions.assertTrue(position.getNorm() <= apogeeRadius);
-            // Assertions.assertTrue(position.getNorm() >= perigeeRadius);
+            Assertions.assertTrue((position.getNorm() - apoapsisRadius)  <= (  apoapsisRadius * Utils.epsilonTest));
+            Assertions.assertTrue((position.getNorm() - periapsisRadius) >= (- periapsisRadius * Utils.epsilonTest));
 
             position= position.normalize();
             velocity = p.getVelocity().normalize();
@@ -234,8 +232,8 @@ public class CartesianOrbitTest {
                                                                      PositionAngleType.TRUE,
                                                                      FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
                                                                      mu));
-        Vector3D perigeeP  = orbit.getPosition();
-        Vector3D u = perigeeP.normalize();
+        Vector3D periapsisP  = orbit.getPosition();
+        Vector3D u = periapsisP.normalize();
         Vector3D focus1 = Vector3D.ZERO;
         Vector3D focus2 = new Vector3D(-2 * orbit.getA() * orbit.getE(), u);
         for (double dt = -5000; dt < 5000; dt += 60) {
@@ -256,9 +254,9 @@ public class CartesianOrbitTest {
                                                                      PositionAngleType.MEAN,
                                                                      FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
                                                                      mu));
-        Vector3D perigeeP  = new KeplerianOrbit(-10000000.0, 1.2, 0.3, 0, 0, 0.0, PositionAngleType.TRUE, orbit.getFrame(),
-                                                orbit.getDate(), orbit.getMu()).getPosition();
-        Vector3D u = perigeeP.normalize();
+        Vector3D periapsisP  = new KeplerianOrbit(-10000000.0, 1.2, 0.3, 0, 0, 0.0, PositionAngleType.TRUE, orbit.getFrame(),
+                                                  orbit.getDate(), orbit.getMu()).getPosition();
+        Vector3D u = periapsisP.normalize();
         Vector3D focus1 = Vector3D.ZERO;
         Vector3D focus2 = new Vector3D(-2 * orbit.getA() * orbit.getE(), u);
         for (double dt = -5000; dt < 5000; dt += 60) {

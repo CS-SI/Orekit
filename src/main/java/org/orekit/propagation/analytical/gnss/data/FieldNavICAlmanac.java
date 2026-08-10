@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Luc Maisonobe
+/* Copyright 2022-2026 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,9 @@
 package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
+import org.orekit.orbits.FieldKeplerianOrbit;
+import org.orekit.time.FieldGNSSDate;
+import org.orekit.time.TimeScales;
 
 import java.util.function.Function;
 
@@ -33,24 +35,26 @@ import java.util.function.Function;
  *
  */
 public class FieldNavICAlmanac<T extends CalculusFieldElement<T>>
-    extends FieldAbstractAlmanac<T, NavICAlmanac> {
+    extends FieldGnssOrbitalElements<T, NavICAlmanac> {
 
-    /** Constructor from non-field instance.
-     * @param field    field to which elements belong
-     * @param original regular non-field instance
+    /** Creates a new instance.
+     * @param angularVelocity mean angular velocity of the Earth for the GNSS model
+     * @param weeksInCycle    number of weeks in the GNSS cycle
+     * @param timeScales      known time scales
+     * @param type            type (null if not a navigation message)
+     * @param prn             PRN number of the satellite
+     * @param toe             time of ephemeris (<em>must</em> be consistent with {@code orbit})
+     * @param orbit           Keplerian orbit in Earth-frozen frame
+     * @param nonKeplerian    15 non-Keplerian parameters (in the order given by {@link NonKeplerianDriversFactory}
+     * @param tgd             group delay differential TGD for L1-L2 correction
+     * @param toc             time of clock
+     * @since 14.0
      */
-    public FieldNavICAlmanac(final Field<T> field, final NavICAlmanac original) {
-        super(field, original);
-    }
-
-    /** Constructor from different field instance.
-     * @param <V> type of the old field elements
-     * @param original regular non-field instance
-     * @param converter for field elements
-     */
-    public <V extends CalculusFieldElement<V>> FieldNavICAlmanac(final Function<V, T> converter,
-                                                                 final FieldNavICAlmanac<V> original) {
-        super(converter, original);
+    public FieldNavICAlmanac(final double angularVelocity, final int weeksInCycle,
+                             final TimeScales timeScales, final String type, final int prn,
+                             final FieldGNSSDate<T> toe, final FieldKeplerianOrbit<T> orbit,
+                             final T[] nonKeplerian, final T tgd, final FieldGNSSDate<T> toc) {
+        super(angularVelocity, weeksInCycle, timeScales, type, prn, toe, orbit, nonKeplerian, tgd, toc);
     }
 
     /** {@inheritDoc} */
@@ -60,22 +64,19 @@ public class FieldNavICAlmanac<T extends CalculusFieldElement<T>>
     }
 
     /** {@inheritDoc} */
-    @SuppressWarnings("unchecked")
     @Override
-    public <U extends CalculusFieldElement<U>, G extends FieldGnssOrbitalElements<U, NavICAlmanac>>
-        G changeField(final Function<T, U> converter) {
-        return (G) new FieldNavICAlmanac<>(converter, this);
-    }
-
-    /**
-     * Setter for the Square Root of Semi-Major Axis (m^1/2).
-     * <p>
-     * In addition, this method set the value of the Semi-Major Axis.
-     * </p>
-     * @param sqrtA the Square Root of Semi-Major Axis (m^1/2)
-     */
-    public void setSqrtA(final T sqrtA) {
-        setSma(sqrtA.square());
+    public <U extends CalculusFieldElement<U>>
+        FieldNavICAlmanac<U> toField(final FieldKeplerianOrbit<U> orbit,
+                                     final U[] nonKeplerian,
+                                     final Function<T, U> converter) {
+        return new FieldNavICAlmanac<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
+                                       getType(), getPrn(),
+                                       new FieldGNSSDate<>(orbit.getDate().getField(),
+                                                           getTimeOfEphemeris().getGnssDate()),
+                                       orbit, nonKeplerian,
+                                       converter.apply(getTgd()),
+                                       new FieldGNSSDate<>(orbit.getDate().getField(),
+                                                           getTimeOfClock().getGnssDate()));
     }
 
 }

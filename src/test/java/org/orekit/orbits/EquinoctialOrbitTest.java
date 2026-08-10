@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,8 @@
  */
 package org.orekit.orbits;
 
+import java.util.function.Function;
+
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.differentiation.DSFactory;
@@ -26,7 +28,10 @@ import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrixPreservingVisitor;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.orekit.Utils;
@@ -40,9 +45,6 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
-
-import java.util.function.Function;
-
 import static org.orekit.OrekitMatchers.relativelyCloseTo;
 
 
@@ -229,9 +231,9 @@ public class EquinoctialOrbitTest {
                      * FastMath.abs(kep.getE()));
         Assertions.assertEquals(0.166901168553917e-03, kep.getI(), Utils.epsilonAngle
                      * FastMath.abs(kep.getI()));
-        Assertions.assertEquals(MathUtils.normalizeAngle(-3.87224326008837, kep.getPerigeeArgument()),
-                     kep.getPerigeeArgument(), Utils.epsilonTest
-                     * FastMath.abs(kep.getPerigeeArgument()));
+        Assertions.assertEquals(MathUtils.normalizeAngle(-3.87224326008837, kep.getPeriapsisArgument()),
+                     kep.getPeriapsisArgument(), Utils.epsilonTest
+                     * FastMath.abs(kep.getPeriapsisArgument()));
         Assertions.assertEquals(MathUtils.normalizeAngle(5.51473467358854, kep
                                      .getRightAscensionOfAscendingNode()), kep
                                      .getRightAscensionOfAscendingNode(), Utils.epsilonTest
@@ -290,7 +292,7 @@ public class EquinoctialOrbitTest {
 
         double e = p.getE();
         double eRatio = FastMath.sqrt((1 - e) / (1 + e));
-        double paPraan = kep.getPerigeeArgument()
+        double paPraan = kep.getPeriapsisArgument()
         + kep.getRightAscensionOfAscendingNode();
 
         double lv = 1.1;
@@ -422,8 +424,8 @@ public class EquinoctialOrbitTest {
         Vector3D velocity = p.getVelocity();
         Vector3D momentum = p.getPVCoordinates().getMomentum().normalize();
 
-        double apogeeRadius = p.getA() * (1 + p.getE());
-        double perigeeRadius = p.getA() * (1 - p.getE());
+        double apoapsisRadius = p.getA() * (1 + p.getE());
+        double periapsisRadius = p.getA() * (1 - p.getE());
 
         for (double lv = 0; lv <= 2 * FastMath.PI; lv += 2 * FastMath.PI / 100.) {
             p = new EquinoctialOrbit(p.getA(), p.getEquinoctialEx(),
@@ -431,18 +433,17 @@ public class EquinoctialOrbitTest {
                                      p.getFrame(), p.getDate(), p.getMu());
             position = p.getPosition();
 
-            // test if the norm of the position is in the range [perigee radius,
-            // apogee radius]
+            // test if the norm of the position is in the range [periapsis radius, apoapsis radius]
             // Warning: these tests are without absolute value by choice
-            Assertions.assertTrue((position.getNorm() - apogeeRadius) <= (apogeeRadius * Utils.epsilonTest));
-            Assertions.assertTrue((position.getNorm() - perigeeRadius) >= (-perigeeRadius * Utils.epsilonTest));
+            Assertions.assertTrue((position.getNorm() - apoapsisRadius) <= (apoapsisRadius * Utils.epsilonTest));
+            Assertions.assertTrue((position.getNorm() - periapsisRadius) >= (-periapsisRadius * Utils.epsilonTest));
 
             position = position.normalize();
             velocity = p.getVelocity();
             velocity = velocity.normalize();
 
             // at this stage of computation, all the vectors (position, velocity and
-            // momemtum) are normalized here
+            // momentum) are normalized here
 
             // test of orthogonality between position and momentum
             Assertions.assertTrue(FastMath.abs(Vector3D.dotProduct(position, momentum)) < Utils.epsilonTest);
@@ -461,11 +462,10 @@ public class EquinoctialOrbitTest {
 
         momentum = Vector3D.crossProduct(position, velocity).normalize();
 
-        apogeeRadius = pCirEqua.getA() * (1 + pCirEqua.getE());
-        perigeeRadius = pCirEqua.getA() * (1 - pCirEqua.getE());
-        // test if apogee equals perigee
-        Assertions.assertEquals(perigeeRadius, apogeeRadius, 1.e+4 * Utils.epsilonTest
-                     * apogeeRadius);
+        apoapsisRadius = pCirEqua.getA() * (1 + pCirEqua.getE());
+        periapsisRadius = pCirEqua.getA() * (1 - pCirEqua.getE());
+        // test if apoapsis equals periapsis
+        Assertions.assertEquals(periapsisRadius, apoapsisRadius, 1.e+4 * Utils.epsilonTest * apoapsisRadius);
 
         for (double lv = 0; lv <= 2 * FastMath.PI; lv += 2 * FastMath.PI / 100.) {
             pCirEqua = new EquinoctialOrbit(pCirEqua.getA(), pCirEqua.getEquinoctialEx(),
@@ -473,10 +473,9 @@ public class EquinoctialOrbitTest {
                                             pCirEqua.getFrame(), p.getDate(), p.getMu());
             position = pCirEqua.getPosition();
 
-            // test if the norm pf the position is in the range [perigee radius,
-            // apogee radius]
-            Assertions.assertTrue((position.getNorm() - apogeeRadius) <= (apogeeRadius * Utils.epsilonTest));
-            Assertions.assertTrue((position.getNorm() - perigeeRadius) >= (-perigeeRadius * Utils.epsilonTest));
+            // test if the norm pf the position is in the range [periapsis radius, apoapsis radius]
+            Assertions.assertTrue((position.getNorm() - apoapsisRadius) <= (apoapsisRadius * Utils.epsilonTest));
+            Assertions.assertTrue((position.getNorm() - periapsisRadius) >= (-periapsisRadius * Utils.epsilonTest));
 
             position = position.normalize();
             velocity = pCirEqua.getVelocity();

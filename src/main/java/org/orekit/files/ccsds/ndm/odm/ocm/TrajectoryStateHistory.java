@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,8 +22,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.utils.Initializer;
 import org.orekit.files.general.EphemerisFile;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
@@ -61,7 +60,7 @@ public class TrajectoryStateHistory implements EphemerisFile.EphemerisSegment<Ti
                                   final List<TrajectoryState> states,
                                   final OneAxisEllipsoid body, final double mu) {
         this.metadata = metadata;
-        this.states   = states;
+        this.states   = Initializer.emptyListIfNull(states);
         this.mu       = mu;
         this.body     = body;
     }
@@ -97,12 +96,7 @@ public class TrajectoryStateHistory implements EphemerisFile.EphemerisSegment<Ti
     /** {@inheritDoc} */
     @Override
     public Frame getFrame() {
-        final Frame frame = metadata.getTrajReferenceFrame().asFrame();
-        if (frame == null) {
-            throw new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME,
-                                      metadata.getTrajReferenceFrame().getName());
-        }
-        return frame;
+        return getMetadata().getFrame();
     }
 
     /** {@inheritDoc} */
@@ -114,19 +108,19 @@ public class TrajectoryStateHistory implements EphemerisFile.EphemerisSegment<Ti
     /** {@inheritDoc} */
     @Override
     public CartesianDerivativesFilter getAvailableDerivatives() {
-        return states.get(0).getAvailableDerivatives();
+        return states.getFirst().getAvailableDerivatives();
     }
 
     /** {@inheritDoc} */
     @Override
     public AbsoluteDate getStart() {
-        return states.get(0).getDate();
+        return states.getFirst().getDate();
     }
 
     /** {@inheritDoc} */
     @Override
     public AbsoluteDate getStop() {
-        return states.get(states.size() - 1).getDate();
+        return states.getLast().getDate();
     }
 
     /** {@inheritDoc} */

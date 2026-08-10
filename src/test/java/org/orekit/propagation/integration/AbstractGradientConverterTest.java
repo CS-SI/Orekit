@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,6 +26,7 @@ import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
+import org.orekit.propagation.AbstractGradientConverter;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -134,7 +135,7 @@ class AbstractGradientConverterTest {
         return mockedDriversProvider;
     }
 
-    private static class TestGradientConverter extends AbstractGradientConverter{
+    private static class TestGradientConverter extends AbstractGradientConverter {
 
         protected TestGradientConverter(int freeStateParameters) {
             super(freeStateParameters);

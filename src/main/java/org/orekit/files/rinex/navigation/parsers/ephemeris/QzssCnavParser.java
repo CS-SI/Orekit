@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,20 +19,23 @@ package org.orekit.files.rinex.navigation.parsers.ephemeris;
 import org.orekit.files.rinex.navigation.RinexNavigation;
 import org.orekit.files.rinex.navigation.parsers.ParseInfo;
 import org.orekit.propagation.analytical.gnss.data.QZSSCivilianNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.QZSSCivilianNavigationMessageFactory;
 
 /** Parser for QZSS civilian.
  * @author Bryan Cazabonne
  * @author Luc Maisonobe
  * @since 14.0
  */
-public class QzssCnavParser extends CivilianNavigationParser<QZSSCivilianNavigationMessage> {
+public class QzssCnavParser
+    extends CivilianLevel2NavigationParser<QZSSCivilianNavigationMessage, QZSSCivilianNavigationMessageFactory> {
 
     /** Simple constructor.
      * @param parseInfo container for parsing data
-     * @param message container for navigation message
+     * @param factory factory for navigation message
      */
-    public QzssCnavParser(final ParseInfo parseInfo, final QZSSCivilianNavigationMessage message) {
-        super(parseInfo, message);
+    public QzssCnavParser(final ParseInfo parseInfo,
+                          final QZSSCivilianNavigationMessageFactory factory) {
+        super(parseInfo, factory);
     }
 
     /** {@inheritDoc} */

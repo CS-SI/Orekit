@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -55,7 +55,8 @@ public class PredictedEOPHistoryTest {
                                                                      SingleParameterFitter.createDefaultPoleFitterShortTermPrediction(),
                                                                      SingleParameterFitter.createDefaultPoleFitterShortTermPrediction(),
                                                                      SingleParameterFitter.createDefaultNutationFitterShortTermPrediction(),
-                                                                     SingleParameterFitter.createDefaultNutationFitterShortTermPrediction()));
+                                                                     SingleParameterFitter.createDefaultNutationFitterShortTermPrediction()).
+                                                       fit(truncatedEOP));
         Assertions.assertEquals(0.0,
                                 new AbsoluteDate(2018, 1, 1, 0, 0, 0.0, utc).durationFrom(predicted.getStartDate()),
                                 1.0e-10);
@@ -84,7 +85,8 @@ public class PredictedEOPHistoryTest {
                                                                      SingleParameterFitter.createDefaultPoleFitterShortTermPrediction(),
                                                                      SingleParameterFitter.createDefaultPoleFitterShortTermPrediction(),
                                                                      SingleParameterFitter.createDefaultNutationFitterShortTermPrediction(),
-                                                                     SingleParameterFitter.createDefaultNutationFitterShortTermPrediction()));
+                                                                     SingleParameterFitter.createDefaultNutationFitterShortTermPrediction()).
+                                                       fit(truncatedEOP));
 
         // check we get the same value as raw EOP (dropping the last interpolated day)
         double maxErrorUT1  = 0;
@@ -103,8 +105,8 @@ public class PredictedEOPHistoryTest {
             final PoleCorrection predPC    = predicted.getPoleCorrection(date);
             final double[]       rawENC    = truncatedEOP.getEquinoxNutationCorrection(date);
             final double[]       predENC   = predicted.getEquinoxNutationCorrection(date);
-            final double[]       rawNroNC  = truncatedEOP.getNonRotatinOriginNutationCorrection(date);
-            final double[]       predNroNC = predicted.getNonRotatinOriginNutationCorrection(date);
+            final double[]       rawNroNC  = truncatedEOP.getNonRotatingOriginNutationCorrection(date);
+            final double[]       predNroNC = predicted.getNonRotatingOriginNutationCorrection(date);
             maxErrorUT1  = FastMath.max(maxErrorUT1,  FastMath.abs(truncatedEOP.getUT1MinusUTC(date) - predicted.getUT1MinusUTC(date)));
             maxErrorLOD  = FastMath.max(maxErrorLOD,  FastMath.abs(truncatedEOP.getLOD(date)         - predicted.getLOD(date)));
             maxErrorXp   = FastMath.max(maxErrorXp,   FastMath.abs(rawPC.getXp()            - predPC.getXp()));
@@ -152,7 +154,8 @@ public class PredictedEOPHistoryTest {
                                                                      SingleParameterFitter.createDefaultPoleFitterLongTermPrediction(),
                                                                      SingleParameterFitter.createDefaultPoleFitterLongTermPrediction(),
                                                                      SingleParameterFitter.createDefaultNutationFitterLongTermPrediction(),
-                                                                     SingleParameterFitter.createDefaultNutationFitterLongTermPrediction()));
+                                                                     SingleParameterFitter.createDefaultNutationFitterLongTermPrediction()).
+                                                       fit(truncatedEOP));
 
         // check we get the same value as raw EOP (dropping the last interpolated day)
         double maxErrorUT1  = 0;
@@ -206,14 +209,16 @@ public class PredictedEOPHistoryTest {
                                                                                      SingleParameterFitter.createDefaultPoleFitterShortTermPrediction(),
                                                                                      SingleParameterFitter.createDefaultPoleFitterShortTermPrediction(),
                                                                                      SingleParameterFitter.createDefaultNutationFitterShortTermPrediction(),
-                                                                                     SingleParameterFitter.createDefaultNutationFitterShortTermPrediction())) :
+                                                                                     SingleParameterFitter.createDefaultNutationFitterShortTermPrediction()).
+                                                                       fit(truncatedEOP)) :
                                                new PredictedEOPHistory(truncatedEOP,
                                                                        180 * Constants.JULIAN_DAY,
                                                                        new EOPFitter(SingleParameterFitter.createDefaultDut1FitterLongTermPrediction() ,
                                                                                      SingleParameterFitter.createDefaultPoleFitterLongTermPrediction(),
                                                                                      SingleParameterFitter.createDefaultPoleFitterLongTermPrediction(),
                                                                                      SingleParameterFitter.createDefaultNutationFitterLongTermPrediction(),
-                                                                                     SingleParameterFitter.createDefaultNutationFitterLongTermPrediction()));
+                                                                                     SingleParameterFitter.createDefaultNutationFitterLongTermPrediction()).
+                                                                       fit(truncatedEOP));
 
             // set up two itrf frames, one using true, one using predicted EOP
             final Frame itrfTrue = FramesFactory.buildUncachedITRF(trueEOP, TimeScalesFactory.getUTC());

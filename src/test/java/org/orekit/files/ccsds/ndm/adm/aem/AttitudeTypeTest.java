@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -35,6 +35,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
 import org.orekit.files.ccsds.definitions.FrameFacade;
+import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.SpacecraftBodyFrame;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
@@ -50,6 +51,7 @@ public class AttitudeTypeTest {
 
     private static final double QUATERNION_PRECISION = 1.0e-5;
     private static final double ANGLE_PRECISION = 1.0e-3;
+    private static final OrekitCcsdsFrameMapper FRAME_MAPPER = new OrekitCcsdsFrameMapper();
 
     AemMetadata metadata;
     ContextBinding context;
@@ -58,9 +60,9 @@ public class AttitudeTypeTest {
     public void setUp()
         throws Exception {
         Utils.setDataRoot("regular-data");
-        metadata = new AemMetadata(4);
+        metadata = new AemMetadata(4, FRAME_MAPPER);
         context  =  new ContextBinding(() -> IERSConventions.IERS_2010,
-                                       () -> true, () -> DataContext.getDefault(),
+                                       () -> true, DataContext::getDefault,
                                        () -> ParsedUnitsBehavior.STRICT_COMPLIANCE, () -> null,
                                        metadata::getTimeSystem, () -> 0.0, () -> 1.0);
         metadata.setTimeSystem(TimeSystem.TAI);
@@ -107,7 +109,7 @@ public class AttitudeTypeTest {
                                 ANGLE_PRECISION);
 
         // Test computation of attitude data from angular coordinates
-        AemMetadata metadata = new AemMetadata(3);
+        AemMetadata metadata = new AemMetadata(3, FRAME_MAPPER);
         metadata.getEndpoints().setFrameA(new FrameFacade(FramesFactory.getGCRF(), CelestialBodyFrame.GCRF,
                                                           null, null, "GCRF"));
         metadata.getEndpoints().setFrameB(new FrameFacade(null, null, null,
@@ -116,7 +118,7 @@ public class AttitudeTypeTest {
         metadata.getEndpoints().setA2b(true);
         final String[] attitudeDataBis = spin.createDataFields(metadata.isFirst(),
                                                                metadata.getEndpoints().isExternal2SpacecraftBody(),
-                                                               metadata.getEulerRotSeq(),
+                                                               metadata.getEulerRotSeq().orElse(null), // not used for spin
                                                                metadata.isSpacecraftBodyRate(),
                                                                tsac);
         for (int i = 0; i < attitudeDataBis.length; i++) {
@@ -181,7 +183,7 @@ public class AttitudeTypeTest {
         metadata.setIsFirst(true);
         final TimeStampedAngularCoordinates tsac = quaternion.parse(metadata.isFirst(),
                                                                     metadata.getEndpoints().isExternal2SpacecraftBody(),
-                                                                    metadata.getEulerRotSeq(),
+                                                                    metadata.getEulerRotSeq().orElse(null),  // not used for quaternion
                                                                     metadata.isSpacecraftBodyRate(),
                                                                     context, attitudeData);
         Assertions.assertEquals(0.68427, tsac.getRotation().getQ0(), QUATERNION_PRECISION);
@@ -190,7 +192,7 @@ public class AttitudeTypeTest {
         Assertions.assertEquals(0.45689, tsac.getRotation().getQ3(), QUATERNION_PRECISION);
 
         // Test computation of attitude data from angular coordinates
-        AemMetadata metadata = new AemMetadata(3);
+        AemMetadata metadata = new AemMetadata(3, FRAME_MAPPER);
         metadata.getEndpoints().setFrameA(new FrameFacade(FramesFactory.getGCRF(), CelestialBodyFrame.GCRF,
                                                           null, null, "GCRF"));
         metadata.getEndpoints().setFrameB(new FrameFacade(null, null, null,
@@ -201,7 +203,7 @@ public class AttitudeTypeTest {
         metadata.getEndpoints().setA2b(true);
         final String[] attitudeDataBis = quaternion.createDataFields(metadata.isFirst(),
                                                                      metadata.getEndpoints().isExternal2SpacecraftBody(),
-                                                                     metadata.getEulerRotSeq(),
+                                                                     metadata.getEulerRotSeq().orElse(null), // not used for quaternion
                                                                      metadata.isSpacecraftBodyRate(),
                                                                      tsac);
         for (int i = 0; i < attitudeDataBis.length; i++) {
@@ -225,7 +227,7 @@ public class AttitudeTypeTest {
         metadata.setIsFirst(true);
         final TimeStampedAngularCoordinates tsac = quaternion.parse(metadata.isFirst(),
                                                                     metadata.getEndpoints().isExternal2SpacecraftBody(),
-                                                                    metadata.getEulerRotSeq(),
+                                                                    metadata.getEulerRotSeq().orElse(null), // not used for quaternion
                                                                     metadata.isSpacecraftBodyRate(),
                                                                     context, attitudeData);
         Assertions.assertEquals(0.68427, tsac.getRotation().getQ0(), QUATERNION_PRECISION);
@@ -234,7 +236,7 @@ public class AttitudeTypeTest {
         Assertions.assertEquals(0.45689, tsac.getRotation().getQ3(), QUATERNION_PRECISION);
 
         // Test computation of attitude data from angular coordinates
-        AemMetadata metadata = new AemMetadata(3);
+        AemMetadata metadata = new AemMetadata(3, FRAME_MAPPER);
         metadata.setIsFirst(true);
         metadata.getEndpoints().setFrameA(new FrameFacade(FramesFactory.getGCRF(), CelestialBodyFrame.GCRF,
                                                           null, null, "GCRF"));
@@ -245,7 +247,7 @@ public class AttitudeTypeTest {
         metadata.getEndpoints().setA2b(true);
         final String[] attitudeDataBis = quaternion.createDataFields(metadata.isFirst(),
                                                                      metadata.getEndpoints().isExternal2SpacecraftBody(),
-                                                                     metadata.getEulerRotSeq(),
+                                                                     metadata.getEulerRotSeq().orElse(null), // not used for quaternion
                                                                      metadata.isSpacecraftBodyRate(),
                                                                      tsac);
         for (int i = 0; i < attitudeDataBis.length; i++) {
@@ -272,7 +274,7 @@ public class AttitudeTypeTest {
         metadata.setEulerRotSeq(RotationOrder.XYZ);
         final TimeStampedAngularCoordinates tsac = quaternionRate.parse(metadata.isFirst(),
                                                                         metadata.getEndpoints().isExternal2SpacecraftBody(),
-                                                                        metadata.getEulerRotSeq(),
+                                                                        metadata.getEulerRotSeq().orElseThrow(), // just set above
                                                                         metadata.isSpacecraftBodyRate(),
                                                                         context, attitudeData);
         Assertions.assertEquals(0.68427, tsac.getRotation().getQ0(), QUATERNION_PRECISION);
@@ -281,14 +283,14 @@ public class AttitudeTypeTest {
         Assertions.assertEquals(0.45689, tsac.getRotation().getQ3(), QUATERNION_PRECISION);
         final UnivariateDerivative1[] rebuiltAngles = tsac.
                                                       toUnivariateDerivative1Rotation().
-                                                      getAngles(metadata.getEulerRotSeq(),
+                                                      getAngles(metadata.getEulerRotSeq().orElseThrow(), // just set above
                                                                 RotationConvention.FRAME_TRANSFORM);
         Assertions.assertEquals(FastMath.toRadians(4.31), rebuiltAngles[0].getFirstDerivative(), ANGLE_PRECISION);
         Assertions.assertEquals(FastMath.toRadians(1.28), rebuiltAngles[1].getFirstDerivative(), ANGLE_PRECISION);
         Assertions.assertEquals(FastMath.toRadians(3.79), rebuiltAngles[2].getFirstDerivative(), ANGLE_PRECISION);
 
         // Test computation of attitude data from angular coordinates
-        AemMetadata metadata = new AemMetadata(3);
+        AemMetadata metadata = new AemMetadata(3, FRAME_MAPPER);
         metadata.getEndpoints().setFrameA(new FrameFacade(FramesFactory.getGCRF(), CelestialBodyFrame.GCRF,
                                                           null, null, "GCRF"));
         metadata.getEndpoints().setFrameB(new FrameFacade(null, null, null,
@@ -300,7 +302,7 @@ public class AttitudeTypeTest {
         metadata.getEndpoints().setA2b(true);
         final String[] attitudeDataBis = quaternionRate.createDataFields(metadata.isFirst(),
                                                                          metadata.getEndpoints().isExternal2SpacecraftBody(),
-                                                                         metadata.getEulerRotSeq(),
+                                                                         metadata.getEulerRotSeq().orElseThrow(), // just set above
                                                                          metadata.isSpacecraftBodyRate(),
                                                                          tsac);
         for (int i = 0; i < attitudeDataBis.length; i++) {
@@ -325,7 +327,7 @@ public class AttitudeTypeTest {
         metadata.setEulerRotSeq(RotationOrder.XYZ);
         final TimeStampedAngularCoordinates tsac = eulerAngle.parse(metadata.isFirst(),
                                                                     metadata.getEndpoints().isExternal2SpacecraftBody(),
-                                                                    metadata.getEulerRotSeq(),
+                                                                    metadata.getEulerRotSeq().orElseThrow(), // just set above
                                                                     metadata.isSpacecraftBodyRate(),
                                                                     context, attitudeData);
         final double[] angles = tsac.getRotation().getAngles(RotationOrder.XYZ, RotationConvention.FRAME_TRANSFORM);
@@ -334,7 +336,7 @@ public class AttitudeTypeTest {
         Assertions.assertEquals(37.9, FastMath.toDegrees(angles[2]), ANGLE_PRECISION);
 
         // Test computation of attitude data from angular coordinates
-        AemMetadata metadata = new AemMetadata(3);
+        AemMetadata metadata = new AemMetadata(3, FRAME_MAPPER);
         metadata.getEndpoints().setFrameA(new FrameFacade(FramesFactory.getGCRF(), CelestialBodyFrame.GCRF,
                                                           null, null, "GCRF"));
         metadata.getEndpoints().setFrameB(new FrameFacade(null, null, null,
@@ -345,7 +347,7 @@ public class AttitudeTypeTest {
         metadata.setEulerRotSeq(RotationOrder.XYZ);
         final String[] attitudeDataBis = eulerAngle.createDataFields(metadata.isFirst(),
                                                                      metadata.getEndpoints().isExternal2SpacecraftBody(),
-                                                                     metadata.getEulerRotSeq(),
+                                                                     metadata.getEulerRotSeq().orElseThrow(), // just set above
                                                                      metadata.isSpacecraftBodyRate(),
                                                                      tsac);
         for (int i = 0; i < attitudeDataBis.length; i++) {
@@ -362,7 +364,7 @@ public class AttitudeTypeTest {
         // Initialize the attitude type
         final AttitudeType eulerAngleRate = AttitudeType.parseType("EULER_ANGLE/RATE");
 
-        AemMetadata mdWithoutRateFrame = new AemMetadata(4);
+        AemMetadata mdWithoutRateFrame = new AemMetadata(4, FRAME_MAPPER);
         mdWithoutRateFrame.setTimeSystem(TimeSystem.TAI);
         mdWithoutRateFrame.getEndpoints().setFrameA(new FrameFacade(FramesFactory.getGCRF(), CelestialBodyFrame.GCRF,
                                                                     null, null, "GCRF"));
@@ -398,7 +400,7 @@ public class AttitudeTypeTest {
         metadata.setEulerRotSeq(sequence);
         final TimeStampedAngularCoordinates tsac = eulerAngleRate.parse(metadata.isFirst(),
                                                                         metadata.getEndpoints().isExternal2SpacecraftBody(),
-                                                                        metadata.getEulerRotSeq(),
+                                                                        metadata.getEulerRotSeq().orElseThrow(), // just set above
                                                                         metadata.isSpacecraftBodyRate(),
                                                                         context, attitudeData);
         final FieldRotation<UnivariateDerivative1> r = tsac.toUnivariateDerivative1Rotation();
@@ -411,7 +413,7 @@ public class AttitudeTypeTest {
         Assertions.assertEquals(1.112, FastMath.toDegrees(angles[2].getFirstDerivative()), ANGLE_PRECISION);
 
         // Test computation of attitude data from angular coordinates
-        AemMetadata metadata = new AemMetadata(3);
+        AemMetadata metadata = new AemMetadata(3, FRAME_MAPPER);
         metadata.getEndpoints().setFrameA(new FrameFacade(FramesFactory.getGCRF(), CelestialBodyFrame.GCRF,
                                                           null, null, "GCRF"));
         metadata.getEndpoints().setFrameB(new FrameFacade(null, null, null,
@@ -422,7 +424,7 @@ public class AttitudeTypeTest {
         metadata.setEulerRotSeq(sequence);
         final String[] attitudeDataBis = eulerAngleRate.createDataFields(metadata.isFirst(),
                                                                          metadata.getEndpoints().isExternal2SpacecraftBody(),
-                                                                         metadata.getEulerRotSeq(),
+                                                                         metadata.getEulerRotSeq().orElseThrow(), // just set above
                                                                          metadata.isSpacecraftBodyRate(),
                                                                          tsac);
         for (int i = 0; i < attitudeDataBis.length; i++) {
@@ -560,10 +562,10 @@ public class AttitudeTypeTest {
                                boolean rateFrameIsA, boolean isFirst, RotationOrder order,
                                boolean a2b, double tolAngle, double tolRate) {
         ContextBinding context = new ContextBinding(() -> IERSConventions.IERS_2010,
-                                                    () -> true, () -> DataContext.getDefault(),
+                                                    () -> true, DataContext::getDefault,
                                                     () -> ParsedUnitsBehavior.STRICT_COMPLIANCE, () -> null,
                                                     () -> TimeSystem.UTC, () -> 0.0, () -> 1.0);
-        AemMetadata metadata = new AemMetadata(3);
+        AemMetadata metadata = new AemMetadata(3, FRAME_MAPPER);
         metadata.getEndpoints().setFrameA(new FrameFacade(FramesFactory.getGCRF(), CelestialBodyFrame.GCRF,
                                                           null, null, "GCRF"));
         metadata.getEndpoints().setFrameB(new FrameFacade(null, null, null,
@@ -577,7 +579,7 @@ public class AttitudeTypeTest {
         metadata.getEndpoints().setA2b(a2b);
         String[] data = type.createDataFields(metadata.isFirst(),
                                               metadata.getEndpoints().isExternal2SpacecraftBody(),
-                                              metadata.getEulerRotSeq(),
+                                              metadata.getEulerRotSeq().orElseThrow(), // just set above
                                               metadata.isSpacecraftBodyRate(),
                                               tac);
         String[] sData = new String[1 + data.length];
@@ -585,7 +587,7 @@ public class AttitudeTypeTest {
         System.arraycopy(data, 0, sData, 1, data.length);
         TimeStampedAngularCoordinates rebuilt = type.parse(metadata.isFirst(),
                                                            metadata.getEndpoints().isExternal2SpacecraftBody(),
-                                                           metadata.getEulerRotSeq(),
+                                                           metadata.getEulerRotSeq().orElseThrow(), // just set above
                                                            metadata.isSpacecraftBodyRate(),
                                                            context, sData);
         TimeStampedAngularCoordinates diff = tac.addOffset(rebuilt.revert());

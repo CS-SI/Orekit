@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -46,7 +46,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * <p>
  * This class is intended to hold throw-away data pertaining to <em>one</em> call
  * to {@link GNSSAttitudeProvider#getAttitude(org.orekit.utils.FieldPVCoordinatesProvider,
- * org.orekit.time.FieldAbsoluteDate, org.orekit.frames.Frame)) getAttitude}. It allows
+ * org.orekit.time.FieldAbsoluteDate, org.orekit.frames.Frame) getAttitude}. It allows
  * the various {@link GNSSAttitudeProvider} implementations to be immutable as they
  * do not store any state, and hence to be thread-safe and reentrant.
  * </p>
@@ -57,12 +57,10 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
 class GNSSFieldAttitudeContext<T extends CalculusFieldElement<T>> implements FieldTimeStamped<T> {
 
     /** Constant Y axis. */
-    private static final PVCoordinates PLUS_Y_PV =
-            new PVCoordinates(Vector3D.PLUS_J, Vector3D.ZERO, Vector3D.ZERO);
+    private static final PVCoordinates PLUS_Y_PV = new PVCoordinates(Vector3D.PLUS_J);
 
     /** Constant Z axis. */
-    private static final PVCoordinates MINUS_Z_PV =
-            new PVCoordinates(Vector3D.MINUS_K, Vector3D.ZERO, Vector3D.ZERO);
+    private static final PVCoordinates MINUS_Z_PV = new PVCoordinates(Vector3D.MINUS_K);
 
     /** Limit value below which we shoud use replace beta by betaIni. */
     private static final double BETA_SIGN_CHANGE_PROTECTION = FastMath.toRadians(0.07);
@@ -90,11 +88,6 @@ class GNSSFieldAttitudeContext<T extends CalculusFieldElement<T>> implements Fie
      */
     private final TimeStampedFieldPVCoordinates<T> svPV;
 
-    /** Sun position at central date.
-     * @since 12.0
-     */
-    private final TimeStampedFieldPVCoordinates<T> sunPV;
-
     /** Inertial frame where velocity are computed. */
     private final Frame inertialFrame;
 
@@ -114,12 +107,6 @@ class GNSSFieldAttitudeContext<T extends CalculusFieldElement<T>> implements Fie
 
     /** Spacecraft angular velocity. */
     private final T muRate;
-
-    /** Limit cosine for the midnight turn. */
-    private double cNight;
-
-    /** Limit cosine for the noon turn. */
-    private double cNoon;
 
     /** Turn time data. */
     private FieldTurnSpan<T> turnSpan;
@@ -145,7 +132,7 @@ class GNSSFieldAttitudeContext<T extends CalculusFieldElement<T>> implements Fie
         this.sun           = sun;
         this.pvProv        = pvProv;
         this.inertialFrame = inertialFrame;
-        this.sunPV         = sun.getPVCoordinates(date, inertialFrame);
+        final TimeStampedFieldPVCoordinates<T> sunPV = sun.getPVCoordinates(date, inertialFrame);
         this.svPV          = pvProv.getPVCoordinates(date, inertialFrame);
         this.morning       = Vector3D.dotProduct(svPV.getVelocity().toVector3D(), sunPV.getPosition().toVector3D()) >= 0.0;
         this.muRate        = svPV.getAngularVelocity().getNorm();
@@ -231,7 +218,6 @@ class GNSSFieldAttitudeContext<T extends CalculusFieldElement<T>> implements Fie
      * </p>
      * @return secured Sun elevation angle
      * @see #beta(FieldAbsoluteDate)
-     * @see #betaDS(FieldAbsoluteDate)
      */
     public T getSecuredBeta() {
         return FastMath.abs(beta.getValue().getReal()) < BETA_SIGN_CHANGE_PROTECTION ?
@@ -288,10 +274,7 @@ class GNSSFieldAttitudeContext<T extends CalculusFieldElement<T>> implements Fie
      * @return true if spacecraft is in the midnight/noon turn region
      */
     public boolean setUpTurnRegion(final double cosNight, final double cosNoon) {
-        this.cNight = cosNight;
-        this.cNoon  = cosNoon;
-
-        if (svbCos.getReal() < cNight || svbCos.getReal() > cNoon) {
+        if (svbCos.getReal() < cosNight || svbCos.getReal() > cosNoon) {
             // we are within turn triggering zone
             return true;
         } else {
@@ -299,7 +282,6 @@ class GNSSFieldAttitudeContext<T extends CalculusFieldElement<T>> implements Fie
             // but we may still be trying to recover nominal attitude at the end of a turn
             return inTurnTimeRange();
         }
-
     }
 
     /** Get the relative orbit angle to turn center.
@@ -326,7 +308,7 @@ class GNSSFieldAttitudeContext<T extends CalculusFieldElement<T>> implements Fie
 
     /** Get yaw at turn start.
      * @param sunBeta Sun elevation above orbital plane
-     * (it <em>may</em> be different from {@link #getBeta()} in
+     * (it <em>may</em> be different from {@link #beta(FieldAbsoluteDate)} in
      * some special cases)
      * @return yaw at turn start
      */
@@ -337,7 +319,7 @@ class GNSSFieldAttitudeContext<T extends CalculusFieldElement<T>> implements Fie
 
     /** Get yaw at turn end.
      * @param sunBeta Sun elevation above orbital plane
-     * (it <em>may</em> be different from {@link #getBeta()} in
+     * (it <em>may</em> be different from {@link #beta(FieldAbsoluteDate)} in
      * some special cases)
      * @return yaw at turn end
      */
@@ -348,7 +330,7 @@ class GNSSFieldAttitudeContext<T extends CalculusFieldElement<T>> implements Fie
 
     /** Compute yaw rate.
      * @param sunBeta Sun elevation above orbital plane
-     * (it <em>may</em> be different from {@link #getBeta()} in
+     * (it <em>may</em> be different from {@link #beta(FieldAbsoluteDate)} in
      * some special cases)
      * @return yaw rate
      */
@@ -379,7 +361,7 @@ class GNSSFieldAttitudeContext<T extends CalculusFieldElement<T>> implements Fie
 
     /** Compute yaw.
      * @param sunBeta Sun elevation above orbital plane
-     * (it <em>may</em> be different from {@link #getBeta()} in
+     * (it <em>may</em> be different from {@link #beta(FieldAbsoluteDate)} in
      * some special cases)
      * @param inOrbitPlaneAngle in orbit angle between spacecraft
      * and Sun (or opposite of Sun) projection

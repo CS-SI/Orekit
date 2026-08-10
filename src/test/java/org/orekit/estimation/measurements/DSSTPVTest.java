@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,8 +23,8 @@ import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.errors.OrekitException;
-import org.orekit.estimation.DSSTContext;
-import org.orekit.estimation.DSSTEstimationTestUtils;
+import org.orekit.estimation.Context;
+import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
@@ -41,16 +41,16 @@ public class DSSTPVTest {
     @Test
     public void testStateDerivatives() {
 
-        DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        Context context = EstimationTestUtils.dsstEccentricContext("regular-data:potential:tides");
 
         final DSSTPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(true, 1.0e-6, 60.0, 0.001);
+                        context.createDsst(true, 1.0e-6, 60.0, 0.001);
 
         // create perfect range measurements
-        final Propagator propagator = DSSTEstimationTestUtils.createPropagator(context.initialOrbit,
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
-                        DSSTEstimationTestUtils.createMeasurements(propagator,
+                        EstimationTestUtils.createMeasurements(propagator,
                                                                new PVMeasurementCreator(),
                                                                1.0, 3.0, 300.0);
         propagator.clearStepHandlers();
@@ -105,7 +105,7 @@ public class DSSTPVTest {
     public void testPVWithSingleStandardDeviations() {
 
         // Context
-        DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        Context context = EstimationTestUtils.dsstEccentricContext("regular-data:potential:tides");
 
         // Dummy P, V, T
         final Vector3D     position = context.initialOrbit.getPosition();
@@ -144,7 +144,7 @@ public class DSSTPVTest {
             final PV pv = pvs[k];
 
             // Propagator numbers
-            Assertions.assertEquals(sats[k].getPropagatorIndex(), pv.getSatellites().get(0).getPropagatorIndex(), eps);
+            Assertions.assertEquals(sats[k].getPropagatorIndex(), pv.getSatellites().getFirst().getPropagatorIndex(), eps);
 
             // Weights
             for (int i = 0; i < 6; i++) {
@@ -175,7 +175,7 @@ public class DSSTPVTest {
     public void testPVWithVectorStandardDeviations() {
 
         // Context
-        DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        Context context = EstimationTestUtils.dsstEccentricContext("regular-data:potential:tides");
 
         // Dummy P, V, T
         final Vector3D     position = context.initialOrbit.getPosition();
@@ -219,7 +219,7 @@ public class DSSTPVTest {
             final PV pv = pvs[k];
 
             // Propagator numbers
-            Assertions.assertEquals(sats[k].getPropagatorIndex(), pv.getSatellites().get(0).getPropagatorIndex(), eps);
+            Assertions.assertEquals(sats[k].getPropagatorIndex(), pv.getSatellites().getFirst().getPropagatorIndex(), eps);
 
             // Weights
             for (int i = 0; i < 6; i++) {
@@ -249,7 +249,7 @@ public class DSSTPVTest {
     @Test
     public void testPVWithTwoCovarianceMatrices() {
         // Context
-        DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        Context context = EstimationTestUtils.dsstEccentricContext("regular-data:potential:tides");
 
         // Dummy P, V, T
         final Vector3D     position = context.initialOrbit.getPosition();
@@ -305,7 +305,7 @@ public class DSSTPVTest {
             final PV pv = pvs[k];
 
             // Propagator numbers
-            Assertions.assertEquals(sats[k].getPropagatorIndex(), pv.getSatellites().get(0).getPropagatorIndex(), eps);
+            Assertions.assertEquals(sats[k].getPropagatorIndex(), pv.getSatellites().getFirst().getPropagatorIndex(), eps);
 
             // Weights
             for (int i = 0; i < 6; i++) {
@@ -336,7 +336,7 @@ public class DSSTPVTest {
     @Test
     public void testPVWithCovarianceMatrix() {
         // Context
-        DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        Context context = EstimationTestUtils.dsstEccentricContext("regular-data:potential:tides");
 
         // Dummy P, V, T
         final Vector3D     position = context.initialOrbit.getPosition();
@@ -384,7 +384,7 @@ public class DSSTPVTest {
             final PV pv = pvs[k];
 
             // Propagator numbers
-            Assertions.assertEquals(sats[k].getPropagatorIndex(), pv.getSatellites().get(0).getPropagatorIndex(), eps);
+            Assertions.assertEquals(sats[k].getPropagatorIndex(), pv.getSatellites().getFirst().getPropagatorIndex(), eps);
 
             // Weights
             for (int i = 0; i < 6; i++) {
@@ -413,7 +413,7 @@ public class DSSTPVTest {
     @Test
     public void testExceptions() {
         // Context
-        DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        Context context = EstimationTestUtils.dsstEccentricContext("regular-data:potential:tides");
 
         // Dummy P, V, T
         final Vector3D     position = context.initialOrbit.getPosition();

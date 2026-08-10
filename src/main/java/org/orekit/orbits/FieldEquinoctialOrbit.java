@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,8 +16,8 @@
  */
 package org.orekit.orbits;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative1;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.FastMath;
@@ -48,7 +48,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  *     hy = tan(i/2) sin(Ω)
  *     lv = v + ω + Ω
  *   </pre>
- * where ω stands for the Perigee Argument and Ω stands for the
+ * where ω stands for the Periapsis Argument and Ω stands for the
  * Right Ascension of the Ascending Node.
  * <p>
  * The conversion equations from and to Keplerian elements given above hold only
@@ -506,19 +506,11 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
     /** {@inheritDoc} */
     @Override
     public T getLv() {
-        switch (cachedPositionAngleType) {
-            case TRUE:
-                return cachedL;
-
-            case ECCENTRIC:
-                return FieldEquinoctialLongitudeArgumentUtility.eccentricToTrue(ex, ey, cachedL);
-
-            case MEAN:
-                return FieldEquinoctialLongitudeArgumentUtility.meanToTrue(ex, ey, cachedL);
-
-            default:
-                throw new OrekitInternalError(null);
-        }
+        return switch (cachedPositionAngleType) {
+            case TRUE -> cachedL;
+            case ECCENTRIC -> FieldEquinoctialLongitudeArgumentUtility.eccentricToTrue(ex, ey, cachedL);
+            case MEAN -> FieldEquinoctialLongitudeArgumentUtility.meanToTrue(ex, ey, cachedL);
+        };
     }
 
     /** {@inheritDoc} */
@@ -552,19 +544,11 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
     /** {@inheritDoc} */
     @Override
     public T getLE() {
-        switch (cachedPositionAngleType) {
-            case TRUE:
-                return FieldEquinoctialLongitudeArgumentUtility.trueToEccentric(ex, ey, cachedL);
-
-            case ECCENTRIC:
-                return cachedL;
-
-            case MEAN:
-                return FieldEquinoctialLongitudeArgumentUtility.meanToEccentric(ex, ey, cachedL);
-
-            default:
-                throw new OrekitInternalError(null);
-        }
+        return switch (cachedPositionAngleType) {
+            case TRUE -> FieldEquinoctialLongitudeArgumentUtility.trueToEccentric(ex, ey, cachedL);
+            case ECCENTRIC -> cachedL;
+            case MEAN -> FieldEquinoctialLongitudeArgumentUtility.meanToEccentric(ex, ey, cachedL);
+        };
     }
 
     /** {@inheritDoc} */
@@ -599,19 +583,11 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
     /** {@inheritDoc} */
     @Override
     public T getLM() {
-        switch (cachedPositionAngleType) {
-            case TRUE:
-                return FieldEquinoctialLongitudeArgumentUtility.trueToMean(ex, ey, cachedL);
-
-            case MEAN:
-                return cachedL;
-
-            case ECCENTRIC:
-                return FieldEquinoctialLongitudeArgumentUtility.eccentricToMean(ex, ey, cachedL);
-
-            default:
-                throw new OrekitInternalError(null);
-        }
+        return switch (cachedPositionAngleType) {
+            case TRUE -> FieldEquinoctialLongitudeArgumentUtility.trueToMean(ex, ey, cachedL);
+            case MEAN -> cachedL;
+            case ECCENTRIC -> FieldEquinoctialLongitudeArgumentUtility.eccentricToMean(ex, ey, cachedL);
+        };
     }
 
     /** {@inheritDoc} */
@@ -907,33 +883,113 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
 
     /** {@inheritDoc} */
     @Override
-    public FieldEquinoctialOrbit<T> shiftedBy(final TimeOffset dt) {
-        return shiftedBy(dt.toDouble());
-    }
-
-    /** {@inheritDoc} */
-    @Override
     public FieldEquinoctialOrbit<T> shiftedBy(final T dt) {
 
         // use Keplerian-only motion
-        final FieldEquinoctialOrbit<T> keplerianShifted = new FieldEquinoctialOrbit<>(a, ex, ey, hx, hy,
-                                                                                      getLM().add(getKeplerianMeanMotion().multiply(dt)),
-                                                                                      PositionAngleType.MEAN, cachedPositionAngleType, getFrame(),
-                                                                                      getDate().shiftedBy(dt), getMu());
+        final FieldEquinoctialOrbit<T> keplerianShifted = shiftWithKeplerianMotion(dt);
 
+        // Non-Keplerian acceleration shall be considered
         if (!dt.isZero() && hasNonKeplerianRates()) {
-
-            final FieldPVCoordinates<T> pvCoordinates = shiftNonKeplerian(keplerianShifted.getPVCoordinates(), dt);
-
-            // build a new orbit, taking non-Keplerian acceleration into account
-            return new FieldEquinoctialOrbit<>(new TimeStampedFieldPVCoordinates<>(keplerianShifted.getDate(), pvCoordinates),
-                                               keplerianShifted.getFrame(), keplerianShifted.getMu());
-
-        } else {
-            // Keplerian-only motion is all we can do
+            return keplerianShifted.applyNonKeplerianAcceleration(nonKeplerianAcceleration(), dt);
+        }
+        // Keplerian-only motion is all we can do
+        else {
             return keplerianShifted;
         }
 
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @since 13.1.3
+     */
+    @Override
+    public FieldEquinoctialOrbit<T> shiftedBy(final TimeOffset dt) {
+
+        // Get field and express dt as T
+        final Field<T> field   = getField();
+        final T        dtValue = field.getOne().newInstance(dt.toDouble());
+
+        // use Keplerian-only motion
+        final FieldEquinoctialOrbit<T> keplerianShifted = shiftWithKeplerianMotion(dt);
+
+        // Non-Keplerian acceleration shall be considered
+        if (!dtValue.isZero() && hasNonKeplerianRates()) {
+            return keplerianShifted.applyNonKeplerianAcceleration(nonKeplerianAcceleration(), dtValue);
+        }
+        // Keplerian-only motion is all we can do
+        else {
+            return keplerianShifted;
+        }
+
+    }
+
+    /**
+     * Computes a new orbit by shifting the current orbit forward or backward in time using Keplerian motion.
+     *
+     * @param dt time delta
+     * @return shifted orbit
+     */
+    private FieldEquinoctialOrbit<T> shiftWithKeplerianMotion(final T dt) {
+        return new FieldEquinoctialOrbit<>(a, ex, ey, hx, hy,
+                                           getLM().add(getKeplerianMeanMotion().multiply(dt)),
+                                           PositionAngleType.MEAN,
+                                           cachedPositionAngleType,
+                                           getFrame(),
+                                           getDate().shiftedBy(dt),
+                                           getMu());
+
+    }
+
+    /**
+     * Computes a new orbit by shifting the current orbit forward or backward in time using Keplerian motion. This
+     * implementation uses the more accurate {@link TimeOffset} to compute the shifted date.
+     *
+     * @param dt time offset
+     * @return shifted orbit
+     */
+    private FieldEquinoctialOrbit<T> shiftWithKeplerianMotion(final TimeOffset dt) {
+        return new FieldEquinoctialOrbit<>(a, ex, ey, hx, hy,
+                                           getLM().add(getKeplerianMeanMotion().multiply(dt.toDouble())),
+                                           PositionAngleType.MEAN,
+                                           cachedPositionAngleType,
+                                           getFrame(),
+                                           getDate().shiftedBy(dt),
+                                           getMu());
+
+    }
+
+    /**
+     * Shifts the current orbit with consideration of non-Keplerian acceleration by including the quadratic effects of
+     * the acceleration into the position, velocity, and acceleration calculations.
+     *
+     * @param nonKeplerianAcceleration non-Keplerian acceleration vector to apply
+     * @param dt                       the time shift in seconds for which the orbit is to be shifted.
+     * @return a new {@link FieldEquinoctialOrbit} representing the shifted orbit, factoring in non-Keplerian
+     * acceleration effects.
+     */
+    private FieldEquinoctialOrbit<T> applyNonKeplerianAcceleration(final FieldVector3D<T> nonKeplerianAcceleration,
+                                                                   final T dt) {
+        // extract non-Keplerian acceleration from first time derivatives
+
+        // add quadratic effect of non-Keplerian acceleration to Keplerian-only shift
+        this.computePVWithoutA();
+        final FieldVector3D<T> fixedP = new FieldVector3D<>(getOne(), this.partialPV.getPosition(),
+                                                            dt.square().multiply(0.5), nonKeplerianAcceleration);
+        final T fixedR2 = fixedP.getNorm2Sq();
+        final T fixedR  = fixedR2.sqrt();
+        final FieldVector3D<T> fixedV = new FieldVector3D<>(getOne(), this.partialPV.getVelocity(),
+                                                            dt, nonKeplerianAcceleration);
+        final FieldVector3D<T> fixedA =
+                new FieldVector3D<>(fixedR2.multiply(fixedR).reciprocal().multiply(getMu().negate()),
+                                    this.partialPV.getPosition(),
+                                    getOne(), nonKeplerianAcceleration);
+
+        // build a new orbit, taking non-Keplerian acceleration into account
+        return new FieldEquinoctialOrbit<>(new TimeStampedFieldPVCoordinates<>(this.getDate(),
+                                                                               fixedP, fixedV, fixedA),
+                                           this.getFrame(), this.getMu());
     }
 
     /** {@inheritDoc} */

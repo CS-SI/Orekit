@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,9 +17,14 @@
 package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
-import org.orekit.gnss.SatelliteSystem;
+import org.orekit.frames.Frame;
+import org.orekit.orbits.FieldKeplerianOrbit;
+import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.time.FieldGNSSDate;
+import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
+
+import java.util.function.DoubleFunction;
 
 /**
  * Container for data contained in a Galileo navigation message.
@@ -39,36 +44,77 @@ public class GalileoNavigationMessage extends AbstractNavigationMessage<GalileoN
     public static final String FNAV = "FNAV";
 
     /** Issue of Data of the navigation batch. */
-    private int iodNav;
+    private final int iodNav;
 
     /** Data source.
      * @since 12.0
      */
-    private int dataSource;
+    private final int dataSource;
 
     /** E1/E5a broadcast group delay (s). */
-    private double bgbE1E5a;
+    private final double bgdE1E5a;
 
     /** E5b/E1 broadcast group delay (s). */
-    private double bgdE5bE1;
+    private final double bgdE5bE1;
 
     /** Signal in space accuracy. */
-    private double sisa;
+    private final double sisa;
 
     /** Satellite health status. */
-    private double svHealth;
+    private final double svHealth;
 
     /** Constructor.
-     * @param timeScales known time scales
-     * @param system     satellite system to consider for interpreting week number
-     *                   (may be different from real system, for example in Rinex nav, weeks
-     *                   are always according to GPS)
-     * @param type       message type
+     * @param timeScales       known time scales
+     * @param type             message type
+     * @param prn              PRN number of the satellite
+     * @param toe              time of ephemeris (<em>must</em> be consistent with {@code orbit})
+     * @param orbit            Keplerian orbit in Earth-frozen frame
+     * @param aDot             change rate in semi-major axis (m/s)
+     * @param deltaN0          delta of satellite mean motion
+     * @param deltaN0Dot       change rate in Δn₀
+     * @param iDot             inclination rate (rad/s)
+     * @param omegaDot         rate of right ascension (rad/s)
+     * @param cuc              amplitude of the cosine harmonic correction term to the argument of latitude
+     * @param cus              amplitude of the sine harmonic correction term to the argument of latitude
+     * @param crc              amplitude of the cosine harmonic correction term to the orbit radius
+     * @param crs              amplitude of the sine harmonic correction term to the orbit radius
+     * @param cic              amplitude of the cosine harmonic correction term to the inclination
+     * @param cis              amplitude of the sine harmonic correction term to the inclination
+     * @param af0              zero-th order clock correction (s)
+     * @param af1              first order clock correction (s/s)
+     * @param af2              second order clock correction (s/s²)
+     * @param tgd              group delay differential TGD for L1-L2 correction
+     * @param toc              time of clock
+     * @param transmissionTime transmission time
+     * @param iodNav           issue of Data of the navigation batch
+     * @param dataSource       data source
+     * @param bgdE1E5a         E1/E5a broadcast group delay (s)
+     * @param bgdE5bE1         E5b/E1 broadcast group delay (s)
+     * @param sisa             signal in space accuracy
+     * @param svHealth         satellite health status
      */
-    public GalileoNavigationMessage(final TimeScales timeScales, final SatelliteSystem system,
-                                    final String type) {
-        super(GNSSConstants.GALILEO_MU, GNSSConstants.GALILEO_AV, GNSSConstants.GALILEO_WEEK_NB,
-              timeScales, system, type);
+    public GalileoNavigationMessage(final TimeScales timeScales, final String type,
+                                    final int prn, final GNSSDate toe, final KeplerianOrbit orbit,
+                                    final double aDot, final double deltaN0, final double deltaN0Dot,
+                                    final double iDot, final double omegaDot,
+                                    final double cuc, final double cus,
+                                    final double crc, final double crs,
+                                    final double cic, final double cis,
+                                    final double af0, final double af1, final double af2,
+                                    final double tgd, final GNSSDate toc, final GNSSDate  transmissionTime,
+                                    final int iodNav, final int dataSource,
+                                    final double bgdE1E5a, final double bgdE5bE1,
+                                    final double sisa, final double svHealth) {
+        super(GNSSConstants.GALILEO_AV, GNSSConstants.GALILEO_WEEK_NB,
+              timeScales, type, prn, toe, orbit,
+              aDot, deltaN0, deltaN0Dot, iDot, omegaDot, cuc, cus, crc, crs, cic, cis,
+              af0, af1, af2, tgd, toc, transmissionTime);
+        this.iodNav     = iodNav;
+        this.dataSource = dataSource;
+        this.bgdE1E5a   = bgdE1E5a;
+        this.bgdE5bE1   = bgdE5bE1;
+        this.sisa       = sisa;
+        this.svHealth   = svHealth;
     }
 
     /** Constructor from field instance.
@@ -77,40 +123,42 @@ public class GalileoNavigationMessage extends AbstractNavigationMessage<GalileoN
      */
     public <T extends CalculusFieldElement<T>> GalileoNavigationMessage(final FieldGalileoNavigationMessage<T> original) {
         super(original);
-        setIODNav(original.getIODNav());
-        setDataSource(original.getDataSource());
-        setBGDE1E5a(original.getBGDE1E5a().getReal());
-        setBGDE5bE1(original.getBGDE5bE1().getReal());
-        setSisa(original.getSisa().getReal());
-        setSvHealth(original.getSvHealth().getReal());
+        iodNav     = original.getIODNav();
+        dataSource = original.getDataSource();
+        bgdE1E5a   = original.getBGDE1E5a().getReal();
+        bgdE5bE1   = original.getBGDE5bE1().getReal();
+        sisa       = original.getSisa().getReal();
+        svHealth   = original.getSvHealth().getReal();
     }
 
     /** {@inheritDoc} */
-    @SuppressWarnings("unchecked")
     @Override
-    public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, GalileoNavigationMessage>>
-        F toField(final Field<T> field) {
-        return (F) new FieldGalileoNavigationMessage<>(field, this);
+    public <T extends CalculusFieldElement<T>>
+        FieldGalileoNavigationMessage<T> toField(final FieldKeplerianOrbit<T> orbit,
+                                                 final T[] nonKeplerian,
+                                                 final DoubleFunction<T> converter) {
+        return new FieldGalileoNavigationMessage<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
+                                                   getType(), getPrn(),
+                                                   new FieldGNSSDate<>(orbit.getDate().getField(), getTimeOfEphemeris()),
+                                                   orbit, nonKeplerian,
+                                                   converter.apply(getTgd()),
+                                                   new FieldGNSSDate<>(orbit.getDate().getField(), getTimeOfClock()),
+                                                   new FieldGNSSDate<>(orbit.getDate().getField(), getTransmissionTime()),
+                                                   getIODNav(), getDataSource(),
+                                                   converter.apply(getBGDE1E5a()),
+                                                   converter.apply(getBGDE5bE1()),
+                                                   converter.apply(getSisa()),
+                                                   converter.apply( getSvHealth()));
     }
 
-    /**
-     * Getter for the the Issue Of Data (IOD).
-     * @return the Issue Of Data (IOD)
+    /** Get the Issue Of Data (IOD).
+     * @return Issue Of Data (IOD)
      */
     public int getIODNav() {
         return iodNav;
     }
 
-    /**
-     * Setter for the Issue of Data of the navigation batch.
-     * @param iod the IOD to set
-     */
-    public void setIODNav(final int iod) {
-        this.iodNav = iod;
-    }
-
-    /**
-     * Getter for the the data source.
+    /** Get the data source.
      * @return the data source
      * @since 12.0
      */
@@ -118,77 +166,39 @@ public class GalileoNavigationMessage extends AbstractNavigationMessage<GalileoN
         return dataSource;
     }
 
-    /**
-     * Setter for the data source.
-     * @param dataSource data source
-     * @since 12.0
-     */
-    public void setDataSource(final int dataSource) {
-        this.dataSource = dataSource;
-    }
-
-    /**
-     * Getter for the E1/E5a broadcast group delay.
+    /** Get the E1/E5a broadcast group delay.
      * @return the E1/E5a broadcast group delay (s)
      */
     public double getBGDE1E5a() {
-        return bgbE1E5a;
+        return bgdE1E5a;
     }
 
-    /**
-     * Setter for the E1/E5a broadcast group delay (s).
-     * @param bgd the E1/E5a broadcast group delay to set
-     */
-    public void setBGDE1E5a(final double bgd) {
-        this.bgbE1E5a = bgd;
-    }
-
-    /**
-     * Setter for the E5b/E1 broadcast group delay (s).
-     * @param bgd the E5b/E1 broadcast group delay to set
-     */
-    public void setBGDE5bE1(final double bgd) {
-        this.bgdE5bE1 = bgd;
-    }
-
-    /**
-     * Getter for the the Broadcast Group Delay E5b/E1.
+    /** Get the Broadcast Group Delay E5b/E1.
      * @return the Broadcast Group Delay E5b/E1 (s)
      */
     public double getBGDE5bE1() {
         return bgdE5bE1;
     }
 
-    /**
-     * Getter for the signal in space accuracy (m).
+    /** Get the signal in space accuracy (m).
      * @return the signal in space accuracy
      */
     public double getSisa() {
         return sisa;
     }
 
-    /**
-     * Setter for the signal in space accuracy.
-     * @param sisa the sisa to set
-     */
-    public void setSisa(final double sisa) {
-        this.sisa = sisa;
-    }
-
-    /**
-     * Getter for the SV health status.
+    /** Get the SV health status.
      * @return the SV health status
      */
     public double getSvHealth() {
         return svHealth;
     }
 
-    /**
-     * Setter for the SV health status.
-     * @param svHealth the SV health status to set
-     */
-    public void setSvHealth(final double svHealth) {
-        this.svHealth = svHealth;
+    /** {@inheritDoc} */
+    @Override
+    public GalileoNavigationMessageFactory baseFactory(final Frame inertial, final Frame bodyFixed) {
+        return new GalileoNavigationMessageFactory(getTimeScales(), getTimeOfEphemeris().getSystem(),
+                                                   getType(), inertial, bodyFixed);
     }
 
 }

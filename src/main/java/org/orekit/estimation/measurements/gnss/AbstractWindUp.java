@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -85,7 +85,7 @@ public abstract class AbstractWindUp<T extends ObservedMeasurement<T>> implement
     protected abstract Rotation receiverToInert(EstimatedMeasurementBase<T> estimated);
 
     /** Cache angular wind-up.
-     * @param participants particpants to the carrier-phase measurement
+     * @param participants participants to the carrier-phase measurement
      * @param receiverToInert rotation for receiver to inertial frame
      * @param emitterToInert rotation from emitter to inertial frame
      * @since 13.0

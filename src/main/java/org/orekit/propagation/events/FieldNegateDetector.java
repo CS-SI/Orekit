@@ -18,6 +18,8 @@ package org.orekit.propagation.events;
 
 import org.hipparchus.CalculusFieldElement;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.events.functions.NegateEventFunction;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.FieldContinueOnEvent;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.time.FieldAbsoluteDate;
@@ -36,6 +38,9 @@ public class FieldNegateDetector<T extends CalculusFieldElement<T>>  extends Fie
 
     /** the delegate event detector. */
     private final FieldEventDetector<T> original;
+
+    /** Event function. */
+    private final NegateEventFunction<?> eventFunction;
 
     /**
      * Create a new event detector that negates an existing event detector.
@@ -64,6 +69,7 @@ public class FieldNegateDetector<T extends CalculusFieldElement<T>>  extends Fie
                                   final FieldEventDetector<T> original) {
         super(detectionSettings, newHandler);
         this.original = original;
+        this.eventFunction = new NegateEventFunction<>(original.getEventFunction());
     }
 
     /**
@@ -80,20 +86,27 @@ public class FieldNegateDetector<T extends CalculusFieldElement<T>>  extends Fie
     }
 
     @Override
+    public NegateEventFunction<?> getEventFunction() {
+        return eventFunction;
+    }
+
+    @Override
     public void init(final FieldSpacecraftState<T> s0, final FieldAbsoluteDate<T> t) {
         super.init(s0, t);
         getDetector().init(s0, t);
     }
 
-    @Override
-    public T g(final FieldSpacecraftState<T> s) {
-        return original.g(s).negate();
-    }
-
+    /** {@inheritDoc} */
     @Override
     protected FieldNegateDetector<T> create(final FieldEventDetectionSettings<T> detectionSettings,
                                             final FieldEventHandler<T> newHandler) {
         return new FieldNegateDetector<>(detectionSettings, newHandler, original);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public NegateDetector toEventDetector(final EventHandler eventHandler) {
+        final EventDetector negatedDetector = EventDetector.of(getDetector().getEventFunction());
+        return new NegateDetector(getDetectionSettings().toEventDetectionSettings(), eventHandler, negatedDetector);
+    }
 }

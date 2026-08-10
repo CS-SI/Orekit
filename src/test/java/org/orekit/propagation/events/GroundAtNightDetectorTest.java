@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -121,7 +121,7 @@ class GroundAtNightDetectorTest {
         } else {
             Assertions.assertEquals(2, events.size());
             Assertions.assertEquals(expectedDuration,
-                                events.get(1).getState().getDate().durationFrom(events.get(0).getState().getDate()),
+                                events.get(1).getState().getDate().durationFrom(events.getFirst().getState().getDate()),
                                 1.0e-3);
         }
 
@@ -133,7 +133,7 @@ class GroundAtNightDetectorTest {
         final GroundAtNightDetector detector = new GroundAtNightDetector(Mockito.mock(TopocentricFrame.class),
                 Mockito.mock(PVCoordinatesProvider.class), 1, null);
         // WHEN
-        final boolean value = detector.dependsOnTimeOnly();
+        final boolean value = detector.getEventFunction().dependsOnTimeOnly();
         // THEN
         Assertions.assertTrue(value);
     }

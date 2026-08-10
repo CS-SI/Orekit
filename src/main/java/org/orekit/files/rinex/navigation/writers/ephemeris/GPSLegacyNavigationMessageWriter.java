@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Thales Alenia Space
+/* Copyright 2022-2026 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,6 +27,11 @@ import java.io.IOException;
  * @since 14.0
  */
 public class GPSLegacyNavigationMessageWriter extends LegacyNavigationMessageWriter<GPSLegacyNavigationMessage> {
+
+    /** Simple constructor. */
+    public GPSLegacyNavigationMessageWriter() {
+        // nothing to do
+    }
 
     /** {@inheritDoc} */
     @Override

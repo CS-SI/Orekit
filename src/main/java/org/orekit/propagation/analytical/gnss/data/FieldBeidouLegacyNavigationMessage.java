@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Luc Maisonobe
+/* Copyright 2022-2026 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,9 @@
 package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
+import org.orekit.orbits.FieldKeplerianOrbit;
+import org.orekit.time.FieldGNSSDate;
+import org.orekit.time.TimeScales;
 
 import java.util.function.Function;
 
@@ -30,54 +32,69 @@ import java.util.function.Function;
 public class FieldBeidouLegacyNavigationMessage<T extends CalculusFieldElement<T>>
     extends FieldAbstractNavigationMessage<T, BeidouLegacyNavigationMessage> {
 
+    /** Indicator for D2 messages.
+     * @since 14.0
+     */
+    private final boolean d2;
+
     /** Age of Data, Ephemeris. */
-    private int aode;
+    private final int aode;
 
     /** Age of Data, Clock. */
-    private int aodc;
+    private final int aodc;
 
     /** Health identifier.
      * @since 14.0
      */
-    private int satH1;
+    private final int satH1;
 
     /** B1/B3 Group Delay Differential (s). */
-    private T tgd1;
+    private final T tgd1;
 
     /** B2/B3 Group Delay Differential (s). */
-    private T tgd2;
+    private final T tgd2;
 
     /** The user SV accuracy (m). */
-    private T svAccuracy;
+    private final T svAccuracy;
 
-    /** Constructor from non-field instance.
-     * @param field    field to which elements belong
-     * @param original regular non-field instance
+    /** Creates a new instance.
+     * @param d2               indicator for D2 messages
+     * @param angularVelocity  mean angular velocity of the Earth for the GNSS model
+     * @param weeksInCycle     number of weeks in the GNSS cycle
+     * @param timeScales       known time scales
+     * @param type             type (null if not a navigation message)
+     * @param prn              PRN number of the satellite
+     * @param toe              time of ephemeris (<em>must</em> be consistent with {@code orbit})
+     * @param orbit            Keplerian orbit in Earth-frozen frame
+     * @param nonKeplerian     15 non-Keplerian parameters (in the order given by {@link NonKeplerianDriversFactory}
+     * @param tgd              group delay differential TGD for L1-L2 correction
+     * @param toc              time of clock
+     * @param transmissionTime transmission time
+     * @param aode             age of data, ephemeris
+     * @param aodc             age of data, clock
+     * @param satH1            health identifier
+     * @param tgd1             B1/B3 Group Delay Differential (s)
+     * @param tgd2             B2/B3 Group Delay Differential (s)
+     * @param svAccuracy       user SV accuracy (m)
+     * @since 14.0
      */
-    public FieldBeidouLegacyNavigationMessage(final Field<T> field, final BeidouLegacyNavigationMessage original) {
-        super(field, original);
-        setAODE(field.getZero().newInstance(original.getAODE()));
-        setAODC(field.getZero().newInstance(original.getAODC()));
-        setTGD1(field.getZero().newInstance(original.getTGD1()));
-        setTGD2(field.getZero().newInstance(original.getTGD2()));
-        setSvAccuracy(field.getZero().newInstance(original.getSvAccuracy()));
-        setSatH1(original.getSatH1());
-    }
-
-    /** Constructor from different field instance.
-     * @param <V> type of the old field elements
-     * @param original regular non-field instance
-     * @param converter for field elements
-     */
-    public <V extends CalculusFieldElement<V>> FieldBeidouLegacyNavigationMessage(final Function<V, T> converter,
-                                                                                  final FieldBeidouLegacyNavigationMessage<V> original) {
-        super(converter, original);
-        setAODE(getMu().newInstance(original.getAODE()));
-        setAODC(getMu().newInstance(original.getAODC()));
-        setTGD1(converter.apply(original.getTGD1()));
-        setTGD2(converter.apply(original.getTGD2()));
-        setSvAccuracy(converter.apply(original.getSvAccuracy()));
-        setSatH1(original.getSatH1());
+    public FieldBeidouLegacyNavigationMessage(final boolean d2,
+                                              final double angularVelocity, final int weeksInCycle,
+                                              final TimeScales timeScales, final String type, final int prn,
+                                              final FieldGNSSDate<T> toe, final FieldKeplerianOrbit<T> orbit,
+                                              final T[] nonKeplerian, final T tgd,
+                                              final FieldGNSSDate<T> toc, final FieldGNSSDate<T>  transmissionTime,
+                                              final int aode, final int aodc, final int satH1,
+                                              final T tgd1, final T tgd2, final T svAccuracy) {
+        super(angularVelocity, weeksInCycle, timeScales, type, prn, toe, orbit, nonKeplerian,
+              tgd, toc, transmissionTime);
+        this.d2         = d2;
+        this.aode       = aode;
+        this.aodc       = aodc;
+        this.satH1      = satH1;
+        this.tgd1       = tgd1;
+        this.tgd2       = tgd2;
+        this.svAccuracy = svAccuracy;
     }
 
     /** {@inheritDoc} */
@@ -87,11 +104,35 @@ public class FieldBeidouLegacyNavigationMessage<T extends CalculusFieldElement<T
     }
 
     /** {@inheritDoc} */
-    @SuppressWarnings("unchecked")
     @Override
-    public <U extends CalculusFieldElement<U>, G extends FieldGnssOrbitalElements<U, BeidouLegacyNavigationMessage>>
-        G changeField(final Function<T, U> converter) {
-        return (G) new FieldBeidouLegacyNavigationMessage<>(converter, this);
+    public <U extends CalculusFieldElement<U>>
+        FieldBeidouLegacyNavigationMessage<U> toField(final FieldKeplerianOrbit<U> orbit,
+                                                      final U[] nonKeplerian,
+                                                      final Function<T, U> converter) {
+        return new FieldBeidouLegacyNavigationMessage<>(isD2(),
+                                                        getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
+                                                        getType(), getPrn(),
+                                                        new FieldGNSSDate<>(orbit.getDate().getField(),
+                                                                            getTimeOfEphemeris().getGnssDate()),
+                                                        orbit, nonKeplerian,
+                                                        converter.apply(getTgd()),
+                                                        new FieldGNSSDate<>(orbit.getDate().getField(),
+                                                                            getTimeOfClock().getGnssDate()),
+                                                        new FieldGNSSDate<>(orbit.getDate().getField(),
+                                                                            getTransmissionTime().getGnssDate()),
+                                                        getAODE(), getAODC(), getSatH1(),
+                                                        converter.apply(getTGD1()),
+                                                        converter.apply(getTGD2()),
+                                                        converter.apply(getSvAccuracy()));
+    }
+
+    /**
+     * Check if message is a D2 message.
+     * @return true if message is a D2 message
+     * @since 14.0
+     */
+    public boolean isD2() {
+        return d2;
     }
 
     /**
@@ -103,29 +144,11 @@ public class FieldBeidouLegacyNavigationMessage<T extends CalculusFieldElement<T
     }
 
     /**
-     * Setter for the age of data clock.
-     * @param aod the age of data to set
-     */
-    public void setAODC(final T aod) {
-        // The value is given as a floating number in the navigation message
-        this.aodc = (int) aod.getReal();
-    }
-
-    /**
      * Getter for the Age Of Data Ephemeris (AODE).
      * @return the Age Of Data Ephemeris (AODE)
      */
     public int getAODE() {
         return aode;
-    }
-
-    /**
-     * Setter for the age of data ephemeris.
-     * @param aod the age of data to set
-     */
-    public void setAODE(final T aod) {
-        // The value is given as a floating number in the navigation message
-        this.aode = (int) aod.getReal();
     }
 
     /**
@@ -137,27 +160,11 @@ public class FieldBeidouLegacyNavigationMessage<T extends CalculusFieldElement<T
     }
 
     /**
-     * Setter for the B1/B3 Group Delay Differential (s).
-     * @param tgd the group delay differential to set
-     */
-    public void setTGD1(final T tgd) {
-        this.tgd1 = tgd;
-    }
-
-    /**
      * Getter for the estimated group delay differential TGD for B2I signal.
      * @return the estimated group delay differential TGD2 for B2I signal (s)
      */
     public T getTGD2() {
         return tgd2;
-    }
-
-    /**
-     * Setter for the B2/B3 Group Delay Differential (s).
-     * @param tgd the group delay differential to set
-     */
-    public void setTGD2(final T tgd) {
-        this.tgd2 = tgd;
     }
 
     /**
@@ -168,28 +175,12 @@ public class FieldBeidouLegacyNavigationMessage<T extends CalculusFieldElement<T
         return svAccuracy;
     }
 
-    /**
-     * Setter for the user SV accuracy.
-     * @param svAccuracy the value to set
-     */
-    public void setSvAccuracy(final T svAccuracy) {
-        this.svAccuracy = svAccuracy;
-    }
-
     /** Get the health identifier.
      * @return health identifier
      * @since 14.0
      */
     public int getSatH1() {
         return satH1;
-    }
-
-    /** Set the health identifier.
-     * @param satH1 health identifier
-     * @since 14.0
-     */
-    public void setSatH1(final int satH1) {
-        this.satH1 = satH1;
     }
 
 }

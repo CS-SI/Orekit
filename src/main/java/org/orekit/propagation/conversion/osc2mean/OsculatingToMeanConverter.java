@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -44,6 +44,13 @@ public interface OsculatingToMeanConverter {
      * @return the mean theory
      */
     MeanTheory getMeanTheory();
+
+    /**
+     * Gets the non-dimensional convergence threshold.
+     * @return non-dimensional convergence threshold
+     * @since 14.0
+     */
+    double getThreshold();
 
     /**
      * Converts an osculating orbit into a mean orbit.

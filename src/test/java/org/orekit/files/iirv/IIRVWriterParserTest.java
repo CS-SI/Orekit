@@ -103,7 +103,7 @@ public class IIRVWriterParserTest {
         assertEquals(parsedAllMetadata.get(0).toIIRVString(true),
             parsedFirstOnlyMetadata.get(0).toIIRVString(true));
         assertEquals(parsedAllMetadata.get(0).toIIRVString(true),
-            parsedAllMetadata.getVectorStrings(IIRVMessage.IncludeMessageMetadata.ALL_VECTORS).get(0));
+            parsedAllMetadata.getVectorStrings(IIRVMessage.IncludeMessageMetadata.ALL_VECTORS).getFirst());
         assertEquals(parsedAllMetadata.get(1).toIIRVString(true),
             parsedAllMetadata.getVectorStrings(IIRVMessage.IncludeMessageMetadata.ALL_VECTORS).get(1));
 

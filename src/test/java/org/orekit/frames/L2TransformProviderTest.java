@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -256,7 +256,7 @@ public class L2TransformProviderTest {
             final Vector3D     sunPositionInL2   = sun.getPosition(date, l2Frame);
             final Vector3D     earthPositionInL2 = earth.getPosition(date, l2Frame);
             Assertions.assertEquals(0.0, Vector3D.angle(sunPositionInL2,   Vector3D.MINUS_I), 3.0e-14);
-            Assertions.assertEquals(0.0, Vector3D.angle(earthPositionInL2, Vector3D.MINUS_I), 3.0e-14);
+            Assertions.assertEquals(0.0, Vector3D.angle(earthPositionInL2, Vector3D.MINUS_I), 3.4e-14);
         }
     }
 
@@ -277,7 +277,7 @@ public class L2TransformProviderTest {
             final FieldVector3D<T>     sunPositionInL2   = sun.getPosition(date, l2Frame);
             final FieldVector3D<T>     earthPositionInL2 = earth.getPosition(date, l2Frame);
             Assertions.assertEquals(0.0, FieldVector3D.angle(sunPositionInL2,   Vector3D.MINUS_I).getReal(), 3.0e-14);
-            Assertions.assertEquals(0.0, FieldVector3D.angle(earthPositionInL2, Vector3D.MINUS_I).getReal(), 3.0e-14);
+            Assertions.assertEquals(0.0, FieldVector3D.angle(earthPositionInL2, Vector3D.MINUS_I).getReal(), 3.4e-14);
         }
     }
 

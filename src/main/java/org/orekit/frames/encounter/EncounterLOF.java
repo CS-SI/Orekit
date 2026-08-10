@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,6 +15,9 @@
  * limitations under the License.
  */
 package org.orekit.frames.encounter;
+
+import java.util.Arrays;
+import java.util.List;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
@@ -35,10 +38,6 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Interface for encounter local orbital frame.
@@ -157,7 +156,7 @@ public interface EncounterLOF extends LOF {
         final List<double[]> projectionMatrixDataList = Arrays.stream(identity.getData())
                                                               .filter(values -> !Arrays.equals(values,
                                                                                                getAxisNormalToCollisionPlane().toArray()))
-                                                              .collect(Collectors.toList());
+                                                              .toList();
 
         // Map list<double[]> to double[][]
         final double[][] projectionMatrixData = new double[2][3];
@@ -198,7 +197,7 @@ public interface EncounterLOF extends LOF {
                                                          .filter(values -> !Arrays.equals(values,
                                                                                           getAxisNormalToCollisionPlane(
                                                                                                   field).toArray()))
-                                                         .collect(Collectors.toList());
+                                                         .toList();
 
         // Map list<C[]> to C[][]
         final T[][] projectionMatrixData = MathArrays.buildArray(field, 2, 3);

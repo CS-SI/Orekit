@@ -1,4 +1,4 @@
-/* Copyright 2024-2025 The Johns Hopkins University Applied Physics Laboratory
+/* Copyright 2024-2026 The Johns Hopkins University Applied Physics Laboratory
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -102,7 +102,7 @@ public class IIRVFileWriter implements EphemerisFileWriter {
         }
 
         final StreamingIIRVFileWriter streamingWriter = new StreamingIIRVFileWriter(writer, includeMessageMetadataSetting);
-        final IIRVMessage iirvMessage = builder.buildIIRVMessage(segments.get(0).getCoordinates());
+        final IIRVMessage iirvMessage = builder.buildIIRVMessage(segments.getFirst().getCoordinates());
         streamingWriter.writeIIRVMessage(iirvMessage);
     }
 }

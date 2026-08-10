@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,14 +16,15 @@
  */
 package org.orekit.propagation.events;
 
-import org.orekit.propagation.SpacecraftState;
-
 import java.util.Arrays;
+
+import org.orekit.propagation.SpacecraftState;
 
 /** This interface represents an event enabling predicate function.
  * @author Luc Maisonobe
  * @since 7.1
  */
+@FunctionalInterface
 public interface EnablingPredicate {
 
     /** Compute an event enabling function of state.
@@ -36,13 +37,35 @@ public interface EnablingPredicate {
     boolean eventIsEnabled(SpacecraftState state, EventDetector detector, double g);
 
     /**
+     * Method returning true if and only if the predicate does not depend on dependent variables,
+     * other than the Cartesian coordinates (or equivalent), mass and attitude (excepts for its rates).
+     * It should thus return false if the STM or other secondary variables are needed to evaluate the predicate.
+     * This information is used for performance in propagation. The default implementation returns false.
+     * @return flag
+     * @since 14.0
+     */
+    default boolean dependsOnMainVariablesOnly() {
+        return false;
+    }
+
+    /**
      * Method combining predicated based on the OR logic operator.
      * @param enablingPredicates predicates
      * @return combined predicate
      * @since 13.1
      */
-    static EnablingPredicate orCombine(EnablingPredicate... enablingPredicates) {
-        return (state, detector, g) -> Arrays.stream(enablingPredicates).anyMatch(p -> p.eventIsEnabled(state, detector, g));
+    static EnablingPredicate orCombine(final EnablingPredicate... enablingPredicates) {
+        return new EnablingPredicate() {
+            @Override
+            public boolean eventIsEnabled(final SpacecraftState state, final EventDetector detector, final double g) {
+                return Arrays.stream(enablingPredicates).anyMatch(p -> p.eventIsEnabled(state, detector, g));
+            }
+
+            @Override
+            public boolean dependsOnMainVariablesOnly() {
+                return Arrays.stream(enablingPredicates).allMatch(EnablingPredicate::dependsOnMainVariablesOnly);
+            }
+        };
     }
 
     /**
@@ -51,7 +74,17 @@ public interface EnablingPredicate {
      * @return combined predicate
      * @since 13.1
      */
-    static EnablingPredicate andCombine(EnablingPredicate... enablingPredicates) {
-        return (state, detector, g) -> Arrays.stream(enablingPredicates).allMatch(p -> p.eventIsEnabled(state, detector, g));
+    static EnablingPredicate andCombine(final EnablingPredicate... enablingPredicates) {
+        return new EnablingPredicate() {
+            @Override
+            public boolean eventIsEnabled(final SpacecraftState state, final EventDetector detector, final double g) {
+                return Arrays.stream(enablingPredicates).allMatch(p -> p.eventIsEnabled(state, detector, g));
+            }
+
+            @Override
+            public boolean dependsOnMainVariablesOnly() {
+                return Arrays.stream(enablingPredicates).allMatch(EnablingPredicate::dependsOnMainVariablesOnly);
+            }
+        };
     }
 }

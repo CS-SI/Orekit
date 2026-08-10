@@ -13,12 +13,15 @@ import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.FieldContinueOnEvent;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.intervals.FieldAdaptableInterval;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.utils.*;
+import org.orekit.utils.Constants;
+import org.orekit.utils.ExtendedPositionProvider;
+import static org.mockito.Mockito.mock;
 
 class FieldCylindricalShadowEclipseDetectorTest {
 
@@ -29,14 +32,30 @@ class FieldCylindricalShadowEclipseDetectorTest {
 
     @Test
     @SuppressWarnings("unchecked")
+    void testToEventDetector() {
+        // GIVEN
+        final EventDetectionSettings settings = EventDetectionSettings.getDefaultEventDetectionSettings();
+        final FieldEventDetectionSettings<Complex> fieldSettings = new FieldEventDetectionSettings<>(ComplexField.getInstance(),
+                settings);
+        final FieldCylindricalShadowEclipseDetector<Complex> fieldDetector = new FieldCylindricalShadowEclipseDetector<>(mock(ExtendedPositionProvider.class),
+                Complex.ONE, fieldSettings, mock(FieldEventHandler.class));
+        final EventHandler handler = mock();
+        // WHEN
+        final CylindricalShadowEclipseDetector detector = fieldDetector.toEventDetector(handler);
+        // THEN
+        Assertions.assertEquals(handler, detector.getHandler());
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
     void testConstructor() {
         // GIVEN
         final EventDetectionSettings settings = EventDetectionSettings.getDefaultEventDetectionSettings();
         final FieldEventDetectionSettings<Complex> fieldSettings = new FieldEventDetectionSettings<>(ComplexField.getInstance(),
                 settings);
         // WHEN
-        final FieldCylindricalShadowEclipseDetector<Complex> detector = new FieldCylindricalShadowEclipseDetector<>(Mockito.mock(ExtendedPositionProvider.class),
-                Complex.ONE, fieldSettings, Mockito.mock(FieldEventHandler.class));
+        final FieldCylindricalShadowEclipseDetector<Complex> detector = new FieldCylindricalShadowEclipseDetector<>(mock(ExtendedPositionProvider.class),
+                Complex.ONE, fieldSettings, mock(FieldEventHandler.class));
         // THEN
         Assertions.assertEquals(fieldSettings.getMaxIterationCount(), detector.getDetectionSettings().getMaxIterationCount());
         Assertions.assertEquals(fieldSettings.getThreshold(), detector.getDetectionSettings().getThreshold());
@@ -120,7 +139,7 @@ class FieldCylindricalShadowEclipseDetectorTest {
 
     @SuppressWarnings("unchecked")
     private FieldSpacecraftState<Complex> mockState(final FieldVector3D<Complex> position) {
-        final FieldSpacecraftState<Complex> mockedState = Mockito.mock(FieldSpacecraftState.class);
+        final FieldSpacecraftState<Complex> mockedState = mock(FieldSpacecraftState.class);
         Mockito.when(mockedState.getDate()).thenReturn(FieldAbsoluteDate.getArbitraryEpoch(position.getX().getField()));
         Mockito.when(mockedState.getPosition()).thenReturn(position);
         return mockedState;

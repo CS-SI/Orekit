@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -67,7 +67,7 @@ class LinearKeplerianCovarianceHandlerTest {
         // WHEN
         propagator.propagate(targetDate);
         final List<StateCovariance> covariances = covarianceHandler.getStatesCovariances();
-        final StateCovariance actualTerminalCovariance = covariances.get(covariances.size() - 1);
+        final StateCovariance actualTerminalCovariance = covariances.getLast();
         // THEN
         final NumericalPropagator otherPropagator = buildPropagator(initialOrbit, orbitType);
         final String stmName = "stm";

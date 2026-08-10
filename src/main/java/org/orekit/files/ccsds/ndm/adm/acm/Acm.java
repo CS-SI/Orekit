@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Luc Maisonobe
+/* Copyright 2022-2026 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -66,17 +66,28 @@ public class Acm extends NdmConstituent<AdmHeader, Segment<AcmMetadata, AcmData>
      * @return metadata from the single {@link #getSegments() segment}
      */
     public AcmMetadata getMetadata() {
-        return getSegments().get(0).getMetadata();
+        return getSegments().getFirst().getMetadata();
     }
 
     /** Get the data from the single {@link #getSegments() segment}.
      * @return data from the single {@link #getSegments() segment}
      */
     public AcmData getData() {
-        return getSegments().get(0).getData();
+        return getSegments().getFirst().getData();
     }
 
-    /** {@inheritDoc} */
+    /** {@inheritDoc}
+     * <p>
+     * The metadata entries checked for use as the key are the following ones,
+     * the first non-null being used. The map from ACM files always contains only
+     * one object.
+     * <ul>
+     *   <li>{@link org.orekit.files.ccsds.ndm.adm.AdmMetadata#getObjectName() OBJECT_NAME}</li>
+     *   <li>{@link AcmMetadata#getInternationalDesignator() INTERNATIONAL_DESIGNATOR}</li>
+     *   <li>{@link AcmMetadata#getObjectDesignator() OBJECT_DESIGNATOR}</li>
+     *   <li>the default name {@link #UNKNOWN_OBJECT} for unknown objects</li>
+     * </ul>
+     */
     @Override
     public Map<String, AcmSatelliteEphemeris> getSatellites() {
         // the ACM file has only one segment and a deep structure
@@ -86,13 +97,13 @@ public class Acm extends NdmConstituent<AdmHeader, Segment<AcmMetadata, AcmData>
             name = getMetadata().getObjectName();
         } else if (getMetadata().getInternationalDesignator() != null) {
             name = getMetadata().getInternationalDesignator();
-        } else if (getMetadata().getObjectDesignator() != null) {
-            name = getMetadata().getObjectDesignator();
+        } else if (getMetadata().getObjectDesignator().isPresent()) {
+            name = getMetadata().getObjectDesignator().get();
         } else {
             name = UNKNOWN_OBJECT;
         }
-        final List<AttitudeStateHistory> histories = getSegments().get(0).getData().getAttitudeBlocks();
-        return (histories == null) ?
+        final List<AttitudeStateHistory> histories = getSegments().getFirst().getData().getAttitudeBlocks();
+        return (histories.isEmpty()) ?
                Collections.emptyMap() :
                Collections.singletonMap(name, new AcmSatelliteEphemeris(name, histories));
     }

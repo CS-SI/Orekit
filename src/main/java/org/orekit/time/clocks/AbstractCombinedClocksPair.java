@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Thales Alenia Space
+/* Copyright 2022-2026 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,12 +16,19 @@
  */
 package org.orekit.time.clocks;
 
+import java.util.List;
+import java.util.stream.Stream;
+
 import org.hipparchus.CalculusFieldElement;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeUtils;
+import org.orekit.utils.ParameterDriver;
 
-/** Clock model combining two underlying models.
+
+/**
+ * Clock model combining two underlying models.
+ *
  * @author Luc Maisonobe
  * @since 14.0
  */
@@ -33,11 +40,13 @@ public abstract class AbstractCombinedClocksPair implements ClockModel {
     /** Second underlying clock. */
     private final ClockModel clock2;
 
-    /** Simple constructor.
+    /**
+     * Simple constructor.
+     *
      * @param clock1 first underlying clock
      * @param clock2 second underlying clock
      */
-    protected  AbstractCombinedClocksPair(final ClockModel clock1, final ClockModel clock2) {
+    protected AbstractCombinedClocksPair(final ClockModel clock1, final ClockModel clock2) {
         this.clock1 = clock1;
         this.clock2 = clock2;
     }
@@ -62,24 +71,32 @@ public abstract class AbstractCombinedClocksPair implements ClockModel {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends CalculusFieldElement<T>> FieldClockOffset<T> getOffset(final FieldAbsoluteDate<T> date) {
-        return combine(clock1.getOffset(date), clock2.getOffset(date));
+    public <T extends CalculusFieldElement<T>> FieldClockOffset<T> getFieldOffset(final FieldAbsoluteDate<T> date) {
+        return combine(clock1.getFieldOffset(date), clock2.getFieldOffset(date));
     }
 
-    /** Combine two offsets.
+    /** {@inheritDoc} */
+    @Override
+    public List<ParameterDriver> getParametersDrivers() {
+        return Stream.concat(clock1.getParametersDrivers().stream(), clock2.getParametersDrivers().stream()).toList();
+    }
+
+    /**
+     * Combine two offsets.
      * @param offset1 first offset
      * @param offset2 second offset
      * @return combined offset
      */
     protected abstract ClockOffset combine(ClockOffset offset1, ClockOffset offset2);
 
-    /** Combine two offsets.
-     * @param <T> type of the field elements
+    /**
+     * Combine two offsets.
+     * @param <T>     type of the field elements
      * @param offset1 first offset
      * @param offset2 second offset
      * @return combined offset
      */
     protected abstract <T extends CalculusFieldElement<T>> FieldClockOffset<T> combine(FieldClockOffset<T> offset1,
-                                                                                       FieldClockOffset<T> offset2);
+            FieldClockOffset<T> offset2);
 
 }

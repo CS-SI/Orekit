@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,6 +32,7 @@ import java.util.stream.Stream;
 
 import org.hamcrest.Matcher;
 import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -62,6 +63,7 @@ import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.data.LazyLoadedDataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.BoxAndSolarArraySpacecraft;
 import org.orekit.forces.ForceModel;
@@ -85,8 +87,15 @@ import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
-import org.orekit.propagation.*;
+import org.orekit.propagation.BoundedPropagator;
+import org.orekit.propagation.EphemerisGenerator;
+import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.PropagationType;
+import org.orekit.propagation.Propagator;
+import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.events.AltitudeDetector;
+import org.orekit.propagation.events.ApsideDetector;
 import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
@@ -184,7 +193,8 @@ class DSSTPropagatorTest {
 
         // The purpose is not verifying propagated values, but to check that no exception occurred
         Assertions.assertEquals(0.0, propagated.getDate().durationFrom(orbitEpoch.shiftedBy(20.0 * Constants.JULIAN_DAY)), Double.MIN_VALUE);
-        Assertions.assertEquals(4.216464862956647E7, propagated.getOrbit().getA(), Double.MIN_VALUE);
+        MatcherAssert.assertThat( propagated.getOrbit().getA(),
+                Matchers.closeTo(4.216464862956647E7, 5e-7));
 
     }
 
@@ -1050,6 +1060,50 @@ class DSSTPropagatorTest {
 
     }
 
+
+    @Test
+    public void testIssue1907() {
+        // Spacecraft state
+        final SpacecraftState state = getLEOState();
+
+        // Body frame
+        final Frame itrf = FramesFactory .getITRF(IERSConventions.IERS_2010, true);
+
+        // Earth
+        final UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(4, 4);
+
+        // Detectors
+        final List<EventDetector> events = new ArrayList<>();
+        events.add(new ApsideDetector(state.getOrbit()).withHandler(new ApsideHandlerWithResetState()));
+
+        // Force models
+        final List<DSSTForceModel> forceModels = new ArrayList<>();
+        forceModels.add(new DSSTZonal(provider));
+        forceModels.add(new DSSTTesseral(itrf, Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider));
+
+        // Set up DSST propagator
+        final double[][] tol = ToleranceProvider.getDefaultToleranceProvider(10.).getTolerances(state.getOrbit(), OrbitType.EQUINOCTIAL);
+        final ODEIntegrator integrator = new DormandPrince54Integrator(60.0, 3600.0, tol[0], tol[1]);
+        final DSSTPropagator propagator = new DSSTPropagator(integrator, PropagationType.OSCULATING);
+        for (DSSTForceModel force : forceModels) {
+            propagator.addForceModel(force);
+        }
+        for (EventDetector event : events) {
+            propagator.addEventDetector(event);
+        }
+        propagator.setInitialState(state);
+
+        // Propagation does not throw any exception
+        Assertions.assertDoesNotThrow(() -> propagator.propagate(state.getDate().shiftedBy(3600)));
+    }
+
+    public class ApsideHandlerWithResetState implements EventHandler {
+        @Override
+        public Action eventOccurred(SpacecraftState s, EventDetector detector, boolean increasing) {
+            return Action.RESET_STATE;
+        }
+    }
+
     @Test
     void testIssue613() {
         // Spacecraft state
@@ -1328,7 +1382,7 @@ class DSSTPropagatorTest {
         dsst = new DSSTPropagator(integrator, PropagationType.MEAN);
         dsst.setInitialState(initialState, PropagationType.MEAN);
         MDot mDot = new MDot();
-        mDot.getParametersDrivers().get(0).setSelected(true);
+        mDot.getParametersDrivers().getFirst().setSelected(true);
         dsst.addForceModel(mDot);
         // an intentionally negligible force model, but with a different parameter
         dsst.addForceModel(new DSSTThirdBody(CelestialBodyFactory.getPluto(), mu));
@@ -1354,7 +1408,7 @@ class DSSTPropagatorTest {
         dsst = new DSSTPropagator(integrator, PropagationType.MEAN);
         dsst.setInitialState(initialState, PropagationType.MEAN);
         mDot = new MDot();
-        mDot.getParametersDrivers().get(0).setSelected(true);
+        mDot.getParametersDrivers().getFirst().setSelected(true);
         dsst.addForceModel(mDot);
         // an intentionally negligible force model, but with a different parameter
         DSSTThirdBody third = new DSSTThirdBody(CelestialBodyFactory.getPluto(), mu);
@@ -1408,7 +1462,7 @@ class DSSTPropagatorTest {
         dsst = new DSSTPropagator(integrator, PropagationType.OSCULATING);
         dsst.setInitialState(initialState, PropagationType.MEAN);
         mDot = new MDot();
-        mDot.getParametersDrivers().get(0).setSelected(true);
+        mDot.getParametersDrivers().getFirst().setSelected(true);
         dsst.addForceModel(mDot);
         // an intentionally negligible force model, but with a different parameter
         dsst.addForceModel(new DSSTThirdBody(CelestialBodyFactory.getPluto(), mu));
@@ -1436,7 +1490,7 @@ class DSSTPropagatorTest {
         dsst = new DSSTPropagator(integrator, PropagationType.OSCULATING);
         dsst.setInitialState(initialState, PropagationType.MEAN);
         mDot = new MDot();
-        mDot.getParametersDrivers().get(0).setSelected(true);
+        mDot.getParametersDrivers().getFirst().setSelected(true);
         dsst.addForceModel(mDot);
         // an intentionally negligible force model, but with a different parameter
         third = new DSSTThirdBody(CelestialBodyFactory.getPluto(), mu);
@@ -1751,6 +1805,37 @@ class DSSTPropagatorTest {
         propagator.propagate(initialState.getDate().shiftedBy(timeOfFlight));
         // THEN
         Assertions.assertEquals(1, countAndContinue.getCount());
+    }
+
+    @Test
+    public void testIssue1957() {
+        // GIVEN
+        final LazyLoadedDataContext dataContext = new LazyLoadedDataContext();
+        final UnnormalizedSphericalHarmonicsProvider provider =
+                dataContext.getGravityFields().getUnnormalizedProvider(2, 2);
+        final AbsoluteDate start = new AbsoluteDate(2020, 1, 1, 0, 0, 0.0,
+                dataContext.getTimeScales().getUTC());
+        final Frame frame = dataContext.getFrames().getEME2000();
+        final CircularOrbit initialOrbit = new CircularOrbit(7000.0e3, 0.0, 0.001,
+                FastMath.toRadians(97.0), 0.0, 0.0, PositionAngleType.MEAN,
+                frame, start, provider.getMu());
+
+        // WHEN
+        final DSSTPropagator dsst = new DSSTPropagator(
+                new ClassicalRungeKuttaIntegrator(60.0),
+                PropagationType.OSCULATING,
+                Propagator.getDefaultLaw(dataContext.getFrames()));
+        dsst.addForceModel(new DSSTZonal(dataContext.getFrames().getGTOD(true), provider));
+        dsst.setInitialState(new SpacecraftState(initialOrbit));
+        dsst.addEventDetector(new DateDetector(start.shiftedBy(10.0))
+                .withHandler((s, detector, increasing) -> Action.RESET_STATE));
+
+        final SpacecraftState beforeReset = dsst.propagate(start.shiftedBy(9.99));
+        final SpacecraftState afterReset  = dsst.propagate(start.shiftedBy(10.01));
+
+        // THEN
+        // Less than 1cm difference in SMA after the fix. Before it was about 10km
+        Assertions.assertEquals(beforeReset.getOrbit().getA(), afterReset.getOrbit().getA(), 0.01);
     }
 
     private static class TestAttitudeProvider implements AttitudeProviderModifier {

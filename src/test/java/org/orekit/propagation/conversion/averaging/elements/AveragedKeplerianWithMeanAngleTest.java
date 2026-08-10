@@ -15,7 +15,7 @@ class AveragedKeplerianWithMeanAngleTest {
         Assertions.assertEquals(elements.getAveragedSemiMajorAxis(), elementsAsArray[0]);
         Assertions.assertEquals(elements.getAveragedEccentricity(), elementsAsArray[1]);
         Assertions.assertEquals(elements.getAveragedInclination(), elementsAsArray[2]);
-        Assertions.assertEquals(elements.getAveragedPerigeeArgument(), elementsAsArray[3]);
+        Assertions.assertEquals(elements.getAveragedPeriapsisArgument(), elementsAsArray[3]);
         Assertions.assertEquals(elements.getAveragedRightAscensionOfTheAscendingNode(), elementsAsArray[4]);
         Assertions.assertEquals(elements.getAveragedMeanAnomaly(), elementsAsArray[5]);
     }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -50,14 +50,14 @@ class OmmTleWriter extends AbstractWriter {
 
         // Keplerian elements block
         generator.writeComments(tleBlock.getComments());
-        generator.writeEntry(OmmTleKey.EPHEMERIS_TYPE.name(),      tleBlock.getEphemerisType(),      true);
-        generator.writeEntry(OmmTleKey.CLASSIFICATION_TYPE.name(), tleBlock.getClassificationType(), true);
-        generator.writeEntry(OmmTleKey.NORAD_CAT_ID.name(),        tleBlock.getNoradID(),            true);
-        generator.writeEntry(OmmTleKey.ELEMENT_SET_NO.name(),      tleBlock.getElementSetNumber(),   true);
-        generator.writeEntry(OmmTleKey.REV_AT_EPOCH.name(),        tleBlock.getRevAtEpoch(),         true);
-        generator.writeEntry(OmmTleKey.BSTAR.name(),               tleBlock.getBStar(),            Unit.ONE,                  true);
-        generator.writeEntry(OmmTleKey.MEAN_MOTION_DOT.name(),     tleBlock.getMeanMotionDot(),    Units.REV_PER_DAY2_SCALED, true);
-        generator.writeEntry(OmmTleKey.MEAN_MOTION_DDOT.name(),    tleBlock.getMeanMotionDotDot(), Units.REV_PER_DAY3_SCALED, true);
+        generator.writeEntry(OmmTleKey.EPHEMERIS_TYPE.name(),                    tleBlock.getEphemerisType(),      true);
+        generator.writeEntry(OmmTleKey.CLASSIFICATION_TYPE.name(),               tleBlock.getClassificationType(), true);
+        generator.writeEntry(OmmTleKey.NORAD_CAT_ID.name(),                      tleBlock.getNoradID(),            true);
+        generator.writeEntry(OmmTleKey.ELEMENT_SET_NO.name(),                    tleBlock.getElementSetNumber(),   true);
+        generator.writeEntry(OmmTleKey.REV_AT_EPOCH.name(),                      tleBlock.getRevAtEpoch(),         true);
+        generator.writeOptionalDoubleEntry(OmmTleKey.BSTAR.name(),               tleBlock.getBStar(),            Unit.ONE,                  true);
+        generator.writeOptionalDoubleEntry(OmmTleKey.MEAN_MOTION_DOT.name(),     tleBlock.getMeanMotionDot(),    Units.REV_PER_DAY2_SCALED, true);
+        generator.writeOptionalDoubleEntry(OmmTleKey.MEAN_MOTION_DDOT.name(),    tleBlock.getMeanMotionDotDot(), Units.REV_PER_DAY3_SCALED, true);
 
     }
 

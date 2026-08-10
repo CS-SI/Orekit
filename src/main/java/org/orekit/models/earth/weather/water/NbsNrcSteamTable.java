@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Thales Alenia Space
+/* Copyright 2022-2026 Thales Alenia Space
  * Licensed to CS Communication & Systèmes (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -67,6 +67,11 @@ public class NbsNrcSteamTable implements WaterVaporPressureProvider {
 
         MODEL = new SplineInterpolator().interpolate(temperature, pressure);
 
+    }
+
+    /** Simple constructor. */
+    public NbsNrcSteamTable() {
+        // nothing to do
     }
 
     /** {@inheritDoc} */

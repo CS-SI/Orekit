@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,46 +27,38 @@ import org.orekit.gnss.metric.messages.rtcm.RtcmData;
 public class RtcmEphemerisData extends RtcmData {
 
     /** Satellite ID. */
-    private int rtcmSatelliteId;
+    private final int satelliteId;
 
-    /** Accuracy indicator. */
-    private AccuracyProvider accuracy;
+    /** Accuracy provider. */
+    private AccuracyProvider accuracyProvider;
 
-    /** Constructor. */
-    public RtcmEphemerisData() {
-        // Nothing to do ...
+    /** Constructor.
+     * @param satelliteId satellite ID
+     * @since 14.0
+     */
+    public RtcmEphemerisData(final int satelliteId) {
+        this.satelliteId      = satelliteId;
     }
 
-    /**
-     * Get the satellite ID.
+    /** Get the satellite ID.
      * @return the satellite ID
      */
     public int getSatelliteID() {
-        return rtcmSatelliteId;
+        return satelliteId;
     }
 
-    /**
-     * Set the satellite ID.
-     * @param satelliteID the ID to set
+    /** Set the accuracy provider of the ephemeris message.
+     * @param accuracyProvider accuracy provider
      */
-    public void setSatelliteID(final int satelliteID) {
-        this.rtcmSatelliteId = satelliteID;
+    public void setAccuracyProvider(final AccuracyProvider accuracyProvider) {
+        this.accuracyProvider = accuracyProvider;
     }
 
-    /**
-     * Get the accuracy provider of the ephemeris message.
+    /** Get the accuracy provider of the ephemeris message.
      * @return the accuracy provider
      */
     public AccuracyProvider getAccuracyProvider() {
-        return accuracy;
-    }
-
-    /**
-     * Set the accuracy provider of the ephemeris message.
-     * @param provider the provider to set
-     */
-    public void setAccuracyProvider(final AccuracyProvider provider) {
-        this.accuracy = provider;
+        return accuracyProvider;
     }
 
 }

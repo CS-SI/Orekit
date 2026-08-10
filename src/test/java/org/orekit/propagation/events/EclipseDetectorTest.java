@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 package org.orekit.propagation.events;
+
+import java.util.List;
 
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -51,8 +53,6 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-import java.util.List;
-
 class EclipseDetectorTest {
 
     private double               mu;
@@ -68,7 +68,7 @@ class EclipseDetectorTest {
     void testPolar() {
         final KeplerianOrbit original = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(initialState.getOrbit());
         final KeplerianOrbit polar    = new KeplerianOrbit(original.getA(), original.getE(),
-                                                           0.5 * FastMath.PI, original.getPerigeeArgument(),
+                                                           0.5 * FastMath.PI, original.getPeriapsisArgument(),
                                                            original.getRightAscensionOfAscendingNode(),
                                                            original.getTrueAnomaly(), PositionAngleType.TRUE,
                                                            original.getFrame(), original.getDate(),
@@ -100,9 +100,9 @@ class EclipseDetectorTest {
         Assertions.assertEquals(duration, finalState.getDate().durationFrom(iniDate), 1.0e-3);
         final List<LoggedEvent> events = logger.getLoggedEvents();
         Assertions.assertEquals(10, events.size());
-        Assertions.assertSame(events.get(0).getEventDetector(), withoutFlattening);
-        Assertions.assertFalse(events.get(0).isIncreasing());
-        Assertions.assertEquals( 2274.702, events.get(0).getState().getDate().durationFrom(iniDate), 1.0e-3);
+        Assertions.assertSame(events.getFirst().getEventDetector(), withoutFlattening);
+        Assertions.assertFalse(events.getFirst().isIncreasing());
+        Assertions.assertEquals( 2274.702, events.getFirst().getState().getDate().durationFrom(iniDate), 1.0e-3);
         Assertions.assertSame(events.get(1).getEventDetector(), withFlattening);
         Assertions.assertFalse(events.get(1).isIncreasing());
         Assertions.assertEquals( 2280.427, events.get(1).getState().getDate().durationFrom(iniDate), 1.0e-3);

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,15 +16,16 @@
  */
 package org.orekit.propagation.analytical.tle;
 
+import java.util.List;
+
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.analytical.AbstractAnalyticalGradientConverter;
+import org.orekit.propagation.analytical.tle.generation.TleGenerationAlgorithm;
 import org.orekit.time.TimeScale;
 import org.orekit.utils.ParameterDriver;
-
-import java.util.List;
 
 /** Converter for TLE propagator.
  * @author Luc Maisonobe
@@ -49,6 +50,9 @@ class TLEGradientConverter extends AbstractAnalyticalGradientConverter {
     /** Attitude provider. */
     private final AttitudeProvider provider;
 
+    /** Propagator. */
+    private final TLEPropagator propagator;
+
     /** Simple constructor.
      * @param propagator TLE propagator used to access initial orbit
      */
@@ -59,6 +63,9 @@ class TLEGradientConverter extends AbstractAnalyticalGradientConverter {
         this.teme     = propagator.getFrame();
         this.utc      = tle.getUtc();
         this.provider = propagator.getAttitudeProvider();
+
+        this.propagator = propagator;
+
     }
 
     /** {@inheritDoc} */
@@ -66,10 +73,10 @@ class TLEGradientConverter extends AbstractAnalyticalGradientConverter {
     public FieldTLEPropagator<Gradient> getPropagator() {
 
         final FieldSpacecraftState<Gradient> state = getState(this);
-        final Gradient[] parameters = getParameters(state, tle);
 
         // Zero
         final Gradient zero = state.getMass().getField().getZero();
+        final Gradient[] parameters = getParameters(state, propagator);
 
         // Template TLE
         final int satelliteNumber         = tle.getSatelliteNumber();
@@ -80,27 +87,31 @@ class TLEGradientConverter extends AbstractAnalyticalGradientConverter {
         final int ephemerisType           = tle.getEphemerisType();
         final int elementNumber           = tle.getElementNumber();
         final int revolutionNumberAtEpoch = tle.getRevolutionNumberAtEpoch();
-        final double bStar                = tle.getBStar(state.getDate().toAbsoluteDate());
 
         // Initialize the new TLE
         final FieldTLE<Gradient> templateTLE = new FieldTLE<>(satelliteNumber, classification,
                                                               launchYear, launchNumber, launchPiece,
                                                               ephemerisType, elementNumber, state.getDate(),
                                                               zero, zero, zero, zero, zero, zero, zero, zero,
-                                                              revolutionNumberAtEpoch, bStar, utc);
+                                                              revolutionNumberAtEpoch,
+                                                              parameters[0],
+                                                              utc);
 
         // TLE
-        final FieldTLE<Gradient> gTLE = TLEPropagator.getDefaultTleGenerationAlgorithm(utc, teme).generate(state, templateTLE);
+        final TleGenerationAlgorithm algorithm = propagator.getTleGenerationAlgorithm();
+        final FieldTLE<Gradient> gTLE = algorithm.generate(state, templateTLE);
 
         // Return the "Field" propagator
-        return FieldTLEPropagator.selectExtrapolator(gTLE, provider, state.getMass(), teme, parameters);
-
+        final FieldTLEPropagator<Gradient> fieldPropagator =
+            FieldTLEPropagator.selectExtrapolator(gTLE, provider, state.getMass(), teme);
+        fieldPropagator.setTleGenerationAlgorithm(algorithm);
+        return fieldPropagator;
     }
 
     /** {@inheritDoc} */
     @Override
     public List<ParameterDriver> getParametersDrivers() {
-        return tle.getParametersDrivers();
+        return  propagator.getParametersDrivers();
     }
 
 }

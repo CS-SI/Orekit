@@ -1,4 +1,4 @@
-/* Copyright 2023-2025 Alberto Ferrero
+/* Copyright 2023-2026 Alberto Ferrero
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,8 +16,6 @@
  */
 package org.orekit.propagation.events;
 
-import static org.orekit.orbits.PositionAngleType.MEAN;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
@@ -26,6 +24,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.frames.FramesFactory;
@@ -36,6 +35,8 @@ import org.orekit.propagation.FieldPropagator;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.analytical.FieldEcksteinHechlerPropagator;
 import org.orekit.propagation.analytical.FieldKeplerianPropagator;
+import org.orekit.propagation.events.handlers.ContinueOnEvent;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.FieldContinueOnEvent;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;
@@ -44,6 +45,10 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.orekit.orbits.PositionAngleType.MEAN;
 
 /** Unit tests for {@link FieldLongitudeRangeCrossingDetector}. */
 public class FieldLongitudeRangeCrossingDetectorTest {
@@ -168,6 +173,21 @@ public class FieldLongitudeRangeCrossingDetectorTest {
      */
     private static Binary64 v(double value) {
         return new Binary64(value);
+    }
+
+    @Test
+    void testToEventDetector() {
+        // GIVEN
+        final FieldLongitudeRangeCrossingDetector<Binary64> fieldDetector = new FieldLongitudeRangeCrossingDetector<>(Binary64Field.getInstance(),
+                mock(BodyShape.class), 0., 1.);
+        final EventHandler expectedHandler = new ContinueOnEvent();
+        // WHEN
+        final LongitudeRangeCrossingDetector detector = fieldDetector.toEventDetector(expectedHandler);
+        // THEN
+        assertEquals(expectedHandler, detector.getHandler());
+        assertEquals(fieldDetector.getBodyShape(), detector.getBodyShape());
+        assertEquals(fieldDetector.getToLongitude(), detector.getToLongitude());
+        assertEquals(fieldDetector.getFromLongitude(), detector.getFromLongitude());
     }
 
     @BeforeEach

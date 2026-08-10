@@ -1,4 +1,4 @@
-/* Copyright 2024-2025 Rafael Ayala
+/* Copyright 2024-2026 Rafael Ayala
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,6 +17,7 @@
 package org.orekit.control.heuristics.lambert;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.annotation.DefaultDataContext;
 
 /**
  * Class holding a solution to the Lambert problem.
@@ -130,4 +131,19 @@ public class LambertSolution {
     public LambertBoundaryVelocities getBoundaryVelocities() {
         return boundaryVelocities;
     }
+
+    /** {@inheritDoc} */
+    @Override
+    @DefaultDataContext
+    public String toString() {
+        return "LambertSolution{" +
+                "nRev=" + nRev +
+                ", pathType=" + pathType +
+                ", orbitType=" + orbitType +
+                ", posigrade=" + posigrade +
+                ", boundaryConditions=" + boundaryConditions +
+                ", boundaryVelocities=" + boundaryVelocities +
+                "}";
+    }
+
 }

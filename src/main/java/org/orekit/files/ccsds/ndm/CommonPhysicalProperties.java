@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,11 +16,17 @@
  */
 package org.orekit.files.ccsds.ndm;
 
+import java.util.Arrays;
+import java.util.Optional;
+
 import org.hipparchus.complex.Quaternion;
+import org.orekit.annotation.Nullable;
+import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.ndm.cdm.AdditionalParameters;
 import org.orekit.files.ccsds.ndm.odm.ocm.OrbitPhysicalProperties;
 import org.orekit.files.ccsds.section.CommentsContainer;
+import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 
 /** Container for common physical properties for both {@link OrbitPhysicalProperties} and {@link AdditionalParameters}.
@@ -43,90 +49,92 @@ import org.orekit.time.AbsoluteDate;
  */
 public class CommonPhysicalProperties extends CommentsContainer {
 
+    /** For creating a {@link Frame}. */
+    private final CcsdsFrameMapper frameMapper;
+
     /** Optimally Enclosing Box parent reference frame. */
     private FrameFacade oebParentFrame;
 
     /** Optimally Enclosing Box parent reference frame epoch. */
+    @Nullable
     private AbsoluteDate oebParentFrameEpoch;
 
     /** Quaternion defining Optimally Enclosing Box. */
-    private final double[] oebQ;
+    @Nullable
+    private double[] oebQ;
 
     /** Maximum physical dimension of Optimally Enclosing Box. */
-    private double oebMax;
+    @Nullable
+    private Double oebMax;
 
     /** Intermediate physical dimension of Optimally Enclosing Box. */
-    private double oebIntermediate;
+    @Nullable
+    private Double oebIntermediate;
 
     /** Minimum physical dimension of Optimally Enclosing Box. */
-    private double oebMin;
+    @Nullable
+    private Double oebMin;
 
     /** Cross-sectional area of Optimally Enclosing Box when viewed along the maximum OEB direction. */
-    private double oebAreaAlongMax;
+    @Nullable
+    private Double oebAreaAlongMax;
 
     /** Cross-sectional area of Optimally Enclosing Box when viewed along the intermediate OEB direction. */
-    private double oebAreaAlongIntermediate;
+    @Nullable
+    private Double oebAreaAlongIntermediate;
 
     /** Cross-sectional area of Optimally Enclosing Box when viewed along the minimum OEB direction. */
-    private double oebAreaAlongMin;
+    @Nullable
+    private Double oebAreaAlongMin;
 
-        /** Typical (50th percentile) radar cross-section. */
-    private double rcs;
+    /** Typical (50th percentile) radar cross-section. */
+    @Nullable
+    private Double rcs;
 
     /** Minimum radar cross-section. */
-    private double minRcs;
+    @Nullable
+    private Double minRcs;
 
     /** Maximum radar cross-section. */
-    private double maxRcs;
+    @Nullable
+    private Double maxRcs;
 
     /** Typical (50th percentile) visual magnitude. */
-    private double vmAbsolute;
+    @Nullable
+    private Double vmAbsolute;
 
     /** Minimum apparent visual magnitude. */
-    private double vmApparentMin;
+    @Nullable
+    private Double vmApparentMin;
 
     /** Typical (50th percentile) apparent visual magnitude. */
-    private double vmApparent;
+    @Nullable
+    private Double vmApparent;
 
     /** Maximum apparent visual magnitude. */
-    private double vmApparentMax;
+    @Nullable
+    private Double vmApparentMax;
 
     /** Typical (50th percentile) coefficient of reflectivity. */
-    private double reflectance;
+    @Nullable
+    private Double reflectance;
 
-    /** Simple constructor.
+    /**
+     * Simple constructor.
+     *
+     * @param epochT0     T0 epoch from file metadata
+     * @param frameMapper for creating a {@link Frame}.
+     * @since 13.1.5
      */
-    public CommonPhysicalProperties() {
-
+    public CommonPhysicalProperties(final AbsoluteDate epochT0, final CcsdsFrameMapper frameMapper) {
         // 502.0-B-3 (page 6-23) says the default is RSW_ROTATING, but also says,
         // "This keyword shall be provided if OEB_Q1,2,3,4 are specified".
         // Which means it must be specified in the file any time it would be used,
         // which leaves the default without any effect.
-        oebParentFrame           = new FrameFacade(null, null, null, null, null);
+        this.frameMapper    = frameMapper;
+        oebParentFrame      = new FrameFacade(null, null, null, null, null);
         // 502.0-B-3 (page 6-23) says the default is EPOCH_TZERO from the OCM metadata.
-        oebParentFrameEpoch      = null;
-        // 502.0-B-3 (page 6-23) says these four values are optional.
-        oebQ                     = new double[] {Double.NaN, Double.NaN, Double.NaN, Double.NaN};
-        oebMax                   = Double.NaN;
-        oebIntermediate          = Double.NaN;
-        oebMin                   = Double.NaN;
-        oebAreaAlongMax          = Double.NaN;
-        oebAreaAlongIntermediate = Double.NaN;
-        oebAreaAlongMin          = Double.NaN;
-        rcs                      = Double.NaN;
-        minRcs                   = Double.NaN;
-        maxRcs                   = Double.NaN;
-        vmAbsolute               = Double.NaN;
-        vmApparentMin            = Double.NaN;
-        vmApparent               = Double.NaN;
-        vmApparentMax            = Double.NaN;
-        reflectance              = Double.NaN;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void validate(final double version) {
-        super.validate(version);
+        oebParentFrameEpoch = epochT0;
     }
 
     /** Get the Optimally Enclosing Box parent reference frame.
@@ -147,8 +155,8 @@ public class CommonPhysicalProperties extends CommentsContainer {
     /** Get the Optimally Enclosing Box parent reference frame epoch.
      * @return Optimally Enclosing Box parent reference frame epoch
      */
-    public AbsoluteDate getOebParentFrameEpoch() {
-        return oebParentFrameEpoch;
+    public Optional<AbsoluteDate> getOebParentFrameEpoch() {
+        return Optional.ofNullable(oebParentFrameEpoch);
     }
 
     /** Set the Optimally Enclosing Box parent reference frame epoch.
@@ -159,11 +167,39 @@ public class CommonPhysicalProperties extends CommentsContainer {
         this.oebParentFrameEpoch = oebParentFrameEpoch;
     }
 
+    /**
+     * Get the mapping between a CCSDS frame and a {@link Frame}.
+     *
+     * @return the frame mapper.
+     * @since 13.1.5
+     */
+    public CcsdsFrameMapper getFrameMapper() {
+        return frameMapper;
+    }
+
+    /**
+     * Get the frame OEB parent frame. Note that only the orientation of the
+     * returned frame is significant, the position of the returned frame is
+     * irrelevant and should be ignored.
+     *
+     * @return Orekit frame for this covariance history.
+     * @see #getOebParentFrame()
+     * @see #getOebParentFrameEpoch()
+     * @see #getFrameMapper()
+     * @since 13.1.5
+     */
+    public Frame getOebParent() {
+        return getFrameMapper().buildCcsdsFrame(oebParentFrame, oebParentFrameEpoch);
+    }
+
     /** Get the quaternion defining Optimally Enclosing Box.
      * @return quaternion defining Optimally Enclosing Box
      */
-    public Quaternion getOebQ() {
-        return new Quaternion(oebQ[0], oebQ[1], oebQ[2], oebQ[3]);
+    public Optional<Quaternion> getOebQ() {
+        if (oebQ == null) {
+            return Optional.empty();
+        }
+        return Optional.of(new Quaternion(oebQ[0], oebQ[1], oebQ[2], oebQ[3]));
     }
 
     /** set the component of quaternion defining Optimally Enclosing Box.
@@ -172,14 +208,18 @@ public class CommonPhysicalProperties extends CommentsContainer {
      */
     public void setOebQ(final int i, final double qI) {
         refuseFurtherComments();
+        if (oebQ == null) {
+            oebQ = new double[4];
+            Arrays.fill(oebQ, Double.NaN);
+        }
         oebQ[i] = qI;
     }
 
     /** Get the maximum physical dimension of the OEB.
      * @return maximum physical dimension of the OEB.
      */
-    public double getOebMax() {
-        return oebMax;
+    public Optional<Double> getOebMax() {
+        return Optional.ofNullable(oebMax);
     }
 
     /** Set the maximum physical dimension of the OEB.
@@ -193,8 +233,8 @@ public class CommonPhysicalProperties extends CommentsContainer {
     /** Get the intermediate physical dimension of the OEB.
      * @return intermediate physical dimension of the OEB.
      */
-    public double getOebIntermediate() {
-        return oebIntermediate;
+    public Optional<Double> getOebIntermediate() {
+        return Optional.ofNullable(oebIntermediate);
     }
 
     /** Set the intermediate physical dimension of the OEB.
@@ -208,8 +248,8 @@ public class CommonPhysicalProperties extends CommentsContainer {
     /** Get the minimum physical dimension of the OEB.
      * @return dimensions the minimum physical dimension of the OEB.
      */
-    public double getOebMin() {
-        return oebMin;
+    public Optional<Double> getOebMin() {
+        return Optional.ofNullable(oebMin);
     }
 
     /** Set the minimum physical dimension of the OEB.
@@ -223,8 +263,8 @@ public class CommonPhysicalProperties extends CommentsContainer {
     /** Get the cross-sectional area of Optimally Enclosing Box when viewed along the maximum OEB direction.
      * @return cross-sectional area of Optimally Enclosing Box when viewed along the maximum OEB direction.
      */
-    public double getOebAreaAlongMax() {
-        return oebAreaAlongMax;
+    public Optional<Double> getOebAreaAlongMax() {
+        return Optional.ofNullable(oebAreaAlongMax);
     }
 
     /** Set the cross-sectional area of Optimally Enclosing Box when viewed along the maximum OEB direction.
@@ -238,8 +278,8 @@ public class CommonPhysicalProperties extends CommentsContainer {
     /** Get the cross-sectional area of Optimally Enclosing Box when viewed along the intermediate OEB direction.
      * @return cross-sectional area of Optimally Enclosing Box when viewed along the intermediate OEB direction.
      */
-    public double getOebAreaAlongIntermediate() {
-        return oebAreaAlongIntermediate;
+    public Optional<Double> getOebAreaAlongIntermediate() {
+        return Optional.ofNullable(oebAreaAlongIntermediate);
     }
 
     /** Set the cross-sectional area of Optimally Enclosing Box when viewed along the intermediate OEB direction.
@@ -253,8 +293,8 @@ public class CommonPhysicalProperties extends CommentsContainer {
     /** Get the cross-sectional area of Optimally Enclosing Box when viewed along the minimum OEB direction.
      * @return cross-sectional area of Optimally Enclosing Box when viewed along the minimum OEB direction.
      */
-    public double getOebAreaAlongMin() {
-        return oebAreaAlongMin;
+    public Optional<Double> getOebAreaAlongMin() {
+        return Optional.ofNullable(oebAreaAlongMin);
     }
 
     /** Set the cross-sectional area of Optimally Enclosing Box when viewed along the minimum OEB direction.
@@ -269,8 +309,8 @@ public class CommonPhysicalProperties extends CommentsContainer {
     /** Get the typical (50th percentile) radar cross-section.
      * @return typical (50th percentile) radar cross-section
      */
-    public double getRcs() {
-        return rcs;
+    public Optional<Double> getRcs() {
+        return Optional.ofNullable(rcs);
     }
 
     /** Set the typical (50th percentile) radar cross-section.
@@ -284,8 +324,8 @@ public class CommonPhysicalProperties extends CommentsContainer {
     /** Get the minimum radar cross-section.
      * @return minimum radar cross-section
      */
-    public double getMinRcs() {
-        return minRcs;
+    public Optional<Double> getMinRcs() {
+        return Optional.ofNullable(minRcs);
     }
 
     /** Set the minimum radar cross-section.
@@ -299,8 +339,8 @@ public class CommonPhysicalProperties extends CommentsContainer {
     /** Get the maximum radar cross-section.
      * @return maximum radar cross-section
      */
-    public double getMaxRcs() {
-        return maxRcs;
+    public Optional<Double> getMaxRcs() {
+        return Optional.ofNullable(maxRcs);
     }
 
     /** Set the maximum radar cross-section.
@@ -314,8 +354,8 @@ public class CommonPhysicalProperties extends CommentsContainer {
     /** Get the typical (50th percentile) visual magnitude.
      * @return typical (50th percentile) visual magnitude
      */
-    public double getVmAbsolute() {
-        return vmAbsolute;
+    public Optional<Double> getVmAbsolute() {
+        return Optional.ofNullable(vmAbsolute);
     }
 
     /** Set the typical (50th percentile) visual magnitude.
@@ -329,8 +369,8 @@ public class CommonPhysicalProperties extends CommentsContainer {
     /** Get the minimum apparent visual magnitude.
      * @return minimum apparent visual magnitude
      */
-    public double getVmApparentMin() {
-        return vmApparentMin;
+    public Optional<Double> getVmApparentMin() {
+        return Optional.ofNullable(vmApparentMin);
     }
 
     /** Set the minimum apparent visual magnitude.
@@ -344,8 +384,8 @@ public class CommonPhysicalProperties extends CommentsContainer {
     /** Get the typical (50th percentile) apparent visual magnitude.
      * @return typical (50th percentile) apparent visual magnitude
      */
-    public double getVmApparent() {
-        return vmApparent;
+    public Optional<Double> getVmApparent() {
+        return Optional.ofNullable(vmApparent);
     }
 
     /** Set the typical (50th percentile) apparent visual magnitude.
@@ -359,8 +399,8 @@ public class CommonPhysicalProperties extends CommentsContainer {
     /** Get the maximum apparent visual magnitude.
      * @return maximum apparent visual magnitude
      */
-    public double getVmApparentMax() {
-        return vmApparentMax;
+    public Optional<Double> getVmApparentMax() {
+        return Optional.ofNullable(vmApparentMax);
     }
 
     /** Set the maximum apparent visual magnitude.
@@ -374,8 +414,8 @@ public class CommonPhysicalProperties extends CommentsContainer {
     /** Get the typical (50th percentile) coefficient of reflectance.
      * @return typical (50th percentile) coefficient of reflectance
      */
-    public double getReflectance() {
-        return reflectance;
+    public Optional<Double> getReflectance() {
+        return Optional.ofNullable(reflectance);
     }
 
     /** Set the typical (50th percentile) coefficient of reflectance.

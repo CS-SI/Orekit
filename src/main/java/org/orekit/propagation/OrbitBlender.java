@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -97,7 +97,7 @@ public class OrbitBlender extends AbstractOrbitInterpolator {
 
         // Get first and last entry
         final List<Orbit> neighborList  = interpolationData.getNeighborList();
-        final Orbit       previousOrbit = neighborList.get(0);
+        final Orbit       previousOrbit = neighborList.getFirst();
         final Orbit       nextOrbit     = neighborList.get(1);
 
         // Propagate orbits

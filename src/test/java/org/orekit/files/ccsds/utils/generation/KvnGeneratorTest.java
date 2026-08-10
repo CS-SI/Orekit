@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,6 +19,11 @@ package org.orekit.files.ccsds.utils.generation;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.orekit.Utils;
+import org.orekit.files.ccsds.definitions.TimeConverter;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeScale;
+import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.units.Unit;
 
@@ -36,10 +41,12 @@ public class KvnGeneratorTest {
             generator.writeEntry("KEY", 1234567.8, Unit.parse("Hz"), false);
             generator.exitSection();
             generator.endMessage("abc");
-            Assertions.assertEquals("CCSDS_ABC_VERSION = 99.0\n" +
-                                "BLOCK_START\n" +
-                                "KEY        = 1234567.8   [Hz]\n" +
-                                "BLOCK_STOP\n",
+            Assertions.assertEquals("""
+                                CCSDS_ABC_VERSION = 99.0
+                                BLOCK_START
+                                KEY        = 1234567.8   [Hz]
+                                BLOCK_STOP
+                                """,
                                 caw.toString());
         }
     }
@@ -52,10 +59,12 @@ public class KvnGeneratorTest {
             generator.writeEntry("KEY_2",    1234567.8,   Unit.parse("n/a"),       false);
             generator.writeEntry("KEY_3",    1234567.8,   Unit.parse("1"),         false);
             generator.writeEntry("LOOOOONG", "1234567.8", null,                    false);
-            Assertions.assertEquals("KEY_1      = 1234.5678   [km*kg**3/s**0.5]\n" +
-                                "KEY_2      = 1234567.8\n" +
-                                "KEY_3      = 1234567.8\n" +
-                                "LOOOOONG   = 1234567.8\n",
+            Assertions.assertEquals("""
+                                KEY_1      = 1234.5678   [km*kg**3/s**0.5]
+                                KEY_2      = 1234567.8
+                                KEY_3      = 1234567.8
+                                LOOOOONG   = 1234567.8
+                                """,
                                 caw.toString());
         }
     }
@@ -67,9 +76,11 @@ public class KvnGeneratorTest {
             generator.writeEntry("KEY_1", 0.5 * FastMath.PI, Unit.parse("°"), false);
             generator.writeEntry("KEY_2", FastMath.PI, Unit.parse("◦"), false);
             generator.writeEntry("PERCENT", 0.25, Unit.parse("%"), false);
-            Assertions.assertEquals("KEY_1      = 90.0   [deg]\n" +
-                                "KEY_2      = 180.0  [deg]\n" +
-                                "PERCENT    = 25.0   [%]\n",
+            Assertions.assertEquals("""
+                                KEY_1      = 90.0   [deg]
+                                KEY_2      = 180.0  [deg]
+                                PERCENT    = 25.0   [%]
+                                """,
                                 caw.toString());
         }
     }
@@ -80,9 +91,41 @@ public class KvnGeneratorTest {
         try (Generator generator = new KvnGenerator(caw, 10, "", Constants.JULIAN_DAY, 0)) {
             generator.writeEntry("KEY_1", 0.5 * FastMath.PI, Unit.parse("°"), false);
             generator.writeEntry("KEY_2", FastMath.PI, Unit.parse("◦"), true);
-            Assertions.assertEquals("KEY_1      = 90.0\n" +
-                                "KEY_2      = 180.0\n", caw.toString());
+            Assertions.assertEquals("""
+                                KEY_1      = 90.0
+                                KEY_2      = 180.0
+                                """, caw.toString());
         }
+    }
+
+    /**
+     * Test to write a date with non-representable seconds on a double.
+     *
+     * @see <a href="https://gitlab.orekit.org/orekit/orekit/issues/1962">Issue 1962</a>
+     */
+    @Test
+    void testWriteDateEntry() throws IOException {
+        // GIVEN
+        // Load orekit data
+        Utils.setDataRoot("regular-data");
+
+        // Create the generator
+        final Appendable appendable = new StringBuilder();
+        final Generator  generator  = new KvnGenerator(appendable, 0, "", 0, 0);
+
+        // Create the time converter
+        final TimeScale     utc       = TimeScalesFactory.getUTC();
+        final TimeConverter converter = new TimeConverter(utc, new AbsoluteDate());
+
+        // Create date (seconds cannot be stored inside a double, will introduce an ULP drift).
+        final String       referenceDateString = "2026-05-21T23:04:00.934";
+        final AbsoluteDate date                = new AbsoluteDate(referenceDateString, utc);
+
+        // WHEN
+        generator.writeEntry("date", converter, date, false, true);
+
+        // THEN
+        Assertions.assertEquals("date = 2026-05-21T23:04:00.934\n", appendable.toString());
     }
 
 }

@@ -1,4 +1,4 @@
-/* Copyright 2023-2025 Alberto Ferrero
+/* Copyright 2023-2026 Alberto Ferrero
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,9 +18,9 @@ package org.orekit.propagation.events;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.orekit.TestUtils;
 import org.orekit.Utils;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.frames.FramesFactory;
@@ -38,10 +38,29 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
-public class LatitudeRangeCrossingDetectorTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class LatitudeRangeCrossingDetectorTest {
 
     @Test
-    public void testRegularCrossing() {
+    void testSymmetryG() {
+        // GIVEN
+        final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                Constants.WGS84_EARTH_FLATTENING,
+                FramesFactory.getITRF(IERSConventions.IERS_2010, true));
+        final SpacecraftState state = new SpacecraftState(TestUtils.getDefaultOrbit(AbsoluteDate.ARBITRARY_EPOCH));
+        final double minLatitude = -1.;
+        final double maxLatitude = 2.;
+        final LatitudeRangeCrossingDetector detector = new LatitudeRangeCrossingDetector(earth, minLatitude, maxLatitude);
+        // WHEN
+        final double actual = detector.g(state);
+        // THEN
+        final double expected = new LatitudeRangeCrossingDetector(earth, maxLatitude, minLatitude).g(state);
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    void testRegularCrossing() {
 
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                             Constants.WGS84_EARTH_FLATTENING,
@@ -52,11 +71,11 @@ public class LatitudeRangeCrossingDetectorTest {
                     FastMath.toRadians(50.0), FastMath.toRadians(60.0)).
                 withHandler(new ContinueOnEvent());
 
-        Assertions.assertEquals(60.0, d.getMaxCheckInterval().currentInterval(null, true), 1.0e-15);
-        Assertions.assertEquals(1.0e-6, d.getThreshold(), 1.0e-15);
-        Assertions.assertEquals(50.0, FastMath.toDegrees(d.getFromLatitude()), 1.0e-14);
-        Assertions.assertEquals(60.0, FastMath.toDegrees(d.getToLatitude()), 1.0e-14);
-        Assertions.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, d.getMaxIterationCount());
+        assertEquals(60.0, d.getMaxCheckInterval().currentInterval(null, true), 1.0e-15);
+        assertEquals(1.0e-6, d.getThreshold(), 1.0e-15);
+        assertEquals(50.0, FastMath.toDegrees(d.getFromLatitude()), 1.0e-14);
+        assertEquals(60.0, FastMath.toDegrees(d.getToLatitude()), 1.0e-14);
+        assertEquals(AbstractDetector.DEFAULT_MAX_ITER, d.getMaxIterationCount());
 
         final TimeScale utc = TimeScalesFactory.getUTC();
         final Vector3D position = new Vector3D(-6142438.668, 3492467.56, -25767.257);
@@ -87,27 +106,27 @@ public class LatitudeRangeCrossingDetectorTest {
             if (e.isIncreasing()) {
                 if (state.getVelocity().getZ() < 0) {
                     // entering northward
-                    Assertions.assertEquals(60.0, FastMath.toDegrees(latitude), FastMath.toRadians(1e-4));
+                    assertEquals(60.0, FastMath.toDegrees(latitude), FastMath.toRadians(1e-4));
                 } else {
                     // entering southward
-                    Assertions.assertEquals(50.0, FastMath.toDegrees(latitude), FastMath.toRadians(1e-4));
+                    assertEquals(50.0, FastMath.toDegrees(latitude), FastMath.toRadians(1e-4));
                 }
             } else {
                 if (state.getVelocity().getZ() < 0) {
                     // exiting southward
-                    Assertions.assertEquals(50.0, FastMath.toDegrees(latitude), FastMath.toRadians(1e-4));
+                    assertEquals(50.0, FastMath.toDegrees(latitude), FastMath.toRadians(1e-4));
                 } else {
                     // exiting northward
-                    Assertions.assertEquals(60.0, FastMath.toDegrees(latitude), FastMath.toRadians(1e-4));
+                    assertEquals(60.0, FastMath.toDegrees(latitude), FastMath.toRadians(1e-4));
                 }
             }
         }
-        Assertions.assertEquals(30 * 2, logger.getLoggedEvents().size());
+        assertEquals(30 * 2, logger.getLoggedEvents().size());
 
     }
 
     @Test
-    public void testNoCrossing() {
+    void testNoCrossing() {
 
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                             Constants.WGS84_EARTH_FLATTENING,
@@ -118,11 +137,11 @@ public class LatitudeRangeCrossingDetectorTest {
                     FastMath.toRadians(82.0),  FastMath.toRadians(87.0)).
                 withHandler(new ContinueOnEvent());
 
-        Assertions.assertEquals(10.0, d.getMaxCheckInterval().currentInterval(null, true), 1.0e-15);
-        Assertions.assertEquals(1.0e-6, d.getThreshold(), 1.0e-15);
-        Assertions.assertEquals(82.0, FastMath.toDegrees(d.getFromLatitude()), 1.0e-14);
-        Assertions.assertEquals(87.0, FastMath.toDegrees(d.getToLatitude()), 1.0e-14);
-        Assertions.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, d.getMaxIterationCount());
+        assertEquals(10.0, d.getMaxCheckInterval().currentInterval(null, true), 1.0e-15);
+        assertEquals(1.0e-6, d.getThreshold(), 1.0e-15);
+        assertEquals(82.0, FastMath.toDegrees(d.getFromLatitude()), 1.0e-14);
+        assertEquals(87.0, FastMath.toDegrees(d.getToLatitude()), 1.0e-14);
+        assertEquals(AbstractDetector.DEFAULT_MAX_ITER, d.getMaxIterationCount());
 
         final TimeScale utc = TimeScalesFactory.getUTC();
         final Vector3D position = new Vector3D(-6142438.668, 3492467.56, -25767.257);
@@ -146,12 +165,12 @@ public class LatitudeRangeCrossingDetectorTest {
         propagator.addEventDetector(logger.monitorDetector(d));
 
         propagator.propagate(date.shiftedBy(Constants.JULIAN_DAY));
-        Assertions.assertEquals(0, logger.getLoggedEvents().size());
+        assertEquals(0, logger.getLoggedEvents().size());
 
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 

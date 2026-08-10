@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,9 +16,6 @@
  */
 package org.orekit.propagation.events;
 
-import java.util.Collections;
-import java.util.NoSuchElementException;
-
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.Assertions;
@@ -27,16 +24,23 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.functions.EventFunction;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.intervals.FieldAdaptableInterval;
 import org.orekit.time.FieldAbsoluteDate;
+
+import java.util.Collections;
+import java.util.NoSuchElementException;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Unit tests for {@link FieldBooleanDetector#orCombine(FieldEventDetector...)}.
  *
  * @author Evan Ward
  */
-public class FieldOrDetectorTest {
+class FieldOrDetectorTest {
 
     /** first operand. */
     private MockDetector a;
@@ -50,11 +54,12 @@ public class FieldOrDetectorTest {
     /** create subject under test and dependencies. */
     @SuppressWarnings("unchecked")
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         a = new MockDetector();
         b = new MockDetector();
-        s = Mockito.mock(FieldSpacecraftState.class);
-        Mockito.when(s.getDate()).thenReturn(FieldAbsoluteDate.getArbitraryEpoch(Binary64Field.getInstance()));
+        s = mock(FieldSpacecraftState.class);
+        when(s.getDate()).thenReturn(FieldAbsoluteDate.getArbitraryEpoch(Binary64Field.getInstance()));
+        when(s.getMass()).thenReturn(new Binary64(100));
         or = FieldBooleanDetector.orCombine(a, b);
     }
 
@@ -129,17 +134,18 @@ public class FieldOrDetectorTest {
     @Test
     void testInit() {
         // setup
-        FieldEventDetector<Binary64> a = Mockito.mock(FieldEventDetector.class);
-        Mockito.when(a.getMaxCheckInterval()).thenReturn(FieldAdaptableInterval.of(AbstractDetector.DEFAULT_MAX_CHECK));
-        Mockito.when(a.getThreshold()).thenReturn(new Binary64(AbstractDetector.DEFAULT_THRESHOLD));
-        FieldEventDetector<Binary64> b = Mockito.mock(FieldEventDetector.class);
-        Mockito.when(b.getMaxCheckInterval()).thenReturn(FieldAdaptableInterval.of(AbstractDetector.DEFAULT_MAX_CHECK));
-        Mockito.when(b.getThreshold()).thenReturn(new Binary64(AbstractDetector.DEFAULT_THRESHOLD));
-        FieldEventHandler<Binary64> c = Mockito.mock(FieldEventHandler.class);
+        FieldEventDetector<Binary64> a = mock(FieldEventDetector.class);
+        when(a.getEventFunction()).thenReturn(mock(EventFunction.class));
+        when(a.getMaxCheckInterval()).thenReturn(FieldAdaptableInterval.of(AbstractDetector.DEFAULT_MAX_CHECK));
+        when(a.getThreshold()).thenReturn(new Binary64(AbstractDetector.DEFAULT_THRESHOLD));
+        FieldEventDetector<Binary64> b = mock(FieldEventDetector.class);
+        when(b.getMaxCheckInterval()).thenReturn(FieldAdaptableInterval.of(AbstractDetector.DEFAULT_MAX_CHECK));
+        when(b.getThreshold()).thenReturn(new Binary64(AbstractDetector.DEFAULT_THRESHOLD));
+        FieldEventHandler<Binary64> c = mock(FieldEventHandler.class);
         FieldBooleanDetector<Binary64> or = FieldBooleanDetector.orCombine(a, b).withHandler(c);
         FieldAbsoluteDate<Binary64> t = FieldAbsoluteDate.getCCSDSEpoch(Binary64Field.getInstance());
-        s = Mockito.mock(FieldSpacecraftState.class);
-        Mockito.when(s.getDate()).thenReturn(t.shiftedBy(60.0));
+        s = mock(FieldSpacecraftState.class);
+        when(s.getDate()).thenReturn(t.shiftedBy(60.0));
 
         // action
         or.init(s, t);
@@ -171,7 +177,7 @@ public class FieldOrDetectorTest {
 
         @Override
         public Binary64 g(FieldSpacecraftState<Binary64> s) {
-            return this.g;
+            return g;
         }
 
         @Override

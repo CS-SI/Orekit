@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -36,7 +36,6 @@ class TleExtendedPositionProviderTest {
 
     private static final String LINE1 = "1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20";
     private static final String LINE2 = "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62";
-
 
     @BeforeEach
     void setUpBeforeClass() {
@@ -101,7 +100,7 @@ class TleExtendedPositionProviderTest {
         final FieldVector3D<Binary64> position = positionProvider.getPosition(fieldDate, frame);
         // THEN
         final FieldTLE<Binary64> fieldTLE = new FieldTLE<>(field, tle);
-        final FieldTLEPropagator<Binary64> propagator = FieldTLEPropagator.selectExtrapolator(fieldTLE, tle.getParameters(field));
+        final FieldTLEPropagator<Binary64> propagator = FieldTLEPropagator.selectExtrapolator(fieldTLE);
         final FieldVector3D<Binary64> expectedPosition = propagator.getPosition(fieldDate, frame);
         assertEquals(expectedPosition.getX().getReal(), position.getX().getReal(), 1e-6);
         assertEquals(expectedPosition.getY().getReal(), position.getY().getReal(), 1e-6);
@@ -121,7 +120,7 @@ class TleExtendedPositionProviderTest {
         final FieldVector3D<Binary64> velocity = positionProvider.getVelocity(fieldDate, frame);
         // THEN
         final FieldTLE<Binary64> fieldTLE = new FieldTLE<>(field, tle);
-        final FieldTLEPropagator<Binary64> propagator = FieldTLEPropagator.selectExtrapolator(fieldTLE, tle.getParameters(field));
+        final FieldTLEPropagator<Binary64> propagator = FieldTLEPropagator.selectExtrapolator(fieldTLE);
         final FieldVector3D<Binary64> expectedVelocity = propagator.getVelocity(fieldDate, frame);
         assertEquals(expectedVelocity.getX().getReal(), velocity.getX().getReal(), 1e-6);
         assertEquals(expectedVelocity.getY().getReal(), velocity.getY().getReal(), 1e-6);
@@ -141,7 +140,7 @@ class TleExtendedPositionProviderTest {
         final TimeStampedFieldPVCoordinates<Binary64> actualPV = positionProvider.getPVCoordinates(fieldDate, frame);
         // THEN
         final FieldTLE<Binary64> fieldTLE = new FieldTLE<>(field, LINE1, LINE2);
-        final FieldTLEPropagator<Binary64> propagator = FieldTLEPropagator.selectExtrapolator(fieldTLE, tle.getParameters(field));
+        final FieldTLEPropagator<Binary64> propagator = FieldTLEPropagator.selectExtrapolator(fieldTLE);
         final TimeStampedFieldPVCoordinates<Binary64> expectedPV = propagator.getPVCoordinates(fieldDate, frame);
         assertEquals(expectedPV.getDate(), actualPV.getDate());
         assertEquals(expectedPV.getPosition(), actualPV.getPosition());

@@ -1,5 +1,8 @@
 package org.orekit.forces;
 
+import java.util.Collections;
+import java.util.List;
+
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -14,10 +17,6 @@ import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
 
 class ForceModelModifierTest {
 
@@ -39,9 +38,9 @@ class ForceModelModifierTest {
         final TestForceModel forceModel = new TestForceModel();
         final ForceModelModifier modelModifier = () -> forceModel;
         // WHEN
-        final List<EventDetector> detectors = modelModifier.getEventDetectors().collect(Collectors.toList());
+        final List<EventDetector> detectors = modelModifier.getEventDetectors().toList();
         // THEN
-        final List<EventDetector> expectedDetectors = modelModifier.getEventDetectors().collect(Collectors.toList());
+        final List<EventDetector> expectedDetectors = modelModifier.getEventDetectors().toList();
         Assertions.assertEquals(expectedDetectors.size(), detectors.size());
     }
 
@@ -52,9 +51,9 @@ class ForceModelModifierTest {
         final ForceModelModifier modelModifier = () -> forceModel;
         final Binary64Field field = Binary64Field.getInstance();
         // WHEN
-        final List<FieldEventDetector<Binary64>> detectors = modelModifier.getFieldEventDetectors(field).collect(Collectors.toList());
+        final List<FieldEventDetector<Binary64>> detectors = modelModifier.getFieldEventDetectors(field).toList();
         // THEN
-        final List<FieldEventDetector<Binary64>> expectedDetectors = modelModifier.getFieldEventDetectors(field).collect(Collectors.toList());
+        final List<FieldEventDetector<Binary64>> expectedDetectors = modelModifier.getFieldEventDetectors(field).toList();
         Assertions.assertEquals(expectedDetectors.size(), detectors.size());
     }
 

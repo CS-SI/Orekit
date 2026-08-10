@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,13 +22,14 @@ import java.util.Map;
 import java.util.function.Function;
 
 import org.orekit.data.DataContext;
+import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.odm.CartesianCovariance;
 import org.orekit.files.ccsds.ndm.odm.CartesianCovarianceKey;
-import org.orekit.files.ccsds.ndm.odm.OdmCommonMetadata;
 import org.orekit.files.ccsds.ndm.odm.CommonMetadataKey;
 import org.orekit.files.ccsds.ndm.odm.KeplerianElements;
 import org.orekit.files.ccsds.ndm.odm.KeplerianElementsKey;
+import org.orekit.files.ccsds.ndm.odm.OdmCommonMetadata;
 import org.orekit.files.ccsds.ndm.odm.OdmHeader;
 import org.orekit.files.ccsds.ndm.odm.OdmMetadataKey;
 import org.orekit.files.ccsds.ndm.odm.OdmParser;
@@ -50,6 +51,7 @@ import org.orekit.files.ccsds.utils.lexical.UserDefinedXmlTokenBuilder;
 import org.orekit.files.ccsds.utils.lexical.XmlTokenBuilder;
 import org.orekit.files.ccsds.utils.parsing.ErrorState;
 import org.orekit.files.ccsds.utils.parsing.ProcessingState;
+import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 
@@ -122,15 +124,18 @@ public class OpmParser extends OdmParser<Opm, OpmParser> {
      * @param defaultMass default mass to use if there are no spacecraft parameters block logical block in the file
      * @param parsedUnitsBehavior behavior to adopt for handling parsed units
      * @param filters filters to apply to parse tokens
-     * @since 12.0
+     * @param frameMapper for creating an Orekit {@link Frame}.
+     * @since 13.1.5
      */
     public OpmParser(final IERSConventions conventions, final boolean simpleEOP,
                      final DataContext dataContext,
                      final AbsoluteDate missionReferenceDate, final double mu,
                      final double defaultMass, final ParsedUnitsBehavior parsedUnitsBehavior,
-                     final Function<ParseToken, List<ParseToken>>[] filters) {
+                     final Function<ParseToken, List<ParseToken>>[] filters,
+                     final CcsdsFrameMapper frameMapper) {
         super(Opm.ROOT, Opm.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext,
-              missionReferenceDate, mu, parsedUnitsBehavior, filters);
+                missionReferenceDate, mu, parsedUnitsBehavior, filters,
+                frameMapper);
         this.defaultMass = defaultMass;
     }
 
@@ -203,7 +208,7 @@ public class OpmParser extends OdmParser<Opm, OpmParser> {
         if (metadata != null) {
             return false;
         }
-        metadata  = new OdmCommonMetadata();
+        metadata  = new OdmCommonMetadata(getFrameMapper());
         context   = new ContextBinding(this::getConventions, this::isSimpleEOP,
                                        this::getDataContext, this::getParsedUnitsBehavior,
                                        this::getMissionReferenceDate,
@@ -224,8 +229,8 @@ public class OpmParser extends OdmParser<Opm, OpmParser> {
     public boolean finalizeMetadata() {
         metadata.finalizeMetadata(context);
         metadata.validate(header.getFormatVersion());
-        if (metadata.getCenter().getBody() != null) {
-            setMuCreated(metadata.getCenter().getBody().getGM());
+        if (metadata.getCenter().getBody().isPresent()) {
+            setMuCreated(metadata.getCenter().getBody().get().getGM());
         }
         return true;
     }
@@ -252,10 +257,10 @@ public class OpmParser extends OdmParser<Opm, OpmParser> {
             }
             if (keplerianElementsBlock != null) {
                 keplerianElementsBlock.setEpoch(stateVectorBlock.getEpoch());
-                if (Double.isNaN(keplerianElementsBlock.getMu())) {
+                if (keplerianElementsBlock.getMu().isEmpty()) {
                     keplerianElementsBlock.setMu(getSelectedMu());
                 } else {
-                    setMuParsed(keplerianElementsBlock.getMu());
+                    setMuParsed(keplerianElementsBlock.getMu().get());
                 }
             }
             final double  mass = spacecraftParametersBlock == null ?
@@ -462,7 +467,9 @@ public class OpmParser extends OdmParser<Opm, OpmParser> {
         if (covarianceBlock == null) {
             // save the current metadata for later retrieval of reference frame
             final OdmCommonMetadata savedMetadata = metadata;
-            covarianceBlock = new CartesianCovariance(savedMetadata::getReferenceFrame);
+            covarianceBlock = new CartesianCovariance(
+                    savedMetadata::getReferenceFrame,
+                    savedMetadata.getFrameMapper());
             if (moveCommentsIfEmpty(spacecraftParametersBlock, covarianceBlock)) {
                 // get rid of the empty logical block
                 spacecraftParametersBlock = null;

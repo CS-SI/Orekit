@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,9 +20,11 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.geometry.euclidean.twod.FieldVector2D;
 import org.hipparchus.geometry.euclidean.twod.Vector2D;
+import org.hipparchus.linear.BlockRealMatrix;
 import org.hipparchus.linear.FieldMatrix;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.Binary64;
@@ -32,7 +34,9 @@ import org.hipparchus.util.MathArrays;
 import org.junit.jupiter.api.Assertions;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.LOFType;
 import org.orekit.orbits.CartesianOrbit;
+import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.Orbit;
@@ -40,17 +44,24 @@ import org.orekit.propagation.AdditionalDataProvider;
 import org.orekit.propagation.FieldAdditionalDataProvider;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.covariance.StateCovariance;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.AbsolutePVCoordinates;
+import org.orekit.utils.Constants;
 import org.orekit.utils.FieldAbsolutePVCoordinates;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 import java.util.Arrays;
 import java.util.Collection;
 
-/** Utility class for tests to reduce code duplication. */
+/**
+ * Utility class for testing purposes, providing methods for generating
+ * fake data, validation of mathematical entities, and utility functions
+ * for debugging and testing scenarios.
+ */
 public class TestUtils {
 
     private TestUtils() {
@@ -58,22 +69,55 @@ public class TestUtils {
     }
 
     /**
-     * Create and return a default equatorial circular orbit at 400km altitude.
+     * Create and return a default orbit.
      *
      * @param date date of the orbit
-     *
      * @return default orbit
      */
     public static Orbit getDefaultOrbit(final AbsoluteDate date) {
-        final PVCoordinates pv = new PVCoordinates(
-                new Vector3D(6378000 + 400000, 0, 0),
-                new Vector3D(0, 7668.631425, 0));
+        return new CartesianOrbit(new PVCoordinates(
+                new Vector3D(6778000, 0, 0),
+                new Vector3D(0, 7668.631425, 0)),
+                                  FramesFactory.getGCRF(), date, 398600e9);
+    }
 
-        final Frame frame = FramesFactory.getGCRF();
+    /**
+     * Create and return a default orbit with non keplerian derivatives.
+     *
+     * @param date date of the orbit
+     * @return default orbit
+     */
+    public static Orbit getDefaultOrbitWithDerivatives(final AbsoluteDate date) {
+        final Vector3D position     = new Vector3D(6896874.444705, 1956581.072644, -147476.245054);
+        final Vector3D velocity     = new Vector3D(166.816407662, -1106.783301861, -7372.745712770);
+        final Vector3D acceleration = new Vector3D(-7.466182457944, -2.118153357345, 0.160004048437);
+        final TimeStampedPVCoordinates pv =
+                new TimeStampedPVCoordinates(date, position, velocity, acceleration);
+        final Frame  frame = FramesFactory.getEME2000();
+        final double mu    = Constants.EIGEN5C_EARTH_MU;
 
-        final double DEFAULT_MU = 398600e9; // m**3/s**2
+        return new EquinoctialOrbit(pv, frame, mu);
+    }
 
-        return new CartesianOrbit(pv, frame, date, DEFAULT_MU);
+    /**
+     * Create and return a default orbit.
+     *
+     * @param date date of the orbit
+     * @return default orbit
+     */
+    public static <T extends CalculusFieldElement<T>> FieldOrbit<T> getDefaultFieldOrbit(FieldAbsoluteDate<T> date) {
+        return new FieldCartesianOrbit<>(date.getField(), getDefaultOrbit(date.toAbsoluteDate()));
+    }
+
+    /**
+     * Create and return a default field orbit with non keplerian derivatives.
+     *
+     * @param date date of the orbit
+     * @param <T>  type of the field elements
+     * @return default orbit
+     */
+    public static <T extends CalculusFieldElement<T>> FieldOrbit<T> getDefaultFieldOrbitWithDerivatives(final FieldAbsoluteDate<T> date) {
+        return new FieldCartesianOrbit<>(date.getField(), getDefaultOrbit(date.toAbsoluteDate()));
     }
 
     /**
@@ -82,7 +126,7 @@ public class TestUtils {
      * @return additional state provider with custom init() method defined which use the initial state
      */
     public static AdditionalDataProvider<double[]> getAdditionalProviderWithInit() {
-        return new AdditionalDataProvider<double[]>() {
+        return new AdditionalDataProvider<>() {
             /**
              * Custom init method which use the initial state instance.
              *
@@ -131,6 +175,30 @@ public class TestUtils {
                                          new Binary64(1));
     }
 
+    public static FieldPVCoordinates<Binary64> getFieldPVCoordinates() {
+        return new FieldPVCoordinates<>(new FieldVector3D<>(new Binary64(6878e3), new Binary64(0), new Binary64(0)),
+                                        new FieldVector3D<>(new Binary64(5400), new Binary64(0), new Binary64(5400)));
+    }
+
+    public static FieldOrbit<Binary64> getTestFieldOrbit() {
+        return new FieldCartesianOrbit<>(getFieldPVCoordinates(),
+                                         FramesFactory.getGCRF(),
+                                         getFakeFieldAbsoluteDate(),
+                                         new Binary64(Constants.IERS2010_EARTH_MU));
+    }
+
+    public static Orbit getTestOrbit() {
+        return new CartesianOrbit(getPVCoordinates(),
+                                  FramesFactory.getGCRF(),
+                                  new AbsoluteDate(),
+                                  Constants.IERS2010_EARTH_MU);
+    }
+
+    private static PVCoordinates getPVCoordinates() {
+        return new PVCoordinates(new Vector3D(6878e3, 0, 0),
+                                 new Vector3D(5400, 0, 5400));
+    }
+
     public static FieldAbsoluteDate<Binary64> getFakeFieldAbsoluteDate() {
         return new FieldAbsoluteDate<>(Binary64Field.getInstance());
     }
@@ -166,7 +234,7 @@ public class TestUtils {
      * @return additional state provider with custom init() method defined which use the initial state
      */
     public static <T extends CalculusFieldElement<T>> FieldAdditionalDataProvider<T[], T> getFieldAdditionalProviderWithInit() {
-        return new FieldAdditionalDataProvider<T[], T>() {
+        return new FieldAdditionalDataProvider<>() {
 
             @Override
             public void init(FieldSpacecraftState<T> initialState, FieldAbsoluteDate<T> target) {
@@ -242,6 +310,17 @@ public class TestUtils {
         Assertions.assertEquals(expected.getX(), computed.getX().getReal(), threshold);
         Assertions.assertEquals(expected.getY(), computed.getY().getReal(), threshold);
 
+    }
+
+    /**
+     * Validate rotation.
+     *
+     * @param expected expected rotation
+     * @param computed computed rotation
+     * @param threshold absolute threshold
+     */
+    public static void validateRotation(final Rotation expected, final Rotation computed, final double threshold) {
+        Assertions.assertEquals(0, Rotation.distance(expected, computed), threshold);
     }
 
     /**
@@ -340,39 +419,51 @@ public class TestUtils {
      * @return if the object contains any NaNs.
      */
     public static boolean isAnyNan(Object o) {
-        if (o instanceof Double) {
-            return Double.isNaN((Double) o);
-        } else if (o instanceof double[]) {
-            for (double v : (double[]) o) {
+        if (o instanceof Double double1) {
+            return Double.isNaN(double1);
+        } else if (o instanceof double[] doubles) {
+            for (double v : doubles) {
                 if (Double.isNaN(v)) {
                     return true;
                 }
             }
-        } else if (o instanceof Object[]) {
-            for (Object object : (Object[]) o) {
+        } else if (o instanceof Object[] object1s) {
+            for (Object object : object1s) {
                 if (isAnyNan(object)) {
                     return true;
                 }
             }
-        } else if (o instanceof Collection) {
-            for (Object object : (Collection<?>) o) {
+        } else if (o instanceof Collection<?> collection) {
+            for (Object object : collection) {
                 if (isAnyNan(object)) {
                     return true;
                 }
             }
-        } else if (o instanceof CalculusFieldElement) {
-            CalculusFieldElement<?> cfe = (CalculusFieldElement<?>) o;
+        } else if (o instanceof CalculusFieldElement<?> cfe) {
             if (cfe.isNaN()) {
                 return true;
             }
-            if (cfe instanceof Gradient) {
-                return isAnyNan(((Gradient) cfe).getGradient());
+            if (cfe instanceof Gradient gradient) {
+                return isAnyNan(gradient.getGradient());
             }
-            if (cfe instanceof DerivativeStructure) {
-                return isAnyNan(((DerivativeStructure) cfe).getAllDerivatives());
+            if (cfe instanceof DerivativeStructure structure) {
+                return isAnyNan(structure.getAllDerivatives());
             }
         }
         return false;
     }
 
+    public static StateCovariance getFakeStateCovarianceInLOF(AbsoluteDate absoluteDate,
+                                                              LOFType lofType) {
+        final RealMatrix covariance = new BlockRealMatrix(new double[][] {
+                { 1e4, 0, 0, 0, 0, 0 },
+                { 0, 1e4, 0, 0, 0, 0 },
+                { 0, 0, 1e4, 0, 0, 0 },
+                { 0, 0, 0, 1e-2, 0, 0 },
+                { 0, 0, 0, 0, 1e-2, 0 },
+                { 0, 0, 0, 0, 0, 1e-2 },
+                });
+
+        return new StateCovariance(covariance, absoluteDate, lofType);
+    }
 }

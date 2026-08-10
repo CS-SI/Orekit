@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,6 +27,8 @@ import org.hipparchus.optim.nonlinear.vector.leastsquares.MultivariateJacobianFu
 import org.hipparchus.util.Pair;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.orbits.AbstractOrbitFactory;
+import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.SpacecraftState;
@@ -58,9 +60,11 @@ public class JacobianPropagatorConverter extends AbstractPropagatorConverter {
                                        final double threshold,
                                        final int maxIterations) {
         super(builder, threshold, maxIterations);
-        if (builder.getOrbitType() != OrbitType.CARTESIAN) {
+        final AbstractOrbitFactory<Orbit> factory =
+            (AbstractOrbitFactory<Orbit>)  builder.getOrbitalParameterFactory();
+        if (factory.getOrbitType() != OrbitType.CARTESIAN) {
             throw new OrekitException(OrekitMessages.ORBIT_TYPE_NOT_ALLOWED,
-                                      builder.getOrbitType(), OrbitType.CARTESIAN);
+                                      factory.getOrbitType(), OrbitType.CARTESIAN);
         }
         this.builder = builder;
     }
@@ -72,7 +76,7 @@ public class JacobianPropagatorConverter extends AbstractPropagatorConverter {
             final ValuesHandler handler = new ValuesHandler();
             propagator.getMultiplexer().add(handler);
             final List<SpacecraftState> sample = getSample();
-            propagator.propagate(sample.get(sample.size() - 1).getDate().shiftedBy(10.0));
+            propagator.propagate(sample.getLast().getDate().shiftedBy(10.0));
             return handler.value;
         };
     }
@@ -84,7 +88,7 @@ public class JacobianPropagatorConverter extends AbstractPropagatorConverter {
             final JacobianHandler handler = new JacobianHandler(propagator, point.getDimension());
             propagator.getMultiplexer().add(handler);
             final List<SpacecraftState> sample = getSample();
-            propagator.propagate(sample.get(sample.size() - 1).getDate().shiftedBy(10.0));
+            propagator.propagate(sample.getLast().getDate().shiftedBy(10.0));
             return new Pair<>(handler.value, handler.jacobian);
         };
     }
@@ -213,7 +217,7 @@ public class JacobianPropagatorConverter extends AbstractPropagatorConverter {
                 }
 
                 fillRows(index, interpolator.getInterpolatedState(next.getDate()),
-                         builder.getOrbitalParametersDrivers());
+                         builder.getOrbitalParameterFactory().getOrbitalParametersDrivers());
 
                 // prepare handling of next measurement
                 ++number;

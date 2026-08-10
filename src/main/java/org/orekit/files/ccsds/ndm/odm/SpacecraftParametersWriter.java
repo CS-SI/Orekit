@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -55,12 +55,12 @@ public class SpacecraftParametersWriter extends AbstractWriter {
         generator.writeEntry(SpacecraftParametersKey.MASS.name(), spacecraftParameters.getMass(), Unit.KILOGRAM, false);
 
         // solar parameters
-        generator.writeEntry(SpacecraftParametersKey.SOLAR_RAD_AREA.name(),  spacecraftParameters.getSolarRadArea(),  Units.M2, false);
-        generator.writeEntry(SpacecraftParametersKey.SOLAR_RAD_COEFF.name(), spacecraftParameters.getSolarRadCoeff(), Unit.ONE, false);
+        generator.writeOptionalDoubleEntry(SpacecraftParametersKey.SOLAR_RAD_AREA.name(),  spacecraftParameters.getSolarRadArea(),  Units.M2, false);
+        generator.writeOptionalDoubleEntry(SpacecraftParametersKey.SOLAR_RAD_COEFF.name(), spacecraftParameters.getSolarRadCoeff(), Unit.ONE, false);
 
         // drag parameters
-        generator.writeEntry(SpacecraftParametersKey.DRAG_AREA.name(),  spacecraftParameters.getDragArea(),  Units.M2, false);
-        generator.writeEntry(SpacecraftParametersKey.DRAG_COEFF.name(), spacecraftParameters.getDragCoeff(), Unit.ONE, false);
+        generator.writeOptionalDoubleEntry(SpacecraftParametersKey.DRAG_AREA.name(),  spacecraftParameters.getDragArea(),  Units.M2, false);
+        generator.writeOptionalDoubleEntry(SpacecraftParametersKey.DRAG_COEFF.name(), spacecraftParameters.getDragCoeff(), Unit.ONE, false);
 
     }
 

@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,8 @@
  */
 package org.orekit.frames;
 
+import java.util.Arrays;
+
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
@@ -28,12 +30,11 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-import java.util.Arrays;
-
 /**
  * A transform that only includes translation and rotation as well as their respective rates.
  * It is kinematic in the sense that it cannot transform an acceleration vector.
  *
+ * @param <T> type of the field elements
  * @author Romain Serra
  * @see FieldStaticTransform
  * @see FieldTransform
@@ -298,7 +299,7 @@ public interface FieldKinematicTransform<T extends CalculusFieldElement<T>> exte
                                                                           final FieldPVCoordinates<T> pvCoordinates,
                                                                           final FieldRotation<T> rotation,
                                                                           final FieldVector3D<T> rotationRate) {
-        return new FieldKinematicTransform<T>() {
+        return new FieldKinematicTransform<>() {
 
             @Override
             public FieldKinematicTransform<T> getInverse() {

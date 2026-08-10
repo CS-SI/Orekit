@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,12 +32,11 @@ import org.orekit.propagation.analytical.gnss.data.GLONASSFdmaNavigationMessage;
 import org.orekit.propagation.numerical.GLONASSNumericalPropagator;
 import org.orekit.propagation.numerical.GLONASSNumericalPropagatorBuilder;
 import org.orekit.time.GLONASSDate;
+import org.orekit.utils.IERSConventions;
 
 import java.util.ArrayList;
 
 public class Rtcm1020Test {
-
-    private double eps = 1.0e-16;
 
     @BeforeEach
     public void setUp() {
@@ -91,46 +90,53 @@ public class Rtcm1020Test {
         ArrayList<Integer> messages = new ArrayList<>();
         messages.add(1020);
 
-        final Rtcm1020                 rtcm1020       = (Rtcm1020) new RtcmMessagesParser(messages, DataContext.getDefault().getTimeScales()).
-                                                        parse(message, false);
+        final DataContext context  = DataContext.getDefault();
+        final Rtcm1020    rtcm1020 = (Rtcm1020) new RtcmMessagesParser(messages,
+                                                                       context.getTimeScales(),
+                                                                       context.getFrames().getEME2000(),
+                                                                       context.getFrames().getITRF(IERSConventions.IERS_2010,
+                                                                                                   false)).
+                                     parse(message, false);
         final Rtcm1020Data             ephemerisData  = rtcm1020.getEphemerisData();
         final GLONASSFdmaNavigationMessage glonassMessage = ephemerisData.getGlonassNavigationMessage();
 
         // Verify propagator initialization
         final GLONASSNumericalPropagator propagator = new GLONASSNumericalPropagatorBuilder(new ClassicalRungeKuttaIntegrator(60.0), glonassMessage, true).build();
         Assertions.assertNotNull(propagator);
+        final double eps = 1.0e-16;
         Assertions.assertEquals(0.0, glonassMessage.getDate().
-                            durationFrom(new GLONASSDate(ephemerisData.getNt(), ephemerisData.getN4(), glonassMessage.getTime()).getDate()), eps);
+                            durationFrom(new GLONASSDate(ephemerisData.getNt(), ephemerisData.getN4(), glonassMessage.getTime()).getDate()),
+                                eps);
 
         Assertions.assertEquals(12,                             glonassMessage.getPRN());
         Assertions.assertEquals(10,                             glonassMessage.getFrequencyNumber());
         Assertions.assertFalse(ephemerisData.isHealthAvailable());
         Assertions.assertEquals(1800,                           ephemerisData.getP1());
-        Assertions.assertEquals(22410.0,                        ephemerisData.getTk(),    eps);
+        Assertions.assertEquals(22410.0, ephemerisData.getTk(), eps);
         Assertions.assertEquals(0,                              ephemerisData.getBN());
         Assertions.assertEquals(1,                              ephemerisData.getP2());
-        Assertions.assertEquals(26100.0,                        glonassMessage.getTime(), eps);
+        Assertions.assertEquals(26100.0, glonassMessage.getTime(), eps);
         Assertions.assertEquals(242.42592,                      glonassMessage.getXDot(),          2.0e-6);
         Assertions.assertEquals(1.21071935E-5,                  glonassMessage.getXDotDot(),       2.0e-6);
-        Assertions.assertEquals(4064977.5390625,                glonassMessage.getX(),             eps);
+        Assertions.assertEquals(4064977.5390625, glonassMessage.getX(), eps);
         Assertions.assertEquals(-242.42592,                     glonassMessage.getYDot(),          2.0e-6);
         Assertions.assertEquals(-1.21071935E-5,                 glonassMessage.getYDotDot(),       2.0e-6);
-        Assertions.assertEquals(-4064977.5390625,               glonassMessage.getY(),             eps);
+        Assertions.assertEquals(-4064977.5390625, glonassMessage.getY(), eps);
         Assertions.assertEquals(-4242.426,                      glonassMessage.getZDot(),          2.5e-4);
         Assertions.assertEquals(1.21071935E-5,                  glonassMessage.getZDotDot(),       2.0e-6);
-        Assertions.assertEquals(-1.22569775390625E7,            glonassMessage.getZ(),             eps);
+        Assertions.assertEquals(-1.22569775390625E7, glonassMessage.getZ(), eps);
         Assertions.assertEquals(4,                              ephemerisData.getP3());
         Assertions.assertEquals(3,                              ephemerisData.getP());
         Assertions.assertEquals(0,                              ephemerisData.getLNThirdString());
         Assertions.assertEquals(14,                             ephemerisData.getEn());
-        Assertions.assertEquals(1.30385160446367E-8,            ephemerisData.getDeltaTN(), eps);
+        Assertions.assertEquals(1.30385160446367E-8, ephemerisData.getDeltaTN(), eps);
         Assertions.assertEquals(1,                              ephemerisData.getP4());
         Assertions.assertEquals(14,                             ephemerisData.getFT());
         Assertions.assertEquals(1,                              ephemerisData.getM());
         Assertions.assertTrue(ephemerisData.areAdditionalDataAvailable());
         Assertions.assertEquals(1242,                           ephemerisData.getNA());
-        Assertions.assertEquals(0.095649354159832,              ephemerisData.getTauC(), eps);
-        Assertions.assertEquals(4.214453510940075E-4,           ephemerisData.getTauGps(), eps);
+        Assertions.assertEquals(0.095649354159832, ephemerisData.getTauC(), eps);
+        Assertions.assertEquals(4.214453510940075E-4, ephemerisData.getTauGps(), eps);
         Assertions.assertEquals(0,                              ephemerisData.getLNFifthString());
 
     }
@@ -182,7 +188,12 @@ public class Rtcm1020Test {
        ArrayList<Integer> messages = new ArrayList<>();
        messages.add(9999999);
 
-       final Rtcm1020 rtcm1020 = (Rtcm1020) new RtcmMessagesParser(messages, DataContext.getDefault().getTimeScales()).
+       final DataContext context  = DataContext.getDefault();
+       final Rtcm1020 rtcm1020 = (Rtcm1020) new RtcmMessagesParser(messages,
+                                                                   context.getTimeScales(),
+                                                                   context.getFrames().getEME2000(),
+                                                                   context.getFrames().getITRF(IERSConventions.IERS_2010,
+                                                                                               false)).
                                  parse(message, false);
 
        Assertions.assertNull(rtcm1020);

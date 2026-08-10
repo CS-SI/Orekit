@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,12 +25,13 @@ import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.Units;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.odm.CartesianCovariance;
 import org.orekit.files.ccsds.ndm.odm.CartesianCovarianceKey;
-import org.orekit.files.ccsds.ndm.odm.OdmCommonMetadata;
 import org.orekit.files.ccsds.ndm.odm.CommonMetadataKey;
+import org.orekit.files.ccsds.ndm.odm.OdmCommonMetadata;
 import org.orekit.files.ccsds.ndm.odm.OdmHeader;
 import org.orekit.files.ccsds.ndm.odm.OdmMetadataKey;
 import org.orekit.files.ccsds.ndm.odm.OdmParser;
@@ -46,6 +47,7 @@ import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
 import org.orekit.files.ccsds.utils.parsing.ProcessingState;
 import org.orekit.files.general.EphemerisFileParser;
+import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.units.Unit;
@@ -121,15 +123,18 @@ public class OemParser extends OdmParser<Oem, OemParser> implements EphemerisFil
      * @param defaultInterpolationDegree default interpolation degree
      * @param parsedUnitsBehavior behavior to adopt for handling parsed units
      * @param filters filters to apply to parse tokens
-     * @since 12.0
+     * @param frameMapper for creating an Orekit {@link Frame}.
+     * @since 13.1.5
      */
     public OemParser(final IERSConventions conventions, final boolean simpleEOP,
                      final DataContext dataContext,
                      final AbsoluteDate missionReferenceDate, final double mu,
                      final int defaultInterpolationDegree, final ParsedUnitsBehavior parsedUnitsBehavior,
-                     final Function<ParseToken, List<ParseToken>>[] filters) {
+                     final Function<ParseToken, List<ParseToken>>[] filters,
+                     final CcsdsFrameMapper frameMapper) {
         super(Oem.ROOT, Oem.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext,
-              missionReferenceDate, mu, parsedUnitsBehavior, filters);
+                missionReferenceDate, mu, parsedUnitsBehavior, filters,
+                frameMapper);
         this.defaultInterpolationDegree  = defaultInterpolationDegree;
     }
 
@@ -193,7 +198,7 @@ public class OemParser extends OdmParser<Oem, OemParser> implements EphemerisFil
             // we have started a new segment, we need to finalize the previous one
             finalizeData();
         }
-        metadata = new OemMetadata(defaultInterpolationDegree);
+        metadata = new OemMetadata(defaultInterpolationDegree, getFrameMapper());
         context  = new ContextBinding(this::getConventions, this::isSimpleEOP,
                                       this::getDataContext, this::getParsedUnitsBehavior,
                                       this::getMissionReferenceDate,
@@ -214,8 +219,8 @@ public class OemParser extends OdmParser<Oem, OemParser> implements EphemerisFil
     public boolean finalizeMetadata() {
         metadata.finalizeMetadata(context);
         metadata.validate(header.getFormatVersion());
-        if (metadata.getCenter().getBody() != null) {
-            setMuCreated(metadata.getCenter().getBody().getGM());
+        if (metadata.getCenter().getBody().isPresent()) {
+            setMuCreated(metadata.getCenter().getBody().get().getGM());
         }
         anticipateNext(getFileFormat() == FileFormat.XML ? structureProcessor : this::processKvnDataToken);
         return true;
@@ -290,7 +295,9 @@ public class OemParser extends OdmParser<Oem, OemParser> implements EphemerisFil
         if (starting) {
             // save the current metadata for later retrieval of reference frame
             final OdmCommonMetadata savedMetadata = metadata;
-            currentCovariance = new CartesianCovariance(savedMetadata::getReferenceFrame);
+            currentCovariance = new CartesianCovariance(
+                    savedMetadata::getReferenceFrame,
+                    savedMetadata.getFrameMapper());
             anticipateNext(getFileFormat() == FileFormat.XML ?
                         this::processXmlCovarianceToken :
                         this::processKvnCovarianceToken);
@@ -335,7 +342,7 @@ public class OemParser extends OdmParser<Oem, OemParser> implements EphemerisFil
      */
     private boolean processXmlSubStructureToken(final ParseToken token) {
         if (COMMENT.equals(token.getName())) {
-            return token.getType() == TokenType.ENTRY ? currentBlock.addComment(token.getContentAsNormalizedString()) : true;
+            return token.getType() != TokenType.ENTRY || currentBlock.addComment(token.getContentAsNormalizedString());
         } else {
             try {
                 return token.getName() != null &&
@@ -359,7 +366,7 @@ public class OemParser extends OdmParser<Oem, OemParser> implements EphemerisFil
         }
         inData();
         if (COMMENT.equals(token.getName())) {
-            return token.getType() == TokenType.ENTRY ? currentBlock.addComment(token.getContentAsNormalizedString()) : true;
+            return token.getType() != TokenType.ENTRY || currentBlock.addComment(token.getContentAsNormalizedString());
         } else if (token.getType() == TokenType.RAW_LINE) {
             try {
                 final String[] fields = SPLIT_AT_BLANKS.split(token.getRawContent().trim());
@@ -433,7 +440,9 @@ public class OemParser extends OdmParser<Oem, OemParser> implements EphemerisFil
                 if (currentCovariance == null) {
                     // save the current metadata for later retrieval of reference frame
                     final OdmCommonMetadata savedMetadata = metadata;
-                    currentCovariance = new CartesianCovariance(savedMetadata::getReferenceFrame);
+                    currentCovariance = new CartesianCovariance(
+                            savedMetadata::getReferenceFrame,
+                            savedMetadata.getFrameMapper());
                     currentRow        = 0;
                 }
 

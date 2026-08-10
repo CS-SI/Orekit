@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Luc Maisonobe
+/* Copyright 2022-2026 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,8 +17,9 @@
 package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
-import org.hipparchus.util.FastMath;
+import org.orekit.orbits.FieldKeplerianOrbit;
+import org.orekit.time.FieldGNSSDate;
+import org.orekit.time.TimeScales;
 
 import java.util.function.Function;
 
@@ -34,50 +35,48 @@ import java.util.function.Function;
  *
  */
 public class FieldGalileoAlmanac<T extends CalculusFieldElement<T>>
-    extends FieldAbstractAlmanac<T, GalileoAlmanac> {
-
-    /** Nominal inclination (Ref: Galileo ICD - Table 75). */
-    private static final double I0 = FastMath.toRadians(56.0);
-
-    /** Nominal semi-major axis in meters (Ref: Galileo ICD - Table 75). */
-    private static final double A0 = 29600000;
+    extends FieldGnssOrbitalElements<T, GalileoAlmanac> {
 
     /** Satellite E5a signal health status. */
-    private int healthE5a;
+    private final int healthE5a;
 
     /** Satellite E5b signal health status. */
-    private int healthE5b;
+    private final int healthE5b;
 
     /** Satellite E1-B/C signal health status. */
-    private int healthE1;
+    private final int healthE1;
 
     /** Almanac Issue Of Data. */
-    private int iod;
+    private final int iod;
 
-    /** Constructor from non-field instance.
-     * @param field    field to which elements belong
-     * @param original regular non-field instance
+    /** Creates a new instance.
+     * @param angularVelocity mean angular velocity of the Earth for the GNSS model
+     * @param weeksInCycle    number of weeks in the GNSS cycle
+     * @param timeScales      known time scales
+     * @param type            type (null if not a navigation message)
+     * @param prn             PRN number of the satellite
+     * @param toe             time of ephemeris (<em>must</em> be consistent with {@code orbit})
+     * @param orbit           Keplerian orbit in Earth-frozen frame
+     * @param nonKeplerian    15 non-Keplerian parameters (in the order given by {@link NonKeplerianDriversFactory}
+     * @param tgd             group delay differential TGD for L1-L2 correction
+     * @param toc             time of clock
+     * @param healthE5a       satellite E5a signal health status
+     * @param healthE5b       satellite E5b signal health status
+     * @param healthE1        satellite E1-B/C signal health status
+     * @param iod             issue of data
+     * @since 14.0
      */
-    public FieldGalileoAlmanac(final Field<T> field, final GalileoAlmanac original) {
-        super(field, original);
-        setHealthE5a(original.getHealthE5a());
-        setHealthE5b(original.getHealthE5b());
-        setHealthE1(original.getHealthE1());
-        setIOD(original.getIOD());
-    }
-
-    /** Constructor from different field instance.
-     * @param <V> type of the old field elements
-     * @param original regular non-field instance
-     * @param converter for field elements
-     */
-    public <V extends CalculusFieldElement<V>> FieldGalileoAlmanac(final Function<V, T> converter,
-                                                                   final FieldGalileoAlmanac<V> original) {
-        super(converter, original);
-        setHealthE5a(original.getHealthE5a());
-        setHealthE5b(original.getHealthE5b());
-        setHealthE1(original.getHealthE1());
-        setIOD(original.getIOD());
+    public FieldGalileoAlmanac(final double angularVelocity, final int weeksInCycle,
+                               final TimeScales timeScales, final String type, final int prn,
+                               final FieldGNSSDate<T> toe, final FieldKeplerianOrbit<T> orbit,
+                               final T[] nonKeplerian, final T tgd, final FieldGNSSDate<T> toc,
+                               final int healthE5a, final int healthE5b, final int healthE1,
+                               final int iod) {
+        super(angularVelocity, weeksInCycle, timeScales, type, prn, toe, orbit, nonKeplerian, tgd, toc);
+        this.healthE5a = healthE5a;
+        this.healthE5b = healthE5b;
+        this.healthE1  = healthE1;
+        this.iod       = iod;
     }
 
     /** {@inheritDoc} */
@@ -87,53 +86,21 @@ public class FieldGalileoAlmanac<T extends CalculusFieldElement<T>>
     }
 
     /** {@inheritDoc} */
-    @SuppressWarnings("unchecked")
     @Override
-    public <U extends CalculusFieldElement<U>, G extends FieldGnssOrbitalElements<U, GalileoAlmanac>>
-        G changeField(final Function<T, U> converter) {
-        return (G) new FieldGalileoAlmanac<>(converter, this);
-    }
-
-    /**
-     * Sets the difference between the square root of the semi-major axis
-     * and the square root of the nominal semi-major axis.
-     * <p>
-     * In addition, this method set the value of the Semi-Major Axis.
-     * </p>
-     * @param dsqa the value to set
-     */
-    public void setDeltaSqrtA(final T dsqa) {
-        final T sqrtA = dsqa.add(FastMath.sqrt(A0));
-        setSma(sqrtA.square());
-    }
-
-    /**
-     * Sets the the correction of orbit reference inclination at reference time.
-     * <p>
-     * In addition, this method set the value of the reference inclination.
-     * </p>
-     * @param dinc correction of orbit reference inclination at reference time in radians
-     */
-    public void setDeltaInc(final T dinc) {
-        setI0(dinc.add(I0));
-    }
-
-    /**
-     * Gets the Issue of Data (IOD).
-     *
-     * @return the Issue Of Data
-     */
-    public int getIOD() {
-        return iod;
-    }
-
-    /**
-     * Sets the Issue of Data (IOD).
-     *
-     * @param iodValue the value to set
-     */
-    public void setIOD(final int iodValue) {
-        this.iod = iodValue;
+    public <U extends CalculusFieldElement<U>>
+        FieldGalileoAlmanac<U> toField(final FieldKeplerianOrbit<U> orbit,
+                                       final U[] nonKeplerian,
+                                       final Function<T, U> converter) {
+        return new FieldGalileoAlmanac<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
+                                         getType(), getPrn(),
+                                         new FieldGNSSDate<>(orbit.getDate().getField(),
+                                                             getTimeOfEphemeris().getGnssDate()),
+                                         orbit, nonKeplerian,
+                                         converter.apply(getTgd()),
+                                         new FieldGNSSDate<>(orbit.getDate().getField(),
+                                                             getTimeOfClock().getGnssDate()),
+                                         getHealthE5a(), getHealthE5b(), getHealthE1(),
+                                         getIOD());
     }
 
     /**
@@ -146,30 +113,12 @@ public class FieldGalileoAlmanac<T extends CalculusFieldElement<T>>
     }
 
     /**
-     * Sets the E1-B/C signal health status.
-     *
-     * @param healthE1 health status to set
-     */
-    public void setHealthE1(final int healthE1) {
-        this.healthE1 = healthE1;
-    }
-
-    /**
      * Gets the E5a signal health status.
      *
      * @return the E5a signal health status
      */
     public int getHealthE5a() {
         return healthE5a;
-    }
-
-    /**
-     * Sets the E5a signal health status.
-     *
-     * @param healthE5a health status to set
-     */
-    public void setHealthE5a(final int healthE5a) {
-        this.healthE5a = healthE5a;
     }
 
     /**
@@ -182,12 +131,12 @@ public class FieldGalileoAlmanac<T extends CalculusFieldElement<T>>
     }
 
     /**
-     * Sets the E5b signal health status.
+     * Gets the Issue of Data (IOD).
      *
-     * @param healthE5b health status to set
+     * @return the Issue Of Data
      */
-    public void setHealthE5b(final int healthE5b) {
-        this.healthE5b = healthE5b;
+    public int getIOD() {
+        return iod;
     }
 
 }

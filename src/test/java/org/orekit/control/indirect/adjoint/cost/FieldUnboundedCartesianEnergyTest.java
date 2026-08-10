@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,9 @@
  */
 package org.orekit.control.indirect.adjoint.cost;
 
+import java.util.List;
+import java.util.stream.Stream;
+
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.differentiation.GradientField;
@@ -23,7 +26,6 @@ import org.hipparchus.complex.Complex;
 import org.hipparchus.complex.ComplexField;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.MathArrays;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -38,15 +40,12 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
+import org.orekit.propagation.events.handlers.FieldResetDerivativesOnEvent;
 import org.orekit.propagation.integration.CombinedDerivatives;
 import org.orekit.propagation.integration.FieldCombinedDerivatives;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
-
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 class FieldUnboundedCartesianEnergyTest {
 
@@ -106,12 +105,11 @@ class FieldUnboundedCartesianEnergyTest {
         // WHEN
         final Stream<FieldEventDetector<Complex>> eventDetectorStream = unboundedCartesianEnergy.getFieldEventDetectors(field);
         // THEN
-        final List<FieldEventDetector<Complex>> eventDetectors = eventDetectorStream.collect(Collectors.toList());
+        final List<FieldEventDetector<Complex>> eventDetectors = eventDetectorStream.toList();
         Assertions.assertEquals(1, eventDetectors.size());
-        Assertions.assertInstanceOf(FieldCartesianEnergyConsideringMass.FieldSingularityDetector.class, eventDetectors.get(0));
-        final FieldCartesianEnergyConsideringMass<Complex>.FieldSingularityDetector singularityDetector =
-                (FieldCartesianEnergyConsideringMass<Complex>.FieldSingularityDetector) eventDetectors.get(0);
-        Assertions.assertEquals(Action.RESET_DERIVATIVES, singularityDetector.getHandler().eventOccurred(null, null, false));
+        final FieldEventDetector<Complex> eventDetector = eventDetectors.getFirst();
+        Assertions.assertInstanceOf(FieldAbstractCartesianCost.FieldSwitchFunction.class, eventDetector.getEventFunction());
+        Assertions.assertInstanceOf(FieldResetDerivativesOnEvent.class, eventDetector.getHandler());
     }
 
     @Test
@@ -127,16 +125,17 @@ class FieldUnboundedCartesianEnergyTest {
         // WHEN
         final Stream<FieldEventDetector<Complex>> fieldEventDetectorStream = unboundedCartesianEnergy.getFieldEventDetectors(field);
         // THEN
-        final List<FieldEventDetector<Complex>> fieldEventDetectors = fieldEventDetectorStream.collect(Collectors.toList());
+        final List<FieldEventDetector<Complex>> fieldEventDetectors = fieldEventDetectorStream.toList();
         Assertions.assertEquals(1, fieldEventDetectors.size());
-        Assertions.assertInstanceOf(FieldCartesianEnergyConsideringMass.FieldSingularityDetector.class, fieldEventDetectors.get(0));
-        final FieldCartesianEnergyConsideringMass<Complex>.FieldSingularityDetector fieldSingularityDetector =
-                (FieldCartesianEnergyConsideringMass<Complex>.FieldSingularityDetector) fieldEventDetectors.get(0);
-        final Complex gValue = fieldSingularityDetector.g(new FieldSpacecraftState<>(field, state));
-        final List<EventDetector> eventDetectors = unboundedCartesianEnergy.toCartesianCost().getEventDetectors().collect(Collectors.toList());
-        final CartesianEnergyConsideringMass.SingularityDetector singularityDetector =
-                (CartesianEnergyConsideringMass.SingularityDetector) eventDetectors.get(0);
-        final double expectedG = singularityDetector.g(state);
+        Assertions.assertInstanceOf(FieldAbstractCartesianCost.FieldSwitchFunction.class, fieldEventDetectors.getFirst().getEventFunction());
+        final FieldAbstractCartesianCost.FieldSwitchFunction fieldSingularityFunction =
+                (FieldAbstractCartesianCost.FieldSwitchFunction) fieldEventDetectors.getFirst().getEventFunction();
+        final Complex gValue = fieldSingularityFunction.value(new FieldSpacecraftState<>(field, state));
+        final List<EventDetector> eventDetectors = unboundedCartesianEnergy.toCartesianCost().getEventDetectors().toList();
+        final CartesianEnergyConsideringMass.SingularitySwitchFunction singularitySwitchFunction =
+                (CartesianEnergyConsideringMass.SingularitySwitchFunction) eventDetectors.getFirst().getEventFunction();
+        Assertions.assertFalse(singularitySwitchFunction.dependsOnMainVariablesOnly());
+        final double expectedG = singularitySwitchFunction.value(state);
         Assertions.assertEquals(expectedG, gValue.getReal());
     }
 

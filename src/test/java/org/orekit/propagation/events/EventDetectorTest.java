@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -31,7 +31,6 @@ import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
@@ -46,6 +45,7 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.analytical.KeplerianPropagator;
+import org.orekit.propagation.events.functions.EventFunction;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnEvent;
@@ -60,29 +60,57 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 
+import static org.mockito.Mockito.mock;
+
 
 class EventDetectorTest {
 
     private double mu;
 
     @Test
-    void testDependsOnTimeOnly() {
+    void testGetEventFunction() {
         // GIVEN
-        final EventDetector detector = new TestDetector();
+        final double expected = -1.;
+        final EventDetector detector = new EventDetector() {
+            @Override
+            public double g(SpacecraftState s) {
+                return expected;
+            }
+
+            @Override
+            public EventHandler getHandler() {
+                return null;
+            }
+        };
         // WHEN
-        final boolean actual = detector.dependsOnTimeOnly();
+        final EventFunction eventFunction = detector.getEventFunction();
         // THEN
-        Assertions.assertFalse(actual);
+        Assertions.assertEquals(expected, eventFunction.value(mock(SpacecraftState.class)));
     }
 
     @Test
-    void testDependsOnMainVariablesOnly() {
+    void testOf() {
         // GIVEN
-        final EventDetector detector = new TestDetector();
+        final EventDetectionSettings detectionSettings = EventDetectionSettings.getDefaultEventDetectionSettings();
+        final EventFunction eventFunction = state -> -1.;
+        final EventHandler handler = new StopOnEvent();
+        final EventDetector detector = EventDetector.of(eventFunction, handler, detectionSettings);
+        // WHEN & THEN
+        Assertions.assertEquals(handler, detector.getHandler());
+        Assertions.assertEquals(detectionSettings, detector.getDetectionSettings());
+        Assertions.assertEquals(eventFunction, detector.getEventFunction());
+        final SpacecraftState mockedState = mock();
+        Assertions.assertEquals(eventFunction.value(mockedState), detector.g(mockedState));
+    }
+
+    @Test
+    void testOfDefaultHandler() {
+        // GIVEN
+        final EventDetector detector = EventDetector.of(mock(EventFunction.class));
         // WHEN
-        final boolean actual = detector.dependsOnMainVariablesOnly();
+        final EventHandler handler = detector.getHandler();
         // THEN
-        Assertions.assertTrue(actual);
+        Assertions.assertInstanceOf(ContinueOnEvent.class, handler);
     }
 
     @Test
@@ -92,7 +120,7 @@ class EventDetectorTest {
         final EventDetector detector =
             new DummyDetector(new EventDetectionSettings(1.0, 1.0e-10, 100), handler);
         // WHEN
-        detector.finish(Mockito.mock(SpacecraftState.class));
+        detector.finish(mock(SpacecraftState.class));
         // THEN
         Assertions.assertTrue(handler.isFinished);
     }
@@ -370,9 +398,10 @@ class EventDetectorTest {
         } catch (OrekitException oe) {
             Assertions.assertSame(OrekitException.class, oe.getClass());
             Assertions.assertSame(dummyCause, oe.getCause().getCause());
-            String expected = "failed to find root between 2011-05-11T00:00:00.000Z " +
-                    "(g=-3.6E3) and 2012-05-10T06:00:00.000Z (g=3.1554E7)\n" +
-                    "Last iteration at 2011-05-11T00:00:00.000Z (g=-3.6E3)";
+            String expected = """
+                    failed to find root between 2011-05-11T00:00:00.000Z \
+                    (g=-3.6E3) and 2012-05-10T06:00:00.000Z (g=3.1554E7)
+                    Last iteration at 2011-05-11T00:00:00.000Z (g=-3.6E3)""";
             MatcherAssert.assertThat(oe.getMessage(Locale.US),
                     CoreMatchers.containsString(expected));
         }
@@ -540,7 +569,7 @@ class EventDetectorTest {
         final EventDetectionSettings actualSettings = detector.getDetectionSettings();
         // THEN
         final EventDetectionSettings expectedSettings = EventDetectionSettings.getDefaultEventDetectionSettings();
-        final SpacecraftState mockedState = Mockito.mock(SpacecraftState.class);
+        final SpacecraftState mockedState = mock(SpacecraftState.class);
         Assertions.assertEquals(expectedSettings.getMaxCheckInterval().currentInterval(mockedState, true),
                 actualSettings.getMaxCheckInterval().currentInterval(mockedState, true));
         Assertions.assertEquals(expectedSettings.getMaxIterationCount(), actualSettings.getMaxIterationCount());
@@ -561,7 +590,7 @@ class EventDetectorTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
         mu = Constants.EIGEN5C_EARTH_MU;
     }

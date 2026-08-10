@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,6 +15,15 @@
  * limitations under the License.
  */
 package org.orekit.estimation.sequential;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+import java.util.NoSuchElementException;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -55,7 +64,6 @@ import org.orekit.models.earth.atmosphere.HarrisPriester;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.analytical.tle.TLE;
@@ -66,12 +74,12 @@ import org.orekit.propagation.conversion.TLEPropagatorBuilder;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
-import org.orekit.utils.*;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.*;
+import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
+import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterDriversList;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPropagatorBuilder> {
 
@@ -97,8 +105,7 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
     protected TLEPropagatorBuilder createPropagatorBuilder(final Orbit referenceOrbit,
                                                            final ODEIntegratorBuilder builder,
                                                            final double positionScale) {
-        return new TLEPropagatorBuilder(templateTLE, PositionAngleType.MEAN, positionScale,
-                                        new FixedPointTleGenerationAlgorithm());
+        return new TLEPropagatorBuilder(new FixedPointTleGenerationAlgorithm(templateTLE));
     }
 
     /** {@inheritDoc} */
@@ -198,7 +205,9 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
         final boolean print = false;
 
         // input in resources directory
-        final String inputPath = TLEKalmanOrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/Lageos2/tle_od_test_Lageos2.in").toURI().getPath();
+        final String inputPath = TLEKalmanOrbitDeterminationTest.class.getClassLoader().
+                                 getResource("orbit-determination/Lageos2/tle_od_test_Lageos2.in").
+                                 toURI().getPath();
         final File input  = new File(inputPath);
 
         // configure Orekit data acces
@@ -209,7 +218,6 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
         final String line1 = "1 22195U 92070B   16045.51027931 -.00000009  00000-0  00000+0 0  9990";
         final String line2 = "2 22195  52.6508 132.9147 0137738 336.2706   1.6348  6.47294052551192";
         templateTLE = new TLE(line1, line2);
-        templateTLE.getParametersDrivers().get(0).setSelected(false);
 
         // Default for test is Cartesian
         final OrbitType orbitType = OrbitType.CARTESIAN;
@@ -243,7 +251,7 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
 
         // Definition of the accuracy for the test
         // Initial TLE error at last measurement date is 3997m
-        final double distanceAccuracy = 192.61;
+        final double distanceAccuracy = 232.30;
         final double velocityAccuracy = 0.116;
         final double parameterAccuracy = 1e-6;
 
@@ -286,12 +294,12 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
         Assertions.assertEquals(0.0, dV, velocityAccuracy);
 
         // Test on measurements parameters
-        final List<ParameterDriversList.DelegatingDriver> list = new ArrayList<>();
-        list.addAll(kalmanLageos2.getMeasurementsParameters().getDrivers());
+        final List<ParameterDriversList.DelegatingDriver> list =
+            new ArrayList<>(kalmanLageos2.getMeasurementsParameters().getDrivers());
         sortParametersChanges(list);
-        final double[] stationOffSet = { 0.069571, -0.114921,  -0.084817 };
-        final double rangeBias = -0.041797;
-        Assertions.assertEquals(stationOffSet[0], list.get(0).getValue(), parameterAccuracy);
+        final double[] stationOffSet = { 0.052965, -0.006615,  -0.038348 };
+        final double rangeBias = -0.024469;
+        Assertions.assertEquals(stationOffSet[0], list.getFirst().getValue(), parameterAccuracy);
         Assertions.assertEquals(stationOffSet[1], list.get(1).getValue(), parameterAccuracy);
         Assertions.assertEquals(stationOffSet[2], list.get(2).getValue(), parameterAccuracy);
         Assertions.assertEquals(rangeBias,        list.get(3).getValue(), parameterAccuracy);
@@ -300,7 +308,7 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
         final long nbRange = 95;
         // Batch LS values
         //final double[] RefStatRange = { -67.7496, 87.1117, 6.4482E-5, 33.6349 };
-        final double[] RefStatRange = { -13.191873, 10.038898, 0.134278, 4.189626 };
+        final double[] RefStatRange = { -13.473808, 4.597516, -0.368977, 2.738891 };
         Assertions.assertEquals(nbRange, kalmanLageos2.getRangeStat().getN());
         Assertions.assertEquals(RefStatRange[0], kalmanLageos2.getRangeStat().getMin(),               parameterAccuracy);
         Assertions.assertEquals(RefStatRange[1], kalmanLageos2.getRangeStat().getMax(),               parameterAccuracy);
@@ -328,7 +336,6 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
         final String line1 = "1 32711U 08012A   16044.40566018 -.00000039 +00000-0 +00000-0 0  9993";
         final String line2 = "2 32711 055.4362 301.3402 0091581 207.7162 151.8496 02.00563594058026";
         templateTLE = new TLE(line1, line2);
-        templateTLE.getParametersDrivers().get(0).setSelected(false);
 
         // Default for test is Cartesian
         final OrbitType orbitType = OrbitType.CARTESIAN;
@@ -400,7 +407,7 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
         //test on statistic for the range residuals
         final long nbRange = 8211;
 
-        final double[] RefStatRange = { -8.285, 4.496, -6.3e-4, 1.195 };
+        final double[] RefStatRange = { -7.754799, 4.508729, -1.476158e-4, 1.185936 };
         Assertions.assertEquals(nbRange, kalmanGNSS.getRangeStat().getN());
         Assertions.assertEquals(RefStatRange[0], kalmanGNSS.getRangeStat().getMin(),               parameterAccuracy);
         Assertions.assertEquals(RefStatRange[1], kalmanGNSS.getRangeStat().getMax(),               parameterAccuracy);
@@ -413,7 +420,7 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
     public TimeStampedPVCoordinates createRef(final AbsoluteDate date, final Vector3D refPos0, final Vector3D refVel0) {
 
         // Initial orbit
-        final AbsoluteDate initDate = new AbsoluteDate(2016, 02, 14, 12, 14, 48.132, TimeScalesFactory.getUTC());
+        final AbsoluteDate initDate = new AbsoluteDate(2016, 2, 14, 12, 14, 48.132, TimeScalesFactory.getUTC());
         final CartesianOrbit initOrbit= new CartesianOrbit(new PVCoordinates(refPos0, refVel0), FramesFactory.getEME2000(), initDate, TLEConstants.MU);
         final SpacecraftState initState = new SpacecraftState(initOrbit);
 

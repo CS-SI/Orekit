@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,10 +25,10 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.TimeScales;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 /**
  * Container for Solution INdependent EXchange (SINEX) files.
@@ -48,19 +48,21 @@ public class Sinex extends AbstractSinex {
     private final Map<AbsoluteDate, SinexEopEntry> eop;
 
     /** Simple constructor.
-     * @param timeScales time scales
-     * @param creationDate SINEX file creation date
-     * @param startDate start time of the data used in the Sinex solution
-     * @param endDate end time of the data used in the Sinex solution
+     * @param version                version number
+     * @param timeScales             time scales
+     * @param creationDate           SINEX file creation date
+     * @param startDate              start time of the data used in the Sinex solution
+     * @param endDate                end time of the data used in the Sinex solution
      * @param satellitesPhaseCenters satellites phase centers
-     * @param stations station data
-     * @param eop Earth Orientation Parameters data
+     * @param stations               station data
+     * @param eop                    Earth Orientation Parameters data
+     * @since 14.0
      */
-    public Sinex(final TimeScales timeScales,
+    public Sinex(final double version, final TimeScales timeScales,
                  final AbsoluteDate creationDate, final AbsoluteDate startDate, final AbsoluteDate endDate,
                  final Map<SatInSystem, Map<GnssSignal, Vector3D>> satellitesPhaseCenters,
                  final Map<String, Station> stations, final Map<AbsoluteDate, SinexEopEntry> eop) {
-        super(timeScales, creationDate, startDate, endDate);
+        super(version, timeScales, creationDate, startDate, endDate);
         this.satellitesPhaseCenters = satellitesPhaseCenters;
         this.stations               = stations;
         this.eop                    = eop;
@@ -88,17 +90,17 @@ public class Sinex extends AbstractSinex {
         return (converter, history) -> {
 
             // first set up all entries explicitly present in the parsed files
-            final SortedSet<SinexEopEntry> sorted = new TreeSet<>(new ChronologicalComparator());
-            sorted.addAll(eop.values());
+            final List<SinexEopEntry> sorted = new ArrayList<>(eop.values());
+            sorted.sort(new ChronologicalComparator());
 
             // copy first and last entries according to files validity
-            sorted.add(sorted.first().toNewEpoch(getFileEpochStartTime()));
-            sorted.add(sorted.last().toNewEpoch(getFileEpochEndTime()));
+            sorted.add(sorted.getFirst().toNewEpoch(getFileEpochStartTime()));
+            sorted.add(sorted.getLast().toNewEpoch(getFileEpochEndTime()));
 
             if (sorted.size() < 4) {
                 // insert extra entries after first and before last to allow interpolation
-                sorted.add(sorted.first().toNewEpoch(getFileEpochStartTime().shiftedBy(1.0)));
-                sorted.add(sorted.last().toNewEpoch(getFileEpochEndTime().shiftedBy(-1.0)));
+                sorted.add(sorted.getFirst().toNewEpoch(getFileEpochStartTime().shiftedBy(1.0)));
+                sorted.add(sorted.getLast().toNewEpoch(getFileEpochEndTime().shiftedBy(-1.0)));
             }
 
             // convert to regular EOP history

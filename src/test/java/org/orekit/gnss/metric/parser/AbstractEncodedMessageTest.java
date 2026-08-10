@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -37,11 +37,11 @@ public abstract class AbstractEncodedMessageTest {
     @Test
     public void testTooLargeDataType() {
         try {
-            buildAndStart(new byte[] { 0, 1, 2, 3, 4, 5}).extractBits(64);
+            buildAndStart(new byte[] { 0, 1, 2, 3, 4, 5}).extractBits(65);
             Assertions.fail("an exception should habe been thrown");
         } catch (OrekitException re) {
             Assertions.assertEquals(OrekitMessages.TOO_LARGE_DATA_TYPE, re.getSpecifier());
-            Assertions.assertEquals(64, ((Integer) re.getParts()[0]).intValue());
+            Assertions.assertEquals(65, ((Integer) re.getParts()[0]).intValue());
         }
     }
 

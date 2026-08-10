@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -31,9 +31,8 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class GeodeticExtendedPositionProviderTest {
 
@@ -67,7 +66,7 @@ class GeodeticExtendedPositionProviderTest {
         final GeodeticExtendedPositionProvider positionProvider = new GeodeticExtendedPositionProvider(bodyShape, position);
         final GeodeticPoint actualPoint = positionProvider.getGeodeticPoint();
         // THEN
-        assertEquals(position, positionProvider.getCartesianPoint());
+        assertEquals(position, positionProvider.getConstantPosition());
         assertEquals(bodyShape, positionProvider.getBodyShape());
         assertEquals(expectedGeodeticPoint.getAltitude(), actualPoint.getAltitude(), 1e-8);
         assertEquals(expectedGeodeticPoint.getLatitude(), actualPoint.getLatitude());

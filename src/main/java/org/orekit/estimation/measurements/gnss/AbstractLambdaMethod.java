@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -185,7 +185,7 @@ public abstract class AbstractLambdaMethod implements IntegerLeastSquareSolver {
     /** Remove spurious solution.
      */
     protected void removeSolution() {
-        solutions.remove(solutions.last());
+        solutions.remove(solutions.getLast());
     }
 
     /** Get the number of solutions found.
@@ -201,7 +201,7 @@ public abstract class AbstractLambdaMethod implements IntegerLeastSquareSolver {
      * @since 10.2
      */
     protected double getMaxDistance() {
-        return solutions.last().getSquaredDistance();
+        return solutions.getLast().getSquaredDistance();
     }
 
     /** Get a reference to the Z  inverse transformation matrix.

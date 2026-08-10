@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Luc Maisonobe
+/* Copyright 2022-2026 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -105,13 +105,13 @@ public class SP3Segment implements EphemerisFile.EphemerisSegment<SP3Coordinate>
     /** {@inheritDoc} */
     @Override
     public AbsoluteDate getStart() {
-        return coordinates.get(0).getDate();
+        return coordinates.getFirst().getDate();
     }
 
     /** {@inheritDoc} */
     @Override
     public AbsoluteDate getStop() {
-        return coordinates.get(coordinates.size() - 1).getDate();
+        return coordinates.getLast().getDate();
     }
 
     /** {@inheritDoc} */

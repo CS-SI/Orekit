@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Luc Maisonobe
+/* Copyright 2022-2026 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,8 +23,7 @@ import java.util.stream.Collectors;
 
 import org.orekit.attitudes.BoundedAttitudeProvider;
 import org.orekit.attitudes.TabulatedProvider;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.utils.Initializer;
 import org.orekit.files.general.AttitudeEphemerisFile;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
@@ -50,7 +49,7 @@ public class AttitudeStateHistory implements AttitudeEphemerisFile.AttitudeEphem
     public AttitudeStateHistory(final AttitudeStateHistoryMetadata metadata,
                                 final List<AttitudeState> states) {
         this.metadata = metadata;
-        this.states   = states;
+        this.states   = Initializer.emptyListIfNull(states);
     }
 
     /** Get metadata.
@@ -70,12 +69,8 @@ public class AttitudeStateHistory implements AttitudeEphemerisFile.AttitudeEphem
     /** {@inheritDoc} */
     @Override
     public Frame getReferenceFrame() {
-        final Frame frame = metadata.getEndpoints().getFrameA().asFrame();
-        if (frame == null) {
-            throw new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME,
-                                      metadata.getEndpoints().getFrameA().getName());
-        }
-        return frame;
+        return metadata.getEndpoints().getFrameMapper()
+                .buildCcsdsFrame(metadata.getEndpoints().getFrameA(), null);
     }
 
     /** {@inheritDoc} */
@@ -93,7 +88,7 @@ public class AttitudeStateHistory implements AttitudeEphemerisFile.AttitudeEphem
     /** {@inheritDoc} */
     @Override
     public AngularDerivativesFilter getAvailableDerivatives() {
-        return states.get(0).getAvailableDerivatives();
+        return states.getFirst().getAvailableDerivatives();
     }
 
     /** {@inheritDoc} */
@@ -107,19 +102,19 @@ public class AttitudeStateHistory implements AttitudeEphemerisFile.AttitudeEphem
     /** {@inheritDoc} */
     @Override
     public AbsoluteDate getStart() {
-        return states.get(0).getDate();
+        return states.getFirst().getDate();
     }
 
     /** {@inheritDoc} */
     @Override
     public AbsoluteDate getStop() {
-        return states.get(states.size() - 1).getDate();
+        return states.getLast().getDate();
     }
 
     /** {@inheritDoc} */
     @Override
     public List<TimeStampedAngularCoordinates> getAngularCoordinates() {
-        return states.stream().map(os -> os.toAngular(metadata.getEulerRotSeq())).collect(Collectors.toList());
+        return states.stream().map(os -> os.toAngular(metadata.getEulerRotSeq().orElse(null))).collect(Collectors.toList());
     }
 
 }

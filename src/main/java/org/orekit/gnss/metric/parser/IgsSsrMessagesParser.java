@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,7 @@
  */
 package org.orekit.gnss.metric.parser;
 
+import org.orekit.frames.Frame;
 import org.orekit.time.TimeScales;
 
 import java.util.List;
@@ -31,10 +32,13 @@ public class IgsSsrMessagesParser extends MessagesParser {
      * Constructor.
      * @param messages list of needed messages
      * @param timeScales known time scales
-     * @since 13.0
+     * @param inertial       reference inertial frame
+     * @param bodyFixed      body fixed frame (will be frozen at {@code date} to build the orbital elements
+     * @since 14.0
      */
-    public IgsSsrMessagesParser(final List<Integer> messages, final TimeScales timeScales) {
-        super(messages, timeScales);
+    public IgsSsrMessagesParser(final List<Integer> messages, final TimeScales timeScales,
+                                final Frame inertial, final Frame bodyFixed) {
+        super(messages, timeScales, inertial, bodyFixed);
     }
 
     /** {@inheritDoc} */

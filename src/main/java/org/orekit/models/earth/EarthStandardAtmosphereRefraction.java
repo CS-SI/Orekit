@@ -16,6 +16,9 @@
  */
 package org.orekit.models.earth;
 
+import java.io.Serial;
+
+
 import org.hipparchus.util.FastMath;
 import org.orekit.models.AtmosphericRefractionModel;
 
@@ -55,6 +58,7 @@ public class EarthStandardAtmosphereRefraction implements AtmosphericRefractionM
     private static final double MAX_ELEVATION = 89.89;
 
     /** Serializable UID. */
+    @Serial
     private static final long serialVersionUID = 6001744143210742620L;
 
     /** Refraction correction from local pressure and temperature. */
@@ -92,7 +96,7 @@ public class EarthStandardAtmosphereRefraction implements AtmosphericRefractionM
         return pressure;
     }
 
-    /** Set the local pressure at the evaluation location
+    /** Set the local pressure at the evaluation location.
      * <p>Otherwise the default value for the local pressure is set to {@link #DEFAULT_PRESSURE}.</p>
      * @param pressure the pressure to set (Pa)
      */
@@ -108,7 +112,7 @@ public class EarthStandardAtmosphereRefraction implements AtmosphericRefractionM
         return temperature;
     }
 
-    /** Set the local temperature at the evaluation location
+    /** Set the local temperature at the evaluation location.
      * <p>Otherwise the default value for the local temperature is set to {@link #DEFAULT_TEMPERATURE}.</p>
      * @param temperature the temperature to set (K)
      */
@@ -117,8 +121,8 @@ public class EarthStandardAtmosphereRefraction implements AtmosphericRefractionM
         this.correfrac = (pressure / DEFAULT_PRESSURE) * (DEFAULT_TEMPERATURE / temperature);
     }
 
-    @Override
     /** {@inheritDoc} */
+    @Override
     public double getRefraction(final double trueElevation) {
         double refraction = 0.0;
         final double eld = FastMath.toDegrees(trueElevation);

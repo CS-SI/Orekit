@@ -1,4 +1,4 @@
-/* Copyright 2024-2025 The Johns Hopkins University Applied Physics Laboratory
+/* Copyright 2024-2026 The Johns Hopkins University Applied Physics Laboratory
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,7 +28,6 @@ import org.orekit.files.iirv.terms.base.LongValuedIIRVTerm;
  * <li> 3 = Off-line
  * <li> 4 = Off-line/mean
  * </ul>
- * <p>
  *
  * @author Nick LaFarge
  * @since 13.0

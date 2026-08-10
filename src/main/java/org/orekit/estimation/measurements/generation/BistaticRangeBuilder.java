@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 Mark Rutten
+/* Copyright 2002-2026 Mark Rutten
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,52 +16,56 @@
  */
 package org.orekit.estimation.measurements.generation;
 
-import org.hipparchus.random.CorrelatedRandomVectorGenerator;
-import org.orekit.estimation.measurements.BistaticRange;
-import org.orekit.estimation.measurements.GroundStation;
-import org.orekit.estimation.measurements.ObservableSatellite;
-import org.orekit.propagation.sampling.OrekitStepInterpolator;
-import org.orekit.time.AbsoluteDate;
-
 import java.util.Map;
+
+import org.orekit.estimation.measurements.BistaticRange;
+import org.orekit.estimation.measurements.MeasurementQuality;
+import org.orekit.estimation.measurements.ObservableSatellite;
+import org.orekit.estimation.measurements.Observer;
+import org.orekit.propagation.sampling.OrekitStepInterpolator;
+import org.orekit.signal.SignalTravelTimeModel;
+import org.orekit.time.AbsoluteDate;
 
 /** Builder for {@link BistaticRange} measurements.
  * @author Pascal Parraud
  * @author Mark Rutten
  * @since 11.2
  */
-public class BistaticRangeBuilder extends AbstractMeasurementBuilder<BistaticRange> {
+public class BistaticRangeBuilder extends AbstractBistaticBuilder<BistaticRange> {
 
-    /** Emitter ground station. */
-    private final GroundStation emitter;
-
-    /** Receiver ground station. */
-    private final GroundStation receiver;
-
-    /** Simple constructor.
-     * @param noiseSource noise source, may be null for generating perfect measurements
-     * @param emitter emitter ground station
-     * @param receiver receiver ground station, from which measurement is performed
+    /** Constructor with default signal travel time model.
+     * @param emitter emitter observer
+     * @param receiver receiver observer, from which measurement is performed
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
      * @param satellite satellite related to this builder
      */
-    public BistaticRangeBuilder(final CorrelatedRandomVectorGenerator noiseSource,
-                                final GroundStation emitter, final GroundStation receiver,
+    public BistaticRangeBuilder(final Observer emitter, final Observer receiver,
                                 final double sigma, final double baseWeight,
                                 final ObservableSatellite satellite) {
-        super(noiseSource, sigma, baseWeight, satellite);
-        this.emitter  = emitter;
-        this.receiver = receiver;
+        this(emitter, receiver, new MeasurementQuality(sigma, baseWeight), new SignalTravelTimeModel(), satellite);
+    }
+
+    /** Constructor.
+     * @param emitter emitter observer
+     * @param receiver receiver observer, from which measurement is performed
+     * @param measurementQuality measurement quality as used in estimation
+     * @param signalTravelTimeModel signal travel time model
+     * @param satellite satellite related to this builder
+     * @since 14.0
+     */
+    public BistaticRangeBuilder(final Observer emitter, final Observer receiver,
+                                final MeasurementQuality measurementQuality,
+                                final SignalTravelTimeModel signalTravelTimeModel, final ObservableSatellite satellite) {
+        super(emitter, receiver, measurementQuality, signalTravelTimeModel, satellite);
     }
 
     /** {@inheritDoc} */
     @Override
     protected BistaticRange buildObserved(final AbsoluteDate date,
                                           final Map<ObservableSatellite, OrekitStepInterpolator> interpolators) {
-        return new BistaticRange(emitter, receiver, date, 0.0,
-                                 getTheoreticalStandardDeviation()[0],
-                                 getBaseWeight()[0], getSatellites()[0]);
+        return new BistaticRange(getEmitter(), getReceiver(), date, 0.0, getMeasurementQuality(),
+                getSignalTravelTimeModel(), getSatellites()[0]);
     }
 
 }

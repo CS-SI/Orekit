@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Thales Alenia Space
+/* Copyright 2022-2026 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -111,7 +111,7 @@ public class RinexClockWriterTest {
         final CharArrayWriter  caw  = new CharArrayWriter();
         try {
             RinexClockWriter writer = new RinexClockWriter(caw, "dummy");
-            writer.writeClockDataLine(rclock.getClockData().get("AREQ00USA").get(0));
+            writer.writeClockDataLine(rclock.getClockData().get("AREQ00USA").getFirst());
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.HEADER_NOT_WRITTEN, oe.getSpecifier());

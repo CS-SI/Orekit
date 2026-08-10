@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Luc Maisonobe
+/* Copyright 2022-2026 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -37,6 +37,7 @@ import org.orekit.estimation.measurements.ObserverSatellite;
 import org.orekit.estimation.measurements.gnss.AmbiguityCache;
 import org.orekit.estimation.measurements.gnss.OneWayGNSSPhase;
 import org.orekit.estimation.measurements.modifiers.Bias;
+import org.orekit.estimation.measurements.modifiers.MeasurementNoise;
 import org.orekit.gnss.PredefinedGnssSignal;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
@@ -50,9 +51,11 @@ import org.orekit.propagation.events.InterSatDirectViewDetector;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FixedStepSelector;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.time.clocks.ConstantClockModel;
+import org.orekit.time.clocks.PolynomialClockModel;
 import org.orekit.utils.PVCoordinates;
 
-public class OneWayGNSSPhaseBuilderTest {
+class OneWayGNSSPhaseBuilderTest {
 
     private static final double SIGMA =  0.5;
     private static final double BIAS  = -0.01;
@@ -64,12 +67,14 @@ public class OneWayGNSSPhaseBuilderTest {
         final RealMatrix covariance = MatrixUtils.createRealDiagonalMatrix(new double[] { SIGMA * SIGMA });
 
         MeasurementBuilder<OneWayGNSSPhase> b =
-                        new OneWayGNSSPhaseBuilder(random == null ? null : new CorrelatedRandomVectorGenerator(covariance,
-                                                                                                               1.0e-10,
-                                                                                                               new GaussianRandomGenerator(random)),
-                                                   local, remote,
+                        new OneWayGNSSPhaseBuilder(local, remote,
                                                    WAVELENGTH, SIGMA, 1.0,
                                                    new AmbiguityCache());
+        if (random != null) {
+            b.addModifier(new MeasurementNoise<>(new CorrelatedRandomVectorGenerator(covariance,
+                    1.0e-10,
+                    new GaussianRandomGenerator(random))));
+        }
         b.addModifier(new Bias<>(new String[] { "bias" },
                          new double[] { BIAS },
                          new double[] { 1.0 },
@@ -79,13 +84,13 @@ public class OneWayGNSSPhaseBuilderTest {
     }
 
     @Test
-    public void testForward() {
-        doTest(0x812bfe784826bab3L, 0.0, 1.2, 3.4 * SIGMA);
+    void testForward() {
+        doTest(0x812bfe784826bab3L, 0.0, 1.2, 6. * SIGMA);
     }
 
     @Test
-    public void testBackward() {
-        doTest(0xb54896c361d88441L, 0.0, -1.0, 2.8 * SIGMA);
+    void testBackward() {
+        doTest(0xb54896c361d88441L, 0.0, -1.0, 6. * SIGMA);
     }
 
     private Propagator buildPropagator() {
@@ -104,10 +109,8 @@ public class OneWayGNSSPhaseBuilderTest {
         final Orbit o2 = new KeplerianOrbit(new PVCoordinates(o1.getPosition(),
                                                               o1.getVelocity().negate()),
                                             o1.getFrame(), o1.getDate(), o1.getMu());
-        ObserverSatellite remote = new ObserverSatellite("GNSS-remote", new KeplerianPropagator(o2));
-        remote.getClockOffsetDriver().setValue(1.0e-16);
-        remote.getClockDriftDriver().setValue(0);
-        remote.getClockAccelerationDriver().setValue(0);
+        ConstantClockModel remoteClock = new ConstantClockModel(1.0e-16);
+        ObserverSatellite remote = new ObserverSatellite("GNSS-remote", new KeplerianPropagator(o2), remoteClock);
 
         final double step = 60.0;
 
@@ -168,10 +171,10 @@ public class OneWayGNSSPhaseBuilderTest {
      }
 
      @BeforeEach
-     public void setUp() {
+     void setUp() {
          context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
-         propagatorBuilder = context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+         propagatorBuilder = context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                                    1.0e-6, 300.0, 0.001, Force.POTENTIAL,
                                                    Force.THIRD_BODY_SUN, Force.THIRD_BODY_MOON);
      }

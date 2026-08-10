@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,6 +23,7 @@ import org.orekit.time.FieldAbsoluteDate;
 /**
  * Interface for bounded, Field PV coordinates providers.
  *
+ * @param <T> type of the field elements
  * @author Romain Serra
  * @since 13.1
  * @see FieldPVCoordinatesProvider

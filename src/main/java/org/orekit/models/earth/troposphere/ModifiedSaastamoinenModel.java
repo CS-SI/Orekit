@@ -48,9 +48,9 @@ import java.util.regex.Pattern;
 
 /** The modified Saastamoinen model. Estimates the path delay imposed to
  * electro-magnetic signals by the troposphere according to the formula:
- * <pre>
- * δ = 2.277e-3 / cos z * (P + (1255 / T + 0.05) * e - B * tan² z) + δR
- * </pre>
+ * \[
+ * \delta = \frac{0.002277}{\cos z} \left[P+(\frac{1255}{T}+0.05)e - B(h) \tan^2 z\right]
+ * \]
  * with the following input data provided to the model:
  * <ul>
  * <li>z: zenith angle</li>

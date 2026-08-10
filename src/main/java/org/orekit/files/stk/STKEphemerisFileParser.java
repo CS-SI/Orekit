@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 Andrew Goetz
+/* Copyright 2002-2026 Andrew Goetz
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -159,6 +159,7 @@ public class STKEphemerisFileParser implements EphemerisFileParser<STKEphemerisF
             LineParser.INTERPOLATION_SAMPLESM1,
             LineParser.CENTRAL_BODY,
             LineParser.COORDINATE_SYSTEM,
+            LineParser.DISTANCE_UNIT,
             LineParser.BEGIN_SEGMENT_BOUNDARY_TIMES,
             LineParser.EPHEMERIS_TIME_POS,
             LineParser.EPHEMERIS_TIME_POS_VEL,

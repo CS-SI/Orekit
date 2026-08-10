@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -147,7 +147,7 @@ public class IntegrableJacobianColumnGeneratorTest {
                         }
                     }
                 }
-                ParameterDriver selected2 = bound.getDrivers().get(0);
+                ParameterDriver selected2 = bound.getDrivers().getFirst();
                 double p0 = selected2.getReferenceValue();
                 double h  = selected2.getScale();
                 selected2.setValue(p0 - 4 * h);

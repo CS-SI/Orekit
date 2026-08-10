@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -152,7 +152,7 @@ public abstract class AbstractFixedBoundaryCartesianSingleShooting extends Abstr
     }
 
     /**
-     * Create template initial state (without adjoint varialbles) for propagation from orbits.
+     * Create template initial state (without adjoint variables) for propagation from orbits.
      * @param initialOrbit initial orbit
      * @param propagationSettings propagation settings
      * @return template propagation state
@@ -185,9 +185,9 @@ public abstract class AbstractFixedBoundaryCartesianSingleShooting extends Abstr
 
     /** {@inheritDoc} */
     @Override
-    public ShootingBoundaryOutput computeCandidateSolution(final SpacecraftState initialState,
-                                                           final int iterationCount) {
-        final NumericalPropagator propagator = buildPropagator(initialState);
+    protected ShootingBoundaryOutput computeCandidateSolution(final SpacecraftState initialState,
+                                                              final int iterationCount) {
+        final NumericalPropagator propagator = buildInternalPropagator(initialState);
         final SpacecraftState actualTerminalState = propagator.propagate(getTerminalCartesianState().getDate());
         final boolean converged = checkConvergence(actualTerminalState);
         return new ShootingBoundaryOutput(converged, iterationCount, initialState, getPropagationSettings(),

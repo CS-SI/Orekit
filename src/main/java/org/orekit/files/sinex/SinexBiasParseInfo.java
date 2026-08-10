@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Luc Maisonobe
+/* Copyright 2022-2026 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -108,7 +108,8 @@ public class SinexBiasParseInfo extends ParseInfo<SinexBias> {
     /** {@inheritDoc} */
     @Override
     protected SinexBias build() {
-        return new SinexBias(getTimeScales(), getCreationDate(), getStartDate(), getEndDate(),
+        return new SinexBias(getVersion(), getTimeScales(), getCreationDate(),
+                             getStartDate(), getEndDate(),
                              description, stationsDsb, satellitesDsb, stationsOsb, satellitesOsb);
     }
 

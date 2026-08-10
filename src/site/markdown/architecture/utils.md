@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2025 CS GROUP
+<!--- Copyright 2002-2026 CS GROUP
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -30,7 +30,8 @@ extend this interface), some specific frames (spacecraft frame and topocentric f
 both implement this interface) or celestial bodies that can be retrieved from ephemerides.
 
 The `Constants` interface only defines useful constants like Julian day duration,
-standard gravity or Earth physical parameters for several models, it does not define
+standard gravity, Earth physical parameters for several models, and IAU 2015 nominal
+equatorial and polar radii for all solar system planets, it does not define
 any processing method.
 
 The `SecularAndHarmonic` class is a utility used for fitting orbital parameters

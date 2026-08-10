@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,7 @@
  */
 package org.orekit.estimation.measurements.gnss;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Comparator;
 
@@ -27,6 +28,7 @@ import java.util.Comparator;
 public class IntegerLeastSquareComparator implements Comparator<IntegerLeastSquareSolution>, Serializable {
 
     /** Serializable UID. */
+    @Serial
     private static final long serialVersionUID = 20210813;
 
     /** Simple constructor.

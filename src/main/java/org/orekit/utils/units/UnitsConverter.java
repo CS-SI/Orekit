@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -89,6 +89,14 @@ public class UnitsConverter {
                                       from.getName(), to.getName());
         }
         this.factor = from.getScale() / to.getScale();
+    }
+
+    /** Get inverse converter.
+     * @return converter in the opposite direction
+     * @since 14.0
+     */
+    public UnitsConverter getInverse() {
+        return new UnitsConverter(to, from);
     }
 
     /** Get the source unit.

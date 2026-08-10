@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,10 @@
  */
 package org.orekit.estimation.leastsquares;
 
+import java.io.Serial;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.RealMatrix;
@@ -26,15 +30,15 @@ import org.junit.jupiter.api.Test;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.estimation.DSSTContext;
-import org.orekit.estimation.DSSTEstimationTestUtils;
+import org.orekit.estimation.Context;
+import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.EstimationsProvider;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.PVMeasurementCreator;
 import org.orekit.estimation.measurements.Range;
-import org.orekit.estimation.measurements.TwoWayRangeMeasurementCreator;
 import org.orekit.estimation.measurements.RangeRateMeasurementCreator;
+import org.orekit.estimation.measurements.TwoWayRangeMeasurementCreator;
 import org.orekit.estimation.measurements.modifiers.PhaseCentersRangeModifier;
 import org.orekit.frames.LOFType;
 import org.orekit.gnss.antenna.FrequencyPattern;
@@ -47,9 +51,6 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
-import java.util.ArrayList;
-import java.util.List;
-
 class DSSTBatchLSEstimatorTest {
 
     /**
@@ -58,16 +59,16 @@ class DSSTBatchLSEstimatorTest {
     @Test
     void testKeplerPV() {
 
-        DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        Context context = EstimationTestUtils.dsstEccentricContext("regular-data:potential:tides");
 
         final DSSTPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(true, 60.0, 600.0, 1.0);
+                        context.createDsst(true, 60.0, 600.0, 1.0);
 
         // create perfect PV measurements
-        final Propagator propagator = DSSTEstimationTestUtils.createPropagator(context.initialOrbit,
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
-                        DSSTEstimationTestUtils.createMeasurements(propagator,
+                        EstimationTestUtils.createMeasurements(propagator,
                                                                new PVMeasurementCreator(),
                                                                0.0, 1.0, 300.0);
 
@@ -81,10 +82,10 @@ class DSSTBatchLSEstimatorTest {
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
 
-        DSSTEstimationTestUtils.checkFit(context, estimator, 1, 2,
-                                     0.0, 4.8e-9,
-                                     0.0, 2.6e-8,
-                                     0.0, 8.9e-9,
+        EstimationTestUtils.checkFit(false, context, estimator, 1, 2,
+                                     0.0, 4.6e-9,
+                                     0.0, 2.4e-8,
+                                     0.0, 7.7e-9,
                                      0.0, 4.4e-12);
 
         RealMatrix normalizedCovariances = estimator.getOptimum().getCovariances(1.0e-10);
@@ -101,16 +102,16 @@ class DSSTBatchLSEstimatorTest {
     @Test
     void testKeplerPVBackward() {
 
-        DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        Context context = EstimationTestUtils.dsstEccentricContext("regular-data:potential:tides");
 
         final DSSTPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(true, 60.0, 600.0, 1.0);
+                        context.createDsst(true, 60.0, 600.0, 1.0);
 
         // create perfect PV measurements
-        final Propagator propagator = DSSTEstimationTestUtils.createPropagator(context.initialOrbit,
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
-                        DSSTEstimationTestUtils.createMeasurements(propagator,
+                        EstimationTestUtils.createMeasurements(propagator,
                                                                new PVMeasurementCreator(),
                                                                0.0, -1.0, 300.0);
 
@@ -124,11 +125,11 @@ class DSSTBatchLSEstimatorTest {
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
 
-        DSSTEstimationTestUtils.checkFit(context, estimator, 1, 3,
-                                     0.0, 4.8e-9,
-                                     0.0, 2.7e-8,
-                                     0.0, 3.9e-9,
-                                     0.0, 1.9e-12);
+        EstimationTestUtils.checkFit(false, context, estimator, 1, 3,
+                                     0.0, 3.4e-9,
+                                     0.0, 2.4e-8,
+                                     0.0, 3.4e-9,
+                                     0.0, 1.8e-12);
 
         RealMatrix normalizedCovariances = estimator.getOptimum().getCovariances(1.0e-10);
         RealMatrix physicalCovariances   = estimator.getPhysicalCovariances(1.0e-10);
@@ -146,16 +147,16 @@ class DSSTBatchLSEstimatorTest {
     @Test
     void testKeplerRange() {
 
-        DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        Context context = EstimationTestUtils.dsstEccentricContext("regular-data:potential:tides");
 
         final DSSTPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(true, 60.0, 600.0, 1.0);
+                        context.createDsst(true, 60.0, 600.0, 1.0);
 
         // create perfect range measurements
-        final Propagator propagator = DSSTEstimationTestUtils.createPropagator(context.initialOrbit,
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
-                        DSSTEstimationTestUtils.createMeasurements(propagator,
+                        EstimationTestUtils.createMeasurements(propagator,
                                                                new TwoWayRangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
 
@@ -208,16 +209,16 @@ class DSSTBatchLSEstimatorTest {
             }
         });
 
-        ParameterDriver aDriver = estimator.getOrbitalParametersDrivers(true).getDrivers().get(0);
+        ParameterDriver aDriver = estimator.getOrbitalParametersDrivers(true).getDrivers().getFirst();
         Assertions.assertEquals("a", aDriver.getName());
         aDriver.setValue(aDriver.getValue() + 1.2);
         aDriver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
-        DSSTEstimationTestUtils.checkFit(context, estimator, 2, 3,
-                                     0.0, 3.1e-6,
-                                     0.0, 5.7e-6,
-                                     0.0, 1.5e-6,
-                                     0.0, 6.1e-10);
+        EstimationTestUtils.checkFit(false, context, estimator, 2, 3,
+                                     0.0, 2.1e-6,
+                                     0.0, 3.6e-6,
+                                     0.0, 1.1e-6,
+                                     0.0, 4.6e-10);
 
         // after the call to estimate, the parameters lacking a user-specified reference date
         // got a default one
@@ -227,7 +228,9 @@ class DSSTBatchLSEstimatorTest {
                 Assertions.assertEquals(0, driver.getReferenceDate().durationFrom(AbsoluteDate.GALILEO_EPOCH), 1.0e-15);
             } else {
                 // default reference date
-                Assertions.assertEquals(0, driver.getReferenceDate().durationFrom(propagatorBuilder.getInitialOrbitDate()), 1.0e-15);
+                Assertions.assertEquals(0,
+                                        driver.getReferenceDate().durationFrom(propagatorBuilder.getOrbitalParameterFactory().getDate()),
+                                        1.0e-15);
             }
         }
 
@@ -239,18 +242,18 @@ class DSSTBatchLSEstimatorTest {
     @Test
     void testKeplerRangeWithOnBoardAntennaOffset() {
 
-        DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        Context context = EstimationTestUtils.dsstEccentricContext("regular-data:potential:tides");
 
         final DSSTPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(true, 60.0, 600.0, 1.0);
-        propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getFrame(), LOFType.LVLH));
+                        context.createDsst(true, 60.0, 600.0, 1.0);
+        propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getOrbitalParameterFactory().getFrame(), LOFType.LVLH));
         final Vector3D antennaPhaseCenter = new Vector3D(-1.2, 2.3, -0.7);
 
         // create perfect range measurements with antenna offset
-        final Propagator propagator = DSSTEstimationTestUtils.createPropagator(context.initialOrbit,
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
-                        DSSTEstimationTestUtils.createMeasurements(propagator,
+                        EstimationTestUtils.createMeasurements(propagator,
                                                                new TwoWayRangeMeasurementCreator(context,
                                                                                                  Vector3D.ZERO, null,
                                                                                                  antennaPhaseCenter, null,
@@ -310,16 +313,16 @@ class DSSTBatchLSEstimatorTest {
             }
         });
 
-        ParameterDriver aDriver = estimator.getOrbitalParametersDrivers(true).getDrivers().get(0);
+        ParameterDriver aDriver = estimator.getOrbitalParametersDrivers(true).getDrivers().getFirst();
         Assertions.assertEquals("a", aDriver.getName());
         aDriver.setValue(aDriver.getValue() + 1.2);
         aDriver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
-        DSSTEstimationTestUtils.checkFit(context, estimator, 2, 3,
+        EstimationTestUtils.checkFit(false, context, estimator, 2, 3,
+                                     0.0, 2.1e-5,
+                                     0.0, 5.3e-5,
                                      0.0, 2.3e-5,
-                                     0.0, 5.9e-5,
-                                     0.0, 2.7e-5,
-                                     0.0, 1.1e-8);
+                                     0.0, 9.4e-9);
 
         // after the call to estimate, the parameters lacking a user-specified reference date
         // got a default one
@@ -329,7 +332,9 @@ class DSSTBatchLSEstimatorTest {
                 Assertions.assertEquals(0, driver.getReferenceDate().durationFrom(AbsoluteDate.GALILEO_EPOCH), 1.0e-15);
             } else {
                 // default reference date
-                Assertions.assertEquals(0, driver.getReferenceDate().durationFrom(propagatorBuilder.getInitialOrbitDate()), 1.0e-15);
+                Assertions.assertEquals(0,
+                                        driver.getReferenceDate().durationFrom(propagatorBuilder.getOrbitalParameterFactory().getDate()),
+                                        1.0e-15);
             }
         }
 
@@ -338,16 +343,16 @@ class DSSTBatchLSEstimatorTest {
     @Test
     void testWrappedException() {
 
-        DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        Context context = EstimationTestUtils.dsstEccentricContext("regular-data:potential:tides");
 
         final DSSTPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(true, 60.0, 600.0, 1.0);
+                        context.createDsst(true, 60.0, 600.0, 1.0);
 
         // create perfect range measurements
-        final Propagator propagator = DSSTEstimationTestUtils.createPropagator(context.initialOrbit,
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                                propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
-                        DSSTEstimationTestUtils.createMeasurements(propagator,
+                        EstimationTestUtils.createMeasurements(propagator,
                                                                new TwoWayRangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
 
@@ -374,7 +379,7 @@ class DSSTBatchLSEstimatorTest {
         });
 
         try {
-            DSSTEstimationTestUtils.checkFit(context, estimator, 3, 4,
+            EstimationTestUtils.checkFit(false, context, estimator, 3, 4,
                                          0.0, 1.5e-6,
                                          0.0, 3.2e-6,
                                          0.0, 3.8e-7,
@@ -387,6 +392,7 @@ class DSSTBatchLSEstimatorTest {
     }
 
     private static class DummyException extends OrekitException {
+        @Serial
         private static final long serialVersionUID = 1L;
         public DummyException() {
             super(OrekitMessages.INTERNAL_ERROR);
@@ -399,26 +405,25 @@ class DSSTBatchLSEstimatorTest {
     @Test
     void testKeplerRangeRate() {
 
-        DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        Context context = EstimationTestUtils.dsstEccentricContext("regular-data:potential:tides");
 
         final DSSTPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(true, 60.0, 600.0, 1.0);
+                        context.createDsst(true, 60.0, 600.0, 1.0);
 
         // create perfect range rate measurements
-        final Propagator propagator = DSSTEstimationTestUtils.createPropagator(context.initialOrbit,
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
         final double groundClockDrift =  4.8e-9;
         for (final GroundStation station : context.stations) {
-            station.getClockDriftDriver().setValue(groundClockDrift);
+            station.getClockModel().getRateDriver().setValue(groundClockDrift);
         }
         final double satClkDrift = 3.2e-10;
         final List<ObservedMeasurement<?>> measurements1 =
-                        DSSTEstimationTestUtils.createMeasurements(propagator,
+                        EstimationTestUtils.createMeasurements(propagator,
                                                                new RangeRateMeasurementCreator(context, false, satClkDrift),
                                                                1.0, 3.0, 300.0);
 
-        final List<ObservedMeasurement<?>> measurements = new ArrayList<>();
-        measurements.addAll(measurements1);
+        final List<ObservedMeasurement<?>> measurements = new ArrayList<>(measurements1);
 
         // create orbit estimator
         final BatchLSEstimator estimator = new BatchLSEstimator(new LevenbergMarquardtOptimizer(),
@@ -430,11 +435,11 @@ class DSSTBatchLSEstimatorTest {
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
 
-        DSSTEstimationTestUtils.checkFit(context, estimator, 1, 3,
-                                     0.0, 5.4e-7,
-                                     0.0, 1.2e-6,
-                                     0.0, 8.3e-4,
-                                     0.0, 4.5e-7);
+        EstimationTestUtils.checkFit(false, context, estimator, 1, 4,
+                                     0.0, 1.2e-10,
+                                     0.0, 3.0e-10,
+                                     0.0, 9.4e-9,
+                                     0.0, 1.6e-11);
     }
 
     /**
@@ -443,26 +448,27 @@ class DSSTBatchLSEstimatorTest {
     @Test
     void testKeplerRangeAndRangeRate() {
 
-        DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        Context context = EstimationTestUtils.dsstEccentricContext("regular-data:potential:tides");
 
         final DSSTPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(true, 60.0, 600.0, 1.0);
+                        context.createDsst(true, 60.0, 600.0, 1.0);
 
         // create perfect range measurements
-        final Propagator propagator = DSSTEstimationTestUtils.createPropagator(context.initialOrbit,
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                                propagatorBuilder);
-
-        final List<ObservedMeasurement<?>> measurementsRange =
-                        DSSTEstimationTestUtils.createMeasurements(propagator,
-                                                               new TwoWayRangeMeasurementCreator(context),
-                                                               1.0, 3.0, 300.0);
         final double groundClockDrift =  4.8e-9;
         for (final GroundStation station : context.stations) {
-            station.getClockDriftDriver().setValue(groundClockDrift);
+            station.getClockModel().getRateDriver().setValue(groundClockDrift);
         }
         final double satClkDrift = 3.2e-10;
+
+        final List<ObservedMeasurement<?>> measurementsRange =
+                        EstimationTestUtils.createMeasurements(propagator,
+                                                               new TwoWayRangeMeasurementCreator(context),
+                                                               1.0, 3.0, 300.0);
+
         final List<ObservedMeasurement<?>> measurementsRangeRate =
-                        DSSTEstimationTestUtils.createMeasurements(propagator,
+                        EstimationTestUtils.createMeasurements(propagator,
                                                                new RangeRateMeasurementCreator(context, false, satClkDrift),
                                                                1.0, 3.0, 300.0);
 
@@ -482,28 +488,28 @@ class DSSTBatchLSEstimatorTest {
         estimator.setMaxEvaluations(20);
 
         // we have low correlation between the two types of measurement. We can expect a good estimate.
-        DSSTEstimationTestUtils.checkFit(context, estimator, 1, 3,
-                                     0.0, 5.4e-7,
-                                     0.0, 3e-6,
-                                     0.0, 9.e-8,
-                                     0.0, 6e-11);
+        EstimationTestUtils.checkFit(false, context, estimator, 1, 4,
+                                     0.0, 2.6e-7,
+                                     0.0, 8.2e-7,
+                                     0.0, 6.3e-8,
+                                     0.0, 3.4e-11);
     }
 
     @Test
     void testIssue359() {
-        DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        Context context = EstimationTestUtils.dsstEccentricContext("regular-data:potential:tides");
 
         final DSSTPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(true, 60.0, 600.0, 1.0);
+                        context.createDsst(true, 60.0, 600.0, 1.0);
 
         // Select the central attraction coefficient (here there is only the central attraction coefficient)
         // as estimated parameter
-        propagatorBuilder.getPropagationParametersDrivers().getDrivers().get(0).setSelected(true);
+        propagatorBuilder.getPropagationParametersDrivers().getDrivers().getFirst().setSelected(true);
         // create perfect PV measurements
-        final DSSTPropagator propagator = (DSSTPropagator) DSSTEstimationTestUtils.createPropagator(context.initialOrbit,
+        final DSSTPropagator propagator = (DSSTPropagator) EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
-                DSSTEstimationTestUtils.createMeasurements(propagator,
+                EstimationTestUtils.createMeasurements(propagator,
                                                                new PVMeasurementCreator(),
                                                                0.0, 1.0, 300.0);
 
@@ -513,14 +519,14 @@ class DSSTBatchLSEstimatorTest {
         for (final ObservedMeasurement<?> measurement : measurements) {
             estimator.addMeasurement(measurement);
         }
-        ParameterDriversList estimatedParameters = estimator.getPropagatorParametersDrivers(true);
+        ParameterDriversList estimatedParameters = estimator.getPropagationParametersDrivers(true);
         // Verify that the propagator, the builder and the estimator know mu
         final String driverName = DSSTNewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT;
-        Assertions.assertInstanceOf(DSSTNewtonianAttraction.class, propagator.getAllForceModels().get(0));
-        Assertions.assertInstanceOf(DSSTNewtonianAttraction.class, propagatorBuilder.getAllForceModels().get(0));
+        Assertions.assertInstanceOf(DSSTNewtonianAttraction.class, propagator.getAllForceModels().getFirst());
+        Assertions.assertInstanceOf(DSSTNewtonianAttraction.class, propagatorBuilder.getAllForceModels().getFirst());
         Assertions.assertNotNull(estimatedParameters.findByName(driverName));
-        Assertions.assertTrue(propagator.getAllForceModels().get(0).getParametersDrivers().get(0).isSelected());
-        Assertions.assertTrue(propagatorBuilder.getAllForceModels().get(0).getParametersDrivers().get(0).isSelected());
+        Assertions.assertTrue(propagator.getAllForceModels().getFirst().getParametersDrivers().getFirst().isSelected());
+        Assertions.assertTrue(propagatorBuilder.getAllForceModels().getFirst().getParametersDrivers().getFirst().isSelected());
     }
 
 }

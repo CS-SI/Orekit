@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -86,7 +86,7 @@ public class FieldOrbitBlender<T extends CalculusFieldElement<T>> extends Abstra
 
         // Get first and last entry
         final List<FieldOrbit<T>> neighborList  = interpolationData.getNeighborList();
-        final FieldOrbit<T>       previousOrbit = neighborList.get(0);
+        final FieldOrbit<T>       previousOrbit = neighborList.getFirst();
         final FieldOrbit<T>       nextOrbit     = neighborList.get(1);
 
         // Propagate orbits

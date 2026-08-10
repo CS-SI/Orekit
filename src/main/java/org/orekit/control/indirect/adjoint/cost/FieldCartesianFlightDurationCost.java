@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,6 +26,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
  * It also assumes that no external acceleration depends on mass.
  * If the mass flow rate factor is zero, then there is no adjoint for the mass.
  *
+ * @param <T> type of the field elements
  * @author Romain Serra
  * @see CartesianCost
  * @see CartesianFlightDurationCost

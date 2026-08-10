@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Luc Maisonobe
+/* Copyright 2022-2026 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,7 +23,18 @@ import java.util.function.Predicate;
  * @author Luc Maisonobe
  * @since 13.0
  */
-class IgnoredBlockContentPredicate<T extends ParseInfo<?>> implements Predicate<T> {
+public class IgnoredBlockContentPredicate<T extends ParseInfo<?>> implements Predicate<T> {
+
+    /** Empty constructor.
+     * <p>
+     * This constructor is not strictly necessary, but it prevents spurious
+     * javadoc warnings with JDK 18 and later.
+     * </p>
+     * @since 14.0
+     */
+    public IgnoredBlockContentPredicate() {
+        // nothing to do
+    }
 
     /** {@inheritDoc} */
     @Override

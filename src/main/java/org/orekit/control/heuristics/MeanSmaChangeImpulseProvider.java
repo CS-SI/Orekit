@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -88,34 +88,19 @@ public class MeanSmaChangeImpulseProvider extends AbstractInPlaneImpulseProvider
 
     /**
      * Function for Newton-Raphson method.
+     *
+     * @param templateOrbit Reference orbit whose velocity is to be changed.
+     * @param direction     Direction of velocity.
+     * @param converter     Mean orbit converter.
+     * @param targetMeanSma Target mean semi-major axis.
      */
-    private static class NewtonFunction implements UnivariateDifferentiableFunction {
+    private record NewtonFunction(Orbit templateOrbit, Vector3D direction, OsculatingToMeanConverter converter,
+                                  double targetMeanSma) implements UnivariateDifferentiableFunction {
 
-        /** Reference orbit whose velocity is to be changed. */
-        private final Orbit templateOrbit;
-
-        /** Direction of velocity. */
-        private final Vector3D direction;
-
-        /** Mean orbit converter. */
-        private final OsculatingToMeanConverter converter;
-
-        /** Target mean semi-major axis. */
-        private final double targetMeanSma;
-
-        /**
-         * Constructor.
-         * @param templateOrbit template orbit
-         * @param direction direction of velocity
-         * @param converter osculating-to-mean converter
-         * @param targetMeanSma target semi-major axis
-         */
-        NewtonFunction(final Orbit templateOrbit, final Vector3D direction, final OsculatingToMeanConverter converter,
-                       final double targetMeanSma) {
-            this.templateOrbit = templateOrbit;
-            this.direction = direction;
-            this.converter = converter;
-            this.targetMeanSma = targetMeanSma;
+        @Override
+        public double value(final double t) {
+            // this implementation is not used, but is required to match interface
+            return Double.NaN;
         }
 
         @Override

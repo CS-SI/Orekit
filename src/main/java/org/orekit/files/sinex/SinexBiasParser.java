@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Luc Maisonobe
+/* Copyright 2022-2026 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -80,9 +80,7 @@ public class SinexBiasParser extends AbstractSinexParser<SinexBias, SinexBiasPar
     /** {@inheritDoc} */
     @Override
     protected SinexBiasParseInfo buildParseInfo() {
-        final SinexBiasParseInfo parseInfo = new SinexBiasParseInfo(getTimeScales());
-        parseInfo.setTimeScale(getTimeScales().getUTC());
-        return parseInfo;
+        return new SinexBiasParseInfo(getTimeScales());
     }
 
 }

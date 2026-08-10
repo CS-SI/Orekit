@@ -25,6 +25,8 @@ class BoundedPVCoordinatesProviderTest {
         assertEquals(minDate, boundedProvider.getMinDate());
         final Frame frame = FramesFactory.getGCRF();
         assertEquals(provider.getPosition(minDate, frame), boundedProvider.getPosition(minDate, frame));
+        assertEquals(provider.getVelocity(minDate, frame),
+                boundedProvider.getVelocity(minDate, frame));
         assertEquals(provider.getPVCoordinates(minDate, frame).getVelocity(),
                 boundedProvider.getPVCoordinates(minDate, frame).getVelocity());
     }

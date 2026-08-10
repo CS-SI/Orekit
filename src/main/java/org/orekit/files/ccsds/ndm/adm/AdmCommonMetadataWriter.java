@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -52,9 +52,9 @@ public class AdmCommonMetadataWriter extends AbstractWriter {
         generator.writeEntry(AdmMetadataKey.OBJECT_NAME.name(),     metadata.getObjectName(), null, true);
         generator.writeEntry(AdmCommonMetadataKey.OBJECT_ID.name(), metadata.getObjectID(),   null, true);
 
-        if (metadata.getCenter() != null) {
+        if (metadata.getCenter().isPresent()) {
             // center
-            generator.writeEntry(AdmMetadataKey.CENTER_NAME.name(), metadata.getCenter().getName(), null, true);
+            generator.writeEntry(AdmMetadataKey.CENTER_NAME.name(), metadata.getCenter().get().getName(), null, true);
         }
 
         // time

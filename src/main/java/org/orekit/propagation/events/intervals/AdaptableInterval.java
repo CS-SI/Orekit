@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Luc Maisonobe
+/* Copyright 2022-2026 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,10 @@
 
 package org.orekit.propagation.events.intervals;
 
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.util.FastMath;
+import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 
@@ -41,16 +44,6 @@ public interface AdaptableInterval {
     double currentInterval(SpacecraftState state, boolean isForward);
 
     /**
-     * Method creating a constant interval provider.
-     * @param constantInterval value of constant interval
-     * @return adaptable interval ready to be added to an event detector
-     * @since 12.1
-     */
-    static AdaptableInterval of(final double constantInterval) {
-        return (state, isForward) -> constantInterval;
-    }
-
-    /**
      * Method creating an interval taking the minimum value of all candidates.
      * @param defaultMaxCheck default value if no intervals is given as input
      * @param adaptableIntervals intervals
@@ -65,5 +58,18 @@ public interface AdaptableInterval {
             }
             return maxCheck;
         };
+    }
+
+    /**
+     * Method creating an interval taking the minimum value of all candidates.
+     * @param field field
+     * @param fieldAdaptableInterval field interval
+     * @param <T> field type
+     * @return adaptable interval ready to be added to an event detector
+     * @since 14.0
+     */
+    static <T extends CalculusFieldElement<T>> AdaptableInterval of(final Field<T> field,
+                                                                    final FieldAdaptableInterval<T> fieldAdaptableInterval) {
+        return (state, isForward) -> fieldAdaptableInterval.currentInterval(new FieldSpacecraftState<>(field, state), isForward);
     }
 }

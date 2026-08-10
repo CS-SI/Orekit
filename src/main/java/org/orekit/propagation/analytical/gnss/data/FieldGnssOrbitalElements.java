@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Luc Maisonobe
+/* Copyright 2022-2026 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,12 +17,11 @@
 package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
-import org.hipparchus.util.FastMath;
-import org.orekit.gnss.SatelliteSystem;
+import org.hipparchus.util.MathArrays;
+import org.orekit.orbits.FieldKeplerianOrbit;
+import org.orekit.orbits.FieldOrbitalParameters;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.time.FieldTimeStamped;
-import org.orekit.time.GNSSDate;
+import org.orekit.time.FieldGNSSDate;
 import org.orekit.time.TimeScales;
 
 import java.util.function.Function;
@@ -34,114 +33,222 @@ import java.util.function.Function;
  * @since 13.0
  * @author Luc Maisonobe
 */
-public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>, O extends GNSSOrbitalElements<O>>
-    extends GNSSOrbitalElementsDriversProvider
-    implements FieldTimeStamped<T> {
+public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>,
+                                               O extends GNSSOrbitalElements<O>>
+    implements FieldOrbitalParameters<T>, FieldGNSSClockElements<T> {
 
-    /** Earth's universal gravitational parameter. */
-    private final T mu;
+    /** Mean angular velocity of the Earth for the GNSS model. */
+    private final double angularVelocity;
 
-    /** Reference epoch. */
-    private FieldAbsoluteDate<T> date;
+    /** Duration of the GNSS cycle in weeks. */
+    private final int weeksInCycle;
 
-    /** Semi-Major Axis (m). */
-    private T sma;
+    /** Duration of the GNSS cycle in seconds. */
+    private final double cycleDuration;
 
-    /** Eccentricity. */
-    private T ecc;
+    /** Known time scales. */
+    private final TimeScales timeScales;
 
-    /** Inclination angle at reference time (rad). */
-    private T i0;
+    /** Message type (null if not a navigation message). */
+    private final String type;
 
-    /** Argument of perigee (rad). */
-    private T aop;
+    /** PRN number of the satellite. */
+    private final int prn;
 
-    /** Longitude of ascending node of orbit plane at weekly epoch (rad). */
-    private T om0;
+    /** Time of ephemeris.
+     * @since 14.0
+     */
+    private final FieldGNSSDate<T> toe;
 
-    /** Mean anomaly at reference time (rad). */
-    private T anom;
+    /** Orbit. */
+    private final FieldKeplerianOrbit<T> orbit;
 
-    /** Simple constructor.
-     * @param mu              Earth's universal gravitational parameter
+    /** Change rate in semi-major axis (m/s).
+     * @since 14.0
+     */
+    private final T aDot;
+
+    /** Delta of satellite mean motion.
+     * @since 14.0
+     */
+    private final T deltaN0;
+
+    /** Change rate in Δn₀.
+     * @since 14.0
+     */
+    private final T deltaN0Dot;
+
+    /** Inclination rate (rad/s). */
+    private final T iDot;
+
+    /** Rate of right ascension (rad/s). */
+    private final T omegaDot;
+
+    /** Amplitude of the cosine harmonic correction term to the argument of latitude. */
+    private final T cuc;
+
+    /** Amplitude of the sine harmonic correction term to the argument of latitude. */
+    private final T cus;
+
+    /** Amplitude of the cosine harmonic correction term to the orbit radius. */
+    private final T crc;
+
+    /** Amplitude of the sine harmonic correction term to the orbit radius. */
+    private final T crs;
+
+    /** Amplitude of the cosine harmonic correction term to the inclination. */
+    private final T cic;
+
+    /** Amplitude of the sine harmonic correction term to the inclination. */
+    private final T cis;
+
+    /** SV zero-th order clock correction (s). */
+    private final T af0;
+
+    /** SV first order clock correction (s/s). */
+    private final T af1;
+
+    /** SV second order clock correction (s/s²). */
+    private final T af2;
+
+    /** Time of clock.
+     * @since 14.0
+     */
+    private final FieldGNSSDate<T> toc;
+
+    /** Group delay differential TGD for L1-L2 correction. */
+    private final T tgd;
+
+    /** Creates a new instance.
      * @param angularVelocity mean angular velocity of the Earth for the GNSS model
      * @param weeksInCycle    number of weeks in the GNSS cycle
      * @param timeScales      known time scales
-     * @param system          satellite system to consider for interpreting week number
-     *                        (may be different from real system, for example in Rinex nav, weeks
-     *                        are always according to GPS)
+     * @param type            type (null if not a navigation message)
+     * @param prn             PRN number of the satellite
+     * @param toe             time of ephemeris (<em>must</em> be consistent with {@code orbit})
+     * @param orbit           Keplerian orbit in Earth-frozen frame
+     * @param aDot            change rate in semi-major axis (m/s)
+     * @param deltaN0         delta of satellite mean motion
+     * @param deltaN0Dot      change rate in Δn₀
+     * @param iDot            inclination rate (rad/s)
+     * @param omegaDot        rate of right ascension (rad/s)
+     * @param cuc             amplitude of the cosine harmonic correction term to the argument of latitude
+     * @param cus             amplitude of the sine harmonic correction term to the argument of latitude
+     * @param crc             amplitude of the cosine harmonic correction term to the orbit radius
+     * @param crs             amplitude of the sine harmonic correction term to the orbit radius
+     * @param cic             amplitude of the cosine harmonic correction term to the inclination
+     * @param cis             amplitude of the sine harmonic correction term to the inclination
+     * @param af0             zero-th order clock correction (s)
+     * @param af1             first order clock correction (s/s)
+     * @param af2             second order clock correction (s/s²)
+     * @param tgd             group delay differential TGD for L1-L2 correction
+     * @param toc             time of clock
+     * @since 14.0
      */
-    protected FieldGnssOrbitalElements(final T mu, final double angularVelocity, final int weeksInCycle,
-                                       final TimeScales timeScales, final SatelliteSystem system) {
+    protected FieldGnssOrbitalElements(final double angularVelocity, final int weeksInCycle,
+                                       final TimeScales timeScales, final String type, final int prn,
+                                       final FieldGNSSDate<T> toe, final FieldKeplerianOrbit<T> orbit,
+                                       final T aDot,
+                                       final T deltaN0, final T deltaN0Dot,
+                                       final T iDot, final T omegaDot,
+                                       final T cuc, final T cus,
+                                       final T crc, final T crs,
+                                       final T cic, final T cis,
+                                       final T af0, final T af1, final T af2,
+                                       final T tgd, final FieldGNSSDate<T> toc) {
 
-        super(angularVelocity, weeksInCycle, timeScales, system);
+        // system parameters
+        this.angularVelocity = angularVelocity;
+        this.weeksInCycle    = weeksInCycle;
+        this.cycleDuration   = GNSSConstants.GNSS_WEEK_IN_SECONDS * weeksInCycle;
+        this.timeScales      = timeScales;
+        this.type            = type;
 
-        // immutable field
-        this.mu   = mu;
+        // satellite identifier
+        this.prn             = prn;
 
-        // Keplerian orbital elements
-        this.sma  = mu.newInstance(Double.NaN);
-        this.ecc  = mu.newInstance(Double.NaN);
-        this.i0   = mu.newInstance(Double.NaN);
-        this.aop  = mu.newInstance(Double.NaN);
-        this.om0  = mu.newInstance(Double.NaN);
-        this.anom = mu.newInstance(Double.NaN);
+        // time of ephemeris
+        this.toe             = toe;
+
+        // Keplerian orbit
+        this.orbit           = orbit;
+
+        // non-Keplerian elements
+        this.aDot            = aDot;
+        this.deltaN0         = deltaN0;
+        this.deltaN0Dot      = deltaN0Dot;
+        this.iDot            = iDot;
+        this.omegaDot        = omegaDot;
+        this.cuc             = cuc;
+        this.cus             = cus;
+        this.crc             = crc;
+        this.crs             = crs;
+        this.cic             = cic;
+        this.cis             = cis;
+
+        // clock elements
+        this.af0             = af0;
+        this.af1             = af1;
+        this.af2             = af2;
+        this.toc             = toc;
+        this.tgd             = tgd;
 
     }
 
-    /** Constructor from non-field instance.
-     * @param field    field to which elements belong
-     * @param original regular non-field instance
+    /** Creates a new instance.
+     * @param angularVelocity mean angular velocity of the Earth for the GNSS model
+     * @param weeksInCycle    number of weeks in the GNSS cycle
+     * @param timeScales      known time scales
+     * @param type            type (null if not a navigation message)
+     * @param prn             PRN number of the satellite
+     * @param toe             time of ephemeris (<em>must</em> be consistent with {@code orbit})
+     * @param orbit           Keplerian orbit in Earth-frozen frame
+     * @param nonKeplerian    15 non-Keplerian parameters (in the order given by {@link NonKeplerianDriversFactory}
+     * @param tgd             group delay differential TGD for L1-L2 correction
+     * @param toc             time of clock
+     * @since 14.0
      */
-    protected FieldGnssOrbitalElements(final Field<T> field, final O original) {
-
-        super(original.getAngularVelocity(), original.getWeeksInCycle(),
-              original.getTimeScales(), original.getSystem());
-        mu = field.getZero().newInstance(original.getMu());
-
-        // non-Keplerian parameters
-        copyNonKeplerian(original);
-
-        // Keplerian orbital elements
-        setGnssDate(new GNSSDate(original.getWeek(), original.getTime(), original.getSystem(), original.getTimeScales()));
-        setSma(field.getZero().newInstance(original.getSma()));
-        setE(field.getZero().newInstance(original.getE()));
-        setI0(field.getZero().newInstance(original.getI0()));
-        setPa(field.getZero().newInstance(original.getPa()));
-        setOmega0(field.getZero().newInstance(original.getOmega0()));
-        setM0(field.getZero().newInstance(original.getM0()));
-
-        // copy selection settings
-        copySelectionSettings(original);
-
+    protected FieldGnssOrbitalElements(final double angularVelocity, final int weeksInCycle,
+                                       final TimeScales timeScales, final String type, final int prn,
+                                       final FieldGNSSDate<T> toe, final FieldKeplerianOrbit<T> orbit,
+                                       final T[] nonKeplerian, final T tgd, final FieldGNSSDate<T> toc) {
+        this(angularVelocity, weeksInCycle, timeScales, type, prn,
+             toe, orbit,
+             nonKeplerian[NonKeplerianDriversFactory.A_DOT_INDEX],
+             nonKeplerian[NonKeplerianDriversFactory.DELTA_N0_INDEX],
+             nonKeplerian[NonKeplerianDriversFactory.DELTA_N0_DOT_INDEX],
+             nonKeplerian[NonKeplerianDriversFactory.I_DOT_INDEX],
+             nonKeplerian[NonKeplerianDriversFactory.OMEGA_DOT_INDEX],
+             nonKeplerian[NonKeplerianDriversFactory.CUC_INDEX],
+             nonKeplerian[NonKeplerianDriversFactory.CUS_INDEX],
+             nonKeplerian[NonKeplerianDriversFactory.CRC_INDEX],
+             nonKeplerian[NonKeplerianDriversFactory.CRS_INDEX],
+             nonKeplerian[NonKeplerianDriversFactory.CIC_INDEX],
+             nonKeplerian[NonKeplerianDriversFactory.CIS_INDEX],
+             nonKeplerian[NonKeplerianDriversFactory.AF0_INDEX],
+             nonKeplerian[NonKeplerianDriversFactory.AF1_INDEX],
+             nonKeplerian[NonKeplerianDriversFactory.AF2_INDEX],
+             tgd, toc);
     }
 
-    /** Constructor from different field instance.
-     * @param <V> type of the old field elements
-     * @param original regular non-field instance
-     * @param converter for field elements
+    /** {@inheritDoc} */
+    @Override
+    public FieldAbsoluteDate<T> getDate() {
+        return toe.getDate();
+    }
+
+    /** Get the time of ephemeris.
+     * @return time of ephemeris
+     * @since 14.0
      */
-    protected <V extends CalculusFieldElement<V>> FieldGnssOrbitalElements(final Function<V, T> converter,
-                                                                           final FieldGnssOrbitalElements<V, O> original) {
-        super(original.getAngularVelocity(), original.getWeeksInCycle(),
-              original.getTimeScales(), original.getSystem());
-        mu = converter.apply(original.getMu());
+    public FieldGNSSDate<T> getTimeOfEphemeris() {
+        return toe;
+    }
 
-        // non-Keplerian parameters
-        copyNonKeplerian(original);
-
-        // Keplerian orbital elements
-        setGnssDate(new GNSSDate(original.getWeek(), original.getTime(), original.getSystem(), original.getTimeScales()));
-        setSma(converter.apply(original.getSma()));
-        setE(converter.apply(original.getE()));
-        setI0(converter.apply(original.getI0()));
-        setPa(converter.apply(original.getPa()));
-        setOmega0(converter.apply(original.getOmega0()));
-        setM0(converter.apply(original.getM0()));
-
-        // copy selection settings
-        copySelectionSettings(original);
-
+    /** {@inheritDoc} */
+    @Override
+    public FieldGNSSDate<T> getTimeOfClock() {
+        return toc;
     }
 
     /** Create a non-field version of the instance.
@@ -149,127 +256,202 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
      */
     public abstract O toNonField();
 
-    /**
-     * Create another field version of the instance.
-     *
-     * @param <U>       type of the new field elements
-     * @param <G>       type of the orbital elements (field version)
-     * @param converter for field elements
+    /** Create an array with the 15 non-Keplerian parameters.
+     * <p>
+     *  The array is ordered according to {@link NonKeplerianDriversFactory} order.
+     *  </p>
+     * @return array with the 15 non-Keplerian parameters
+     */
+    public T[] toArray() {
+        final T[] array = MathArrays.buildArray(orbit.getDate().getField(), NonKeplerianDriversFactory.SIZE);
+        array[NonKeplerianDriversFactory.A_DOT_INDEX]        = aDot;
+        array[NonKeplerianDriversFactory.DELTA_N0_INDEX]     = deltaN0;
+        array[NonKeplerianDriversFactory.DELTA_N0_DOT_INDEX] = deltaN0Dot;
+        array[NonKeplerianDriversFactory.I_DOT_INDEX]        = iDot;
+        array[NonKeplerianDriversFactory.OMEGA_DOT_INDEX]    = omegaDot;
+        array[NonKeplerianDriversFactory.CUC_INDEX]          = cuc;
+        array[NonKeplerianDriversFactory.CUS_INDEX]          = cus;
+        array[NonKeplerianDriversFactory.CRC_INDEX]          = crc;
+        array[NonKeplerianDriversFactory.CRS_INDEX]          = crs;
+        array[NonKeplerianDriversFactory.CIC_INDEX]          = cic;
+        array[NonKeplerianDriversFactory.CIS_INDEX]          = cis;
+        array[NonKeplerianDriversFactory.AF0_INDEX]          = af0;
+        array[NonKeplerianDriversFactory.AF1_INDEX]          = af1;
+        array[NonKeplerianDriversFactory.AF2_INDEX]          = af2;
+        return array;
+    }
+
+    /** Create another field version of the instance.
+     * @param <U>          type of the new field elements
+     * @param keplerian    orbit in the correct gradient field
+     * @param nonKeplerian non-Keplerian parameters
+     * @param converter    converter for remaining elements
      * @return field version of the instance
      */
-    public abstract <U extends CalculusFieldElement<U>, G extends FieldGnssOrbitalElements<U, O>>
-        G changeField(Function<T, U> converter);
+    public abstract <U extends CalculusFieldElement<U>>
+        FieldGnssOrbitalElements<U, O> toField(FieldKeplerianOrbit<U> keplerian,
+                                               U[] nonKeplerian,
+                                               Function<T, U> converter);
+
+    /** Get known time scales.
+     * @return known time scales
+     */
+    public TimeScales getTimeScales() {
+        return timeScales;
+    }
+
+    /** Get the message type.
+     * @return message type (null if not a navigation message)
+     */
+    public String getType() {
+        return type;
+    }
+
+    /** Get the mean angular velocity of the Earth of the GNSS model.
+     * @return mean angular velocity of the Earth of the GNSS model
+     */
+    public double getAngularVelocity() {
+        return angularVelocity;
+    }
+
+    /** Get for the duration of the GNSS cycle in weeks.
+     * @return the duration of the GNSS cycle in weeks
+     */
+    public int getWeeksInCycle() {
+        return weeksInCycle;
+    }
+
+    /** Get for the duration of the GNSS cycle in seconds.
+     * @return the duration of the GNSS cycle in seconds
+     */
+    public double getCycleDuration() {
+        return cycleDuration;
+    }
+
+    /** Get the PRN number of the satellite.
+     * @return PRN number of the satellite
+     */
+    public int getPrn() {
+        return prn;
+    }
+
+    /** Get the underlying Keplerian orbit.
+     * @return underlying Keplerian orbit
+     * @since 14.0
+     */
+    public FieldKeplerianOrbit<T> getOrbit() {
+        return orbit;
+    }
+
+    /** Get change rate in semi-major axis.
+     * @return the change rate in semi-major axis
+     * @since 14.0
+     */
+    public T getADot() {
+        return aDot;
+    }
+
+    /** Get the delta of satellite mean motion.
+     * @return the delta of satellite mean motion
+     * @since 14.0
+     */
+    public T getDeltaN0() {
+        return deltaN0;
+    }
+
+    /** Get the change rate in Δn₀.
+     * @return change rate in Δn₀
+     * @since 14.0
+     */
+    public T getDeltaN0Dot() {
+        return deltaN0Dot;
+    }
+
+    /** Get rate of inclination angle.
+     * @return rate of inclination angle (rad/s)
+     */
+    public T getIDot() {
+        return iDot;
+    }
+
+    /** Get rate of right ascension.
+     * @return rate of right ascension (rad/s)
+     */
+    public T getOmegaDot() {
+        return omegaDot;
+    }
+
+    /** Get amplitude of the cosine harmonic correction term to the argument of latitude.
+     * @return amplitude of the cosine harmonic correction term to the argument of latitude (rad)
+     */
+    public T getCuc() {
+        return cuc;
+    }
+
+    /** Get amplitude of the sine harmonic correction term to the argument of latitude.
+     * @return amplitude of the sine harmonic correction term to the argument of latitude (rad)
+     */
+    public T getCus() {
+        return cus;
+    }
+
+    /** Get amplitude of the cosine harmonic correction term to the orbit radius.
+     * @return amplitude of the cosine harmonic correction term to the orbit radius (m)
+     */
+    public T getCrc() {
+        return crc;
+    }
+
+    /** Get amplitude of the sine harmonic correction term to the orbit radius.
+     * @return amplitude of the sine harmonic correction term to the orbit radius (m)
+     */
+    public T getCrs() {
+        return crs;
+    }
+
+    /** Get amplitude of the cosine harmonic correction term to the angle of inclination.
+     * @return amplitude of the cosine harmonic correction term to the angle of inclination (rad)
+     */
+    public T getCic() {
+        return cic;
+    }
+
+    /** Get amplitude of the sine harmonic correction term to the angle of inclination.
+     * @return amplitude of the sine harmonic correction term to the angle of inclination (rad)
+     */
+    public T getCis() {
+        return cis;
+    }
 
     /** {@inheritDoc} */
-    protected void setGnssDate(final GNSSDate gnssDate) {
-        this.date = new FieldAbsoluteDate<>(mu.getField(), gnssDate.getDate());
+    @Override
+    public T getAf0() {
+        return af0;
     }
 
-    /** Get date.
-     * @return date
-     */
-    public FieldAbsoluteDate<T> getDate() {
-        return date;
+    /** {@inheritDoc} */
+    @Override
+    public T getAf1() {
+        return af1;
     }
 
-    /** Get the Earth's universal gravitational parameter.
-     * @return the Earth's universal gravitational parameter
-     */
-    public T getMu() {
-        return mu;
+    /** {@inheritDoc} */
+    @Override
+    public T getAf2() {
+        return af2;
     }
 
-    /** Get semi-major axis.
-     * @return semi-major axis (m)
-     */
-    public T getSma() {
-        return sma;
+    /** {@inheritDoc} */
+    @Override
+    public T getTgd() {
+        return tgd;
     }
 
-    /** Set semi-major axis.
-     * @param sma demi-major axis (m)
+    /** Check if elements correspond to a civilian message.
+     * @return true if elements correspond to a civilian message
      */
-    public void setSma(final T sma) {
-        this.sma = sma;
-    }
-
-    /** Get the computed mean motion n₀.
-     * @return the computed mean motion n₀ (rad/s)
-     * @since 13.0
-     */
-    public T getMeanMotion0() {
-        final T invA = FastMath.abs(getSma()).reciprocal();
-        return FastMath.sqrt(getMu().multiply(invA)).multiply(invA);
-    }
-
-    /** Get eccentricity.
-     * @return eccentricity
-     */
-    public T getE() {
-        return ecc;
-    }
-
-    /** Set eccentricity.
-     * @param e eccentricity
-     */
-    public void setE(final T e) {
-        this.ecc = e;
-    }
-
-    /** Get the inclination angle at reference time.
-     * @return inclination angle at reference time (rad)
-     */
-    public T getI0() {
-        return i0;
-    }
-
-    /** Set inclination angle at reference time.
-     * @param i0 inclination angle at reference time (rad)
-     */
-    public void setI0(final T i0) {
-        this.i0 = i0;
-    }
-
-    /** Get longitude of ascending node of orbit plane at weekly epoch.
-     * @return longitude of ascending node of orbit plane at weekly epoch (rad)
-     */
-    public T getOmega0() {
-        return om0;
-    }
-
-    /** Set longitude of ascending node of orbit plane at weekly epoch.
-     * @param omega0 longitude of ascending node of orbit plane at weekly epoch (rad)
-     */
-    public void setOmega0(final T omega0) {
-        this.om0 = omega0;
-    }
-
-    /** Get argument of perigee.
-     * @return argument of perigee (rad)
-     */
-    public T getPa() {
-        return aop;
-    }
-
-    /** Set argument of perigee.
-     * @param pa argument of perigee (rad)
-     */
-    public void setPa(final T pa) {
-        this.aop = pa;
-    }
-
-    /** Get mean anomaly at reference time.
-     * @return mean anomaly at reference time (rad)
-     */
-    public T getM0() {
-        return anom;
-    }
-
-    /** Set mean anomaly at reference time.
-     * @param m0 mean anomaly at reference time (rad)
-     */
-    public void setM0(final T m0) {
-        this.anom = m0;
+    public boolean isCivilianMessage() {
+        return false;
     }
 
 }

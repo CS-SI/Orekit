@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Thales Alenia Space
+/* Copyright 2022-2026 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,16 +16,22 @@
  */
 package org.orekit.time.clocks;
 
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Stream;
+
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
+import org.hipparchus.analysis.differentiation.Gradient;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ImmutableTimeStampedCache;
-
-import java.util.List;
-import java.util.stream.Stream;
+import org.orekit.utils.ParameterDriver;
 
 /** Offset clock model backed up by a sample.
+ *
  * @author Luc Maisonobe
  * @since 12.1
  */
@@ -35,7 +41,7 @@ public class SampledClockModel implements ClockModel {
     private final ImmutableTimeStampedCache<ClockOffset> sample;
 
     /** Simple constructor.
-     * @param sample clock offsets sample
+     * @param sample                clock offsets sample
      * @param nbInterpolationPoints number of points to use in interpolation
      */
     public SampledClockModel(final List<ClockOffset> sample, final int nbInterpolationPoints) {
@@ -70,17 +76,17 @@ public class SampledClockModel implements ClockModel {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends CalculusFieldElement<T>> FieldClockOffset<T> getOffset(final FieldAbsoluteDate<T> date) {
+    public <T extends CalculusFieldElement<T>> FieldClockOffset<T> getFieldOffset(final FieldAbsoluteDate<T> date) {
 
         // convert the neighbors to field
         final Field<T> field = date.getField();
-        final T        zero  = field.getZero();
+        final T zero = field.getZero();
         final Stream<FieldClockOffset<T>> fieldSample =
             sample.
                 getNeighbors(date.toAbsoluteDate()).
                 map(c -> {
-                    final FieldAbsoluteDate<T> dateF   = new FieldAbsoluteDate<>(field, c.getDate());
-                    final T                    offsetF = zero.newInstance(c.getOffset());
+                    final FieldAbsoluteDate<T> dateF = new FieldAbsoluteDate<>(field, c.getDate());
+                    final T                    biasF = zero.newInstance(c.getBias());
                     final T rateF;
                     final T accelerationF;
                     if (Double.isNaN(c.getRate())) {
@@ -94,7 +100,7 @@ public class SampledClockModel implements ClockModel {
                                         null :
                                         zero.newInstance(c.getAcceleration());
                     }
-                    return new FieldClockOffset<>(dateF, offsetF, rateF, accelerationF);
+                    return new FieldClockOffset<>(dateF, biasF, rateF, accelerationF);
                 });
 
         // perform interpolation
@@ -102,6 +108,20 @@ public class SampledClockModel implements ClockModel {
             new FieldClockOffsetHermiteInterpolator<>(sample.getMaxNeighborsSize());
         return interpolator.interpolate(date, fieldSample);
 
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public List<ParameterDriver> getParametersDrivers() {
+        throw new OrekitException(OrekitMessages.INTERNAL_ERROR);
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    public FieldClockModel<Gradient> getFieldModel(final int freeParameters,
+            final Map<String, Integer> indices, final AbsoluteDate date) {
+        throw new OrekitException(OrekitMessages.INTERNAL_ERROR);
     }
 
 }

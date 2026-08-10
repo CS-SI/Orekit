@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,7 +25,6 @@ import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1019;
 import org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1019Data;
 import org.orekit.gnss.metric.parser.ByteArrayEncodedMessage;
@@ -33,8 +32,8 @@ import org.orekit.gnss.metric.parser.EncodedMessage;
 import org.orekit.gnss.metric.parser.RtcmDataField;
 import org.orekit.gnss.metric.parser.RtcmMessagesParser;
 import org.orekit.propagation.analytical.gnss.GNSSPropagator;
-import org.orekit.propagation.analytical.gnss.GNSSPropagatorBuilder;
 import org.orekit.propagation.analytical.gnss.data.GPSLegacyNavigationMessage;
+import org.orekit.time.DateComponents;
 import org.orekit.time.GNSSDate;
 import org.orekit.utils.IERSConventions;
 
@@ -76,7 +75,7 @@ public class Rtcm1019Test {
                         "0000000000000000" +                 // Cis
                         "00101000001111100011110011110000" + // i0
                         "0000000000000000" +                 // Crc
-                        "00001100001111100011110011110000" + // Argument of perigee
+                        "00001100001111100011110011110000" + // Argument of periapsis
                         "111111111011111111110100" +         // OMEGADOT
                         "00000011" +                         // tGD
                         "000000" +                           // SV Health
@@ -89,22 +88,25 @@ public class Rtcm1019Test {
         ArrayList<Integer> messages = new ArrayList<>();
         messages.add(1019);
 
-        final DataContext          context       = DataContext.getDefault();
-        final Rtcm1019             rtcm1019      = (Rtcm1019) new RtcmMessagesParser(messages, context.getTimeScales()).
-                                                   parse(message, false);
+        GNSSDate.setRolloverReference(DateComponents.GPS_EPOCH);
+        final DataContext context  = DataContext.getDefault();
+        final Rtcm1019    rtcm1019 = (Rtcm1019) new RtcmMessagesParser(messages,
+                                                                       context.getTimeScales(),
+                                                                       context.getFrames().getEME2000(),
+                                                                       context.getFrames().getITRF(IERSConventions.IERS_2010,
+                                                                                                   false)).
+                                     parse(message, false);
         final Rtcm1019Data         ephemerisData = rtcm1019.getEphemerisData();
         final GPSLegacyNavigationMessage gpsMessage    = ephemerisData.getGpsNavigationMessage();
 
         // Verify propagator initialization
-        final GNSSPropagator propagator =
-            new GNSSPropagatorBuilder(gpsMessage,
-                                      context.getFrames().getEME2000(),
-                                      context.getFrames().getITRF(IERSConventions.IERS_2010, false)).
-                buildPropagator();
+        final GNSSPropagator<GPSLegacyNavigationMessage> propagator =
+            new GNSSPropagator<>(gpsMessage.factory(context.getFrames().getEME2000(),
+                                                    context.getFrames().getITRF(IERSConventions.IERS_2010, false)));
         Assertions.assertNotNull(propagator);
         final double eps = 1.0e-15;
-        Assertions.assertEquals(0.0, gpsMessage.getDate().
-                            durationFrom(new GNSSDate(gpsMessage.getWeek(), gpsMessage.getTime(), SatelliteSystem.GPS).getDate()),
+        Assertions.assertEquals(0.0,
+                                gpsMessage.getDate().durationFrom(gpsMessage.getTimeOfEphemeris()),
                                 eps);
 
         // Verify message number
@@ -112,8 +114,8 @@ public class Rtcm1019Test {
         Assertions.assertEquals(1,                      rtcm1019.getData().size());
 
         // Verify navigation message
-        Assertions.assertEquals(12,                     gpsMessage.getPRN());
-        Assertions.assertEquals(1019,                   gpsMessage.getWeek());
+        Assertions.assertEquals(12,                     gpsMessage.getPrn());
+        Assertions.assertEquals(1019,                   gpsMessage.getTimeOfEphemeris().getWeekNumber());
         Assertions.assertEquals(2.1475894557210572E-9, gpsMessage.getIDot(), eps);
         Assertions.assertEquals(132, gpsMessage.getIODE(), eps);
         Assertions.assertEquals(3.524958E-15, gpsMessage.getAf2(), eps);
@@ -121,30 +123,32 @@ public class Rtcm1019Test {
         Assertions.assertEquals(5.721445195376873E-4, gpsMessage.getAf0(), eps);
         Assertions.assertEquals(695,                    gpsMessage.getIODC());
         Assertions.assertEquals(0.0, gpsMessage.getCrs(), eps);
-        Assertions.assertEquals(1.4586338170358127E-4, gpsMessage.getMeanMotion0(), eps);
-        Assertions.assertEquals(1.458749761151065E-4, gpsMessage.getMeanMotion0() + gpsMessage.getDeltaN0(), eps);
-        Assertions.assertEquals(0.1671775426328288, gpsMessage.getM0(), eps);
+        Assertions.assertEquals(1.4586338170358127E-4, gpsMessage.getOrbit().getKeplerianMeanMotion(), eps);
+        Assertions.assertEquals(1.458749761151065E-4, gpsMessage.getOrbit().getKeplerianMeanMotion() + gpsMessage.getDeltaN0(), eps);
+        Assertions.assertEquals(0.1671775426328288, gpsMessage.getOrbit().getMeanAnomaly(), eps);
         Assertions.assertEquals(0.0, gpsMessage.getCuc(), eps);
-        Assertions.assertEquals(0.03899807028938085, gpsMessage.getE(), eps);
+        Assertions.assertEquals(0.03899807028938085, gpsMessage.getOrbit().getE(), eps);
         Assertions.assertEquals(0.0, gpsMessage.getCus(), eps);
-        Assertions.assertEquals(5153.562498092651, FastMath.sqrt(gpsMessage.getSma()), eps);
-        Assertions.assertEquals(560688.0, gpsMessage.getTime(), eps);
+        Assertions.assertEquals(5153.562498092651, FastMath.sqrt(gpsMessage.getOrbit().getA()), eps);
+        Assertions.assertEquals(560688.0, gpsMessage.getTimeOfEphemeris().getSecondsInWeek(), eps);
         Assertions.assertEquals(0.0, gpsMessage.getCic(), eps);
         Assertions.assertEquals(0.0, gpsMessage.getCis(), eps);
-        Assertions.assertEquals(0.987714701321906, gpsMessage.getI0(), eps);
+        Assertions.assertEquals(0.987714701321906, gpsMessage.getOrbit().getI(), eps);
         Assertions.assertEquals(0.0, gpsMessage.getCrc(), eps);
-        Assertions.assertEquals(0.30049130834913723, gpsMessage.getPa(), eps);
+        Assertions.assertEquals(0.30049130834913723, gpsMessage.getOrbit().getPeriapsisArgument(), eps);
         Assertions.assertEquals(-5.855958209879004E-9, gpsMessage.getOmegaDot(), eps);
-        Assertions.assertEquals(0.6980085385373721, gpsMessage.getOmega0(), eps);
-        Assertions.assertEquals(1.3969839E-9, gpsMessage.getTGD(), eps);
+        Assertions.assertEquals(0.6980085385373721, gpsMessage.getOrbit().getRightAscensionOfAscendingNode(), eps);
+        Assertions.assertEquals(1.3969839E-9, gpsMessage.getTgd(), eps);
         Assertions.assertEquals(0.0, gpsMessage.getSvHealth(), eps);
 
         // Verify other data
-        Assertions.assertEquals(12,                     ephemerisData.getSatelliteID());
-        Assertions.assertEquals(63216, ephemerisData.getGpsToc(), eps);
-        Assertions.assertEquals(3,                      ephemerisData.getGpsCodeOnL2());
-        Assertions.assertEquals(0,                      ephemerisData.getGpsFitInterval());
-        Assertions.assertTrue(ephemerisData.getGpsL2PDataFlag());
+        Assertions.assertEquals(12,    ephemerisData.getSatelliteID());
+        Assertions.assertEquals(63216,
+                                ephemerisData.getGpsNavigationMessage().getTimeOfClock().getSecondsInWeek(),
+                                eps);
+        Assertions.assertEquals(3,     ephemerisData.getGpsNavigationMessage().getL2Codes());
+        Assertions.assertEquals(0,     ephemerisData.getGpsNavigationMessage().getFitInterval());
+        Assertions.assertEquals(0,     ephemerisData.getGpsNavigationMessage().getL2PFlags());
         Assertions.assertEquals(ephemerisData.getAccuracyProvider().getAccuracy(), gpsMessage.getSvAccuracy(), eps);
 
     }
@@ -178,7 +182,7 @@ public class Rtcm1019Test {
                         "0000000000000000" +                 // Cis
                         "00101000001111100011110011110000" + // i0
                         "0000000000000000" +                 // Crc
-                        "00001100001111100011110011110000" + // Argument of perigee
+                        "00001100001111100011110011110000" + // Argument of periapsis
                         "111111111011111111110100" +         // OMEGADOT
                         "00000011" +                         // tGD
                         "000000" +                           // SV Health
@@ -192,7 +196,11 @@ public class Rtcm1019Test {
        messages.add(9999999);
 
        final DataContext context = DataContext.getDefault();
-       final Rtcm1019 rtcm1019 = (Rtcm1019) new RtcmMessagesParser(messages, context.getTimeScales()).
+       final Rtcm1019 rtcm1019 = (Rtcm1019) new RtcmMessagesParser(messages,
+                                                                   context.getTimeScales(),
+                                                                   context.getFrames().getEME2000(),
+                                                                   context.getFrames().getITRF(IERSConventions.IERS_2010,
+                                                                                               false)).
                                  parse(message, false);
 
        Assertions.assertNull(rtcm1019);
@@ -202,7 +210,7 @@ public class Rtcm1019Test {
     public void testDF103() {
         final String m = "1111111111111111";
         final EncodedMessage message = new ByteArrayEncodedMessage(byteArrayFromBinary(m));
-        Assertions.assertFalse(RtcmDataField.DF103.booleanValue(message));
+        Assertions.assertEquals(1, RtcmDataField.DF103.intValue(message));
     }
 
     @DefaultDataContext
@@ -211,7 +219,11 @@ public class Rtcm1019Test {
         try {
             final byte[] array = new byte[0];
             final EncodedMessage emptyMessage = new ByteArrayEncodedMessage(array);
-            new RtcmMessagesParser(new ArrayList<>(), DataContext.getDefault().getTimeScales()).
+            final DataContext context = DataContext.getDefault();
+            new RtcmMessagesParser(new ArrayList<>(),
+                                   context.getTimeScales(),
+                                   context.getFrames().getEME2000(),
+                                   context.getFrames().getITRF(IERSConventions.IERS_2010, false)).
                 parse(emptyMessage, false);
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {

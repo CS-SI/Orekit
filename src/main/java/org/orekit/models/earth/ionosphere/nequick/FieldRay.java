@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,14 +21,14 @@ import org.hipparchus.util.FastMath;
 import org.hipparchus.util.FieldSinCos;
 import org.orekit.bodies.FieldGeodeticPoint;
 
-/** Container for ray-perigee parameters.
+/** Container for ray-periapsis parameters.
  * <p>By convention, point 1 is at lower height.</p>
  * @author Bryan Cazabonne
  * @since 13.0
  */
 class FieldRay<T extends CalculusFieldElement<T>> {
 
-    /** Threshold for ray-perigee parameters computation. */
+    /** Threshold for ray-periapsis parameters computation. */
     private static final double THRESHOLD = 1.0e-10;
 
     /** Receiver altitude [m].
@@ -41,28 +41,28 @@ class FieldRay<T extends CalculusFieldElement<T>> {
      */
     private final T satH;
 
-    /** Distance of the first point from the ray perigee [m]. */
+    /** Distance of the first point from the ray periapsis [m]. */
     private final T s1;
 
-    /** Distance of the second point from the ray perigee [m]. */
+    /** Distance of the second point from the ray periapsis [m]. */
     private final T s2;
 
-    /** Ray-perigee radius [m]. */
+    /** Ray-periapsis radius [m]. */
     private final T rp;
 
-    /** Ray-perigee latitude [rad]. */
+    /** Ray-periapsis latitude [rad]. */
     private final T latP;
 
-    /** Ray-perigee longitude [rad]. */
+    /** Ray-periapsis longitude [rad]. */
     private final T lonP;
 
-    /** Sine and cosine of ray-perigee latitude. */
+    /** Sine and cosine of ray-periapsis latitude. */
     private final FieldSinCos<T> scLatP;
 
-    /** Sine of azimuth of satellite as seen from ray-perigee. */
+    /** Sine of azimuth of satellite as seen from ray-periapsis. */
     private final T sinAzP;
 
-    /** Cosine of azimuth of satellite as seen from ray-perigee. */
+    /** Cosine of azimuth of satellite as seen from ray-periapsis. */
     private final T cosAzP;
 
     /**
@@ -105,16 +105,16 @@ class FieldRay<T extends CalculusFieldElement<T>> {
         final T sinZ     = u.multiply(inv);
         final T cosZ     = v.multiply(inv);
 
-        // Ray-perigee computation in meters (Eq. 156)
+        // Ray-periapsis computation in meters (Eq. 156)
         this.rp = r1.multiply(sinZ);
 
-        // Ray-perigee latitude and longitude
+        // Ray-periapsis latitude and longitude
         if (FastMath.abs(FastMath.abs(lat1).subtract(pi.multiply(0.5)).getReal()) < THRESHOLD) {
 
-            // Ray-perigee latitude (Eq. 157)
+            // Ray-periapsis latitude (Eq. 157)
             this.latP = FastMath.copySign(FastMath.atan2(u, v), lat1);
 
-            // Ray-perigee longitude (Eq. 164)
+            // Ray-periapsis longitude (Eq. 164)
             this.lonP = lon2.add(pi);
 
         } else if (FastMath.abs(sinZ.getReal()) < THRESHOLD) {
@@ -125,7 +125,7 @@ class FieldRay<T extends CalculusFieldElement<T>> {
 
         } else {
 
-            // Ray-perigee latitude (Eq. 158 to 163)
+            // Ray-periapsis latitude (Eq. 158 to 163)
             final T sinAz   = FastMath.sin(lon2.subtract(lon1)).multiply(scLatSat.cos()).divide(sinD);
             final T cosAz   = scLatSat.sin().subtract(cosD.multiply(scLatRec.sin())).
                               divide(sinD.multiply(scLatRec.cos()));
@@ -134,7 +134,7 @@ class FieldRay<T extends CalculusFieldElement<T>> {
             final T cosLatP = FastMath.sqrt(sinLatP.multiply(sinLatP).negate().add(1.0));
             this.latP       = FastMath.atan2(sinLatP, cosLatP);
 
-            // Ray-perigee longitude (Eq. 165 to 167, plus protection against ray-perigee along polar axis)
+            // Ray-periapsis longitude (Eq. 165 to 167, plus protection against ray-periapsis along polar axis)
             if (cosLatP.getReal() < THRESHOLD) {
                 this.lonP = cosLatP.getField().getZero();
             } else {
@@ -146,7 +146,7 @@ class FieldRay<T extends CalculusFieldElement<T>> {
 
         }
 
-        // Sine and cosine of ray-perigee latitude
+        // Sine and cosine of ray-periapsis latitude
         this.scLatP = FastMath.sinCos(latP);
 
         if (FastMath.abs(FastMath.abs(latP).subtract(pi.multiply(0.5)).getReal()) < THRESHOLD || FastMath.abs(
@@ -156,7 +156,7 @@ class FieldRay<T extends CalculusFieldElement<T>> {
             this.cosAzP = FastMath.copySign(pi.getField().getOne(), latP).negate();
         } else {
             final FieldSinCos<T> scLon = FastMath.sinCos(lon2.subtract(lonP));
-            // Sine and cosine of azimuth of satellite as seen from ray-perigee
+            // Sine and cosine of azimuth of satellite as seen from ray-periapsis
             final FieldSinCos<T> scPsi = FastMath.sinCos(greatCircleAngle(scLatSat, scLon));
             // Eq. 174 and 175
             this.sinAzP = scLatSat.cos().multiply(scLon.sin()).divide(scPsi.sin());
@@ -188,7 +188,7 @@ class FieldRay<T extends CalculusFieldElement<T>> {
     }
 
     /**
-     * Get the distance of the first point from the ray perigee.
+     * Get the distance of the first point from the ray periapsis.
      *
      * @return s1 in meters
      */
@@ -197,7 +197,7 @@ class FieldRay<T extends CalculusFieldElement<T>> {
     }
 
     /**
-     * Get the distance of the second point from the ray perigee.
+     * Get the distance of the second point from the ray periapsis.
      *
      * @return s2 in meters
      */
@@ -206,27 +206,27 @@ class FieldRay<T extends CalculusFieldElement<T>> {
     }
 
     /**
-     * Get the ray-perigee radius.
+     * Get the ray-periapsis radius.
      *
-     * @return the ray-perigee radius in meters
+     * @return the ray-periapsis radius in meters
      */
     public T getRadius() {
         return rp;
     }
 
     /**
-     * Get the ray-perigee latitude.
+     * Get the ray-periapsis latitude.
      *
-     * @return the ray-perigee latitude in radians
+     * @return the ray-periapsis latitude in radians
      */
     public T getLatitude() {
         return latP;
     }
 
     /**
-     * Get the ray-perigee latitude sin/cos.
+     * Get the ray-periapsis latitude sin/cos.
      *
-     * @return the ray-perigee latitude sin/cos
+     * @return the ray-periapsis latitude sin/cos
      * @since 13.0
      */
     public FieldSinCos<T> getScLat() {
@@ -234,16 +234,16 @@ class FieldRay<T extends CalculusFieldElement<T>> {
     }
 
     /**
-     * Get the ray-perigee longitude.
+     * Get the ray-periapsis longitude.
      *
-     * @return the ray-perigee longitude in radians
+     * @return the ray-periapsis longitude in radians
      */
     public T getLongitude() {
         return lonP;
     }
 
     /**
-     * Get the sine of azimuth of satellite as seen from ray-perigee.
+     * Get the sine of azimuth of satellite as seen from ray-periapsis.
      *
      * @return the sine of azimuth
      */
@@ -252,7 +252,7 @@ class FieldRay<T extends CalculusFieldElement<T>> {
     }
 
     /**
-     * Get the cosine of azimuth of satellite as seen from ray-perigee.
+     * Get the cosine of azimuth of satellite as seen from ray-periapsis.
      *
      * @return the cosine of azimuth
      */
@@ -261,7 +261,7 @@ class FieldRay<T extends CalculusFieldElement<T>> {
     }
 
     /**
-     * Compute the great circle angle from ray-perigee to satellite.
+     * Compute the great circle angle from ray-periapsis to satellite.
      * <p>
      * This method used the equations 168 to 171 of the reference document.
      * </p>

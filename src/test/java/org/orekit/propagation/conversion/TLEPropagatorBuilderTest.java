@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.orekit.propagation.conversion;
 
 import org.junit.jupiter.api.Assertions;
@@ -23,9 +22,14 @@ import org.orekit.Utils;
 import org.orekit.data.DataContext;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngleType;
+import org.hipparchus.CalculusFieldElement;
+import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.analytical.tle.FieldTLE;
 import org.orekit.propagation.analytical.tle.TLE;
+import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.propagation.analytical.tle.generation.FixedPointTleGenerationAlgorithm;
+import org.orekit.propagation.analytical.tle.generation.TleGenerationAlgorithm;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -38,17 +42,19 @@ public class TLEPropagatorBuilderTest {
 
         // Given
         final DataContext dataContext = Utils.setDataRoot("regular-data");
-        final TLE tle = new TLE("1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20",
-                "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62");
-        final TLEPropagatorBuilder builder = new TLEPropagatorBuilder(tle, PositionAngleType.MEAN, 1.0, dataContext,
-                new FixedPointTleGenerationAlgorithm());
+        final TLE tle =
+            new TLE("1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20",
+                    "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62");
+        final TLEPropagatorBuilder builder =
+            new TLEPropagatorBuilder(dataContext, new FixedPointTleGenerationAlgorithm(tle));
 
         // When
         final TLEPropagatorBuilder copyBuilder = builder.clone();
 
         // Then
         assertPropagatorBuilderIsACopy(builder, copyBuilder);
-        Assertions.assertEquals(builder.getTemplateTLE(), copyBuilder.getTemplateTLE());
+        Assertions.assertEquals(builder.getOrbitalParameterFactory().getTemplateTLE(),
+                                copyBuilder.getOrbitalParameterFactory().getTemplateTLE());
 
     }
 
@@ -63,22 +69,29 @@ public class TLEPropagatorBuilderTest {
         final DataContext dataContext = Utils.setDataRoot("regular-data");
         final TLE tle = new TLE("1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20",
                                 "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62");
-        final TLEPropagatorBuilder builder = new TLEPropagatorBuilder(tle, PositionAngleType.MEAN, 1.0, dataContext,
-                                                                      new FixedPointTleGenerationAlgorithm());
-        final Orbit orbit = builder.createInitialOrbit();
+        final TLEPropagatorBuilder builder =
+            new TLEPropagatorBuilder(dataContext,
+                                     new FixedPointTleGenerationAlgorithm(tle));
+        final TLE built = builder.getOrbitalParameterFactory().createFromDrivers();
+        final Orbit orbit = TLEPropagator.selectExtrapolator(built).propagateOrbit(built.getDate());
 
         // When
         final TLEPropagatorBuilder copyBuilder = builder.clone();
 
-
         // Change orbit of the copied builder
         final TimeStampedPVCoordinates modifiedPv = orbit.shiftedBy(3600.).getPVCoordinates();
-        copyBuilder.resetOrbit(new CartesianOrbit(modifiedPv, orbit.getFrame(), orbit.getDate(), orbit.getMu()));
+        copyBuilder.resetOrbit(new CartesianOrbit(modifiedPv,
+                                                  orbit.getFrame(),
+                                                  orbit.getDate(),
+                                                  orbit.getMu()));
 
         // Then
         // Original builder should still have original orbit
         final PVCoordinates originalPv = orbit.getPVCoordinates();
-        final PVCoordinates initialPv = builder.createInitialOrbit().getPVCoordinates();
+        final PVCoordinates initialPv  = TLEPropagator.
+                                         selectExtrapolator(builder.getOrbitalParameterFactory().createFromDrivers()).
+                                         propagateOrbit(orbit.getDate()).
+                                         getPVCoordinates();
         final double dP = originalPv.getPosition().distance(initialPv.getPosition());
         final double dV = originalPv.getVelocity().distance(initialPv.getVelocity());
         final double dA = originalPv.getAcceleration().distance(initialPv.getAcceleration());
@@ -86,4 +99,48 @@ public class TLEPropagatorBuilderTest {
         Assertions.assertEquals(0., dV, 0.);
         Assertions.assertEquals(0., dA, 0.);
     }
+
+    @Test
+    void testBuilderPassesAlgorithm() {
+        final DataContext dataContext = Utils.setDataRoot("regular-data");
+        final TLE tle = new TLE("1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20",
+                                "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62");
+        final CountingTleGenerationAlgorithm counter =
+                new CountingTleGenerationAlgorithm(new FixedPointTleGenerationAlgorithm(tle));
+        final TLEPropagatorBuilder builder = new TLEPropagatorBuilder(dataContext, counter);
+        builder.buildPropagator();
+        Assertions.assertTrue(counter.stateCalls > 0);
+    }
+
+    private static class CountingTleGenerationAlgorithm extends TleGenerationAlgorithm {
+
+        private final TleGenerationAlgorithm delegate;
+        int stateCalls;
+
+        CountingTleGenerationAlgorithm(final TleGenerationAlgorithm delegate) {
+            super(delegate.getTemplateTLE(), delegate.getFrame(), delegate.getConverter());
+            this.delegate = delegate;
+        }
+
+        @Override
+        public TLE createFromDrivers() {
+            stateCalls++;
+            return delegate.createFromDrivers();
+        }
+
+        @Override
+        public TLE generate(final SpacecraftState state, final TLE templateTLE) {
+            stateCalls++;
+            return delegate.generate(state, templateTLE);
+        }
+
+        @Override
+        public <T extends CalculusFieldElement<T>> FieldTLE<T> generate(final FieldSpacecraftState<T> state,
+                                                                        final FieldTLE<T> templateTLE) {
+            stateCalls++;
+            return delegate.generate(state, templateTLE);
+        }
+
+    }
+
 }

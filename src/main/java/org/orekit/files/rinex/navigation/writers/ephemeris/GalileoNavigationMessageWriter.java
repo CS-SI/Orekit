@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Thales Alenia Space
+/* Copyright 2022-2026 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,7 +19,9 @@ package org.orekit.files.rinex.navigation.writers.ephemeris;
 import org.orekit.files.rinex.navigation.RinexNavigationHeader;
 import org.orekit.files.rinex.navigation.RinexNavigationParser;
 import org.orekit.files.rinex.navigation.RinexNavigationWriter;
+import org.orekit.gnss.SatelliteSystem;
 import org.orekit.propagation.analytical.gnss.data.GalileoNavigationMessage;
+import org.orekit.time.GNSSDate;
 import org.orekit.utils.units.Unit;
 
 import java.io.IOException;
@@ -30,6 +32,11 @@ import java.io.IOException;
  */
 public class GalileoNavigationMessageWriter
     extends AbstractNavigationMessageWriter<GalileoNavigationMessage> {
+
+    /** Simple constructor. */
+    public GalileoNavigationMessageWriter() {
+        // nothing to do
+    }
 
     /** {@inheritDoc} */
     @Override
@@ -48,7 +55,8 @@ public class GalileoNavigationMessageWriter
         writer.indentLine(header);
         writer.writeDouble(message.getIDot(), RinexNavigationParser.RAD_PER_S);
         writer.writeInt(message.getDataSource());
-        writer.writeInt(message.getWeek());
+        // BEWARE! In Rinex files, week number is aligned with GPS for Galileo too
+        writer.writeInt(new GNSSDate(message.getDate(), SatelliteSystem.GPS).getWeekNumber());
         writer.finishLine();
     }
 
@@ -73,7 +81,7 @@ public class GalileoNavigationMessageWriter
                               final RinexNavigationWriter writer)
         throws IOException {
         writer.indentLine(header);
-        writer.writeDouble(message.getTransmissionTime(), Unit.SECOND);
+        writer.writeDouble(message.getTransmissionTime().getSecondsInWeek(), Unit.SECOND);
         writer.finishLine();
 
     }

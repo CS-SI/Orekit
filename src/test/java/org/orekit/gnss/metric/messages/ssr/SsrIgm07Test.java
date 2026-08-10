@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,8 +17,11 @@
 package org.orekit.gnss.metric.messages.ssr;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.orekit.Utils;
 import org.orekit.data.DataContext;
+import org.orekit.data.LazyLoadedDataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.gnss.SatelliteSystem;
@@ -27,12 +30,18 @@ import org.orekit.gnss.metric.messages.ssr.igm.SsrIgm07Data;
 import org.orekit.gnss.metric.parser.ByteArrayEncodedMessage;
 import org.orekit.gnss.metric.parser.EncodedMessage;
 import org.orekit.gnss.metric.parser.IgsSsrMessagesParser;
+import org.orekit.utils.IERSConventions;
 
 import java.util.ArrayList;
 
 public class SsrIgm07Test {
 
-    private double eps = 1.0e-13;
+    private final double eps = 1.0e-13;
+
+    @BeforeEach
+    public void setUp() {
+        Utils.setDataRoot("gnss");
+    }
 
     @Test
     public void testPerfectValueGPS() {
@@ -58,7 +67,11 @@ public class SsrIgm07Test {
         ArrayList<Integer> messages = new ArrayList<>();
         messages.add(27);
 
-        final SsrIgm07 igm07 = (SsrIgm07) new IgsSsrMessagesParser(messages, DataContext.getDefault().getTimeScales()).
+        final LazyLoadedDataContext context = DataContext.getDefault();
+        final SsrIgm07 igm07 = (SsrIgm07) new IgsSsrMessagesParser(messages,
+                                                                   context.getTimeScales(),
+                                                                   context.getFrames().getEME2000(),
+                                                                   context.getFrames().getITRF(IERSConventions.IERS_2010, false)).
                                parse(message, false);
 
         // Verify size
@@ -76,12 +89,12 @@ public class SsrIgm07Test {
         Assertions.assertEquals(2,                            igm07.getHeader().getNumberOfSatellites());
 
         // Verify data for satellite G01
-        final SsrIgm07Data g1 = igm07.getSsrIgm07Data().get("G01").get(0);
+        final SsrIgm07Data g1 = igm07.getSsrIgm07Data().get("G01").getFirst();
         Assertions.assertEquals(1,                         g1.getSatelliteID());
         Assertions.assertEquals(23.0,                      g1.getSsrUra(), eps);
 
         // Verify data for satellite G12
-        final SsrIgm07Data g12 = igm07.getSsrIgm07Data().get("G12").get(0);
+        final SsrIgm07Data g12 = igm07.getSsrIgm07Data().get("G12").getFirst();
         Assertions.assertEquals(12,                         g12.getSatelliteID());
         Assertions.assertEquals(60.0,                       g12.getSsrUra(), eps);
 
@@ -111,7 +124,11 @@ public class SsrIgm07Test {
         ArrayList<Integer> messages = new ArrayList<>();
         messages.add(67);
 
-        final SsrIgm07 igm07 = (SsrIgm07) new IgsSsrMessagesParser(messages, DataContext.getDefault().getTimeScales()).
+        final LazyLoadedDataContext context = DataContext.getDefault();
+        final SsrIgm07 igm07 = (SsrIgm07) new IgsSsrMessagesParser(messages,
+                                                                   context.getTimeScales(),
+                                                                   context.getFrames().getEME2000(),
+                                                                   context.getFrames().getITRF(IERSConventions.IERS_2010, false)).
                                parse(message, false);
 
         // Verify size
@@ -129,12 +146,12 @@ public class SsrIgm07Test {
         Assertions.assertEquals(2,                            igm07.getHeader().getNumberOfSatellites());
 
         // Verify data for satellite E01
-        final SsrIgm07Data e01 = igm07.getSsrIgm07Data().get("E01").get(0);
+        final SsrIgm07Data e01 = igm07.getSsrIgm07Data().get("E01").getFirst();
         Assertions.assertEquals(1,                         e01.getSatelliteID());
         Assertions.assertEquals(23.0,                      e01.getSsrUra(), eps);
 
         // Verify data for satellite E12
-        final SsrIgm07Data e12 = igm07.getSsrIgm07Data().get("E12").get(0);
+        final SsrIgm07Data e12 = igm07.getSsrIgm07Data().get("E12").getFirst();
         Assertions.assertEquals(12,                         e12.getSatelliteID());
         Assertions.assertEquals(60.0,                       e12.getSsrUra(), eps);
 
@@ -164,7 +181,11 @@ public class SsrIgm07Test {
        ArrayList<Integer> messages = new ArrayList<>();
        messages.add(9999999);
 
-       final SsrIgm07 igm07 = (SsrIgm07) new IgsSsrMessagesParser(messages, DataContext.getDefault().getTimeScales()).
+       final LazyLoadedDataContext context = DataContext.getDefault();
+       final SsrIgm07 igm07 = (SsrIgm07) new IgsSsrMessagesParser(messages,
+                                                                  context.getTimeScales(),
+                                                                  context.getFrames().getEME2000(),
+                                                                  context.getFrames().getITRF(IERSConventions.IERS_2010, false)).
                               parse(message, false);
 
        Assertions.assertNull(igm07);
@@ -175,7 +196,11 @@ public class SsrIgm07Test {
         try {
             final byte[] array = new byte[0];
             final EncodedMessage emptyMessage = new ByteArrayEncodedMessage(array);
-            new IgsSsrMessagesParser(new ArrayList<>(), DataContext.getDefault().getTimeScales()).
+            final LazyLoadedDataContext context = DataContext.getDefault();
+            new IgsSsrMessagesParser(new ArrayList<>(),
+                                     context.getTimeScales(),
+                                     context.getFrames().getEME2000(),
+                                     context.getFrames().getITRF(IERSConventions.IERS_2010, false)).
                 parse(emptyMessage, false);
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {

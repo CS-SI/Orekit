@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,6 +24,7 @@ import org.hipparchus.ode.events.Action;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.functions.EventFunction;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnEvent;
 import org.orekit.propagation.events.intervals.DateDetectionAdaptableIntervalFactory;
@@ -72,6 +73,9 @@ public class DateDetector extends AbstractDetector<DateDetector> implements Time
 
     /** List of event dates. */
     private final ArrayList<EventDate> eventDateList;
+
+    /** Event function. */
+    private final EventFunction eventFunction;
 
     /** Current event date. */
     private int currentIndex;
@@ -152,6 +156,7 @@ public class DateDetector extends AbstractDetector<DateDetector> implements Time
                 addEventDate(date);
             }
         }
+        this.eventFunction = new LocalEventFunction();
     }
 
     /**
@@ -180,10 +185,9 @@ public class DateDetector extends AbstractDetector<DateDetector> implements Time
         return Collections.unmodifiableList(eventDateList);
     }
 
-    /** {@inheritDoc} */
     @Override
-    public boolean dependsOnTimeOnly() {
-        return true;
+    public EventFunction getEventFunction() {
+        return eventFunction;
     }
 
     /** Compute the value of the switching function.
@@ -191,14 +195,9 @@ public class DateDetector extends AbstractDetector<DateDetector> implements Time
      * @param s the current state information: date, kinematics, attitude
      * @return value of the switching function
      */
+    @Override
     public double g(final SpacecraftState s) {
-        gDate = s.getDate();
-        if (currentIndex < 0) {
-            return -1.0;
-        } else {
-            final EventDate event = getClosest(gDate);
-            return event.isgIncrease() ? gDate.durationFrom(event.getDate()) : event.getDate().durationFrom(gDate);
-        }
+        return eventFunction.value(s);
     }
 
     /** Get the current event date according to the propagator.
@@ -233,14 +232,14 @@ public class DateDetector extends AbstractDetector<DateDetector> implements Time
             eventDateList.add(new EventDate(target, increasing));
         } else {
             final int          lastIndex = eventDateList.size() - 1;
-            final AbsoluteDate firstDate = eventDateList.get(0).getDate();
+            final AbsoluteDate firstDate = eventDateList.getFirst().getDate();
             final AbsoluteDate lastDate  = eventDateList.get(lastIndex).getDate();
             if (firstDate.durationFrom(target) > minGap) {
-                increasing = !eventDateList.get(0).isgIncrease();
-                eventDateList.add(0, new EventDate(target, increasing));
+                increasing = !eventDateList.getFirst().gIncrease;
+                eventDateList.addFirst(new EventDate(target, increasing));
                 currentIndex++;
             } else if (target.durationFrom(lastDate) > minGap) {
-                increasing = !eventDateList.get(lastIndex).isgIncrease();
+                increasing = !eventDateList.get(lastIndex).gIncrease;
                 eventDateList.add(new EventDate(target, increasing));
             } else {
                 throw new OrekitIllegalArgumentException(OrekitMessages.EVENT_DATE_TOO_CLOSE,
@@ -254,67 +253,68 @@ public class DateDetector extends AbstractDetector<DateDetector> implements Time
         }
     }
 
-    /** Get the closest EventDate to the target date.
-     * @param target target date
-     * @return current EventDate
+    /**
+     * Local event function.
+     * @since 14.0
      */
-    private EventDate getClosest(final AbsoluteDate target) {
-        final double dt = target.durationFrom(eventDateList.get(currentIndex).getDate());
-        if (dt < 0.0 && currentIndex > 0) {
-            boolean found = false;
-            while (currentIndex > 0 && !found) {
-                if (target.durationFrom(eventDateList.get(currentIndex - 1).getDate()) < eventDateList.get(currentIndex).getDate().durationFrom(target)) {
-                    currentIndex--;
-                } else {
-                    found = true;
-                }
-            }
-        } else if (dt > 0.0 && currentIndex < eventDateList.size() - 1) {
-            final int maxIndex = eventDateList.size() - 1;
-            boolean found = false;
-            while (currentIndex < maxIndex && !found) {
-                if (target.durationFrom(eventDateList.get(currentIndex + 1).getDate()) > eventDateList.get(currentIndex).getDate().durationFrom(target)) {
-                    currentIndex++;
-                } else {
-                    found = true;
-                }
+    private class LocalEventFunction implements EventFunction {
+
+        @Override
+        public double value(final SpacecraftState state) {
+            gDate = state.getDate();
+            if (currentIndex < 0) {
+                return -1.0;
+            } else {
+                final EventDate event = getClosest(gDate);
+                return event.gIncrease ? gDate.durationFrom(event.getDate()) : event.getDate().durationFrom(gDate);
             }
         }
-        return eventDateList.get(currentIndex);
+
+        @Override
+        public boolean dependsOnTimeOnly() {
+            return true;
+        }
+
+        /** Get the closest EventDate to the target date.
+         * @param target target date
+         * @return current EventDate
+         */
+        private EventDate getClosest(final AbsoluteDate target) {
+            final double dt = target.durationFrom(eventDateList.get(currentIndex).getDate());
+            if (dt < 0.0 && currentIndex > 0) {
+                boolean found = false;
+                while (currentIndex > 0 && !found) {
+                    if (target.durationFrom(eventDateList.get(currentIndex - 1).getDate()) < eventDateList.get(currentIndex).getDate().durationFrom(target)) {
+                        currentIndex--;
+                    } else {
+                        found = true;
+                    }
+                }
+            } else if (dt > 0.0 && currentIndex < eventDateList.size() - 1) {
+                final int maxIndex = eventDateList.size() - 1;
+                boolean found = false;
+                while (currentIndex < maxIndex && !found) {
+                    if (target.durationFrom(eventDateList.get(currentIndex + 1).getDate()) > eventDateList.get(currentIndex).getDate().durationFrom(target)) {
+                        currentIndex++;
+                    } else {
+                        found = true;
+                    }
+                }
+            }
+            return eventDateList.get(currentIndex);
+        }
     }
 
-    /** Event date specification. */
-    private static class EventDate implements TimeStamped {
+    /** Event date specification.
+     * @param date event date
+     * @param gIncrease flag for g function way around event date
+     */
+    private record EventDate(AbsoluteDate date, boolean gIncrease) implements TimeStamped {
 
-        /** Event date. */
-        private final AbsoluteDate eventDate;
-
-        /** Flag for g function way around event date. */
-        private final boolean gIncrease;
-
-        /** Simple constructor.
-         * @param date date
-         * @param increase if true, g function increases around event date
-         */
-        EventDate(final AbsoluteDate date, final boolean increase) {
-            this.eventDate = date;
-            this.gIncrease = increase;
-        }
-
-        /** Getter for event date.
-         * @return event date
-         */
+        @Override
         public AbsoluteDate getDate() {
-            return eventDate;
+            return date;
         }
-
-        /** Getter for g function way at event date.
-         * @return g function increasing flag
-         */
-        public boolean isgIncrease() {
-            return gIncrease;
-        }
-
     }
 
 }

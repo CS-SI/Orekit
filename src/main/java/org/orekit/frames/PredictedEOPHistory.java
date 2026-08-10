@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Luc Maisonobe
+/* Copyright 2022-2026 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -50,43 +50,28 @@ import org.orekit.utils.SecularAndHarmonic;
  */
 public class PredictedEOPHistory extends EOPHistory {
 
-    /** Raw EOP history to extend. */
-    private final EOPHistory rawHistory;
-
-    /** Duration of the extension period (s). */
-    private final double extensionDuration;
-
-    /** Fitter for all Earth Orientation Parameters. */
-    private final EOPFitter fitter;
-
     /** Simple constructor.
      * @param rawHistory raw EOP history to extend.
      * @param extensionDuration duration of the extension period (s)
-     * @param fitter fitter for all Earth Orientation Parameters
+     * @param fittedModel fitted EOP model
      */
     public PredictedEOPHistory(final EOPHistory rawHistory, final double extensionDuration,
-                               final EOPFitter fitter) {
+                               final EOPFittedModel fittedModel) {
         super(rawHistory.getConventions(), rawHistory.getInterpolationDegree(),
-              extendHistory(rawHistory, extensionDuration, fitter),
+              extendHistory(rawHistory, extensionDuration, fittedModel),
               rawHistory.isSimpleEop(), rawHistory.getTimeScales());
-        this.rawHistory        = rawHistory;
-        this.extensionDuration = extensionDuration;
-        this.fitter            = fitter;
     }
 
     /** Extends raw history.
      * @param rawHistory raw EOP history to extend.
      * @param extensionDuration duration of the extension period (s)
-     * @param fitter fitter for all Earth Orientation Parameters
+     * @param fittedModel fitted EOP model
      * @return extended history
      */
-    private static Collection<? extends EOPEntry> extendHistory(final EOPHistory rawHistory,
+    private static Collection<EOPEntry> extendHistory(final EOPHistory rawHistory,
                                                                 final double extensionDuration,
-                                                                final EOPFitter fitter) {
+                                                                final EOPFittedModel fittedModel) {
 
-
-        // fit model
-        final EOPFittedModel model = fitter.fit(rawHistory);
 
         // create a converter for nutation corrections
         final NutationCorrectionConverter converter =
@@ -94,24 +79,25 @@ public class PredictedEOPHistory extends EOPHistory {
 
         // generate extension entries
         final List<EOPEntry> rawEntries = rawHistory.getEntries();
-        final EOPEntry       last       = rawEntries.get(rawEntries.size() - 1);
+        final EOPEntry       last       = rawEntries.getLast();
         final int n = (int) FastMath.rint(extensionDuration / Constants.JULIAN_DAY);
         final List<EOPEntry> entries = new ArrayList<>(rawEntries.size() + n);
         entries.addAll(rawEntries);
         for (int i = 0; i < n; ++i) {
             final AbsoluteDate date = last.getDate().shiftedBy((i + 1) * Constants.JULIAN_DAY);
-            final double dut1   = model.getDUT1().osculatingValue(date);
-            final double lod    = -Constants.JULIAN_DAY * model.getDUT1().osculatingDerivative(date);
-            final double xp     = model.getXp().osculatingValue(date);
-            final double yp     = model.getYp().osculatingValue(date);
-            final double xpRate = model.getXp().osculatingDerivative(date);
-            final double ypRate = model.getYp().osculatingDerivative(date);
-            final double dx     = model.getDx().osculatingValue(date);
-            final double dy     = model.getDy().osculatingValue(date);
+            final double dut1   = fittedModel.getDUT1().osculatingValue(date);
+            final double lod    = -Constants.JULIAN_DAY * fittedModel.getDUT1().osculatingDerivative(date);
+            final double xp     = fittedModel.getXp().osculatingValue(date);
+            final double yp     = fittedModel.getYp().osculatingValue(date);
+            final double xpRate = fittedModel.getXp().osculatingDerivative(date);
+            final double ypRate = fittedModel.getYp().osculatingDerivative(date);
+            final double dx     = fittedModel.getDx().osculatingValue(date);
+            final double dy     = fittedModel.getDy().osculatingValue(date);
             final double[] equinox = converter.toEquinox(date, dx, dy);
             entries.add(new EOPEntry(last.getMjd() + i + 1, dut1, lod, xp, yp, xpRate, ypRate,
                                      equinox[0], equinox[1], dx, dy,
-                                     last.getITRFType(), date, EopDataType.PREDICTED));
+                                     last.getITRFType(), date, EopDataType.PREDICTED,
+                                     last.getDtPub(), last.getNutPub(), last.getCipPub()));
         }
 
         return entries;

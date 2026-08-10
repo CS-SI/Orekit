@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -123,8 +123,8 @@ public class AdapterPropagator extends AbstractAnalyticalPropagator {
 
     /** {@inheritDoc} */
     protected void resetIntermediateState(final SpacecraftState state, final boolean forward) {
-        if (reference instanceof AbstractAnalyticalPropagator) {
-            ((AbstractAnalyticalPropagator) reference).resetIntermediateState(state, forward);
+        if (reference instanceof AbstractAnalyticalPropagator propagator) {
+            propagator.resetIntermediateState(state, forward);
         } else {
             throw new OrekitException(OrekitMessages.NON_RESETABLE_STATE);
         }

@@ -17,10 +17,9 @@
 
 package org.orekit.propagation.events;
 
+import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.orekit.orbits.OrbitType;
-import org.orekit.propagation.Propagator;
-import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.numerical.NumericalPropagator;
 
@@ -30,21 +29,12 @@ import org.orekit.propagation.numerical.NumericalPropagator;
  *
  * @author Evan Ward
  */
-public class CloseEventsNumericalDP853Test extends CloseEventsAbstractTest {
+public class CloseEventsNumericalDP853Test extends AbstractCloseEventsNumericalTest {
 
-    /**
-     * Create a propagator using the {@link #initialOrbit}.
-     *
-     * @param stepSize   of integrator.
-     * @return a usable propagator.
-     */
-    public Propagator getPropagator(double stepSize) {
-        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(1e-3).getTolerances(initialOrbit, OrbitType.CARTESIAN);
-        final NumericalPropagator propagator = new NumericalPropagator(
-                new DormandPrince853Integrator(stepSize, stepSize, tol[0], tol[1]));
-        propagator.setInitialState(new SpacecraftState(initialOrbit));
-        propagator.setOrbitType(OrbitType.CARTESIAN);
-        return propagator;
+    @Override
+    ODEIntegrator getIntegrator(double stepSize, final OrbitType orbitType) {
+        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(1e-1).getTolerances(initialOrbit, orbitType);
+        return new DormandPrince853Integrator(stepSize, stepSize, tol[0], tol[1]);
     }
 
 }

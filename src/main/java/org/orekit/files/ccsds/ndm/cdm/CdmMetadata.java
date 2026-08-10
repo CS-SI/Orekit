@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,20 +16,21 @@
  */
 package org.orekit.files.ccsds.ndm.cdm;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
-import org.orekit.annotation.DefaultDataContext;
+import org.orekit.annotation.Nullable;
 import org.orekit.bodies.CelestialBody;
-import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.definitions.YesNoUnknown;
 import org.orekit.files.ccsds.definitions.BodyFacade;
-import org.orekit.files.ccsds.definitions.FrameFacade;
+import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
-import org.orekit.files.ccsds.definitions.ModifiedFrame;
+import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.TimeSystem;
+import org.orekit.files.ccsds.definitions.YesNoUnknown;
 import org.orekit.files.ccsds.ndm.odm.ocm.ObjectType;
 import org.orekit.files.ccsds.section.Metadata;
 import org.orekit.frames.Frame;
@@ -61,24 +62,31 @@ public class CdmMetadata extends Metadata {
     private String internationalDesignator;
 
     /** Type of object. */
+    @Nullable
     private ObjectType objectType;
 
     /** Operator contact position for the space object. */
+    @Nullable
     private String operatorContact;
 
     /** Operator organization for the space object. */
+    @Nullable
     private String operatorOrganization;
 
     /** Operator phone for the space object. */
+    @Nullable
     private String operatorPhone;
 
     /** Operator email for the space object. */
+    @Nullable
     private String operatorEmail;
 
     /** Unique identifier of Orbit Data Message(s) that are linked (relevant) to this Conjunction Data Message. */
+    @Nullable
     private String odmMsgLink;
 
     /** Unique identifier of Attitude Data Message(s) that are linked (relevant) to this Conjunction Data Message. */
+    @Nullable
     private String admMsgLink;
 
     /** Unique name of the external ephemeris file used for the object or NONE. */
@@ -86,6 +94,7 @@ public class CdmMetadata extends Metadata {
 
     /** Flag indicating whether new tracking observations are anticipated prior to the issue of the next CDM associated with the event
      * specified by CONJUNCTION_ID. */
+    @Nullable
     private YesNoUnknown obsBeforeNextMessage;
 
     /** Operator email for the space object. */
@@ -95,58 +104,69 @@ public class CdmMetadata extends Metadata {
     private Maneuvrable maneuverable;
 
     /** Central body around which Object1 and 2 are orbiting. */
+    @Nullable
     private BodyFacade orbitCenter;
 
     /** Reference frame in which state vector data are given. */
     private FrameFacade refFrame;
 
     /** Gravity model name. */
+    @Nullable
     private String gravityModel;
 
     /** Degree of the gravity model. */
-    private int gravityDegree;
+    @Nullable
+    private Integer gravityDegree;
 
     /** Order of the gravity model. */
-    private int gravityOrder;
+    @Nullable
+    private Integer gravityOrder;
 
     /** Name of atmospheric model. */
+    @Nullable
     private String atmosphericModel;
 
     /** N-body perturbation bodies. */
     private List<BodyFacade> nBodyPerturbations;
 
-    /** Is solar radiation pressure taken into account or not ? STANDARD CCSDS saying YES/NO choice and optional */
+    /** Solar radiation pressure taken indicator.
+     * <p>
+     *     STANDARD CCSDS saying YES/NO choice and optional
+     * </p>
+     */
+    @Nullable
     private YesNoUnknown isSolarRadPressure;
 
     /** Is solid Earth and ocean tides taken into account or not. STANDARD CCSDS saying YES/NO choice and optional */
+    @Nullable
     private YesNoUnknown isEarthTides;
 
     /** Is in-track thrust modelling used or not. STANDARD CCSDS saying YES/NO choice and optional */
+    @Nullable
     private YesNoUnknown isIntrackThrustModeled;
 
     /** The source from which the covariance data used in the report for both Object 1 and Object 2 originates. */
+    @Nullable
     private String covarianceSource;
 
     /** Flag indicating the type of alternate covariance information provided. */
+    @Nullable
     private AltCovarianceType altCovType;
 
     /** Reference frame in which the alternate covariance data are given. */
+    @Nullable
     private FrameFacade altCovRefFrame;
-
-    /** Simple constructor.
-     */
-    @DefaultDataContext
-    public CdmMetadata() {
-        super(null);
-        orbitCenter = new BodyFacade(CelestialBodyFactory.EARTH.toUpperCase(), CelestialBodyFactory.getEarth());
-    }
 
     /** Simple constructor.
      *
      * @param dataContext data context
+     * @param frameMapper for creating an Orekit {@link Frame}.
+     * @since 13.1.5
      */
-    public CdmMetadata(final DataContext dataContext) {
-        super(null);
+    public CdmMetadata(final DataContext dataContext,
+                       final CcsdsFrameMapper frameMapper) {
+        super(null, frameMapper);
+        this.nBodyPerturbations = new ArrayList<>();
         final CelestialBody earth = dataContext.getCelestialBodies().getEarth();
         orbitCenter = new BodyFacade(earth.getName().toUpperCase(), earth);
     }
@@ -272,8 +292,8 @@ public class CdmMetadata extends Metadata {
      * Get the type of object.
      * @return the object type
      */
-    public ObjectType getObjectType() {
-        return objectType;
+    public Optional<ObjectType> getObjectType() {
+        return Optional.ofNullable(objectType);
     }
 
     /**
@@ -289,8 +309,8 @@ public class CdmMetadata extends Metadata {
      * Get the contact position of the owner / operator of the object.
      * @return the contact position
      */
-    public String getOperatorContactPosition() {
-        return operatorContact;
+    public Optional<String> getOperatorContactPosition() {
+        return Optional.ofNullable(operatorContact);
     }
 
     /**
@@ -306,8 +326,8 @@ public class CdmMetadata extends Metadata {
      * Get the contact organisation of the object.
      * @return the contact organisation
      */
-    public String getOperatorOrganization() {
-        return operatorOrganization;
+    public Optional<String> getOperatorOrganization() {
+        return Optional.ofNullable(operatorOrganization);
     }
 
     /**
@@ -323,8 +343,8 @@ public class CdmMetadata extends Metadata {
      * Get the contact phone of the operator of the object.
      * @return the operator phone
      */
-    public String getOperatorPhone() {
-        return operatorPhone;
+    public Optional<String> getOperatorPhone() {
+        return Optional.ofNullable(operatorPhone);
     }
 
     /**
@@ -340,8 +360,8 @@ public class CdmMetadata extends Metadata {
      * Get the email of the operator of the object.
      * @return the operator email
      */
-    public String getOperatorEmail() {
-        return operatorEmail;
+    public Optional<String> getOperatorEmail() {
+        return Optional.ofNullable(operatorEmail);
     }
 
     /**
@@ -408,8 +428,8 @@ public class CdmMetadata extends Metadata {
      * Get the central body for object 1 and 2.
      * @return the name of the central body
      */
-    public BodyFacade getOrbitCenter() {
-        return orbitCenter;
+    public Optional<BodyFacade> getOrbitCenter() {
+        return Optional.ofNullable(orbitCenter);
     }
 
     /**
@@ -428,31 +448,8 @@ public class CdmMetadata extends Metadata {
      * @return the reference frame
      */
     public Frame getFrame() {
-        if (orbitCenter == null || orbitCenter.getBody() == null) {
-            throw new OrekitException(OrekitMessages.NO_DATA_LOADED_FOR_CELESTIAL_BODY, "No Orbit center name");
-        }
-        if (refFrame == null) {
-            throw new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME, "No reference frame");
-        }
-        else  {
-            if (refFrame.asFrame() == null) {
-                throw new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME, refFrame.getName());
-            }
-        }
-        // Just return frame if we don't need to shift the center based on CENTER_NAME
-        // MCI and ICRF are the only non-Earth centered frames specified in Annex A.
-        final boolean isMci  = refFrame.asCelestialBodyFrame() == CelestialBodyFrame.MCI;
-        final boolean isIcrf = refFrame.asCelestialBodyFrame() == CelestialBodyFrame.ICRF;
-        final boolean isSolarSystemBarycenter =
-                CelestialBodyFactory.SOLAR_SYSTEM_BARYCENTER.equals(orbitCenter.getBody().getName());
-        if (!(isMci || isIcrf) && CelestialBodyFactory.EARTH.equals(orbitCenter.getBody().getName()) ||
-            isMci && CelestialBodyFactory.MARS.equals(orbitCenter.getBody().getName()) ||
-            isIcrf && isSolarSystemBarycenter) {
-            return refFrame.asFrame();
-        }
-        // else, translate frame to specified center.
-        return new ModifiedFrame(refFrame.asFrame(), refFrame.asCelestialBodyFrame(),
-                                 orbitCenter.getBody(), orbitCenter.getName());
+        // CDM format does not allow specifying frame epoch
+        return getFrameMapper().buildCcsdsFrame(orbitCenter, refFrame, null);
     }
 
     /**
@@ -477,22 +474,22 @@ public class CdmMetadata extends Metadata {
     /** Get gravity model name.
      * @return gravity model name
      */
-    public String getGravityModel() {
-        return gravityModel;
+    public Optional<String> getGravityModel() {
+        return Optional.ofNullable(gravityModel);
     }
 
     /** Get degree of the gravity model.
      * @return degree of the gravity model
      */
-    public int getGravityDegree() {
-        return gravityDegree;
+    public Optional<Integer> getGravityDegree() {
+        return Optional.ofNullable(gravityDegree);
     }
 
     /** Get order of the gravity model.
      * @return order of the gravity model
      */
-    public int getGravityOrder() {
-        return gravityOrder;
+    public Optional<Integer> getGravityOrder() {
+        return Optional.ofNullable(gravityOrder);
     }
 
     /** Set gravity model.
@@ -510,8 +507,8 @@ public class CdmMetadata extends Metadata {
     /** Get name of atmospheric model.
      * @return name of atmospheric model
      */
-    public String getAtmosphericModel() {
-        return atmosphericModel;
+    public Optional<String> getAtmosphericModel() {
+        return Optional.ofNullable(atmosphericModel);
     }
 
     /** Set name of atmospheric model.
@@ -541,8 +538,8 @@ public class CdmMetadata extends Metadata {
      * Get Enum YesNoUnknown that indicates if Solar Radiation Pressure is taken into account or not.
      * @return isSolarRadPressure YesNoUnknown
      */
-    public YesNoUnknown getSolarRadiationPressure() {
-        return isSolarRadPressure;
+    public Optional<YesNoUnknown> getSolarRadiationPressure() {
+        return Optional.ofNullable(isSolarRadPressure);
     }
 
     /**
@@ -558,8 +555,8 @@ public class CdmMetadata extends Metadata {
      * Get Enum YesNoUnknown that indicates if Earth and ocean tides are taken into account or not.
      * @return isEarthTides YesNoUnknown
      */
-    public YesNoUnknown getEarthTides() {
-        return isEarthTides;
+    public Optional<YesNoUnknown> getEarthTides() {
+        return Optional.ofNullable(isEarthTides);
     }
 
     /**
@@ -575,8 +572,8 @@ public class CdmMetadata extends Metadata {
      * Get Enum YesNoUnknown that indicates if intrack thrust modeling was into account or not.
      * @return isEarthTides YesNoUnknown
      */
-    public YesNoUnknown getIntrackThrust() {
-        return isIntrackThrustModeled;
+    public Optional<YesNoUnknown> getIntrackThrust() {
+        return Optional.ofNullable(isIntrackThrustModeled);
     }
 
     /**
@@ -591,8 +588,8 @@ public class CdmMetadata extends Metadata {
     /** Get the source of the covariance data.
      * @return the covarianceSource
      */
-    public String getCovarianceSource() {
-        return covarianceSource;
+    public Optional<String> getCovarianceSource() {
+        return Optional.ofNullable(covarianceSource);
     }
 
     /** Set the source of the covariance data.
@@ -606,8 +603,8 @@ public class CdmMetadata extends Metadata {
     /** Get the flag indicating the type of alternate covariance information provided.
      * @return the altCovType
      */
-    public AltCovarianceType getAltCovType() {
-        return altCovType;
+    public Optional<AltCovarianceType> getAltCovType() {
+        return Optional.ofNullable(altCovType);
     }
 
     /** Set the flag indicating the type of alternate covariance information provided.
@@ -622,8 +619,8 @@ public class CdmMetadata extends Metadata {
      * Get the value of {@code ALT_COV_REF_FRAME} as an Orekit {@link Frame}.
      * @return the reference frame
      */
-    public FrameFacade getAltCovRefFrame() {
-        return altCovRefFrame;
+    public Optional<FrameFacade> getAltCovRefFrame() {
+        return Optional.ofNullable(altCovRefFrame);
     }
 
     /**
@@ -633,29 +630,49 @@ public class CdmMetadata extends Metadata {
     public void setAltCovRefFrame(final FrameFacade altCovRefFrame) {
         refuseFurtherComments();
 
-        if (getAltCovType() == null) {
-            throw new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD, CdmMetadataKey.ALT_COV_TYPE);
-        }
+        getAltCovType().
+            orElseThrow(() -> new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD,
+                                                  CdmMetadataKey.ALT_COV_TYPE));
 
-        if (altCovRefFrame.asFrame() == null) {
-            throw new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME, altCovRefFrame.getName());
-        }
+        altCovRefFrame.
+            asFrame().
+            orElseThrow(() -> new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME,
+                                                  altCovRefFrame.getName()));
 
         // Only set the frame if within the allowed options: GCRF, EME2000, ITRF
-        if ( altCovRefFrame.asCelestialBodyFrame() == CelestialBodyFrame.GCRF ||
-                 altCovRefFrame.asCelestialBodyFrame() == CelestialBodyFrame.EME2000 ||
-                     altCovRefFrame.asCelestialBodyFrame().name().contains("ITRF") ) {
+        final CelestialBodyFrame celestialBodyFrame = altCovRefFrame.asCelestialBodyFrame().orElseThrow();
+        if ( celestialBodyFrame == CelestialBodyFrame.GCRF ||
+                 celestialBodyFrame == CelestialBodyFrame.EME2000 ||
+                     celestialBodyFrame.name().contains("ITRF") ) {
             this.altCovRefFrame = altCovRefFrame;
         } else {
             throw new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME, altCovRefFrame.getName());
         }
     }
 
+    /**
+     * Get the reference frame in which the alternative covariance data is
+     * given.
+     * <p>
+     * Can be empty if {@link #getAltCovType()} is empty.
+     * </p>
+     * @return alternative covariance reference frame.
+     * @see #getAltCovType()
+     * @see #getAltCovRefFrame()
+     * @since 13.1.5
+     */
+    public Optional<Frame> getAltCovFrame() {
+        // Epoch of AltCovRefFrame can't be specified.
+        return getAltCovRefFrame().isEmpty() ?
+               Optional.empty() :
+               Optional.of(getFrameMapper().buildCcsdsFrame(getAltCovRefFrame().get(), null));
+    }
+
     /** Get the unique identifier of Orbit Data Message(s) that are linked (relevant) to this Conjunction Data Message.
      * @return the odmMsgLink
      */
-    public String getOdmMsgLink() {
-        return odmMsgLink;
+    public Optional<String> getOdmMsgLink() {
+        return Optional.ofNullable(odmMsgLink);
     }
 
     /** Set the unique identifier of Orbit Data Message(s) that are linked (relevant) to this Conjunction Data Message.
@@ -669,8 +686,8 @@ public class CdmMetadata extends Metadata {
     /** Get the unique identifier of Attitude Data Message(s) that are linked (relevant) to this Conjunction Data Message.
      * @return the admMsgLink
      */
-    public String getAdmMsgLink() {
-        return admMsgLink;
+    public Optional<String> getAdmMsgLink() {
+        return Optional.ofNullable(admMsgLink);
     }
 
     /** Set the unique identifier of Attitude Data Message(s) that are linked (relevant) to this Conjunction Data Message.
@@ -685,8 +702,8 @@ public class CdmMetadata extends Metadata {
      * specified by CONJUNCTION_ID.
      * @return the obsBeforeNextMessage
      */
-    public YesNoUnknown getObsBeforeNextMessage() {
-        return obsBeforeNextMessage;
+    public Optional<YesNoUnknown> getObsBeforeNextMessage() {
+        return Optional.ofNullable(obsBeforeNextMessage);
     }
 
     /** Set the flag indicating whether new tracking observations are anticipated prior to the issue of the next CDM associated with the event

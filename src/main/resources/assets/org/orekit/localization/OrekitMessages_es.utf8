@@ -61,6 +61,9 @@ UNABLE_TO_FIND_RESOURCE={0} no existe en el "classpath"
 # no Earth Orientation Parameters loaded
 NO_EARTH_ORIENTATION_PARAMETERS_LOADED=no se han cargado los parámetros de orientación de la Tierra
 
+# cannot combine Earth Orientation Parameters at different dates ({0} and {1})
+INCOMPATIBLE_EARTH_ORIENTATION_PARAMETERS=
+
 # missing Earth Orientation Parameters between {0} and {1}
 MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES=faltan parámetros de orientación de la Tierra entre {0} y {1}
 
@@ -154,6 +157,9 @@ WRONG_DEGREE_OR_ORDER=ningún término ({0}, {1}) en una descomposición armóni
 # wrong orbital elements for averaging theory
 WRONG_ELEMENTS_FOR_AVERAGING_THEORY=tipos de elementos orbitales incorrectos para esta teoría de de promediado
 
+# not a valid Observer type for this calculation
+WRONG_OBSERVER_TYPE=tipo de observador no válido para este cálculo
+
 # several reference dates ({0} and {1} differ by {3,number,0.0##############E0} s) found in gravity field file {2}
 SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD=se han encontrado varias fechas de referencia ({0} y {1} difieren de {3,number,0.0##############E0} s) en el fichero de campo gravitacional {2}
 
@@ -186,6 +192,9 @@ NOT_POSITIVE_SPACECRAFT_MASS=la masa del vehículo espacial no es positiva: {0} 
 
 # too large eccentricity for propagation model: e = {0}
 TOO_LARGE_ECCENTRICITY_FOR_PROPAGATION_MODEL=la excentricidad es demasiado alta para el modelo de propagación (e : {0})
+
+# too large eccentricity for teardrop motion: e > 1e-4
+TOO_LARGE_ECCENTRICITY_FOR_TEARDROP_MOTION=excentricidad demasiado grande para el movimiento en forma de lágrima: e > 1e-4
 
 # no solar activity available at {0}, data available only in range [{1}, {2}]
 NO_SOLAR_ACTIVITY_AT_DATE=no hay parámetros de actividad solar disponibles el {0}, datos disponibles únicamente para el intervalo [{1}, {2}]
@@ -255,6 +264,9 @@ INCONSISTENT_EARTH_MOON_RATIO_IN_FILES=valores incoherentes de la relación de m
 
 # no data loaded for celestial body {0}
 NO_DATA_LOADED_FOR_CELESTIAL_BODY=no hay datos cargados para el cuerpo celeste {0}
+
+# unknown celestial body: {0}
+UNKNOWN_CELESTIAL_BODY=<MISSING TRANSLATION>
 
 # file {0} is not a JPL ephemerides binary file
 NOT_A_JPL_EPHEMERIDES_BINARY_FILE=el fichero {0} no es un fichero de efemérides binario del JPL
@@ -571,11 +583,17 @@ CCSDS_SENSOR_INDEX_ALREADY_USED=índice de captor {0} ya utilizado
 # missing sensor index {0}
 CCSDS_MISSING_SENSOR_INDEX=falta el indice de captor {0}
 
+# cannot use optional CCSDS value because not present in file
+CCSDS_MISSING_OPTIONAL_VALUE=
+
 # inconsistent number of elements: expected {0}, got {1}
 INCONSISTENT_NUMBER_OF_ELEMENTS=número de elementos incoherentes: esperados {0}, dados {1}
 
 # Creating an aggregate propagator requires at least one constituent propagator, but none were provided.
 NOT_ENOUGH_PROPAGATORS=para crear un propagador combinado se necesita al menos un propagador, pero no se ha especificado ninguno
+
+# aggregate propagator requires either all null or all non-null attitude providers
+BOTH_NULL_AND_NON_NULL_ATTITUDE_PROVIDERS=
 
 # Creating an aggregate attitude provider requires at least one constituent attitude provider, but none were provided.
 NOT_ENOUGH_ATTITUDE_PROVIDERS=la creación de un proveedor de actitud agregado necesita al menos un proveedor de actitud, pero ninguno ha sido previsto
@@ -927,6 +945,9 @@ INFINITE_NRLMSISE00_DENSITY=valor infinito obtenido durante el cálculo de la de
 # Propagator builder cannot be cloned
 PROPAGATOR_BUILDER_NOT_CLONEABLE=el constructor de propagador no se puede clonar
 
+# Orbital parameter factory cannot be cloned
+ORBITAL_PARAMETER_FACTORY_NOT_CLONEABLE=
+
 # field "{0}" is too long, maximum length is {1} characters
 FIELD_TOO_LONG=campo "{0}" demasiado largo, la longitud máxima es {1} caracteres
 
@@ -966,6 +987,9 @@ WRONG_SATELLITES_NUMBER=número de satélites incorrecto en el archivo {0}, se e
 # invalid format: width = {0}, precision = {1}
 INVALID_FORMAT=formato inválido: ancho = {0}, precisión = {1}
 
+# width exceeded: value {0} cannot fit in a field {1} characters wide
+WIDTH_EXCEEDED=
+
 # output {0} has already been closed
 OUTPUT_ALREADY_CLOSED=la salida {0} ya se ha cerrado
 
@@ -977,3 +1001,126 @@ LAMBERT_CORRECTION_DID_NOT_CONVERGE=la corrección de la solución de Lambert pe
 
 # invalid number of revolutions {0} for Lambert problem, a maximum of {1} is possible with the given time of flight
 LAMBERT_INVALID_NUMBER_OF_REVOLUTIONS=número de revoluciones {0} inválido para el problema de Lambert, un máximo de {1} es posible con el tiempo de vuelo especificado
+
+# invalid number of facets: {0}, it must be an odd number
+NUMBER_OF_FACETS_NOT_ODD=número de facetas inválido: {0}, debe ser un número impar
+
+# Invalid DAF FTP string found in DAF file {0}
+INVALID_DAF_FTPSTR = Cadena FTP de DAF invalida en archivo DAF {0}
+
+# Incomplete DAF comment record found
+INCOMPLETE_DAF_COMMENT_RECORD = Registro DAF de comentarios incompleto encontrado
+
+# Incomplete DAF summary record found
+INCOMPLETE_DAF_SUMMARY_RECORD = Registro DAF de resúmenes incompleto encontrado
+
+# DAF endianness string must be BIG-IEEE or LTL-IEEE, got {0}
+INVALID_DAF_ENDIANNESS = La cadena DAF de endianidad debe ser BIG-IEEE o LTL-IEEE, pero se encontró {0}
+
+# DAF file type string must be of the format DAF/XXXX, got {0}
+INVALID_DAF_FILETYPE_STRING = La cadena DAF de tipo de archivo debe seguir el formato DAF/XXXX, pero se encontró {0}
+
+# Incomplete DAF name record found
+INCOMPLETE_DAF_NAME_RECORD = Registro DAF de nombres incompleto encontrado
+
+# DAF object cannot be null
+NULL_DAF = El objeto DAF no puede ser nulo
+
+# Initial position for two-body propagator is zero
+TWOBODY_ZERO_INITIAL_DISTANCE = Posición inicial para el propagador de dos cuerpos es cero
+
+# Initial velocity for two-body propagator is zero
+TWOBODY_ZERO_INITIAL_VELOCITY = Velocidad inicial para el propagador de dos cuerpos es cero
+
+# Rectilinear motion detected in two-body propagator
+TWOBODY_RECTILINEAR_MOTION = Movimiento rectilíneo detectado en el propagador de dos cuerpos
+
+# Two-body propagation numerically unstable
+TWOBODY_UNSTABLE_PROPAGATION = Propagación de dos cuerpos es numéricamente inestable
+
+# GM value cannot be negative
+NEGATIVE_GM = El valor de GM no puede ser negativo
+
+# Stumpff function order cannot be negative
+STUMPFF_NEGATIVE_ORDER = El orden de las funciones de Stumpff no puede ser negativo
+
+# Semilatus rectum cannot be negative
+NEGATIVE_SEMILATUS_RECTUM = El semilatus rectum no puede ser negativo
+
+# Eccentricity cannot be negative
+NEGATIVE_ECCENTRICITY = La eccentricidad no puede ser negativa
+
+# Central body radius cannot be negative
+NEGATIVE_CENTRAL_BODY_RADIUS = El radio del cuerpo central no puede ser negativo
+
+# Norm of trajectory pole vector is zero
+ZERO_NORM_TRAJECTORY_POLE_VECTOR = La norma del vector del polo de la trayectoria es cero
+
+# Norm of periapsis vector is zero
+ZERO_NORM_PERIAPSIS_VECTOR = La norma del vector del periastro es cero
+
+# Norm of central body pole vector is zero
+ZERO_NORM_CENTRAL_BODY_POLE_VECTOR = La normal del vector del polo del cuerpo central es cero
+
+# Trajectory pole and periapsis vectors are not orthogonal
+NON_ORTHOGONAL_TRAJECTORY_POLE_PERIAPSIS = Los vectors del polo de la trayectoria y del periastro no son ortogonales
+
+# Semimajor axis cannot be negative
+NEGATIVE_SEMIMAJOR_AXIS = El semieje mayor no puede ser negativo
+
+# Unknown SPK type {0}
+UNKNOWN_SPK_TYPE = El tipo de SPK {0} es desconocido
+
+# Unknown SPK subtype code found for SPK segment of type {0}
+UNKNOWN_SPK_SUBTYPE = Subtipo de SPK desconocido encontrado para segmento SPK de tipo {0}
+
+# Unexpected number of metadata items in type {0} SPK
+SPK_UNEXPECTED_NUMBER_METADATA = Número inesperado de elementos de metadatos en SPK de tipo {0}
+
+# Unexpected number of constants in type {0} SPK
+SPK_UNEXPECTED_NUMBER_CONSTANTS = Número inesperado de constantes en SPK de tipo {0}
+
+# Unexpected data packet size in type {0} SPK"
+SPK_UNEXPECTED_DATA_PACKET_SIZE = Tamaño de paquete de datos inesperado en SPK de tipo {0}
+
+# Target date {0} is outside the interval covered by the SPK segment
+SPK_TARGET_DATE_OUTSIDE_INTERVAL = La fecha objetivo {0} se encuentra fuera del intervalo cubierto por el segmento SPK
+
+# Segment does not contain enough data records to perform {0} interpolation ({1} available, at least {2} needed)
+SPK_INTERPOLATION_SEGMENT_TOO_SHORT = El segmento no contiene suficientes registros de datos para llevar a cabo interpolación de tipo {0} ({1} disponibles, al menos {2} requeridos)
+
+# Unknown PCK segment type {0}.
+UNKNOWN_PCK_TYPE = El tipo de PCK {0} es desconocido.
+
+# Unexpected number of metadata items in type {0} PCK segment
+PCK_UNEXPECTED_NUMBER_METADATA = Número inesperado de elementos de metadatos en segmento PCK de tipo {0}
+
+# Unexpected number of constants in type {0} PCK segment
+PCK_UNEXPECTED_NUMBER_CONSTANTS = Número inesperado de constantes en segmento PCK de tipo {0}
+
+# Unexpected data packet size in type {0} PCK segment
+PCK_UNEXPECTED_DATA_PACKET_SIZE = Tamaño de paquete de datos inesperado en segmento PCK de tipo {0}
+
+# Target date {0} is outside the interval covered by the PCK segment
+PCK_TARGET_DATE_OUTSIDE_INTERVAL = La fecha objetivo {0} se encuentra fuera del intervalo cubierto por el segmento PCK
+
+# PCK segment does not contain enough data records to perform {0} interpolation ({1} available, at least {2} needed)
+PCK_INTERPOLATION_SEGMENT_TOO_SHORT = El segmento PCK no contiene suficientes registros de datos para realizar interpolación de tipo {0} ({1} disponibles, al menos {2} requeridos)
+
+# Comments require {0} records but DAF file record specifies only {1} reserved records
+DAF_INSUFFICIENT_COMMENT_RECORDS = Los comentarios requieren {0} registros pero el registro de archivo DAF especifica solo {1} registros reservados
+
+# File description string is {0} characters long but should be at most 60 characters
+DAF_TOO_LONG_FILEDESCRIPTION_STRING = La cadena de descripción del archivo tiene {0} caracteres pero debería tener como máximo 60 caracteres
+
+# missing unit for {0} record (line {1} of file {2})
+MISSING_ORBEX_UNIT=
+
+# expected {0} satellites for time tag {1} but got {2} (line {3} of file {4})
+INCOMPLETE_ORBEX_DATA=
+
+# wrong number of columns at line {0}, file {1}; {2} columns is not allowed for {3} record
+ORBEX_WRONG_COLUMNS=
+
+# duplicated satellite {0} (line {1}, file {2})
+DUPLICATED_SATELLITE=

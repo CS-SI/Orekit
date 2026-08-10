@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -272,7 +272,7 @@ public enum OrbitElementsType {
             return new double[] {
                 orbit.getA(), orbit.getE(), orbit.getI(),
                 orbit.getRightAscensionOfAscendingNode(),
-                orbit.getPerigeeArgument(), orbit.getTrueAnomaly()
+                orbit.getPeriapsisArgument(), orbit.getTrueAnomaly()
             };
         }
 
@@ -302,7 +302,7 @@ public enum OrbitElementsType {
             return new double[] {
                 orbit.getA(), orbit.getE(), orbit.getI(),
                 orbit.getRightAscensionOfAscendingNode(),
-                orbit.getPerigeeArgument(), orbit.getMeanAnomaly()
+                orbit.getPeriapsisArgument(), orbit.getMeanAnomaly()
             };
         }
 

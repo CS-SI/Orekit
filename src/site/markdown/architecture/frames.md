@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2025 CS GROUP
+<!--- Copyright 2002-2026 CS GROUP
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -237,7 +237,7 @@ of these frames are compliant with IAU poles and prime meridians definitions. Th
 predefined frames are the Sun, the Moon, the eight planets and the Pluto dwarf planet.
 In addition to these real bodies, two points are supported for convenience as if they
 were real bodies: the solar system barycenter and the Earth-Moon barycenter ; in these
-cases, the associated frames are aligned with EME2000. One important case is the solar
+cases, the associated frames are aligned with GCRF. One important case is the solar
 system barycenter, as its associated frame is the ICRF.
 
 ![solar system frames](../images/solar-system-frames.png)

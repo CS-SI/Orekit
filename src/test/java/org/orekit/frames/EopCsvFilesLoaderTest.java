@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,9 +16,8 @@
  */
 package org.orekit.frames;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 import org.hipparchus.stat.descriptive.rank.Percentile;
 import org.junit.jupiter.api.Assertions;
@@ -26,7 +25,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.data.AbstractFilesLoaderTest;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.ChronologicalComparator;
 import org.orekit.utils.IERSConventions;
 
 
@@ -84,22 +82,22 @@ public class EopCsvFilesLoaderTest extends AbstractFilesLoaderTest {
         Assertions.assertEquals(2.325298397135211E-6,   csvHistory.getPoleCorrection(date).getYp(),                1.0e-25);
         Assertions.assertEquals(3.82064825755344E-9,    csvHistory.getEquinoxNutationCorrection(date)[0],          1.0e-25);
         Assertions.assertEquals(-1.1033150064768268E-9, csvHistory.getEquinoxNutationCorrection(date)[1],          1.0e-25);
-        Assertions.assertEquals(1.5135095005872742E-9,  csvHistory.getNonRotatinOriginNutationCorrection(date)[0], 1.0e-25);
-        Assertions.assertEquals(-1.111662473262389E-9,  csvHistory.getNonRotatinOriginNutationCorrection(date)[1], 1.0e-25);
+        Assertions.assertEquals(1.5135095005872742E-9,  csvHistory.getNonRotatingOriginNutationCorrection(date)[0], 1.0e-25);
+        Assertions.assertEquals(-1.111662473262389E-9,  csvHistory.getNonRotatingOriginNutationCorrection(date)[1], 1.0e-25);
     }
 
     private EOPHistory load(final String name) {
         IERSConventions.NutationCorrectionConverter converter =
                         IERSConventions.IERS_2010.getNutationCorrectionConverter();
-        SortedSet<EOPEntry> data = new TreeSet<>(new ChronologicalComparator());
+        List<EOPEntry> data = new ArrayList<>();
         new EopCsvFilesLoader("^" + name + "$", manager, () -> utc).
         fillHistory(converter, data);
         return new EOPHistory(IERSConventions.IERS_2010, EOPHistory.DEFAULT_INTERPOLATION_DEGREE, data, true);
     }
 
-    private final void checkRatesConsistency(final EOPHistory history,
-                                             final double tol10X, final double tol90X,
-                                             final double tol10Y, final double tol90Y) {
+    private void checkRatesConsistency(final EOPHistory history,
+                                       final double tol10X, final double tol90X,
+                                       final double tol10Y, final double tol90Y) {
         
         final List<EOPEntry> entries = history.getEntries();
         double[] sampleX = new double[entries.size() - 2];

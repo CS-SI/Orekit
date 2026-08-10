@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,10 +29,9 @@ import org.orekit.gnss.metric.messages.rtcm.correction.RtcmCombinedCorrectionDat
 import org.orekit.gnss.metric.parser.ByteArrayEncodedMessage;
 import org.orekit.gnss.metric.parser.EncodedMessage;
 import org.orekit.gnss.metric.parser.RtcmMessagesParser;
+import org.orekit.utils.IERSConventions;
 
 public class Rtcm1060Test {
-
-    private double eps = 1.0e-13;
 
     private EncodedMessage message;
 
@@ -72,7 +71,12 @@ public class Rtcm1060Test {
 
     @Test
     public void testPerfectValue() {
-        final Rtcm1060 rtcm1060 = (Rtcm1060) new RtcmMessagesParser(messages, DataContext.getDefault().getTimeScales()).
+        final DataContext context  = DataContext.getDefault();
+        final Rtcm1060 rtcm1060 = (Rtcm1060) new RtcmMessagesParser(messages,
+                                                                   context.getTimeScales(),
+                                                                   context.getFrames().getEME2000(),
+                                                                   context.getFrames().getITRF(IERSConventions.IERS_2010,
+                                                                                               false)).
                                   parse(message, false);
 
         // Verify size
@@ -80,8 +84,9 @@ public class Rtcm1060Test {
 
         // Verify header
         Assertions.assertEquals(1060,                         rtcm1060.getTypeCode());
-        Assertions.assertEquals(517695.0,                     rtcm1060.getHeader().getEpochTime1s(), eps);
-        Assertions.assertEquals(30.0,                         rtcm1060.getHeader().getSsrUpdateInterval().getUpdateInterval(), eps);
+        final double eps = 1.0e-13;
+        Assertions.assertEquals(517695.0, rtcm1060.getHeader().getEpochTime1s(), eps);
+        Assertions.assertEquals(30.0, rtcm1060.getHeader().getSsrUpdateInterval().getUpdateInterval(), eps);
         Assertions.assertEquals(0,                            rtcm1060.getHeader().getMultipleMessageIndicator());
         Assertions.assertEquals(7,                            rtcm1060.getHeader().getIodSsr());
         Assertions.assertEquals(3951,                         rtcm1060.getHeader().getSsrProviderId());
@@ -89,18 +94,18 @@ public class Rtcm1060Test {
         Assertions.assertEquals(1,                            rtcm1060.getHeader().getNumberOfSatellites());
 
         // Verify data for satellite G01
-        final RtcmCombinedCorrectionData g01 = rtcm1060.getDataMap().get("G01").get(0);
+        final RtcmCombinedCorrectionData g01 = rtcm1060.getDataMap().get("G01").getFirst();
         Assertions.assertEquals(1,                            g01.getSatelliteID());
         Assertions.assertEquals(132,                          g01.getGnssIod());
-        Assertions.assertEquals(18.0095,                      g01.getOrbitCorrection().getDeltaOrbitRadial(),        eps);
-        Assertions.assertEquals(122.8668,                     g01.getOrbitCorrection().getDeltaOrbitAlongTrack(),    eps);
-        Assertions.assertEquals(122.8668,                     g01.getOrbitCorrection().getDeltaOrbitCrossTrack(),    eps);
-        Assertions.assertEquals(0.090047,                     g01.getOrbitCorrection().getDotOrbitDeltaRadial(),     eps);
-        Assertions.assertEquals(0.614332,                     g01.getOrbitCorrection().getDotOrbitDeltaAlongTrack(), eps);
-        Assertions.assertEquals(0.614332,                     g01.getOrbitCorrection().getDotOrbitDeltaCrossTrack(), eps);
-        Assertions.assertEquals(96.6527,                      g01.getClockCorrection().getDeltaClockC0(),            eps);
-        Assertions.assertEquals(0.483263,                     g01.getClockCorrection().getDeltaClockC1(),            eps);
-        Assertions.assertEquals(0.61857734,                   g01.getClockCorrection().getDeltaClockC2(),            eps);
+        Assertions.assertEquals(18.0095, g01.getOrbitCorrection().getDeltaOrbitRadial(), eps);
+        Assertions.assertEquals(122.8668, g01.getOrbitCorrection().getDeltaOrbitAlongTrack(), eps);
+        Assertions.assertEquals(122.8668, g01.getOrbitCorrection().getDeltaOrbitCrossTrack(), eps);
+        Assertions.assertEquals(0.090047, g01.getOrbitCorrection().getDotOrbitDeltaRadial(), eps);
+        Assertions.assertEquals(0.614332, g01.getOrbitCorrection().getDotOrbitDeltaAlongTrack(), eps);
+        Assertions.assertEquals(0.614332, g01.getOrbitCorrection().getDotOrbitDeltaCrossTrack(), eps);
+        Assertions.assertEquals(96.6527, g01.getClockCorrection().getDeltaClockC0(), eps);
+        Assertions.assertEquals(0.483263, g01.getClockCorrection().getDeltaClockC1(), eps);
+        Assertions.assertEquals(0.61857734, g01.getClockCorrection().getDeltaClockC2(), eps);
     }
 
     @Test
@@ -109,7 +114,12 @@ public class Rtcm1060Test {
             final byte[] array = new byte[0];
             final EncodedMessage emptyMessage = new ByteArrayEncodedMessage(array);
 
-            new RtcmMessagesParser(messages, DataContext.getDefault().getTimeScales()).parse(emptyMessage, false);
+        final DataContext context  = DataContext.getDefault();
+            new RtcmMessagesParser(messages,
+                                   context.getTimeScales(),
+                                   context.getFrames().getEME2000(),
+                                   context.getFrames().getITRF(IERSConventions.IERS_2010, false)).
+                parse(emptyMessage, false);
 
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {

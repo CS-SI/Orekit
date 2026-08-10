@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -39,6 +39,11 @@ public abstract class AbstractCartesianAdjointEquationTerm implements CartesianA
 
     /** Dimension of gradient. */
     private static final int GRADIENT_DIMENSION = 6;
+
+    /** Simple constructor. */
+    protected AbstractCartesianAdjointEquationTerm() {
+        // nothing to do
+    }
 
     /** {@inheritDoc} */
     @Override

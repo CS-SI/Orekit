@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -47,7 +47,7 @@
  *  detects altitude crossing (and by default stop at descending)
  *  </li>
  *  <li>{@link org.orekit.propagation.events.ApsideDetector ApsideDetector}
- *  detects apside crossing (and by default stop at perigee)
+ *  detects apside crossing (and by default stop at periapsis)
  *  </li>
  *  <li>{@link org.orekit.propagation.events.DateDetector DateDetector}
  *  detects occurrence of a predefine instant (and by default stop there)

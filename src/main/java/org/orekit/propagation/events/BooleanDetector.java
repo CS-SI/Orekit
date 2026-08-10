@@ -22,9 +22,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
-import org.hipparchus.util.FastMath;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.functions.BooleanEventFunction;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.intervals.AdaptableInterval;
@@ -63,25 +64,21 @@ public class BooleanDetector extends AbstractDetector<BooleanDetector> {
     /** Original detectors: the operands. */
     private final List<EventDetector> detectors;
 
-    /** The composition function. Should be associative for predictable behavior. */
-    private final Operator operator;
-
     /**
      * Protected constructor with all the parameters.
      *
      * @param detectors    the operands.
-     * @param operator     reduction operator to apply to value of the g function of the
-     *                     operands.
+     * @param eventFunction reduced event function according to boolean operator.
      * @param detectionSettings event detection settings.
      * @param newHandler   event handler.
+     * @since 14.0
      */
     protected BooleanDetector(final List<EventDetector> detectors,
-                              final Operator operator,
+                              final BooleanEventFunction eventFunction,
                               final EventDetectionSettings detectionSettings,
                               final EventHandler newHandler) {
-        super(detectionSettings, newHandler);
+        super(eventFunction, detectionSettings, newHandler);
         this.detectors = detectors;
-        this.operator = operator;
     }
 
     /**
@@ -129,7 +126,7 @@ public class BooleanDetector extends AbstractDetector<BooleanDetector> {
     public static BooleanDetector andCombine(final Collection<? extends EventDetector> detectors) {
 
         return new BooleanDetector(new ArrayList<>(detectors), // copy for immutability
-                Operator.AND,
+                BooleanEventFunction.andCombine(detectors.stream().map(EventDetector::getEventFunction).collect(Collectors.toList())),
                 new EventDetectionSettings(AdaptableInterval.of(Double.POSITIVE_INFINITY, detectors.stream()
                         .map(EventDetector::getMaxCheckInterval).toArray(AdaptableInterval[]::new)),
                 detectors.stream().map(EventDetector::getThreshold).min(Double::compareTo).get(),
@@ -182,7 +179,7 @@ public class BooleanDetector extends AbstractDetector<BooleanDetector> {
     public static BooleanDetector orCombine(final Collection<? extends EventDetector> detectors) {
 
         return new BooleanDetector(new ArrayList<>(detectors), // copy for immutability
-                Operator.OR,
+                BooleanEventFunction.orCombine(detectors.stream().map(EventDetector::getEventFunction).collect(Collectors.toList())),
                 new EventDetectionSettings(AdaptableInterval.of(Double.POSITIVE_INFINITY, detectors.stream()
                         .map(EventDetector::getMaxCheckInterval).toArray(AdaptableInterval[]::new)),
                 detectors.stream().map(EventDetector::getThreshold).min(Double::compareTo).get(),
@@ -211,37 +208,14 @@ public class BooleanDetector extends AbstractDetector<BooleanDetector> {
     }
 
     @Override
-    public boolean dependsOnTimeOnly() {
-        return getDetectors().stream().allMatch(EventDetector::dependsOnTimeOnly);
-    }
-
-    @Override
-    public boolean dependsOnMainVariablesOnly() {
-        return getDetectors().stream().allMatch(EventDetector::dependsOnMainVariablesOnly);
-    }
-
-    @Override
     public double g(final SpacecraftState s) {
-        // can't use stream/lambda here because g(s) throws a checked exception
-        // so write out and combine the map and reduce loops
-        double ret = Double.NaN; // return value
-        boolean first = true;
-        for (final EventDetector detector : detectors) {
-            if (first) {
-                ret = detector.g(s);
-                first = false;
-            } else {
-                ret = operator.combine(ret, detector.g(s));
-            }
-        }
-        // return the result of applying the operator to all operands
-        return ret;
+        return getEventFunction().value(s);
     }
 
     @Override
     protected BooleanDetector create(final EventDetectionSettings detectionSettings,
                                      final EventHandler newHandler) {
-        return new BooleanDetector(detectors, operator, detectionSettings, newHandler);
+        return new BooleanDetector(detectors, (BooleanEventFunction) getEventFunction(), detectionSettings, newHandler);
     }
 
     @Override
@@ -275,40 +249,6 @@ public class BooleanDetector extends AbstractDetector<BooleanDetector> {
      */
     public List<EventDetector> getDetectors() {
         return new ArrayList<>(detectors);
-    }
-
-    /** Local class for operator. */
-    private enum Operator {
-
-        /** And operator. */
-        AND() {
-
-            @Override
-            /** {@inheritDoc} */
-            public double combine(final double g1, final double g2) {
-                return FastMath.min(g1, g2);
-            }
-
-        },
-
-        /** Or operator. */
-        OR() {
-
-            @Override
-            /** {@inheritDoc} */
-            public double combine(final double g1, final double g2) {
-                return FastMath.max(g1, g2);
-            }
-
-        };
-
-        /** Combine two g functions evaluations.
-         * @param g1 first evaluation
-         * @param g2 second evaluation
-         * @return combined evaluation
-         */
-        public abstract double combine(double g1, double g2);
-
     }
 
 }

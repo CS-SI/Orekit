@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,9 +21,11 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.files.rinex.navigation.RinexNavigation;
 import org.orekit.files.rinex.navigation.RinexNavigationParser;
 import org.orekit.files.rinex.navigation.parsers.ParseInfo;
-import org.orekit.gnss.PredefinedGnssSignal;
 import org.orekit.propagation.analytical.gnss.data.BeidouCivilianNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.BeidouCivilianNavigationMessageFactory;
+import org.orekit.propagation.analytical.gnss.data.BeidouCivilianType;
 import org.orekit.propagation.analytical.gnss.data.BeidouSatelliteType;
+import org.orekit.time.GNSSDate;
 import org.orekit.utils.units.Unit;
 
 /** Parser for Beidou-3 CNAV.
@@ -31,74 +33,76 @@ import org.orekit.utils.units.Unit;
  * @author Luc Maisonobe
  * @since 14.0
  */
-public class BeidouCnv123Parser extends AbstractNavigationParser<BeidouCivilianNavigationMessage> {
+public class BeidouCnv123Parser
+        extends AbstractNavigationParser<BeidouCivilianNavigationMessage, BeidouCivilianNavigationMessageFactory> {
 
     /** Simple constructor.
      * @param parseInfo container for parsing data
-     * @param message container for navigation message
+     * @param factory factory for navigation message
      */
-    public BeidouCnv123Parser(final ParseInfo parseInfo, final BeidouCivilianNavigationMessage message) {
-        super(parseInfo, message);
+    public BeidouCnv123Parser(final ParseInfo parseInfo, final BeidouCivilianNavigationMessageFactory factory) {
+        super(parseInfo, factory);
     }
 
     /** {@inheritDoc} */
     @Override
     public void parseLine00() {
         final ParseInfo parseInfo = getParseInfo();
-        final BeidouCivilianNavigationMessage message = getMessage();
-        parseSvEpochSvClockLine(parseInfo.getTimeScales().getBDT(), parseInfo, message);
+        final BeidouCivilianNavigationMessageFactory factory = getFactory();
+        parseSvEpochSvClockLine(parseInfo.getTimeScales().getBDT(), parseInfo, factory);
     }
 
     /** {@inheritDoc} */
     @Override
     public void parseLine01() {
         super.parseLine01();
-        getMessage().setADot(getParseInfo().parseDouble1(RinexNavigationParser.M_PER_S));
+        final BeidouCivilianNavigationMessageFactory factory = getFactory();
+        factory.getADotDriver().setValue(getParseInfo().parseDouble1(RinexNavigationParser.M_PER_S));
     }
 
     /** {@inheritDoc} */
     @Override
     public void parseLine05() {
         final ParseInfo parseInfo = getParseInfo();
-        final BeidouCivilianNavigationMessage message = getMessage();
-        message.setIDot(parseInfo.parseDouble1(RinexNavigationParser.RAD_PER_S));
-        message.setDeltaN0Dot(parseInfo.parseDouble2(RinexNavigationParser.RAD_PER_S2));
+        final BeidouCivilianNavigationMessageFactory factory = getFactory();
+        factory.getIDotDriver().setValue(parseInfo.parseDouble1(RinexNavigationParser.RAD_PER_S));
+        factory.getDeltaN0DotDriver().setValue(parseInfo.parseDouble2(RinexNavigationParser.RAD_PER_S2));
         try {
-            message.setSatelliteType(BeidouSatelliteType.parseSatelliteType(parseInfo.parseInt3()));
+            factory.setSatelliteType(BeidouSatelliteType.parseSatelliteType(parseInfo.parseInt3()));
         } catch (IllegalArgumentException iae) {
             throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                       parseInfo.getLineNumber(), parseInfo.getName(),
                                       parseInfo.getLine());
         }
-        message.setTime(parseInfo.parseDouble4(Unit.SECOND));
+        factory.getTimeDriver().setValue(parseInfo.parseDouble4(Unit.SECOND));
     }
 
     /** {@inheritDoc} */
     @Override
     public void parseLine06() {
         final ParseInfo parseInfo = getParseInfo();
-        final BeidouCivilianNavigationMessage message = getMessage();
-        message.setSisaiOe(parseInfo.parseInt1());
-        message.setSisaiOcb(parseInfo.parseInt2());
-        message.setSisaiOc1(parseInfo.parseInt3());
-        message.setSisaiOc2(parseInfo.parseInt4());
+        final BeidouCivilianNavigationMessageFactory factory = getFactory();
+        factory.setSisaiOe(parseInfo.parseInt1());
+        factory.setSisaiOcb(parseInfo.parseInt2());
+        factory.setSisaiOc1(parseInfo.parseInt3());
+        factory.setSisaiOc2(parseInfo.parseInt4());
     }
 
     /** {@inheritDoc} */
     @Override
     public void parseLine07() {
         final ParseInfo parseInfo = getParseInfo();
-        final BeidouCivilianNavigationMessage message = getMessage();
-        if (message.getRadioWave().closeTo(PredefinedGnssSignal.B1C)) {
-            message.setIscB1CD(parseInfo.parseDouble1(Unit.SECOND));
+        final BeidouCivilianNavigationMessageFactory factory = getFactory();
+        if (factory.getBeidouType() == BeidouCivilianType.CNV1) {
+            factory.setIscB1CD(parseInfo.parseDouble1(Unit.SECOND));
             // field 2 is spare
-            message.setTgdB1Cp(parseInfo.parseDouble3(Unit.SECOND));
-            message.setTgdB2ap(parseInfo.parseDouble4(Unit.SECOND));
-        } else if (message.getRadioWave().closeTo(PredefinedGnssSignal.B2A)) {
+            factory.setTgdB1Cp(parseInfo.parseDouble3(Unit.SECOND));
+            factory.setTgdB2ap(parseInfo.parseDouble4(Unit.SECOND));
+        } else if (factory.getBeidouType() == BeidouCivilianType.CNV2) {
             // field 1 is spare
-            message.setIscB2AD(parseInfo.parseDouble2(Unit.SECOND));
-            message.setTgdB1Cp(parseInfo.parseDouble3(Unit.SECOND));
-            message.setTgdB2ap(parseInfo.parseDouble4(Unit.SECOND));
+            factory.setIscB2AD(parseInfo.parseDouble2(Unit.SECOND));
+            factory.setTgdB1Cp(parseInfo.parseDouble3(Unit.SECOND));
+            factory.setTgdB2ap(parseInfo.parseDouble4(Unit.SECOND));
         } else {
             parseSismaiHealthIntegrity();
         }
@@ -108,9 +112,11 @@ public class BeidouCnv123Parser extends AbstractNavigationParser<BeidouCivilianN
     @Override
     public void parseLine08() {
         final ParseInfo parseInfo = getParseInfo();
-        final BeidouCivilianNavigationMessage message = getMessage();
-        if (message.getRadioWave().closeTo(PredefinedGnssSignal.B2B)) {
-            message.setTransmissionTime(parseInfo.parseDouble1(Unit.SECOND));
+        final BeidouCivilianNavigationMessageFactory factory = getFactory();
+        if (factory.getBeidouType() == BeidouCivilianType.CNV3) {
+            factory.setTransmissionTime(new GNSSDate(factory.getTimeOfEphemeris().getWeekNumber(),
+                                                     parseInfo.parseDouble1(Unit.SECOND),
+                                                     factory.getSystem()));
             parseInfo.closePendingRecord();
         } else {
             parseSismaiHealthIntegrity();
@@ -121,11 +127,13 @@ public class BeidouCnv123Parser extends AbstractNavigationParser<BeidouCivilianN
     @Override
     public void parseLine09() {
         final ParseInfo parseInfo = getParseInfo();
-        final BeidouCivilianNavigationMessage message = getMessage();
-        message.setTransmissionTime(parseInfo.parseDouble1(Unit.SECOND));
+        final BeidouCivilianNavigationMessageFactory factory = getFactory();
+        factory.setTransmissionTime(new GNSSDate(factory.getTimeOfEphemeris().getWeekNumber(),
+                                                 parseInfo.parseDouble1(Unit.SECOND),
+                                                 factory.getSystem()));
         // field 2 is spare
         // field 3 is spare
-        message.setIODE(parseInfo.parseInt4());
+        factory.setIode(parseInfo.parseInt4());
         parseInfo.closePendingRecord();
     }
 
@@ -140,11 +148,11 @@ public class BeidouCnv123Parser extends AbstractNavigationParser<BeidouCivilianN
      */
     private void parseSismaiHealthIntegrity() {
         final ParseInfo parseInfo = getParseInfo();
-        final BeidouCivilianNavigationMessage message = getMessage();
-        message.setSismai(parseInfo.parseInt1());
-        message.setHealth(parseInfo.parseInt2());
-        message.setIntegrityFlags(parseInfo.parseInt3());
-        message.setIODC(parseInfo.parseInt4());
+        final BeidouCivilianNavigationMessageFactory factory = getFactory();
+        factory.setSismai(parseInfo.parseInt1());
+        factory.setHealth(parseInfo.parseInt2());
+        factory.setIntegrityFlags(parseInfo.parseInt3());
+        factory.setIodc(parseInfo.parseInt4());
     }
 
 }

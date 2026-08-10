@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -48,7 +48,7 @@ class FieldSegment<T extends CalculusFieldElement<T>> {
      * Constructor.
      *
      * @param n   number of intervals for integration (2 points per interval, hence 2n points will be generated)
-     * @param ray ray-perigee parameters
+     * @param ray ray-periapsis parameters
      * @param s1  lower boundary of integration
      * @param s2  upper boundary for integration
      */

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,12 +17,13 @@
 package org.orekit.propagation.analytical;
 
 import org.hipparchus.analysis.differentiation.Gradient;
-import org.orekit.propagation.integration.AbstractGradientConverter;
+import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.AbstractGradientConverter;
 import org.orekit.utils.ParameterDriversProvider;
 
 /**
  * Converter for analytical orbit propagator.
- *
+ * <img src="doc-files/gradient-converters-class-diagram.png" alt="class diagram">
  * @author Bryan Cazabonne
  * @since 11.1
  */
@@ -37,7 +38,11 @@ public abstract class AbstractAnalyticalGradientConverter
     protected AbstractAnalyticalGradientConverter(final AbstractAnalyticalPropagator propagator,
                                                   final int freeStateParameters) {
         super(freeStateParameters);
-        initStates(buildBasicGradientSpacecraftState(propagator.getInitialState(), freeStateParameters,
+
+        // get the initial state *without additional data*, in order to prevent infinite recursion
+        final SpacecraftState baseInitialState = propagator.getBaseInitialState();
+
+        initStates(buildBasicGradientSpacecraftState(baseInitialState, freeStateParameters,
                                                      freeStateParameters > 3 ? propagator.getAttitudeProvider() : null));
 
     }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -38,6 +38,8 @@ import org.orekit.utils.DataDictionary;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeSpanMap;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -380,7 +382,7 @@ abstract class AbstractStateTransitionMatrixGenerator implements AdditionalDeriv
         private static final long serialVersionUID = 1L;
 
         /** Map for quick access. */
-        private final transient Map<String, Object> objectMap;
+        private transient Map<String, Object> objectMap;
 
         /**
          * Constructor.
@@ -388,6 +390,18 @@ abstract class AbstractStateTransitionMatrixGenerator implements AdditionalDeriv
          */
         LocalDoubleArrayDictionary(final DataDictionary inputDictionary) {
             super(inputDictionary);
+            objectMap = toMap();
+        }
+
+        /**
+         * Deserializes the object from a stream and restores the transient fields.
+         *
+         * @param ois the input stream from which the object is read
+         * @throws IOException if an I/O error occurs during deserialization
+         * @throws ClassNotFoundException if the class of a serialized object cannot be found
+         */
+        private void readObject(final ObjectInputStream ois) throws IOException, ClassNotFoundException {
+            ois.defaultReadObject();
             objectMap = toMap();
         }
 

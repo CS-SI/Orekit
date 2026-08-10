@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Luc Maisonobe
+/* Copyright 2022-2026 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,9 @@
 package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
+import org.orekit.orbits.FieldKeplerianOrbit;
+import org.orekit.time.FieldGNSSDate;
+import org.orekit.time.TimeScales;
 
 import java.util.function.Function;
 
@@ -30,34 +32,37 @@ import java.util.function.Function;
  *
  */
 public class FieldQZSSAlmanac<T extends CalculusFieldElement<T>>
-    extends FieldAbstractAlmanac<T, QZSSAlmanac> {
+    extends FieldGnssOrbitalElements<T, QZSSAlmanac> {
 
     /** Source of the almanac. */
-    private String src;
+    private final String source;
 
     /** Health status. */
-    private int health;
+    private final int health;
 
-    /** Constructor from non-field instance.
-     * @param field    field to which elements belong
-     * @param original regular non-field instance
+    /** Creates a new instance.
+     * @param angularVelocity mean angular velocity of the Earth for the GNSS model
+     * @param weeksInCycle    number of weeks in the GNSS cycle
+     * @param timeScales      known time scales
+     * @param type            type (null if not a navigation message)
+     * @param prn             PRN number of the satellite
+     * @param toe             time of ephemeris (<em>must</em> be consistent with {@code orbit})
+     * @param orbit           Keplerian orbit in Earth-frozen frame
+     * @param nonKeplerian    15 non-Keplerian parameters (in the order given by {@link NonKeplerianDriversFactory}
+     * @param tgd             group delay differential TGD for L1-L2 correction
+     * @param toc             time of clock
+     * @param source          source of the almanac
+     * @param health          health status
+     * @since 14.0
      */
-    public FieldQZSSAlmanac(final Field<T> field, final QZSSAlmanac original) {
-        super(field, original);
-        setSource(original.getSource());
-        setHealth(original.getHealth());
-    }
-
-    /** Constructor from different field instance.
-     * @param <V> type of the old field elements
-     * @param original regular non-field instance
-     * @param converter for field elements
-     */
-    public <V extends CalculusFieldElement<V>> FieldQZSSAlmanac(final Function<V, T> converter,
-                                                                final FieldQZSSAlmanac<V> original) {
-        super(converter, original);
-        setSource(original.getSource());
-        setHealth(original.getHealth());
+    public FieldQZSSAlmanac(final double angularVelocity, final int weeksInCycle,
+                            final TimeScales timeScales, final String type, final int prn,
+                            final FieldGNSSDate<T> toe, final FieldKeplerianOrbit<T> orbit,
+                            final T[] nonKeplerian, final T tgd, final FieldGNSSDate<T> toc,
+                            final String source, final int health) {
+        super(angularVelocity, weeksInCycle, timeScales, type, prn, toe, orbit, nonKeplerian, tgd, toc);
+        this.source = source;
+        this.health = health;
     }
 
     /** {@inheritDoc} */
@@ -67,22 +72,20 @@ public class FieldQZSSAlmanac<T extends CalculusFieldElement<T>>
     }
 
     /** {@inheritDoc} */
-    @SuppressWarnings("unchecked")
     @Override
-    public <U extends CalculusFieldElement<U>, G extends FieldGnssOrbitalElements<U, QZSSAlmanac>>
-        G changeField(final Function<T, U> converter) {
-        return (G) new FieldQZSSAlmanac<>(converter, this);
-    }
-
-    /**
-     * Setter for the Square Root of Semi-Major Axis (m^1/2).
-     * <p>
-     * In addition, this method set the value of the Semi-Major Axis.
-     * </p>
-     * @param sqrtA the Square Root of Semi-Major Axis (m^1/2)
-     */
-    public void setSqrtA(final T sqrtA) {
-        setSma(sqrtA.square());
+    public <U extends CalculusFieldElement<U>>
+        FieldQZSSAlmanac<U> toField(final FieldKeplerianOrbit<U> orbit,
+                                    final U[] nonKeplerian,
+                                    final Function<T, U> converter) {
+        return new FieldQZSSAlmanac<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
+                                      getType(), getPrn(),
+                                      new FieldGNSSDate<>(orbit.getDate().getField(),
+                                                          getTimeOfEphemeris().getGnssDate()),
+                                      orbit, nonKeplerian,
+                                      converter.apply(getTgd()),
+                                      new FieldGNSSDate<>(orbit.getDate().getField(),
+                                                          getTimeOfClock().getGnssDate()),
+                                      getSource(), getHealth());
     }
 
     /**
@@ -91,16 +94,7 @@ public class FieldQZSSAlmanac<T extends CalculusFieldElement<T>>
      * @return the source of this QZSS almanac
      */
     public String getSource() {
-        return src;
-    }
-
-    /**
-     * Sets the source of this GPS almanac.
-     *
-     * @param source the source of this GPS almanac
-     */
-    public void setSource(final String source) {
-        this.src = source;
+        return source;
     }
 
     /**
@@ -110,15 +104,6 @@ public class FieldQZSSAlmanac<T extends CalculusFieldElement<T>>
      */
     public int getHealth() {
         return health;
-    }
-
-    /**
-     * Sets the health status.
-     *
-     * @param health the health status to set
-     */
-    public void setHealth(final int health) {
-        this.health = health;
     }
 
 }

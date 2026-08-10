@@ -123,7 +123,7 @@ public class OrekitEphemerisFile
             if (this.segments.size() == 0) {
                 return 0;
             } else {
-                return this.segments.get(0).getMu();
+                return this.segments.getFirst().getMu();
             }
         }
 
@@ -246,8 +246,8 @@ public class OrekitEphemerisFile
                         interpolationSampleSize);
             }
 
-            final AbsoluteDate start = states.get(0).getDate();
-            final AbsoluteDate stop = states.get(states.size() - 1).getDate();
+            final AbsoluteDate start = states.getFirst().getDate();
+            final AbsoluteDate stop = states.getLast().getDate();
 
             if (this.startDate == null || start.compareTo(this.startDate) < 0) {
                 this.startDate = start;
@@ -262,7 +262,7 @@ public class OrekitEphemerisFile
                 coordinates.add(state.getPVCoordinates());
             }
 
-            final Frame frame = states.get(0).getFrame();
+            final Frame frame = states.getFirst().getFrame();
 
             final OrekitEphemerisSegment newSeg =
                             new OrekitEphemerisSegment(coordinates, frame, body.getGM(), interpolationSampleSize);
@@ -347,13 +347,13 @@ public class OrekitEphemerisFile
         /** {@inheritDoc} */
         @Override
         public AbsoluteDate getStart() {
-            return coordinates.get(0).getDate();
+            return coordinates.getFirst().getDate();
         }
 
         /** {@inheritDoc} */
         @Override
         public AbsoluteDate getStop() {
-            return coordinates.get(coordinates.size() - 1).getDate();
+            return coordinates.getLast().getDate();
         }
 
     }

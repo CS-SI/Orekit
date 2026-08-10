@@ -23,7 +23,6 @@ import java.util.List;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.ode.events.Action;
 import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
 
 /**
@@ -72,18 +71,16 @@ public class FieldRecordAndContinue <T extends CalculusFieldElement<T>> implemen
          * Get the detector.
          *
          * @return the detector that found the event.
-         * @see EventHandler#eventOccurred(SpacecraftState, EventDetector, boolean)
          */
         public FieldEventDetector<T> getDetector() {
             return detector;
         }
 
         /**
-         * Is the g() function increasing?
+         * Check if the g() function is increasing.
          *
          * @return if the sign of the derivative of the g function is positive (true) or
          * negative (false).
-         * @see EventHandler#eventOccurred(SpacecraftState, EventDetector, boolean)
          */
         public boolean isIncreasing() {
             return increasing;
@@ -93,7 +90,6 @@ public class FieldRecordAndContinue <T extends CalculusFieldElement<T>> implemen
          * Get the spacecraft's state at the event.
          *
          * @return the satellite's state when the event was triggered.
-         * @see EventHandler#eventOccurred(SpacecraftState, EventDetector, boolean)
          */
         public FieldSpacecraftState<T> getState() {
             return state;

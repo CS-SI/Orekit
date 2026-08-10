@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -80,45 +80,18 @@ public class OemSegment extends Segment<OemMetadata, OemData>
         return getMetadata().getFrame();
     }
 
-    /** {@inheritDoc}
-     * <p>
-     * This implementation returns {@link #getFrame() defining frame}
-     * if it is {@link Frame#isPseudoInertial() pseudo-inertial}, or
-     * its closest {@link Frame#getParent() ancestor} that is
-     * pseudo-inertial.
-     * </p>
-     */
-    @Override
-    public Frame getInertialFrame() {
-        Frame frame = getFrame();
-        while (!frame.isPseudoInertial()) {
-            frame = frame.getParent();
-        }
-        return frame;
-    }
-
     /** {@inheritDoc} */
     @Override
     public AbsoluteDate getStart() {
         // useable start time overrides start time if it is set
-        final AbsoluteDate start = getMetadata().getUseableStartTime();
-        if (start != null) {
-            return start;
-        } else {
-            return getMetadata().getStartTime();
-        }
+        return getMetadata().getUseableStartTime().orElse(getMetadata().getStartTime());
     }
 
     /** {@inheritDoc} */
     @Override
     public AbsoluteDate getStop() {
         // useable stop time overrides stop time if it is set
-        final AbsoluteDate stop = getMetadata().getUseableStopTime();
-        if (stop != null) {
-            return stop;
-        } else {
-            return getMetadata().getStopTime();
-        }
+        return getMetadata().getUseableStopTime().orElse(getMetadata().getStopTime());
     }
 
     /** {@inheritDoc} */

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -42,7 +42,7 @@ import org.orekit.utils.PVCoordinates;
  * In the simple cases, the underlying event detector may be a basic
  * {@link org.orekit.propagation.events.DateDetector date event}, but it
  * can also be a more elaborate {@link
- * org.orekit.propagation.events.ApsideDetector apside event} for apogee
+ * org.orekit.propagation.events.ApsideDetector apside event} for apoapsis
  * maneuvers for example.</p>
  * <p>The maneuver velocity increment is defined via {@link ImpulseProvider}.
  * If no AttitudeProvider is given, the current attitude of the spacecraft,

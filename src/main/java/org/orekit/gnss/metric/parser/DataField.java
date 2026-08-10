@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -39,6 +39,27 @@ public interface DataField {
      * @return integer value of the field
      */
     default int intValue(final EncodedMessage message) {
+        // this method should be overwritten
+        throw new OrekitInternalError(null);
+    }
+
+    /**
+     * Get the value of the field as a long.
+     * @param message message containing the data
+     * @return long value of the field
+     */
+    default long longValue(final EncodedMessage message) {
+        // this method should be overwritten
+        throw new OrekitInternalError(null);
+    }
+
+    /**
+     * Get the value of the field as a long.
+     * @param message message containing the data
+     * @param n number of bits to decode
+     * @return long value of the field
+     */
+    default long longValue(final EncodedMessage message, final int n) {
         // this method should be overwritten
         throw new OrekitInternalError(null);
     }

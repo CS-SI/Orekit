@@ -1,4 +1,4 @@
-<!--- Copyright 2022-2025 Thales Alenia Space
+<!--- Copyright 2022-2026 Thales Alenia Space
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -69,3 +69,4 @@ to these hints pages:
 | upgrade hints                                 |
 |-----------------------------------------------|
 | [from 12.X to 13.0](./upgrades/12-to-13.html) |
+| [from 13.X to 14.0](./upgrades/13-to-14.html) |

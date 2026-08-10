@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Thales Alenia Space
+/* Copyright 2022-2026 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,7 +28,7 @@ public class InterSatellitesWindUp extends AbstractWindUp<InterSatellitesPhase> 
 
     /** Simple constructor.
      * <p>
-     * The constructor is package protected to enforce use of {@link WindUpFactory}
+     * The constructor is package protected to enforce use of {@link InterSatellitesWindUpFactory}
      * and preserve phase continuity for successive measurements involving the same
      * satellite/receiver pair.
      * </p>

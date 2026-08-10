@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Thales Alenia Space
+/* Copyright 2022-2026 Thales Alenia Space
  * Licensed to CS Communication & Systèmes (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -37,6 +37,11 @@ public class Wang1988 implements WaterVaporPressureProvider {
 
     /** Conversion polynomial. */
     private static final PolynomialFunction E_POLYNOMIAL = new PolynomialFunction(E_COEFFICIENTS);
+
+    /** Simple constructor. */
+    public Wang1988() {
+        // nothing to do
+    }
 
     /** {@inheritDoc} */
     @Override

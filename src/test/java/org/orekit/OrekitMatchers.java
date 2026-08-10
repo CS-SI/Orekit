@@ -16,12 +16,17 @@
  */
 package org.orekit;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.hamcrest.SelfDescribing;
 import org.hamcrest.TypeSafeDiagnosingMatcher;
 import org.hamcrest.TypeSafeMatcher;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.RealMatrix;
@@ -32,11 +37,6 @@ import org.orekit.bodies.GeodeticPoint;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.array;
 
@@ -235,6 +235,26 @@ public class OrekitMatchers {
     }
 
     /**
+     * Matches a {@link Vector3D} to another one.
+     *
+     * @param vector the reference vector
+     * @param absTol the absolute tolerance of comparison, in each dimension.
+     * @param relTol the relative tolerance of comparison, which is multiplied
+     *               by {@code vector}'s magnitude.
+     * @return a matcher that matches if either the absolute or relative
+     * comparison matches in each dimension.
+     */
+    public static Matcher<Vector3D> vectorCloseTo(Vector3D vector,
+                                                  double absTol,
+                                                  double relTol) {
+        final double tol = FastMath.max(absTol, relTol * vector.getNorm());
+        return vector(
+                closeTo(vector.getX(), tol),
+                closeTo(vector.getY(), tol),
+                closeTo(vector.getZ(), tol));
+    }
+
+    /**
      * Match a {@link PVCoordinates}
      *
      * @param position matcher for the position
@@ -366,6 +386,50 @@ public class OrekitMatchers {
         matchers.add(closeTo(number, absTol));
         matchers.add(relativelyCloseTo(number, ulps));
         return anyOf(matchers);
+    }
+
+    /**
+     * Check a number is close to another number using a relative <strong>or</strong>
+     * absolute comparison.
+     *
+     * @param expected the expected value
+     * @param absTol   absolute tolerance of comparison
+     * @param relTol   relative tolerance of {@code number}.
+     * @return a matcher that matches if the differences is less than or equal to absTol
+     * <strong>or</strong> the two numbers differ by less than the relative tolerance.
+     */
+    public static Matcher<Double> numberCloseTo(final double expected,
+                                                final double absTol,
+                                                final double relTol) {
+        return new TypeSafeDiagnosingMatcher<Double>() {
+
+            @Override
+            public void describeTo(Description description) {
+                description.appendText("a numeric value within ")
+                        .appendValue(absTol).appendText(" absolute tolerance or")
+                        .appendValue(relTol).appendText(" relative tolerance of ")
+                        .appendValue(expected);
+            }
+
+            @Override
+            protected boolean matchesSafely(Double item,
+                                            Description mismatchDescription) {
+                final double tol = FastMath.max(absTol, relTol * FastMath.abs(expected));
+                final double difference = item - expected;
+                if (FastMath.abs(difference) > tol || Double.isNaN(item)
+                        || Double.isNaN(expected)) {
+                    mismatchDescription
+                            .appendValue(item)
+                            .appendText(" was off by ")
+                            .appendValue(difference)
+                            .appendText(" absolute and ")
+                            .appendValue(difference / FastMath.abs(expected))
+                            .appendText(" relative");
+                    return false;
+                }
+                return true;
+            }
+        };
     }
 
     /**
@@ -629,6 +693,49 @@ public class OrekitMatchers {
 
             private double actualDelta(Double item) {
                 return (FastMath.abs((item - value)) - delta);
+            }
+        };
+
+    }
+
+    /**
+     * Creates a matcher of {@link Double}s that matches when an examined double
+     * is equal to the specified <code>operand</code>, within a range of +/-
+     * <code>error</code>. <p/> For example:
+     * <pre>assertThat(1.03, is(closeTo(1.0, 0.03)))</pre>
+     *
+     * @param value the expected value of matching doubles
+     * @param delta the delta (+/-) within which matches will be allowed
+     * @return a double matcher.
+     */
+    public static <T extends CalculusFieldElement<T>> Matcher<T> closeTo(
+            final T value,
+            final double delta) {
+
+        return new TypeSafeMatcher<T>() {
+            @Override
+            public boolean matchesSafely(T item) {
+                // actualDelta(item) <= 0.0
+                return actualDelta(item).sign().getReal() <= 0.0;
+            }
+
+            @Override
+            public void describeMismatchSafely(T item, Description mismatchDescription) {
+                mismatchDescription.appendValue(item)
+                        .appendText(" differed by ")
+                        .appendValue(actualDelta(item));
+            }
+
+            @Override
+            public void describeTo(Description description) {
+                description.appendText("a numeric value within ")
+                        .appendValue(delta)
+                        .appendText(" of ")
+                        .appendValue(value);
+            }
+
+            private T actualDelta(T item) {
+                return item.subtract(value).abs().subtract(delta);
             }
         };
 

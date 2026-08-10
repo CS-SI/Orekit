@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,13 +17,12 @@
 
 package org.orekit.files.ccsds.ndm.odm;
 
-import org.orekit.bodies.CelestialBodyFactory;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
+import java.util.Optional;
+
+import org.orekit.annotation.Nullable;
 import org.orekit.files.ccsds.definitions.BodyFacade;
-import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
+import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.FrameFacade;
-import org.orekit.files.ccsds.definitions.ModifiedFrame;
 import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
@@ -46,16 +45,22 @@ public class OdmCommonMetadata extends OdmMetadata {
 
     /** Epoch of reference frame, if not intrinsic to the definition of the
      * reference frame. */
+    @Nullable
     private String frameEpochString;
 
     /** Epoch of reference frame, if not intrinsic to the definition of the
      * reference frame. */
+    @Nullable
     private AbsoluteDate frameEpoch;
 
-    /** Simple constructor.
+    /**
+     * Complete constructor.
+     *
+     * @param frameMapper for creating an Orekit {@link Frame}.
+     * @since 13.1.5
      */
-    public OdmCommonMetadata() {
-        super(null);
+    public OdmCommonMetadata(final CcsdsFrameMapper frameMapper) {
+        super(null, frameMapper);
     }
 
     /** {@inheritDoc} */
@@ -138,28 +143,10 @@ public class OdmCommonMetadata extends OdmMetadata {
      * Keplerian elements data (and for the covariance reference frame if none is given).
      *
      * @return the reference frame
+     * @see #getFrameMapper()
      */
     public Frame getFrame() {
-        if (center.getBody() == null) {
-            throw new OrekitException(OrekitMessages.NO_DATA_LOADED_FOR_CELESTIAL_BODY, center.getName());
-        }
-        if (referenceFrame.asFrame() == null) {
-            throw new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME, referenceFrame.getName());
-        }
-        // Just return frame if we don't need to shift the center based on CENTER_NAME
-        // MCI and ICRF are the only non-Earth centered frames specified in Annex A.
-        final boolean isMci  = referenceFrame.asCelestialBodyFrame() == CelestialBodyFrame.MCI;
-        final boolean isIcrf = referenceFrame.asCelestialBodyFrame() == CelestialBodyFrame.ICRF;
-        final boolean isSolarSystemBarycenter =
-                CelestialBodyFactory.SOLAR_SYSTEM_BARYCENTER.equals(center.getBody().getName());
-        if (!(isMci || isIcrf) && CelestialBodyFactory.EARTH.equals(center.getBody().getName()) ||
-            isMci && CelestialBodyFactory.MARS.equals(center.getBody().getName()) ||
-            isIcrf && isSolarSystemBarycenter) {
-            return referenceFrame.asFrame();
-        }
-        // else, translate frame to specified center.
-        return new ModifiedFrame(referenceFrame.asFrame(), referenceFrame.asCelestialBodyFrame(),
-                                 center.getBody(), center.getName());
+        return getFrameMapper().buildCcsdsFrame(center, referenceFrame, frameEpoch);
     }
 
     /**
@@ -196,8 +183,8 @@ public class OdmCommonMetadata extends OdmMetadata {
      * reference frame.
      * @return epoch of reference frame
      */
-    public AbsoluteDate getFrameEpoch() {
-        return frameEpoch;
+    public Optional<AbsoluteDate> getFrameEpoch() {
+        return Optional.ofNullable(frameEpoch);
     }
 
     /** Set epoch of reference frame, if not intrinsic to the definition of the

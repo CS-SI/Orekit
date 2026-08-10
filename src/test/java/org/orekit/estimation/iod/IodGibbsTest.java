@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -60,7 +60,7 @@ public class IodGibbsTest {
         final Frame frame = context.initialOrbit.getFrame();
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect range measurements
@@ -73,10 +73,10 @@ public class IodGibbsTest {
                                                                new PVMeasurementCreator(),
                                                                0.0, 1.0, 60.0);
 
-        final Vector3D position1 = new Vector3D(measurements.get(0).getObservedValue()[0],
-                                                measurements.get(0).getObservedValue()[1],
-                                                measurements.get(0).getObservedValue()[2]);
-        final PV pv1 = new PV(measurements.get(0).getDate(), position1, Vector3D.ZERO, 0., 0., 1., satellite);
+        final Vector3D position1 = new Vector3D(measurements.getFirst().getObservedValue()[0],
+                                                measurements.getFirst().getObservedValue()[1],
+                                                measurements.getFirst().getObservedValue()[2]);
+        final PV pv1 = new PV(measurements.getFirst().getDate(), position1, Vector3D.ZERO, 0., 0., 1., satellite);
 
         final Vector3D position2 = new Vector3D(measurements.get(1).getObservedValue()[0],
                                                 measurements.get(1).getObservedValue()[1],

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,9 +17,14 @@
 package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
-import org.orekit.gnss.SatelliteSystem;
+import org.orekit.frames.Frame;
+import org.orekit.orbits.FieldKeplerianOrbit;
+import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.time.FieldGNSSDate;
+import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
+
+import java.util.function.DoubleFunction;
 
 /**
  * Class for BeiDou almanac.
@@ -31,20 +36,48 @@ import org.orekit.time.TimeScales;
  * @since 10.0
  *
  */
-public class BeidouAlmanac extends AbstractAlmanac<BeidouAlmanac> {
+public class BeidouAlmanac extends GNSSOrbitalElements<BeidouAlmanac> {
 
     /** Health status. */
-    private int health;
+    private final int health;
 
     /**
      * Build a new almanac.
      * @param timeScales known time scales
-     * @param system     satellite system to consider for interpreting week number
-     *                   (may be different from real system, for example in Rinex nav, weeks
-     *                   are always according to GPS)
+     * @param prn        PRN number of the satellite
+     * @param orbit      Keplerian orbit in Earth-frozen frame
+     * @param toe        time of ephemeris (<em>must</em> be consistent with {@code orbit})
+     * @param aDot       change rate in semi-major axis (m/s)
+     * @param deltaN0    delta of satellite mean motion
+     * @param deltaN0Dot change rate in Δn₀
+     * @param iDot       inclination rate (rad/s)
+     * @param omegaDot   rate of right ascension (rad/s)
+     * @param cuc        amplitude of the cosine harmonic correction term to the argument of latitude
+     * @param cus        amplitude of the sine harmonic correction term to the argument of latitude
+     * @param crc        amplitude of the cosine harmonic correction term to the orbit radius
+     * @param crs        amplitude of the sine harmonic correction term to the orbit radius
+     * @param cic        amplitude of the cosine harmonic correction term to the inclination
+     * @param cis        amplitude of the sine harmonic correction term to the inclination
+     * @param af0        zero-th order clock correction (s)
+     * @param af1        first order clock correction (s/s)
+     * @param af2        second order clock correction (s/s²)
+     * @param tgd        group delay differential TGD for L1-L2 correction
+     * @param toc        time of clock
+     * @param health     health status
      */
-    public BeidouAlmanac(final TimeScales timeScales, final SatelliteSystem system) {
-        super(GNSSConstants.BEIDOU_MU, GNSSConstants.BEIDOU_AV, GNSSConstants.BEIDOU_WEEK_NB, timeScales, system);
+    public BeidouAlmanac(final TimeScales timeScales, final int prn,
+                         final GNSSDate toe, final KeplerianOrbit orbit,
+                         final double aDot, final double deltaN0, final double deltaN0Dot,
+                         final double iDot, final double omegaDot,
+                         final double cuc, final double cus,
+                         final double crc, final double crs,
+                         final double cic, final double cis,
+                         final double af0, final double af1, final double af2,
+                         final double tgd, final GNSSDate toc, final int health) {
+        super(GNSSConstants.BEIDOU_AV, GNSSConstants.BEIDOU_WEEK_NB, timeScales, null, prn,
+              toe, orbit, aDot, deltaN0, deltaN0Dot, iDot, omegaDot,
+              cuc, cus, crc, crs, cic, cis, af0, af1, af2, tgd, toc);
+        this.health = health;
     }
 
     /** Constructor from field instance.
@@ -53,54 +86,36 @@ public class BeidouAlmanac extends AbstractAlmanac<BeidouAlmanac> {
      */
     public <T extends CalculusFieldElement<T>> BeidouAlmanac(final FieldBeidouAlmanac<T> original) {
         super(original);
-        setHealth(original.getHealth());
+        health = original.getHealth();
     }
 
     /** {@inheritDoc} */
-    @SuppressWarnings("unchecked")
     @Override
-    public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, BeidouAlmanac>>
-        F toField(final Field<T> field) {
-        return (F) new FieldBeidouAlmanac<>(field, this);
+    public <T extends CalculusFieldElement<T>>
+        FieldBeidouAlmanac<T> toField(final FieldKeplerianOrbit<T> orbit,
+                                      final T[] nonKeplerian,
+                                      final DoubleFunction<T> converter) {
+        return new FieldBeidouAlmanac<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
+                                        getType(), getPrn(),
+                                        new FieldGNSSDate<>(orbit.getDate().getField(), getTimeOfEphemeris()),
+                                        orbit, nonKeplerian,
+                                        converter.apply( getTgd()),
+                                        new FieldGNSSDate<>(orbit.getDate().getField(), getTimeOfClock()),
+                                        getHealth());
     }
 
-    /**
-     * Sets the Square Root of Semi-Major Axis (√m).
-     * <p>
-     * In addition, this method set the value of the Semi-Major Axis.
-     * </p>
-     * @param sqrtA the Square Root of Semi-Major Axis (√m)
-     */
-    public void setSqrtA(final double sqrtA) {
-        setSma(sqrtA * sqrtA);
-    }
-
-    /**
-     * Sets the Inclination Angle at Reference Time (rad).
-     *
-     * @param inc the orbit reference inclination
-     * @param dinc the correction of orbit reference inclination at reference time
-     */
-    public void setI0(final double inc, final double dinc) {
-        setI0(inc + dinc);
-    }
-
-    /**
-     * Gets the Health status.
-     *
+    /** Get the Health status.
      * @return the Health status
      */
     public int getHealth() {
         return health;
     }
 
-    /**
-     * Sets the health status.
-     *
-     * @param health the health status to set
-     */
-    public void setHealth(final int health) {
-        this.health = health;
+    /** {@inheritDoc} */
+    @Override
+    public BeidouAlmanacFactory baseFactory(final Frame inertial, final Frame bodyFixed) {
+        return new BeidouAlmanacFactory(getTimeScales(), getTimeOfEphemeris().getSystem(),
+                                        inertial, bodyFixed);
     }
 
 }

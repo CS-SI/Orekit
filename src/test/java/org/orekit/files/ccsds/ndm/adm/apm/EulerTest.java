@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,6 +20,7 @@ import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.junit.jupiter.api.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.definitions.OrekitCcsdsFrameMapper;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -30,7 +31,7 @@ class EulerTest {
     // This test was added to increase overall conditions coverage in the scope of issue 1453
     public void testIssue1453() {
         // GIVEN
-        final Euler euler = new Euler();
+        final Euler euler = new Euler(new OrekitCcsdsFrameMapper());
 
         final String KEY_ANGLES_V1 = "{X|Y|Z}_ANGLE";
         final String KEY_ANGLES_V2 = "ANGLE_{1|2|3}";
@@ -42,15 +43,15 @@ class EulerTest {
         // Assert validation method
         // Assert thrown exceptions for empty angles depending on version
         assertThrows(OrekitException.class, () -> euler.validate(1),
-                     String.format(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY.getSourceString(), KEY_ANGLES_V1));
+                OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY.getSourceString().formatted(KEY_ANGLES_V1));
         assertThrows(OrekitException.class, () -> euler.validate(2),
-                     String.format(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY.getSourceString(), KEY_RATES_V2));
+                OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY.getSourceString().formatted(KEY_RATES_V2));
 
         // Assert thrown exceptions when no angles and rates are defined depending on version
         assertThrows(OrekitException.class, () -> euler.validate(1),
-                     String.format(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY.getSourceString(), KEY_RATES_V1 + "/" + KEY_RATES_V1));
+                OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY.getSourceString().formatted(KEY_RATES_V1 + "/" + KEY_RATES_V1));
         assertThrows(OrekitException.class, () -> euler.validate(2),
-                     String.format(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY.getSourceString(), KEY_ANGLES_V2));
+                OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY.getSourceString().formatted(KEY_ANGLES_V2));
 
         // Assert thrown exceptions for empty rates depending on version
         euler.setIndexedRotationAngle(0, 10);
@@ -58,13 +59,13 @@ class EulerTest {
         euler.setIndexedRotationAngle(2, 12);
 
         assertThrows(OrekitException.class, () -> euler.validate(1),
-                     String.format(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY.getSourceString(), KEY_RATES_V1));
+                OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY.getSourceString().formatted(KEY_RATES_V1));
         assertThrows(OrekitException.class, () -> euler.validate(2),
-                     String.format(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY.getSourceString(), KEY_RATES_V2));
+                OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY.getSourceString().formatted(KEY_RATES_V2));
 
         // Assert labeled rotation rate setting method
         euler.setEulerRotSeq(RotationOrder.XYZ);
-        euler.setIndexedRotationRate(0,Double.NaN);
+        euler.setIndexedRotationRate(0, Double.NaN);
         euler.setIndexedRotationRate(1,-2);
         euler.setIndexedRotationRate(2,-3);
 
@@ -72,9 +73,9 @@ class EulerTest {
         euler.setLabeledRotationRate('X', 4);
         euler.setLabeledRotationRate('X', 5);
 
-        assertEquals(4, euler.getRotationRates()[0]);
-        assertEquals(-2, euler.getRotationRates()[1]);
-        assertEquals(-3, euler.getRotationRates()[2]);
+        assertEquals(4, euler.getRotationRates().orElseThrow()[0]);
+        assertEquals(-2, euler.getRotationRates().orElseThrow()[1]);
+        assertEquals(-3, euler.getRotationRates().orElseThrow()[2]);
     }
 
 }

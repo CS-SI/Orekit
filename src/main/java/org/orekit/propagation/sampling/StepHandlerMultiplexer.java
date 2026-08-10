@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -137,8 +137,8 @@ public class StepHandlerMultiplexer implements OrekitStepHandler {
         final Iterator<OrekitStepHandler> iterator = handlers.iterator();
         while (iterator.hasNext()) {
             final OrekitStepHandler current = iterator.next();
-            if (current instanceof OrekitStepNormalizer &&
-                ((OrekitStepNormalizer) current).getFixedStepHandler() == handler) {
+            if (current instanceof OrekitStepNormalizer normalizer &&
+                normalizer.getFixedStepHandler() == handler) {
                 if (last != null) {
                     // propagation is ongoing, we need to call finish now for this handler
                     current.finish(last);

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -53,9 +53,9 @@ public class TimeConverter {
 
             // relative date
             final double delta = Double.parseDouble(s);
-            if (timeScale instanceof SatelliteClockScale) {
+            if (timeScale instanceof SatelliteClockScale scale) {
                 // satellite clock scale handles drifts internally
-                return ((SatelliteClockScale) timeScale).dateAtCount(delta);
+                return scale.dateAtCount(delta);
             } else {
                 // regular relative date from a known reference
                 return referenceDate.shiftedBy(delta);

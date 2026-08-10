@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -30,8 +30,8 @@ import org.orekit.utils.units.Unit;
 public enum OrbitManeuverHistoryMetadataKey {
 
     /** Comment entry. */
-    COMMENT((token, context, container) ->
-            token.getType() == TokenType.ENTRY ? container.addComment(token.getContentAsNormalizedString()) : true),
+    COMMENT((token, context, container) -> token.getType() != TokenType.ENTRY ||
+                                           container.addComment(token.getContentAsNormalizedString())),
 
     /** Maneuver identification number. */
     MAN_ID((token, context, container) -> token.processAsFreeTextString(container::setManID)),
@@ -110,7 +110,7 @@ public enum OrbitManeuverHistoryMetadataKey {
                                                                     container::setDcRefDir)),
 
     /** Spacecraft body frame in which {@link #DC_BODY_TRIGGER} is specified. */
-    DC_BODY_FRAME((token, context, container) -> token.processAsFrame(f -> container.setDcBodyFrame(f.asSpacecraftBodyFrame()),
+    DC_BODY_FRAME((token, context, container) -> token.processAsFrame(f -> container.setDcBodyFrame(f.asSpacecraftBodyFrame().orElse(null)),
                                                                       context, false, false, true)),
 
     /** Direction in {@link #DC_BODY_FRAME body frame} for triggering duty cycle. */

@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Luc Maisonobe
+/* Copyright 2022-2026 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -44,7 +44,7 @@ public class TruncatingFilter implements DataFilter {
 
     /** {@inheritDoc} */
     @Override
-    public DataSource filter(final DataSource original) throws IOException {
+    public DataSource filter(final DataSource original) {
         return new DataSource(original.getName() + "-truncated-after-line-" + nbLines,
                               () -> new TruncatingReader(original.getOpener().openReaderOnce()));
     }

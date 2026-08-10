@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Thales Alenia Space
+/* Copyright 2022-2026 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -36,6 +36,11 @@ public class RegionalAij extends IonosphereAij {
 
     /** MODIP max. */
     private double modipMax;
+
+    /** Simple constructor. */
+    public RegionalAij() {
+        // nothing to do
+    }
 
     /** Get IDF.
      * @return IDF

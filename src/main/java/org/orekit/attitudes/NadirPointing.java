@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -282,7 +282,7 @@ public class NadirPointing extends GroundPointing {
         // nadir point position in reference frame
         final Vector3D pNadirRef = refToBody.getInverse().transformPosition(pNadirBody);
 
-        return new TimeStampedPVCoordinates(scRef.getDate(), pNadirRef, Vector3D.ZERO, Vector3D.ZERO);
+        return new TimeStampedPVCoordinates(scRef.getDate(), pNadirRef, Vector3D.ZERO);
 
     }
 

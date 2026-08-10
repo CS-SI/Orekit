@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -110,7 +110,7 @@ public class FieldKeplerianPropagatorTest {
                         new FieldKeplerianOrbit<>(new Tuple(k0.getA(),                             k1.getA()),
                                                   new Tuple(k0.getE(),                             k1.getE()),
                                                   new Tuple(k0.getI(),                             k1.getI()),
-                                                  new Tuple(k0.getPerigeeArgument(),               k1.getPerigeeArgument()),
+                                                  new Tuple(k0.getPeriapsisArgument(),               k1.getPeriapsisArgument()),
                                                   new Tuple(k0.getRightAscensionOfAscendingNode(), k1.getRightAscensionOfAscendingNode()),
                                                   new Tuple(k0.getMeanAnomaly(),                   k1.getMeanAnomaly()),
                                                   PositionAngleType.MEAN,
@@ -268,8 +268,8 @@ public class FieldKeplerianPropagatorTest {
     }
 
     @Test
-    void testPerigee() {
-        doTestPerigee(Binary64Field.getInstance());
+    void testPeriapsis() {
+        doTestPeriapsis(Binary64Field.getInstance());
     }
 
     @Test
@@ -644,7 +644,7 @@ public class FieldKeplerianPropagatorTest {
         Assertions.assertEquals(0.0, FastMath.abs(farTarget.durationFrom(propagated.getDate()).getReal()), 1.0e-3);
     }
 
-    private <T extends CalculusFieldElement<T>> void doTestPerigee(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestPeriapsis(Field<T> field) {
         T zero = field.getZero();
         final FieldKeplerianOrbit<T> orbit =
             new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngleType.TRUE,

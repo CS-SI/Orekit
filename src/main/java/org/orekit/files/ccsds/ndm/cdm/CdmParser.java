@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.function.Function;
 
 import org.orekit.data.DataContext;
+import org.orekit.files.ccsds.definitions.CcsdsFrameMapper;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.odm.UserDefined;
@@ -34,6 +35,7 @@ import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
 import org.orekit.files.ccsds.utils.parsing.AbstractConstituentParser;
 import org.orekit.files.ccsds.utils.parsing.ProcessingState;
+import org.orekit.frames.Frame;
 import org.orekit.utils.IERSConventions;
 
 /**
@@ -112,7 +114,6 @@ public class CdmParser extends AbstractConstituentParser<CdmHeader, Cdm, CdmPars
     /** CDM user defined logical block being read. */
     private UserDefined userDefinedBlock;
 
-
     /** Complete constructor.
      * <p>
      * Calling this constructor directly is not recommended. Users should rather use
@@ -124,12 +125,15 @@ public class CdmParser extends AbstractConstituentParser<CdmHeader, Cdm, CdmPars
      * @param dataContext used to retrieve frames, time scales, etc.
      * @param parsedUnitsBehavior behavior to adopt for handling parsed units
      * @param filters filters to apply to parse tokens
-     * @since 12.0
+     * @param frameMapper for creating an Orekit {@link Frame}.
+     * @since 13.1.5
      */
     public CdmParser(final IERSConventions conventions, final boolean simpleEOP, final DataContext dataContext,
                      final ParsedUnitsBehavior parsedUnitsBehavior,
-                     final Function<ParseToken, List<ParseToken>>[] filters) {
-        super(Cdm.ROOT, Cdm.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext, parsedUnitsBehavior, filters);
+                     final Function<ParseToken, List<ParseToken>>[] filters,
+                     final CcsdsFrameMapper frameMapper) {
+        super(Cdm.ROOT, Cdm.FORMAT_VERSION_KEY, conventions, simpleEOP,
+                dataContext, parsedUnitsBehavior, filters, frameMapper);
         this.doRelativeMetadata = true;
         this.isDatafinished = false;
     }
@@ -200,7 +204,7 @@ public class CdmParser extends AbstractConstituentParser<CdmHeader, Cdm, CdmPars
             relativeMetadata = new CdmRelativeMetadata();
             relativeMetadata.setTimeSystem(TimeSystem.UTC);
         }
-        metadata  = new CdmMetadata(getDataContext());
+        metadata  = new CdmMetadata(getDataContext(), getFrameMapper());
         metadata.setRelativeMetadata(relativeMetadata);
 
         // As no time system is defined in CDM because all dates are given in UTC,
@@ -259,10 +263,10 @@ public class CdmParser extends AbstractConstituentParser<CdmHeader, Cdm, CdmPars
             CdmData data = new CdmData(commentsBlock, odParameters, addParameters,
                                              stateVector, covMatrix, additionalCovMetadata);
 
-            if (metadata.getAltCovType() != null && metadata.getAltCovType() == AltCovarianceType.XYZ) {
+            if (metadata.getAltCovType().isPresent() && metadata.getAltCovType().get() == AltCovarianceType.XYZ) {
                 data = new CdmData(commentsBlock, odParameters, addParameters,
                                              stateVector, covMatrix, xyzCovMatrix, additionalCovMetadata);
-            } else if (metadata.getAltCovType() != null && metadata.getAltCovType() == AltCovarianceType.CSIG3EIGVEC3) {
+            } else if (metadata.getAltCovType().isPresent() && metadata.getAltCovType().get() == AltCovarianceType.CSIG3EIGVEC3) {
                 data = new CdmData(commentsBlock, odParameters, addParameters,
                                              stateVector, covMatrix, sig3eigvec3, additionalCovMetadata);
             }
@@ -300,8 +304,7 @@ public class CdmParser extends AbstractConstituentParser<CdmHeader, Cdm, CdmPars
         if (userDefinedBlock != null && userDefinedBlock.getParameters().isEmpty()) {
             userDefinedBlock = null;
         }
-        final Cdm file = new Cdm(header, segments, getConventions(), getDataContext());
-        return file;
+        return new Cdm(header, segments, getConventions(), getDataContext());
     }
 
     /** Add a general comment.
@@ -375,14 +378,14 @@ public class CdmParser extends AbstractConstituentParser<CdmHeader, Cdm, CdmPars
         commentsBlock.refuseFurtherComments();
 
         if (starting) {
-            if (metadata.getAltCovType() == null) {
+            if (metadata.getAltCovType().isEmpty()) {
                 anticipateNext(this::processCovMatrixToken);
             } else {
                 if (Double.isNaN(covMatrix.getCrr())) {
                     // First, handle mandatory RTN covariance section
                     anticipateNext(this::processCovMatrixToken);
-                } else if ( metadata.getAltCovType() == AltCovarianceType.XYZ && xyzCovMatrix == null ||
-                                metadata.getAltCovType() == AltCovarianceType.CSIG3EIGVEC3 && sig3eigvec3 == null ) {
+                } else if ( metadata.getAltCovType().get() == AltCovarianceType.XYZ && xyzCovMatrix == null ||
+                                metadata.getAltCovType().get() == AltCovarianceType.CSIG3EIGVEC3 && sig3eigvec3 == null ) {
                     // Second, add the alternate covariance if provided
                     anticipateNext(this::processAltCovarianceToken);
                 } else if (additionalCovMetadata == null) {
@@ -603,7 +606,7 @@ public class CdmParser extends AbstractConstituentParser<CdmHeader, Cdm, CdmPars
      */
     private boolean processAdditionalParametersToken(final ParseToken token) {
         if (addParameters == null) {
-            addParameters = new AdditionalParameters();
+            addParameters = new AdditionalParameters(getFrameMapper());
         }
         if (moveCommentsIfEmpty(odParameters, addParameters)) {
             // get rid of the empty logical block
@@ -649,7 +652,7 @@ public class CdmParser extends AbstractConstituentParser<CdmHeader, Cdm, CdmPars
             stateVector = null;
         }
 
-        if (metadata.getAltCovType() == null) {
+        if (metadata.getAltCovType().isEmpty()) {
             anticipateNext(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processMetadataToken);
         } else {
             anticipateNext(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processAltCovarianceToken);
@@ -672,34 +675,35 @@ public class CdmParser extends AbstractConstituentParser<CdmHeader, Cdm, CdmPars
     private boolean processAltCovarianceToken(final ParseToken token) {
 
         // Covariance is provided in XYZ
-        if (metadata.getAltCovType() == AltCovarianceType.XYZ && xyzCovMatrix == null) {
-            xyzCovMatrix = new XYZCovariance(true);
+        if (metadata.getAltCovType().isPresent()) {
+            if (metadata.getAltCovType().get() == AltCovarianceType.XYZ && xyzCovMatrix == null) {
+                xyzCovMatrix = new XYZCovariance(true);
 
-            if (moveCommentsIfEmpty(covMatrix, xyzCovMatrix)) {
-                // get rid of the empty logical block
-                covMatrix = null;
+                if (moveCommentsIfEmpty(covMatrix, xyzCovMatrix)) {
+                    // get rid of the empty logical block
+                    covMatrix = null;
+                }
+            }
+            // Covariance is provided in CSIG3EIGVEC3 format
+            if (metadata.getAltCovType().get() == AltCovarianceType.CSIG3EIGVEC3 && sig3eigvec3 == null) {
+                sig3eigvec3 = new SigmaEigenvectorsCovariance(true);
+
+                if (moveCommentsIfEmpty(covMatrix, sig3eigvec3)) {
+                    // get rid of the empty logical block
+                    covMatrix = null;
+                }
             }
         }
-        // Covariance is provided in CSIG3EIGVEC3 format
-        if (metadata.getAltCovType() == AltCovarianceType.CSIG3EIGVEC3 && sig3eigvec3 == null) {
-            sig3eigvec3 = new SigmaEigenvectorsCovariance(true);
-
-            if (moveCommentsIfEmpty(covMatrix, sig3eigvec3)) {
-                // get rid of the empty logical block
-                covMatrix = null;
-            }
-        }
-
 
         anticipateNext(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processAdditionalCovMetadataToken);
         try {
 
-            if (metadata.getAltCovType() != null && metadata.getAltCovType() == AltCovarianceType.XYZ) {
+            if (metadata.getAltCovType().isPresent() && metadata.getAltCovType().get() == AltCovarianceType.XYZ) {
 
                 return token.getName() != null &&
                            XYZCovarianceKey.valueOf(token.getName()).process(token, context, xyzCovMatrix);
 
-            } else if (metadata.getAltCovType() != null && metadata.getAltCovType() == AltCovarianceType.CSIG3EIGVEC3) {
+            } else if (metadata.getAltCovType().isPresent() && metadata.getAltCovType().get() == AltCovarianceType.CSIG3EIGVEC3) {
 
                 return token.getName() != null &&
                            SigmaEigenvectorsCovarianceKey.valueOf(token.getName()).process(token, context, sig3eigvec3);
@@ -764,7 +768,8 @@ public class CdmParser extends AbstractConstituentParser<CdmHeader, Cdm, CdmPars
         anticipateNext(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processMetadataToken);
 
         if (COMMENT.equals(token.getName())) {
-            return token.getType() == TokenType.ENTRY ? userDefinedBlock.addComment(token.getContentAsNormalizedString()) : true;
+            return token.getType() != TokenType.ENTRY ||
+                   userDefinedBlock.addComment(token.getContentAsNormalizedString());
         } else if (token.getName().startsWith(UserDefined.USER_DEFINED_PREFIX)) {
             if (token.getType() == TokenType.ENTRY) {
                 userDefinedBlock.addEntry(token.getName().substring(UserDefined.USER_DEFINED_PREFIX.length()),

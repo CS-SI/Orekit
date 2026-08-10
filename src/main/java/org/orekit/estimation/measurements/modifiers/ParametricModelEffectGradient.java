@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,7 @@
 package org.orekit.estimation.measurements.modifiers;
 
 import org.hipparchus.analysis.differentiation.Gradient;
-import org.orekit.estimation.measurements.GroundStation;
+import org.orekit.estimation.measurements.Observer;
 import org.orekit.propagation.FieldSpacecraftState;
 
 /** Functional interface for parametric models.
@@ -33,6 +33,6 @@ public interface ParametricModelEffectGradient {
      * @param parameters parametric model parameters
      * @return the measurement error due to parametric model
      */
-    Gradient evaluate(GroundStation station, FieldSpacecraftState<Gradient> state, Gradient[] parameters);
+    Gradient evaluate(Observer station, FieldSpacecraftState<Gradient> state, Gradient[] parameters);
 
 }

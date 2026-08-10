@@ -144,7 +144,7 @@ public class IIRVMessageTest {
         assertEquals(97, stereoAheadIIRVMessage.size());
 
         // Test "getVectors"
-        assertEquals(stereoAheadIIRVMessage.get(0), stereoAheadIIRVMessage.getVectors().get(0));
+        assertEquals(stereoAheadIIRVMessage.get(0), stereoAheadIIRVMessage.getVectors().getFirst());
     }
 
     @Test

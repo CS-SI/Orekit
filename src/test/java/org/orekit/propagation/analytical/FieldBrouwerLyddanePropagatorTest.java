@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -285,7 +285,7 @@ public class FieldBrouwerLyddanePropagatorTest {
         final double a = 24396159; // semi major axis in meters
         final double e = 0.01; // eccentricity
         final double i = FastMath.toRadians(7); // inclination
-        final double omega = FastMath.toRadians(180); // perigee argument
+        final double omega = FastMath.toRadians(180); // periapsis argument
         final double raan = FastMath.toRadians(261); // right ascention of ascending node
         final double lM = 0; // mean anomaly
         final FieldOrbit<T> initialOrbit = new FieldKeplerianOrbit<>(zero.add(a), zero.add(e), zero.add(i), zero.add(omega),
@@ -337,8 +337,8 @@ public class FieldBrouwerLyddanePropagatorTest {
         Assertions.assertEquals(NumOrbit.getA(), BLOrbit.getA(), 0.175);
         Assertions.assertEquals(NumOrbit.getE(), BLOrbit.getE(), 3.2e-6);
         Assertions.assertEquals(NumOrbit.getI(), BLOrbit.getI(), 6.9e-8);
-        Assertions.assertEquals(MathUtils.normalizeAngle(NumOrbit.getPerigeeArgument(), FastMath.PI),
-                MathUtils.normalizeAngle(BLOrbit.getPerigeeArgument(), FastMath.PI), 0.0053);
+        Assertions.assertEquals(MathUtils.normalizeAngle(NumOrbit.getPeriapsisArgument(), FastMath.PI),
+                MathUtils.normalizeAngle(BLOrbit.getPeriapsisArgument(), FastMath.PI), 0.0053);
         Assertions.assertEquals(MathUtils.normalizeAngle(NumOrbit.getRightAscensionOfAscendingNode(), FastMath.PI),
                 MathUtils.normalizeAngle(BLOrbit.getRightAscensionOfAscendingNode(), FastMath.PI), 1.2e-6);
         Assertions.assertEquals(MathUtils.normalizeAngle(NumOrbit.getTrueAnomaly(), FastMath.PI),
@@ -363,7 +363,7 @@ public class FieldBrouwerLyddanePropagatorTest {
         final double a = Constants.WGS84_EARTH_EQUATORIAL_RADIUS + 400e3; // semi major axis in meters
         final double e = 0.01; // eccentricity
         final double i = FastMath.toRadians(7); // inclination
-        final double omega = FastMath.toRadians(180); // perigee argument
+        final double omega = FastMath.toRadians(180); // periapsis argument
         final double raan = FastMath.toRadians(261); // right ascention of ascending node
         final double lM = 0; // mean anomaly
         final FieldOrbit<T> initialOrbit = new FieldKeplerianOrbit<>(zero.add(a), zero.add(e), zero.add(i), zero.add(omega),
@@ -465,7 +465,7 @@ public class FieldBrouwerLyddanePropagatorTest {
         final double a = 24396159; // semi major axis in meters
         final double e = 0.01; // eccentricity
         final double i = FastMath.toRadians(7); // inclination
-        final double omega = FastMath.toRadians(180); // perigee argument
+        final double omega = FastMath.toRadians(180); // periapsis argument
         final double raan = FastMath.toRadians(261); // right ascention of ascending node
         final double lM = 0; // mean anomaly
         final FieldOrbit<T> initialOrbit = new FieldKeplerianOrbit<>(zero.add(a), zero.add(e), zero.add(i), zero.add(omega),
@@ -514,8 +514,8 @@ public class FieldBrouwerLyddanePropagatorTest {
         Assertions.assertEquals(NumOrbit.getA(), BLOrbit.getA(), 0.174);
         Assertions.assertEquals(NumOrbit.getE(), BLOrbit.getE(), 3.2e-6);
         Assertions.assertEquals(NumOrbit.getI(), BLOrbit.getI(), 6.9e-8);
-        Assertions.assertEquals(MathUtils.normalizeAngle(NumOrbit.getPerigeeArgument(), FastMath.PI),
-                MathUtils.normalizeAngle(BLOrbit.getPerigeeArgument(), FastMath.PI), 0.0053);
+        Assertions.assertEquals(MathUtils.normalizeAngle(NumOrbit.getPeriapsisArgument(), FastMath.PI),
+                MathUtils.normalizeAngle(BLOrbit.getPeriapsisArgument(), FastMath.PI), 0.0053);
         Assertions.assertEquals(MathUtils.normalizeAngle(NumOrbit.getRightAscensionOfAscendingNode(), FastMath.PI),
                 MathUtils.normalizeAngle(BLOrbit.getRightAscensionOfAscendingNode(), FastMath.PI), 1.2e-6);
         Assertions.assertEquals(MathUtils.normalizeAngle(NumOrbit.getTrueAnomaly(), FastMath.PI),
@@ -539,7 +539,7 @@ public class FieldBrouwerLyddanePropagatorTest {
         final double a = 24396159; // semi major axis in meters
         final double e = 0.01; // eccentricity
         final double i = FastMath.toRadians(7); // inclination
-        final double omega = FastMath.toRadians(180); // perigee argument
+        final double omega = FastMath.toRadians(180); // periapsis argument
         final double raan = FastMath.toRadians(261); // right ascention of ascending node
         final double lM = 0; // mean anomaly
         final FieldOrbit<T> initialOrbit = new FieldKeplerianOrbit<>(zero.add(a), zero.add(e), zero.add(i), zero.add(omega),
@@ -578,8 +578,8 @@ public class FieldBrouwerLyddanePropagatorTest {
         Assertions.assertEquals(BLOrbit1.getA(), BLOrbit2.getA(), 0.0);
         Assertions.assertEquals(BLOrbit1.getE(), BLOrbit2.getE(), 0.0);
         Assertions.assertEquals(BLOrbit1.getI(), BLOrbit2.getI(), 0.0);
-        Assertions.assertEquals(MathUtils.normalizeAngle(BLOrbit1.getPerigeeArgument(), FastMath.PI),
-                MathUtils.normalizeAngle(BLOrbit2.getPerigeeArgument(), FastMath.PI), 0.0);
+        Assertions.assertEquals(MathUtils.normalizeAngle(BLOrbit1.getPeriapsisArgument(), FastMath.PI),
+                MathUtils.normalizeAngle(BLOrbit2.getPeriapsisArgument(), FastMath.PI), 0.0);
         Assertions.assertEquals(MathUtils.normalizeAngle(BLOrbit1.getRightAscensionOfAscendingNode(), FastMath.PI),
                 MathUtils.normalizeAngle(BLOrbit2.getRightAscensionOfAscendingNode(), FastMath.PI), 0.0);
         Assertions.assertEquals(MathUtils.normalizeAngle(BLOrbit1.getTrueAnomaly(), FastMath.PI),
@@ -604,7 +604,7 @@ public class FieldBrouwerLyddanePropagatorTest {
         final double a = 24396159; // semi major axis in meters
         final double e = 0.01; // eccentricity
         final double i = FastMath.toRadians(7); // inclination
-        final double omega = FastMath.toRadians(180); // perigee argument
+        final double omega = FastMath.toRadians(180); // periapsis argument
         final double raan = FastMath.toRadians(261); // right ascention of ascending node
         final double lM = 0; // mean anomaly
         final FieldOrbit<T> initialOrbit = new FieldKeplerianOrbit<>(zero.add(a), zero.add(e), zero.add(i), zero.add(omega),
@@ -630,8 +630,8 @@ public class FieldBrouwerLyddanePropagatorTest {
         Assertions.assertEquals(BLOrbit1.getA(), BLOrbit2.getA(), 0.0);
         Assertions.assertEquals(BLOrbit1.getE(), BLOrbit2.getE(), 0.0);
         Assertions.assertEquals(BLOrbit1.getI(), BLOrbit2.getI(), 0.0);
-        Assertions.assertEquals(MathUtils.normalizeAngle(BLOrbit1.getPerigeeArgument(), FastMath.PI),
-                MathUtils.normalizeAngle(BLOrbit2.getPerigeeArgument(), FastMath.PI), 0.0);
+        Assertions.assertEquals(MathUtils.normalizeAngle(BLOrbit1.getPeriapsisArgument(), FastMath.PI),
+                MathUtils.normalizeAngle(BLOrbit2.getPeriapsisArgument(), FastMath.PI), 0.0);
         Assertions.assertEquals(MathUtils.normalizeAngle(BLOrbit1.getRightAscensionOfAscendingNode(), FastMath.PI),
                 MathUtils.normalizeAngle(BLOrbit2.getRightAscensionOfAscendingNode(), FastMath.PI), 0.0);
         Assertions.assertEquals(MathUtils.normalizeAngle(BLOrbit1.getTrueAnomaly(), FastMath.PI),
@@ -640,8 +640,8 @@ public class FieldBrouwerLyddanePropagatorTest {
         Assertions.assertEquals(BLOrbit1.getA(), BLOrbit3.getA(), 0.0);
         Assertions.assertEquals(BLOrbit1.getE(), BLOrbit3.getE(), 0.0);
         Assertions.assertEquals(BLOrbit1.getI(), BLOrbit3.getI(), 0.0);
-        Assertions.assertEquals(MathUtils.normalizeAngle(BLOrbit1.getPerigeeArgument(), FastMath.PI),
-                MathUtils.normalizeAngle(BLOrbit3.getPerigeeArgument(), FastMath.PI), 0.0);
+        Assertions.assertEquals(MathUtils.normalizeAngle(BLOrbit1.getPeriapsisArgument(), FastMath.PI),
+                MathUtils.normalizeAngle(BLOrbit3.getPeriapsisArgument(), FastMath.PI), 0.0);
         Assertions.assertEquals(MathUtils.normalizeAngle(BLOrbit1.getRightAscensionOfAscendingNode(), FastMath.PI),
                 MathUtils.normalizeAngle(BLOrbit3.getRightAscensionOfAscendingNode(), FastMath.PI), 0.0);
         Assertions.assertEquals(MathUtils.normalizeAngle(BLOrbit1.getTrueAnomaly(), FastMath.PI),
@@ -729,7 +729,7 @@ public class FieldBrouwerLyddanePropagatorTest {
         final double a = 24396159; // semi major axis in meters
         final double e = 0.01; // eccentricity
         final double i = FastMath.acos(1.0 / FastMath.sqrt(5.0)); // critical inclination
-        final double omega = FastMath.toRadians(180); // perigee argument
+        final double omega = FastMath.toRadians(180); // periapsis argument
         final double raan = FastMath.toRadians(261); // right ascention of ascending node
         final double lV = 0; // true anomaly
 
@@ -779,7 +779,7 @@ public class FieldBrouwerLyddanePropagatorTest {
         final double a = 24396159; // semi major axis in meters
         final double e = 0.9; // eccentricity
         final double i = FastMath.toRadians(7); // inclination
-        final double pa = FastMath.toRadians(180); // perigee argument
+        final double pa = FastMath.toRadians(180); // periapsis argument
         final double raan = FastMath.toRadians(261); // right ascention of ascending node
         final double lM = FastMath.toRadians(0); // mean anomaly
         final FieldOrbit<T> orbit = new FieldKeplerianOrbit<>(field,
@@ -813,7 +813,7 @@ public class FieldBrouwerLyddanePropagatorTest {
         final double a = 24396159; // semi major axis in meters
         final double e = 0.9; // eccentricity
         final double i = FastMath.toRadians(7); // inclination
-        final double omega = FastMath.toRadians(180); // perigee argument
+        final double omega = FastMath.toRadians(180); // periapsis argument
         final double raan = FastMath.toRadians(261); // right ascention of ascending node
         final double lM = FastMath.toRadians(0); // mean anomaly
         final FieldOrbit<T> initialOrbit = new FieldKeplerianOrbit<>(zero.add(a), zero.add(e), zero.add(i), zero.add(omega),
@@ -843,7 +843,7 @@ public class FieldBrouwerLyddanePropagatorTest {
         Assertions.assertEquals(finalOrbitFieldReal.getE(), finalOrbit.getE(), Double.MIN_VALUE);
         Assertions.assertEquals(finalOrbitFieldReal.getI(), finalOrbit.getI(), Double.MIN_VALUE);
         Assertions.assertEquals(finalOrbitFieldReal.getRightAscensionOfAscendingNode(), finalOrbit.getRightAscensionOfAscendingNode(), Double.MIN_VALUE);
-        Assertions.assertEquals(finalOrbitFieldReal.getPerigeeArgument(), finalOrbit.getPerigeeArgument(), Double.MIN_VALUE);
+        Assertions.assertEquals(finalOrbitFieldReal.getPeriapsisArgument(), finalOrbit.getPeriapsisArgument(), Double.MIN_VALUE);
         Assertions.assertEquals(finalOrbitFieldReal.getMeanAnomaly(), finalOrbit.getMeanAnomaly(), Double.MIN_VALUE);
         Assertions.assertEquals(0.0, finalOrbitFieldReal.getPosition().distance(finalOrbit.getPosition()), Double.MIN_VALUE);
         Assertions.assertEquals(0.0, finalOrbitFieldReal.getVelocity().distance(finalOrbit.getVelocity()), Double.MIN_VALUE);
@@ -866,7 +866,7 @@ public class FieldBrouwerLyddanePropagatorTest {
         final double a = 24396159; // semi major axis in meters
         final double e = 0.01; // eccentricity
         final double i = FastMath.toRadians(7); // inclination
-        final double omega = FastMath.toRadians(180); // perigee argument
+        final double omega = FastMath.toRadians(180); // periapsis argument
         final double raan = FastMath.toRadians(261); // right ascention of ascending node
         final double lM = FastMath.toRadians(0); // mean anomaly
         final FieldOrbit<T> initialOrbit = new FieldKeplerianOrbit<>(zero.add(a), zero.add(e), zero.add(i), zero.add(omega),
@@ -895,7 +895,7 @@ public class FieldBrouwerLyddanePropagatorTest {
         Assertions.assertEquals(finalOrbitFieldReal.getE(), finalOrbit.getE(), Double.MIN_VALUE);
         Assertions.assertEquals(finalOrbitFieldReal.getI(), finalOrbit.getI(), Double.MIN_VALUE);
         Assertions.assertEquals(finalOrbitFieldReal.getRightAscensionOfAscendingNode(), finalOrbit.getRightAscensionOfAscendingNode(), Double.MIN_VALUE);
-        Assertions.assertEquals(finalOrbitFieldReal.getPerigeeArgument(), finalOrbit.getPerigeeArgument(), Double.MIN_VALUE);
+        Assertions.assertEquals(finalOrbitFieldReal.getPeriapsisArgument(), finalOrbit.getPeriapsisArgument(), Double.MIN_VALUE);
         Assertions.assertEquals(finalOrbitFieldReal.getMeanAnomaly(), finalOrbit.getMeanAnomaly(), Double.MIN_VALUE);
         Assertions.assertEquals(0.0, finalOrbitFieldReal.getPosition().distance(finalOrbit.getPosition()), Double.MIN_VALUE);
         Assertions.assertEquals(0.0, finalOrbitFieldReal.getVelocity().distance(finalOrbit.getVelocity()), Double.MIN_VALUE);
@@ -989,7 +989,7 @@ public class FieldBrouwerLyddanePropagatorTest {
         Assertions.assertTrue(Double.isFinite(orbOsc.getA()));
         Assertions.assertTrue(Double.isFinite(orbOsc.getE()));
         Assertions.assertTrue(Double.isFinite(orbOsc.getI()));
-        Assertions.assertTrue(Double.isFinite(orbOsc.getPerigeeArgument()));
+        Assertions.assertTrue(Double.isFinite(orbOsc.getPeriapsisArgument()));
         Assertions.assertTrue(Double.isFinite(orbOsc.getRightAscensionOfAscendingNode()));
         Assertions.assertTrue(Double.isFinite(orbOsc.getTrueAnomaly()));
 
@@ -1006,7 +1006,7 @@ public class FieldBrouwerLyddanePropagatorTest {
         Assertions.assertTrue(Double.isFinite(orbOsc2.getA()));
         Assertions.assertTrue(Double.isFinite(orbOsc2.getE()));
         Assertions.assertTrue(Double.isFinite(orbOsc2.getI()));
-        Assertions.assertTrue(Double.isFinite(orbOsc2.getPerigeeArgument()));
+        Assertions.assertTrue(Double.isFinite(orbOsc2.getPeriapsisArgument()));
         Assertions.assertTrue(Double.isFinite(orbOsc2.getRightAscensionOfAscendingNode()));
         Assertions.assertTrue(Double.isFinite(orbOsc2.getTrueAnomaly()));
     }

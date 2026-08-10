@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Thales Alenia Space
+/* Copyright 2022-2026 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -49,7 +49,7 @@ public class RinexClockWriter extends BaseRinexWriter<RinexClockHeader> {
     private static final Unit MILLIMETER = Unit.parse("mm");
 
     /** Format for one 11 digits integer field. */
-    private static final FastLongFormatter ELEVEN_DIGITS_INTEGER = new FastLongFormatter(11, false);
+    private static final FastLongFormatter ELEVEN_DIGITS_INTEGER = new FastLongFormatter(11, false, true);
 
     /** Format for one 4.2 digits float field. */
     private static final FastDoubleFormatter FOUR_TWO_DIGITS_FLOAT = new FastDecimalFormatter(4, 2);

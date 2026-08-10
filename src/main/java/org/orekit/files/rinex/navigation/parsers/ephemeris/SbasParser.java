@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -56,13 +56,13 @@ public class SbasParser extends AbstractEphemerisParser<SBASNavigationMessage> {
                                     parseInfo.getTimeScales().getUTC() :
                                     parseInfo.getTimeScales().getGPS();
 
-        message.setEpochToc(parseInfo.parseDate(timeScale));
+        message.setToc(parseInfo.parseDate(timeScale));
         message.setAGf0(parseInfo.parseDouble2(Unit.SECOND));
         message.setAGf1(parseInfo.parseDouble3(RinexNavigationParser.S_PER_S));
         message.setTime(parseInfo.parseDouble4(Unit.SECOND));
 
         // Set the ephemeris epoch (same as time of clock epoch)
-        message.setDate(message.getEpochToc());
+        message.setDate(message.getToc());
 
     }
 

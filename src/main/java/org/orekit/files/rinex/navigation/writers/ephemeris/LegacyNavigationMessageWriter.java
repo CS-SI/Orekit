@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Thales Alenia Space
+/* Copyright 2022-2026 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,11 +25,17 @@ import org.orekit.utils.units.Unit;
 import java.io.IOException;
 
 /** Writer for legacy messages.
+ * @param <O> type of the navigation messages this writer handles
  * @author Luc Maisonobe
  * @since 14.0
  */
 public abstract class LegacyNavigationMessageWriter<O extends LegacyNavigationMessage<O>>
     extends AbstractNavigationMessageWriter<O> {
+
+    /** Simple constructor. */
+    protected LegacyNavigationMessageWriter() {
+        // nothing to do
+    }
 
     /** {@inheritDoc} */
     @Override
@@ -46,7 +52,7 @@ public abstract class LegacyNavigationMessageWriter<O extends LegacyNavigationMe
         writer.indentLine(header);
         writer.writeDouble(message.getIDot(), RinexNavigationParser.RAD_PER_S);
         writer.writeInt(message.getL2Codes());
-        writer.writeInt(message.getWeek());
+        writer.writeInt(message.getTimeOfEphemeris().getWeekNumber());
         writer.writeInt(message.getL2PFlags());
         writer.finishLine();
     }
@@ -59,7 +65,7 @@ public abstract class LegacyNavigationMessageWriter<O extends LegacyNavigationMe
         writer.indentLine(header);
         writeURA(message, writer);
         writer.writeInt(message.getSvHealth());
-        writer.writeDouble(message.getTGD(), Unit.SECOND);
+        writer.writeDouble(message.getTgd(), Unit.SECOND);
         writer.writeInt(message.getIODC());
         writer.finishLine();
     }
@@ -70,7 +76,7 @@ public abstract class LegacyNavigationMessageWriter<O extends LegacyNavigationMe
                                  final RinexNavigationHeader header, final RinexNavigationWriter writer)
         throws IOException {
         writer.indentLine(header);
-        writer.writeDouble(message.getTransmissionTime(), Unit.SECOND);
+        writer.writeDouble(message.getTransmissionTime().getSecondsInWeek(), Unit.SECOND);
         writer.writeInt(message.getFitInterval());
         writer.finishLine();
 

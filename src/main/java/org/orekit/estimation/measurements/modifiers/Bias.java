@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -68,7 +68,7 @@ public class Bias<T extends ObservedMeasurement<T>> implements EstimationModifie
     /** {@inheritDoc} */
     @Override
     public String getEffectName() {
-        return drivers.get(0).getName();
+        return drivers.getFirst().getName();
     }
 
     /** {@inheritDoc}

@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Thales Alenia Space
+/* Copyright 2022-2026 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -61,7 +61,7 @@ import org.orekit.utils.formatting.FastLongFormatter;
 public class RinexObservationWriter extends BaseRinexWriter<RinexObservationHeader> implements AutoCloseable {
 
     /** Format for one 1 digit integer field. */
-    private static final FastLongFormatter ONE_DIGIT_INTEGER = new FastLongFormatter(1, false);
+    private static final FastLongFormatter ONE_DIGIT_INTEGER = new FastLongFormatter(1, false, true);
 
     /** Format for one 8.3 digits float field. */
     private static final FastDoubleFormatter EIGHT_THREE_DIGITS_FLOAT = new FastDecimalFormatter(8, 3);
@@ -561,7 +561,7 @@ public class RinexObservationWriter extends BaseRinexWriter<RinexObservationHead
         // check header has already been written
         checkHeaderWritten();
 
-        if (!pending.isEmpty() && observationDataSet.durationFrom(pending.get(0).getDate()) > EPS_DATE) {
+        if (!pending.isEmpty() && observationDataSet.durationFrom(pending.getFirst().getDate()) > EPS_DATE) {
             // the specified observation belongs to the next batch
             // we must process the current batch of pending observations
             processPending();
@@ -575,7 +575,7 @@ public class RinexObservationWriter extends BaseRinexWriter<RinexObservationHead
     /** Process all pending measurements.
      * @exception IOException if an I/O error occurs.
      */
-    private void processPending() throws IOException {
+    public void processPending() throws IOException {
 
         if (!pending.isEmpty()) {
 
@@ -598,7 +598,7 @@ public class RinexObservationWriter extends BaseRinexWriter<RinexObservationHead
      */
     public void writePendingRinex2Observations() throws IOException {
 
-        final ObservationDataSet first = pending.get(0);
+        final ObservationDataSet first = pending.getFirst();
 
         // EPOCH/SAT
         final DateTimeComponents dtc = first.getDate().getComponents(timeScale).roundIfNeeded(60, 7);
@@ -674,7 +674,7 @@ public class RinexObservationWriter extends BaseRinexWriter<RinexObservationHead
      */
     public void writePendingRinex34Observations() throws IOException {
 
-        final ObservationDataSet first = pending.get(0);
+        final ObservationDataSet first = pending.getFirst();
 
         // EPOCH/SAT
         final DateTimeComponents dtc = first.getDate().getComponents(timeScale).roundIfNeeded(60, 7);

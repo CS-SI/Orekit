@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,7 @@
  */
 package org.orekit.estimation.leastsquares;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,8 +29,8 @@ import org.junit.jupiter.api.Test;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.estimation.BrouwerLyddaneContext;
-import org.orekit.estimation.BrouwerLyddaneEstimationTestUtils;
+import org.orekit.estimation.EstimationTestUtils;
+import org.orekit.estimation.Context;
 import org.orekit.estimation.measurements.EstimationsProvider;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservedMeasurement;
@@ -54,17 +55,14 @@ public class BrouwerLyddaneBatchLSEstimatorTest {
     @Test
     public void testPV() {
 
-        BrouwerLyddaneContext context = BrouwerLyddaneEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
-        final BrouwerLyddanePropagatorBuilder propagatorBuilder = context.createBuilder(PositionAngleType.MEAN, true, 1.0);
+        final BrouwerLyddanePropagatorBuilder propagatorBuilder = context.createBrouwerLyddane(PositionAngleType.MEAN, true, 1.0);
 
         // create perfect PV measurements
-        final Propagator propagator = BrouwerLyddaneEstimationTestUtils.createPropagator(context.initialOrbit,
-                                                                                         propagatorBuilder);
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit, propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
-                        BrouwerLyddaneEstimationTestUtils.createMeasurements(propagator,
-                                                                             new PVMeasurementCreator(),
-                                                                             0.0, 1.0, 300.0);
+                        EstimationTestUtils.createMeasurements(propagator, new PVMeasurementCreator(), 0.0, 1.0, 300.0);
 
         // create orbit estimator
         final BatchLSEstimator estimator = new BatchLSEstimator(new LevenbergMarquardtOptimizer(),
@@ -76,11 +74,11 @@ public class BrouwerLyddaneBatchLSEstimatorTest {
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
 
-        BrouwerLyddaneEstimationTestUtils.checkFit(context, estimator, 1, 1,
-                                                   0.0, 1.0e-15,
-                                                   0.0, 1.0e-15,
-                                                   0.0, 1.0e-15,
-                                                   0.0, 1.0e-15);
+        EstimationTestUtils.checkFit(false, context, estimator, 1, 1,
+                                     0.0, 1.0e-15,
+                                     0.0, 1.0e-15,
+                                     0.0, 1.0e-15,
+                                     0.0, 1.0e-15);
 
         RealMatrix normalizedCovariances = estimator.getOptimum().getCovariances(1.0e-10);
         RealMatrix physicalCovariances   = estimator.getPhysicalCovariances(1.0e-10);
@@ -96,16 +94,14 @@ public class BrouwerLyddaneBatchLSEstimatorTest {
     @Test
     public void testKeplerPVBackward() {
 
-        BrouwerLyddaneContext context = BrouwerLyddaneEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
-        final BrouwerLyddanePropagatorBuilder propagatorBuilder =
-                        context.createBuilder(PositionAngleType.MEAN, true, 1.0);
+        final BrouwerLyddanePropagatorBuilder propagatorBuilder = context.createBrouwerLyddane(PositionAngleType.MEAN, true, 1.0);
 
         // create perfect PV measurements
-        final Propagator propagator = BrouwerLyddaneEstimationTestUtils.createPropagator(context.initialOrbit,
-                                                                                         propagatorBuilder);
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit, propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
-                        BrouwerLyddaneEstimationTestUtils.createMeasurements(propagator,
+                        EstimationTestUtils.createMeasurements(propagator,
                                                                new PVMeasurementCreator(),
                                                                0.0, -1.0, 300.0);
 
@@ -119,11 +115,11 @@ public class BrouwerLyddaneBatchLSEstimatorTest {
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
 
-        BrouwerLyddaneEstimationTestUtils.checkFit(context, estimator, 1, 1,
-                                                   0.0, 1.0e-15,
-                                                   0.0, 1.0e-15,
-                                                   0.0, 1.0e-15,
-                                                   0.0, 1.0e-15);
+        EstimationTestUtils.checkFit(false, context, estimator, 1, 1,
+                                     0.0, 1.0e-15,
+                                     0.0, 1.0e-15,
+                                     0.0, 1.0e-15,
+                                     0.0, 1.0e-15);
 
         RealMatrix normalizedCovariances = estimator.getOptimum().getCovariances(1.0e-10);
         RealMatrix physicalCovariances   = estimator.getPhysicalCovariances(1.0e-10);
@@ -141,16 +137,15 @@ public class BrouwerLyddaneBatchLSEstimatorTest {
     @Test
     public void testKeplerRange() {
 
-        BrouwerLyddaneContext context = BrouwerLyddaneEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final BrouwerLyddanePropagatorBuilder propagatorBuilder =
-                        context.createBuilder(PositionAngleType.TRUE, true, 1.0);
+                        context.createBrouwerLyddane(PositionAngleType.TRUE, true, 1.0);
 
         // create perfect range measurements
-        final Propagator propagator = BrouwerLyddaneEstimationTestUtils.createPropagator(context.initialOrbit,
-                                                                           propagatorBuilder);
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit, propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
-                        BrouwerLyddaneEstimationTestUtils.createMeasurements(propagator,
+                        EstimationTestUtils.createMeasurements(propagator,
                                                                new TwoWayRangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
 
@@ -164,11 +159,11 @@ public class BrouwerLyddaneBatchLSEstimatorTest {
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
 
-        BrouwerLyddaneEstimationTestUtils.checkFit(context, estimator, 2, 5,
-                                                   0.0, 6.7e-2,
-                                                   0.0, 0.12,
-                                                   0.0, 9.9e-3,
-                                                   0.0, 1.5e-5);
+        EstimationTestUtils.checkFit(false, context, estimator, 2, 5,
+                                     0.0, 6.6e-2,
+                                     0.0, 0.12,
+                                     0.0, 9.8e-3,
+                                     0.0, 1.4e-5);
 
     }
 
@@ -178,18 +173,19 @@ public class BrouwerLyddaneBatchLSEstimatorTest {
     @Test
     public void testKeplerRangeWithOnBoardAntennaOffset() {
 
-        BrouwerLyddaneContext context = BrouwerLyddaneEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final BrouwerLyddanePropagatorBuilder propagatorBuilder =
-                        context.createBuilder(PositionAngleType.MEAN, true, 1.0);
-        propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getFrame(), LOFType.LVLH));
+                        context.createBrouwerLyddane(PositionAngleType.MEAN, true, 1.0);
+        propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getOrbitalParameterFactory().getFrame(),
+                                                            LOFType.LVLH));
         final Vector3D antennaPhaseCenter = new Vector3D(-1.2, 2.3, -0.7);
 
         // create perfect range measurements with antenna offset
-        final Propagator propagator = BrouwerLyddaneEstimationTestUtils.createPropagator(context.initialOrbit,
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
-                        BrouwerLyddaneEstimationTestUtils.createMeasurements(propagator,
+                        EstimationTestUtils.createMeasurements(propagator,
                                                                new TwoWayRangeMeasurementCreator(context,
                                                                                                  Vector3D.ZERO, null,
                                                                                                  antennaPhaseCenter, null,
@@ -210,7 +206,7 @@ public class BrouwerLyddaneBatchLSEstimatorTest {
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
 
-        BrouwerLyddaneEstimationTestUtils.checkFit(context, estimator, 4, 5,
+        EstimationTestUtils.checkFit(false, context, estimator, 4, 5,
                                                    0.0, 0.138,
                                                    0.0, 0.248,
                                                    0.0, 0.022,
@@ -224,26 +220,25 @@ public class BrouwerLyddaneBatchLSEstimatorTest {
     @Test
     public void testKeplerRangeRate() {
 
-        BrouwerLyddaneContext context = BrouwerLyddaneEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final BrouwerLyddanePropagatorBuilder propagatorBuilder =
-                        context.createBuilder(PositionAngleType.MEAN, true, 1.0);
+                        context.createBrouwerLyddane(PositionAngleType.MEAN, true, 1.0);
 
         // create perfect range rate measurements
-        final Propagator propagator = BrouwerLyddaneEstimationTestUtils.createPropagator(context.initialOrbit,
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                                          propagatorBuilder);
         final double groundClockDrift =  4.8e-9;
         for (final GroundStation station : context.stations) {
-            station.getClockDriftDriver().setValue(groundClockDrift);
+            station.getClockModel().getRateDriver().setValue(groundClockDrift);
         }
         final double satClkDrift = 3.2e-10;
         final List<ObservedMeasurement<?>> measurements1 =
-                        BrouwerLyddaneEstimationTestUtils.createMeasurements(propagator,
+                        EstimationTestUtils.createMeasurements(propagator,
                                                                new RangeRateMeasurementCreator(context, false, satClkDrift),
                                                                1.0, 3.0, 300.0);
 
-        final List<ObservedMeasurement<?>> measurements = new ArrayList<>();
-        measurements.addAll(measurements1);
+        final List<ObservedMeasurement<?>> measurements = new ArrayList<>(measurements1);
 
         // create orbit estimator
         final BatchLSEstimator estimator = new BatchLSEstimator(new LevenbergMarquardtOptimizer(),
@@ -255,26 +250,26 @@ public class BrouwerLyddaneBatchLSEstimatorTest {
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
 
-        BrouwerLyddaneEstimationTestUtils.checkFit(context, estimator, 2, 3,
-                                                   0.0, 5.1e-5,
-                                                   0.0, 8.0e-5,
-                                                   0.0, 1.6e-2,
-                                                   0.0, 1.9e-5);
+        EstimationTestUtils.checkFit(false, context, estimator, 2, 3,
+                                     0.0, 5.0e-5,
+                                     0.0, 8.0e-5,
+                                     0.0, 1.6e-2,
+                                     0.0, 1.9e-5);
     }
 
     @Test
     public void testWrappedException() {
 
-        BrouwerLyddaneContext context = BrouwerLyddaneEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final BrouwerLyddanePropagatorBuilder propagatorBuilder =
-                        context.createBuilder(PositionAngleType.MEAN, true, 1.0);
+                        context.createBrouwerLyddane(PositionAngleType.MEAN, true, 1.0);
 
         // create perfect range measurements
-        final Propagator propagator = BrouwerLyddaneEstimationTestUtils.createPropagator(context.initialOrbit,
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                                          propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
-                        BrouwerLyddaneEstimationTestUtils.createMeasurements(propagator,
+                        EstimationTestUtils.createMeasurements(propagator,
                                                                              new TwoWayRangeMeasurementCreator(context),
                                                                              1.0, 3.0, 300.0);
 
@@ -301,11 +296,11 @@ public class BrouwerLyddaneBatchLSEstimatorTest {
         });
 
         try {
-            BrouwerLyddaneEstimationTestUtils.checkFit(context, estimator, 3, 4,
-                                                       0.0, 1.5e-6,
-                                                       0.0, 3.2e-6,
-                                                       0.0, 3.8e-7,
-                                                       0.0, 1.5e-10);
+            EstimationTestUtils.checkFit(false, context, estimator, 3, 4,
+                                         0.0, 1.5e-6,
+                                         0.0, 3.2e-6,
+                                         0.0, 3.8e-7,
+                                         0.0, 1.5e-10);
             Assertions.fail("an exception should have been thrown");
         } catch (DummyException de) {
             // expected
@@ -314,6 +309,7 @@ public class BrouwerLyddaneBatchLSEstimatorTest {
     }
 
     private static class DummyException extends OrekitException {
+        @Serial
         private static final long serialVersionUID = 1L;
         public DummyException() {
             super(OrekitMessages.INTERNAL_ERROR);

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -126,7 +126,7 @@ public class FootprintOverlapDetectorTest {
 
         // above Mediterranean sea, between Illes Balears and Sardigna,
         // pointing to Corsica towards North-East
-        checkEventPair(events.get(0),  events.get(1),
+        checkEventPair(events.getFirst(),  events.get(1),
                        639010.0775,  34.1551, 39.2231,  6.5960, 42.0734,  9.0526);
 
         // above Saint-Chamond (Loire), pointing near Saint-Dié-des-Vosges (Vosges) towards North-East

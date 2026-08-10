@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,6 +26,6 @@ public enum CorrectionApplied {
     YES,
 
     /** Corrections have not been applied to the tracking data. */
-    NO;
+    NO
 
 }

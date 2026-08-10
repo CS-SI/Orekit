@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,9 +16,14 @@
  */
 package org.orekit.propagation.events;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.hipparchus.ode.events.Action;
-import org.hipparchus.util.FastMath;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.functions.BooleanEventFunction;
+import org.orekit.propagation.events.functions.EventFunction;
+import org.orekit.propagation.events.functions.ShiftedEventFunction;
 import org.orekit.propagation.events.handlers.EventHandler;
 
 /** Wrapper shifting events occurrences times.
@@ -55,6 +60,9 @@ public class EventShifter implements DetectorModifier {
     /** Specialized event handler. */
     private final LocalHandler handler;
 
+    /** Event function. */
+    private final EventFunction eventFunction;
+
     /** Build a new instance.
      * <p>The {@link #getMaxCheckInterval() max check interval}, the
      * {@link #getThreshold() convergence threshold} of the raw unshifted
@@ -76,12 +84,7 @@ public class EventShifter implements DetectorModifier {
         this(detector.getDetectionSettings(), detector, useShiftedStates, increasingTimeShift, decreasingTimeShift);
     }
 
-    /** Protected constructor with full parameters.
-     * <p>
-     * This constructor is not public as users are expected to use the builder
-     * API with the various {@code withXxx()} methods to set up the instance
-     * in a readable manner without using a huge amount of parameters.
-     * </p>
+    /** Constructor with full parameters.
      * @param detectionSettings event detection settings
      * @param detector event detector for the raw unshifted event
      * @param useShiftedStates if true, the state provided to {@link
@@ -101,12 +104,25 @@ public class EventShifter implements DetectorModifier {
         this.useShiftedStates = useShiftedStates;
         this.increasingOffset = -increasingTimeShift;
         this.decreasingOffset = -decreasingTimeShift;
+        final ShiftedEventFunction increasingShifted = new ShiftedEventFunction(detector.getEventFunction(), increasingOffset);
+        final ShiftedEventFunction decreasingShifted = new ShiftedEventFunction(detector.getEventFunction(), decreasingOffset);
+        final List<EventFunction> eventFunctionList = new ArrayList<>();
+        eventFunctionList.add(increasingShifted);
+        eventFunctionList.add(decreasingShifted);
+        this.eventFunction = (increasingOffset >= decreasingOffset) ? BooleanEventFunction.orCombine(eventFunctionList) :
+                BooleanEventFunction.andCombine(eventFunctionList);
     }
 
     /** {@inheritDoc} */
     @Override
     public EventHandler getHandler() {
         return handler;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public EventFunction getEventFunction() {
+        return eventFunction;
     }
 
     /** {@inheritDoc} */
@@ -138,13 +154,13 @@ public class EventShifter implements DetectorModifier {
         return -decreasingOffset;
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public double g(final SpacecraftState s) {
-        final double incShiftedG = detector.g(s.shiftedBy(increasingOffset));
-        final double decShiftedG = detector.g(s.shiftedBy(decreasingOffset));
-        return (increasingOffset >= decreasingOffset) ?
-               FastMath.max(incShiftedG, decShiftedG) : FastMath.min(incShiftedG, decShiftedG);
+    /**
+     * Getter for shifted states in handler flag.
+     * @return flag
+     * @since 14.0
+     */
+    public boolean isUseShiftedStates() {
+        return useShiftedStates;
     }
 
     /**
