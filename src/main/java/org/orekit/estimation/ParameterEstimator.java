@@ -52,9 +52,13 @@ public interface ParameterEstimator {
         final PropagatorBuilder[] propagatorBuilders = getPropagatorBuilders();
         for (int i = 0; i < propagatorBuilders.length; ++i) {
             final String suffix = propagatorBuilders.length > 1 ? "[" + i + "]" : null;
-            propagatorBuilders[i].getOrbitalParametersDrivers().getDrivers().stream()
-                    .filter(delegatingDriver -> delegatingDriver.isSelected() || !estimatedOnly)
-                    .forEach(delegatingDriver -> {
+            propagatorBuilders[i].
+                    getOrbitalParameterFactory().
+                    getOrbitalParametersDrivers().
+                    getDrivers().
+                    stream().
+                    filter(delegatingDriver -> delegatingDriver.isSelected() || !estimatedOnly).
+                    forEach(delegatingDriver -> {
                         if (suffix != null && !delegatingDriver.getName().endsWith(suffix)) {
                             // we add suffix only conditionally because the method may already have been called
                             // and suffixes may have already been appended

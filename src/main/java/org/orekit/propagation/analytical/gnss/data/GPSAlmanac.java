@@ -17,9 +17,14 @@
 package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
-import org.orekit.gnss.SatelliteSystem;
+import org.orekit.frames.Frame;
+import org.orekit.orbits.FieldKeplerianOrbit;
+import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.time.FieldGNSSDate;
+import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
+
+import java.util.function.DoubleFunction;
 
 /**
  * This class holds a GPS almanac as read from SEM or YUMA files.
@@ -32,32 +37,70 @@ import org.orekit.time.TimeScales;
  * @since 8.0
  *
  */
-public class GPSAlmanac extends AbstractAlmanac<GPSAlmanac> {
+public class GPSAlmanac extends GNSSOrbitalElements<GPSAlmanac> {
 
     /** Source of the almanac. */
-    private String src;
+    private final String source;
 
     /** SVN number. */
-    private int svn;
+    private final int svn;
 
     /** Health status. */
-    private int health;
+    private final int health;
 
     /** Average URA. */
-    private int ura;
+    private final int ura;
 
     /** Satellite configuration. */
-    private int config;
+    private final int satConfiguration;
 
     /**
      * Constructor.
-     * @param timeScales known time scales
-     * @param system     satellite system to consider for interpreting week number
-     *                   (may be different from real system, for example in Rinex nav, weeks
-     *                   are always according to GPS)
+     * @param timeScales       known time scales
+     * @param prn              PRN number of the satellite
+     * @param toe              time of ephemeris (<em>must</em> be consistent with {@code orbit})
+     * @param orbit            Keplerian orbit in Earth-frozen frame
+     * @param aDot             change rate in semi-major axis (m/s)
+     * @param deltaN0          delta of satellite mean motion
+     * @param deltaN0Dot       change rate in Δn₀
+     * @param iDot             inclination rate (rad/s)
+     * @param omegaDot         rate of right ascension (rad/s)
+     * @param cuc              amplitude of the cosine harmonic correction term to the argument of latitude
+     * @param cus              amplitude of the sine harmonic correction term to the argument of latitude
+     * @param crc              amplitude of the cosine harmonic correction term to the orbit radius
+     * @param crs              amplitude of the sine harmonic correction term to the orbit radius
+     * @param cic              amplitude of the cosine harmonic correction term to the inclination
+     * @param cis              amplitude of the sine harmonic correction term to the inclination
+     * @param af0              zero-th order clock correction (s)
+     * @param af1              first order clock correction (s/s)
+     * @param af2              second order clock correction (s/s²)
+     * @param tgd              group delay differential TGD for L1-L2 correction
+     * @param toc              time of clock
+     * @param source           source of the almanac
+     * @param svn              SVN number
+     * @param health           health status
+     * @param ura              average URA
+     * @param satConfiguration satellite configuration
      */
-    public GPSAlmanac(final TimeScales timeScales, final SatelliteSystem system) {
-        super(GNSSConstants.GPS_MU, GNSSConstants.GPS_AV, GNSSConstants.GPS_WEEK_NB, timeScales, system);
+    public GPSAlmanac(final TimeScales timeScales, final int prn,
+                      final GNSSDate toe, final KeplerianOrbit orbit,
+                      final double aDot, final double deltaN0, final double deltaN0Dot,
+                      final double iDot, final double omegaDot,
+                      final double cuc, final double cus,
+                      final double crc, final double crs,
+                      final double cic, final double cis,
+                      final double af0, final double af1, final double af2,
+                      final double tgd, final GNSSDate toc, final String source, final int svn,
+                      final int health, final int ura, final int satConfiguration) {
+        super(GNSSConstants.GPS_AV, GNSSConstants.GPS_WEEK_NB,
+              timeScales, null, prn,
+              toe, orbit, aDot, deltaN0, deltaN0Dot, iDot, omegaDot,
+              cuc, cus, crc, crs, cic, cis, af0, af1, af2, tgd, toc);
+        this.source           = source;
+        this.svn              = svn;
+        this.health           = health;
+        this.ura              = ura;
+        this.satConfiguration = satConfiguration;
     }
 
     /** Constructor from field instance.
@@ -66,121 +109,70 @@ public class GPSAlmanac extends AbstractAlmanac<GPSAlmanac> {
      */
     public <T extends CalculusFieldElement<T>> GPSAlmanac(final FieldGPSAlmanac<T> original) {
         super(original);
-        setSource(original.getSource());
-        setSVN(original.getSVN());
-        setHealth(original.getHealth());
-        setURA(original.getURA());
-        setSatConfiguration(original.getSatConfiguration());
+        source           = original.getSource();
+        svn              = original.getSVN();
+        health           = original.getHealth();
+        ura              = original.getURA();
+        satConfiguration = original.getSatConfiguration();
     }
 
     /** {@inheritDoc} */
-    @SuppressWarnings("unchecked")
     @Override
-    public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, GPSAlmanac>>
-        F toField(final Field<T> field) {
-        return (F) new FieldGPSAlmanac<>(field, this);
+    public <T extends CalculusFieldElement<T>> FieldGPSAlmanac<T>
+        toField(final FieldKeplerianOrbit<T> orbit,
+                final T[] nonKeplerian,
+                final DoubleFunction<T> converter) {
+        return new FieldGPSAlmanac<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
+                                     getType(), getPrn(),
+                                     new FieldGNSSDate<>(orbit.getDate().getField(), getTimeOfEphemeris()),
+                                     orbit, nonKeplerian,
+                                     converter.apply(getTgd()),
+                                     new FieldGNSSDate<>(orbit.getDate().getField(), getTimeOfClock()),
+                                     getSource(), getSVN(),
+                                     getHealth(), getURA(), getSatConfiguration());
     }
 
-    /**
-     * Setter for the Square Root of Semi-Major Axis (m^1/2).
-     * <p>
-     * In addition, this method set the value of the Semi-Major Axis.
-     * </p>
-     * @param sqrtA the Square Root of Semi-Major Axis (m^1/2)
-     */
-    public void setSqrtA(final double sqrtA) {
-        setSma(sqrtA * sqrtA);
-    }
-
-    /**
-     * Gets the source of this GPS almanac.
+    /** Get the source of this GPS almanac.
      * <p>Sources can be SEM or YUMA, when the almanac is read from a file.</p>
-     *
      * @return the source of this GPS almanac
      */
     public String getSource() {
-        return src;
+        return source;
     }
 
-    /**
-     * Sets the source of this GPS almanac.
-     *
-     * @param source the source of this GPS almanac
-     */
-    public void setSource(final String source) {
-        this.src = source;
-    }
-
-    /**
-     * Gets the satellite "SVN" reference number.
-     *
+    /** Get the satellite "SVN" reference number.
      * @return the satellite "SVN" reference number
      */
     public int getSVN() {
         return svn;
     }
 
-    /**
-     * Sets the "SVN" reference number.
-     *
-     * @param svnNumber the number to set
-     */
-    public void setSVN(final int svnNumber) {
-        this.svn = svnNumber;
-    }
-
-    /**
-     * Gets the Health status.
-     *
+    /** Get the Health status.
      * @return the Health status
      */
     public int getHealth() {
         return health;
     }
 
-    /**
-     * Sets the health status.
-     *
-     * @param health the health status to set
-     */
-    public void setHealth(final int health) {
-        this.health = health;
-    }
-
-    /**
-     * Gets the average URA number.
-     *
+    /** Get the average URA number.
      * @return the average URA number
      */
     public int getURA() {
         return ura;
     }
 
-    /**
-     * Sets the average URA number.
-     *
-     * @param uraNumber the URA number to set
-     */
-    public void setURA(final int uraNumber) {
-        this.ura = uraNumber;
-    }
-
-    /**
-     * Gets the satellite configuration.
-     *
+    /** Get the satellite configuration.
      * @return the satellite configuration
      */
     public int getSatConfiguration() {
-        return config;
+        return satConfiguration;
     }
 
-    /**
-     * Sets the satellite configuration.
-     *
-     * @param satConfiguration the satellite configuration to set
-     */
-    public void setSatConfiguration(final int satConfiguration) {
-        this.config = satConfiguration;
+    /** {@inheritDoc} */
+    @Override
+    public GPSAlmanacFactory baseFactory(final Frame inertial, final Frame bodyFixed) {
+        return new GPSAlmanacFactory(getTimeScales(), getTimeOfEphemeris().getSystem(),
+                                     inertial, bodyFixed);
     }
 
 }

@@ -54,7 +54,7 @@
               Added width check to FastLongFormatter.
           </action>
           <action dev="luc" type="fix" issue="1974">
-              Added getBaseInitialState to Propagator.
+              Added getBaseInitialState to Propagator and FieldPropagator.
           </action>
           <action dev="serrof" type="update" issue="1973">
               Introduce flag for performance in measurement modifier and use it when possible .
@@ -210,6 +210,9 @@
           </action>
           <action dev="serrof" type="add" issue="issue-1870">
               Add FieldEphemeris.
+          </action>
+          <action dev="luc" type="add" issue="1867">
+              Replaced template orbits by orbital parameters factory.
           </action>
           <action dev="xiaozhongguo" type="add" issue="1865">
               Add a method of loadLibration in JPLEphemerisLoader and an new JPLLibration class.

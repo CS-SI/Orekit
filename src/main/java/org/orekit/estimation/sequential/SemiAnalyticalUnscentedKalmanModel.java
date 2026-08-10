@@ -28,6 +28,7 @@ import org.hipparchus.util.FastMath;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.ObservedMeasurement;
+import org.orekit.orbits.EquinoctialOrbitFactory;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
@@ -132,12 +133,13 @@ public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, Uns
                                                  final ParameterDriversList estimatedMeasurementParameters,
                                                  final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
 
+        final EquinoctialOrbitFactory factory = propagatorBuilder.getOrbitalParameterFactory();
         this.builder                         = propagatorBuilder;
-        this.angleType                       = propagatorBuilder.getPositionAngleType();
-        this.orbitType                       = propagatorBuilder.getOrbitType();
+        this.angleType                       = factory.getPositionAngleType();
+        this.orbitType                       = factory.getOrbitType();
         this.estimatedMeasurementsParameters = estimatedMeasurementParameters;
         this.currentMeasurementNumber        = 0;
-        this.currentDate                     = propagatorBuilder.getInitialOrbitDate();
+        this.currentDate                     = factory.getDate();
         this.covarianceMatrixProvider        = covarianceMatrixProvider;
         this.measurementProcessNoiseMatrix   = measurementProcessNoiseMatrix;
 
@@ -146,7 +148,7 @@ public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, Uns
 
         // Set estimated orbital parameters
         this.estimatedOrbitalParameters = new ParameterDriversList();
-        for (final ParameterDriver driver : propagatorBuilder.getOrbitalParametersDrivers().getDrivers()) {
+        for (final ParameterDriver driver : factory.getOrbitalParametersDrivers().getDrivers()) {
 
             // Verify if the driver reference date has been set
             if (driver.getReferenceDate() == null) {
@@ -224,7 +226,7 @@ public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, Uns
         }
 
         KalmanEstimatorUtil.checkDimension(noiseK.getRowDimension(),
-                                           propagatorBuilder.getOrbitalParametersDrivers(),
+                                           factory.getOrbitalParametersDrivers(),
                                            propagatorBuilder.getPropagationParametersDrivers(),
                                            estimatedMeasurementsParameters);
 
@@ -274,7 +276,9 @@ public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, Uns
                                                 Double.POSITIVE_INFINITY);
 
         // Initialize step handler and set it to a parallelized propagator
-        final SemiAnalyticalMeasurementHandler  stepHandler = new SemiAnalyticalMeasurementHandler(this, filter, observedMeasurements, builder.getInitialOrbitDate(), true);
+        final SemiAnalyticalMeasurementHandler  stepHandler =
+            new SemiAnalyticalMeasurementHandler(this, filter, observedMeasurements,
+                                                 builder.getOrbitalParameterFactory().getDate(), true);
         dsstPropagator.getMultiplexer().add(stepHandler);
         dsstPropagator.propagate(tStart, tStart.shiftedBy(overshootTimeRange));
 
@@ -300,7 +304,7 @@ public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, Uns
         final ObservedMeasurement<?> observedMeasurement = measurement.getObservedMeasurement();
         for (final ParameterDriver driver : observedMeasurement.getParametersDrivers()) {
             if (driver.getReferenceDate() == null) {
-                driver.setReferenceDate(builder.getInitialOrbitDate());
+                driver.setReferenceDate(builder.getOrbitalParameterFactory().getDate());
             }
         }
 
@@ -348,9 +352,9 @@ public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, Uns
 
         // Verify dimension
         KalmanEstimatorUtil.checkDimension(noiseK.getRowDimension(),
-                builder.getOrbitalParametersDrivers(),
-                builder.getPropagationParametersDrivers(),
-                estimatedMeasurementsParameters);
+                                           builder.getOrbitalParameterFactory().getOrbitalParametersDrivers(),
+                                           builder.getPropagationParametersDrivers(),
+                                           estimatedMeasurementsParameters);
 
         return noiseK;
     }
@@ -366,12 +370,15 @@ public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, Uns
         final RealVector[] predictedMeasurements = new RealVector[predictedSigmaPoints.length];
 
         // Loop on sigma points
+        final EquinoctialOrbitFactory factory = builder.getOrbitalParameterFactory();
         for (int k = 0; k < predictedSigmaPoints.length; ++k) {
 
             // Calculate the predicted osculating elements for the current mean state
-            final RealVector osculating = computeOsculatingElements(predictedSigmaPoints[k], nominalMeanSpacecraftState, shortPeriodicTerms);
+            final RealVector osculating = computeOsculatingElements(predictedSigmaPoints[k],
+                                                                    nominalMeanSpacecraftState,
+                                                                    shortPeriodicTerms);
             final Orbit osculatingOrbit = orbitType.mapArrayToOrbit(osculating.toArray(), null, angleType,
-                                                                    currentDate, builder.getMu(), builder.getFrame());
+                                                                    currentDate, factory.getMu(), factory.getFrame());
 
             // Then, estimate the measurement
             final EstimatedMeasurement<?> estimated = estimateMeasurement(observedMeasurement, currentMeasurementNumber,
@@ -395,8 +402,9 @@ public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, Uns
 
         // Predicted measurement
         final RealVector osculating = computeOsculatingElements(predictedFilterCorrection, nominalMeanSpacecraftState, shortPeriodicTerms);
+        final EquinoctialOrbitFactory factory = builder.getOrbitalParameterFactory();
         final Orbit osculatingOrbit = orbitType.mapArrayToOrbit(osculating.toArray(), null, angleType,
-                                                                currentDate, builder.getMu(), builder.getFrame());
+                                                                currentDate, factory.getMu(), factory.getFrame());
         predictedSpacecraftState = new SpacecraftState(osculatingOrbit);
         predictedMeasurement = estimateMeasurement(measurement.getObservedMeasurement(), currentMeasurementNumber,
             getPredictedSpacecraftStates());
@@ -426,8 +434,10 @@ public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, Uns
         // Update the previous nominal mean spacecraft state
         // Calculate the corrected osculating elements
         final RealVector osculating = computeOsculatingElements(correctedFilterCorrection, nominalMeanSpacecraftState, shortPeriodicTerms);
-        final Orbit osculatingOrbit = orbitType.mapArrayToOrbit(osculating.toArray(), null, builder.getPositionAngleType(),
-                                                                currentDate, builder.getMu(), builder.getFrame());
+        final EquinoctialOrbitFactory factory = builder.getOrbitalParameterFactory();
+        final Orbit osculatingOrbit = orbitType.mapArrayToOrbit(osculating.toArray(), null,
+                                                                factory.getPositionAngleType(),
+                                                                currentDate, factory.getMu(), factory.getFrame());
 
         // Compute the corrected measurements
         correctedSpacecraftState = new SpacecraftState(osculatingOrbit);
@@ -477,7 +487,7 @@ public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, Uns
         final RealMatrix stm = MatrixUtils.createRealIdentityMatrix(nbDym + nbMeas);
 
         // State transition matrix using Keplerian contribution only
-        final double mu  = builder.getMu();
+        final double mu  = builder.getOrbitalParameterFactory().getMu();
         final double sma = previousNominalMeanSpacecraftState.getOrbit().getA();
         final double dt  = currentDate.durationFrom(previousNominalMeanSpacecraftState.getDate());
         final double contribution = -1.5 * dt * FastMath.sqrt(mu / FastMath.pow(sma, 5));

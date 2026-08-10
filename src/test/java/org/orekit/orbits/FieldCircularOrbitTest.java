@@ -880,18 +880,18 @@ class FieldCircularOrbitTest {
         FieldVector3D<T> velocity = p.getVelocity();
         FieldVector3D<T> momentum = p.getPVCoordinates().getMomentum().normalize();
 
-        T apogeeRadius  = p.getA().multiply( p.getE().add(1));
-        T perigeeRadius = p.getA().multiply(p.getE().negate().add(1));
+        T apoapsisRadius  = p.getA().multiply( p.getE().add(1));
+        T periapsisRadius = p.getA().multiply(p.getE().negate().add(1));
 
         for (T alphaV = zero; alphaV.getReal() <= 2 * FastMath.PI; alphaV=alphaV.add(zero.add(2).multiply(FastMath.PI/100.))) {
             p = new FieldCircularOrbit<>(p.getA() , p.getCircularEx(), p.getCircularEy(), p.getI(),
                                          p.getRightAscensionOfAscendingNode(),
                                          alphaV, PositionAngleType.TRUE, p.getFrame(), date, zero.add(mu));
             position = p.getPosition();
-            // test if the norm of the position is in the range [perigee radius, apogee radius]
+            // test if the norm of the position is in the range [periapsis radius, apoapsis radius]
             // Warning: these tests are without absolute value by choice
-            Assertions.assertTrue((position.getNorm().getReal() - apogeeRadius.getReal())  <= (  apogeeRadius.getReal() * Utils.epsilonTest));
-            Assertions.assertTrue((position.getNorm().getReal() - perigeeRadius.getReal()) >= (- perigeeRadius.getReal() * Utils.epsilonTest));
+            Assertions.assertTrue((position.getNorm().getReal() - apoapsisRadius.getReal())  <= (  apoapsisRadius.getReal() * Utils.epsilonTest));
+            Assertions.assertTrue((position.getNorm().getReal() - periapsisRadius.getReal()) >= (- periapsisRadius.getReal() * Utils.epsilonTest));
 
             position= position.normalize();
             velocity = p.getVelocity();
@@ -926,10 +926,10 @@ class FieldCircularOrbitTest {
         FieldVector3D<T> velocity = pCirEqua.getVelocity();
         FieldVector3D<T> momentum = pCirEqua.getPVCoordinates().getMomentum().normalize();
 
-        T apogeeRadius  = pCirEqua.getA().multiply( pCirEqua.getE().add(1));
-        T perigeeRadius = pCirEqua.getA().multiply(pCirEqua.getE().negate().add(1));
-        // test if apogee equals perigee
-        Assertions.assertEquals(perigeeRadius.getReal(), apogeeRadius.getReal(), 1.e+4 * Utils.epsilonTest * apogeeRadius.getReal());
+        T apoapsisRadius  = pCirEqua.getA().multiply( pCirEqua.getE().add(1));
+        T periapsisRadius = pCirEqua.getA().multiply(pCirEqua.getE().negate().add(1));
+        // test if apoapsis equals periapsis
+        Assertions.assertEquals(periapsisRadius.getReal(), apoapsisRadius.getReal(), 1.e+4 * Utils.epsilonTest * apoapsisRadius.getReal());
 
         for (T alphaV = zero; alphaV.getReal() <= 2 * FastMath.PI; alphaV = alphaV.add(zero.add(2 * FastMath.PI/100.))) {
             pCirEqua = new FieldCircularOrbit<>(pCirEqua.getA() , pCirEqua.getCircularEx(), pCirEqua.getCircularEy(), pCirEqua.getI(),
@@ -937,9 +937,9 @@ class FieldCircularOrbitTest {
                                                alphaV, PositionAngleType.TRUE, pCirEqua.getFrame(), date, zero.add(mu));
             position = pCirEqua.getPosition();
 
-            // test if the norm pf the position is in the range [perigee radius, apogee radius]
-            Assertions.assertTrue((position.getNorm().getReal() - apogeeRadius.getReal())  <= (  apogeeRadius.getReal() * Utils.epsilonTest));
-            Assertions.assertTrue((position.getNorm().getReal() - perigeeRadius.getReal()) >= (- perigeeRadius.getReal() * Utils.epsilonTest));
+            // test if the norm pf the position is in the range [periapsis radius, apoapsis radius]
+            Assertions.assertTrue((position.getNorm().getReal() - apoapsisRadius.getReal())  <= (  apoapsisRadius.getReal() * Utils.epsilonTest));
+            Assertions.assertTrue((position.getNorm().getReal() - periapsisRadius.getReal()) >= (- periapsisRadius.getReal() * Utils.epsilonTest));
 
             position= position.normalize();
             velocity = pCirEqua.getVelocity();

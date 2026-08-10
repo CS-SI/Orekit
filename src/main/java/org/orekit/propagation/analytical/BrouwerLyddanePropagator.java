@@ -1023,7 +1023,7 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator imple
 
         /** Secular correction for mean anomaly l: &delta;<sub>s</sub>l. */
         private final double dsl;
-        /** Secular correction for perigee argument g: &delta;<sub>s</sub>g. */
+        /** Secular correction for periapsis argument g: &delta;<sub>s</sub>g. */
         private final double dsg;
         /** Secular correction for raan h: &delta;<sub>s</sub>h. */
         private final double dsh;
@@ -1135,7 +1135,7 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator imple
                                                    ci2 * (30.0 - n * (96.0 + 90.0 * n) +
                                                           ci2 * (105.0 + n * (144.0 + 25.0 * n))))) +
                   0.9375 * yp4 * n * epp2 * (3.0 - ci2 * (30.0 - 35.0 * ci2));
-            // perigee argument
+            // periapsis argument
             dsg = 1.5 * yp2 * ci2X5M1 +
                   0.09375 * yp22 * (-35.0 + n * (24.0 + 25.0 * n) +
                                     ci2 * (90.0 - n * (192.0 + 126.0 * n) +
@@ -1295,7 +1295,7 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator imple
             final UnivariateDerivative1 tmp = dtM2.multiply(eRate).add(mean.getE());
             final UnivariateDerivative1 epp = tmp.withValue(FastMath.max(0., FastMath.min(tmp.getValue(), MAX_ECC)));
 
-            // argument of perigee
+            // argument of periapsis
             final double gppVal = mean.getPeriapsisArgument() + dsg * not.getValue();
             final UnivariateDerivative1 gpp = new UnivariateDerivative1(MathUtils.normalizeAngle(gppVal, 0.),
                                                                         dsg * n0);
@@ -1495,7 +1495,7 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator imple
             final UnivariateDerivative1 h = FastMath.atan2(di.multiply(shpp).add(dh.multiply(chpp)),
                                                            di.multiply(chpp).subtract(dh.multiply(shpp)));
 
-            // Argument of perigee
+            // Argument of periapsis
             final UnivariateDerivative1 g = z.subtract(l).subtract(h);
 
             // Return a Keplerian orbit

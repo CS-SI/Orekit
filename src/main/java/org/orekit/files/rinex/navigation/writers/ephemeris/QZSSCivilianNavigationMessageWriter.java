@@ -28,7 +28,7 @@ import java.io.IOException;
  * @since 14.0
  */
 public class QZSSCivilianNavigationMessageWriter
-    extends CivilianNavigationMessageWriter<QZSSCivilianNavigationMessage> {
+    extends CivilianLevel2NavigationMessageWriter<QZSSCivilianNavigationMessage> {
 
     /** Simple constructor. */
     public QZSSCivilianNavigationMessageWriter() {
@@ -52,8 +52,8 @@ public class QZSSCivilianNavigationMessageWriter
             writer.finishLine();
         }
         writer.indentLine(header);
-        writer.writeDouble(message.getTransmissionTime(), Unit.SECOND);
-        writer.writeInt(message.getWeek());
+        writer.writeDouble(message.getTransmissionTime().getSecondsInWeek(), Unit.SECOND);
+        writer.writeInt(message.getTransmissionTime().getWeekNumber());
         writer.writeInt(message.getFlags());
         writer.finishLine();
 

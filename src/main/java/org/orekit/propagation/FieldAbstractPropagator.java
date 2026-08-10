@@ -108,8 +108,15 @@ public abstract class FieldAbstractPropagator<T extends CalculusFieldElement<T>>
     }
 
     /** {@inheritDoc} */
-    public FieldSpacecraftState<T> getInitialState() {
+    @Override
+    public FieldSpacecraftState<T> getBaseInitialState() {
         return initialState;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public FieldSpacecraftState<T> getInitialState() {
+        return updateAdditionalData(getBaseInitialState());
     }
 
     /** {@inheritDoc} */

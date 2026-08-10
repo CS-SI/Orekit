@@ -186,7 +186,7 @@ public class Euler extends CommentsContainer {
      * @return true if rates are specified in {@link AttitudeEndpoints#getFrameA() frame A}
      */
     public boolean rateFrameIsA() {
-        return rateFrameIsA == null ? false : rateFrameIsA;
+        return rateFrameIsA != null && rateFrameIsA;
     }
 
     /** Set the frame in which rates are specified.

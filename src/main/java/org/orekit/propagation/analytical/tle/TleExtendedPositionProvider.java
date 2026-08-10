@@ -65,6 +65,6 @@ public class TleExtendedPositionProvider extends AbstractExtendedPositionProvide
     /** {@inheritDoc} */
     @Override
     protected <T extends CalculusFieldElement<T>> FieldTLEPropagator<T> getFieldProvider(final Field<T> field) {
-        return FieldTLEPropagator.selectExtrapolator(new FieldTLE<>(field, tle), teme, tle.getParameters(field));
+        return FieldTLEPropagator.selectExtrapolator(new FieldTLE<>(field, tle), teme);
     }
 }

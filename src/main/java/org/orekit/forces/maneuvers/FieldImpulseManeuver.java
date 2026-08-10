@@ -53,7 +53,7 @@ import org.orekit.utils.FieldPVCoordinates;
  * In the simple cases, the underlying event detector may be a basic
  * {@link org.orekit.propagation.events.FieldDateDetector date event}, but it
  * can also be a more elaborate {@link
- * org.orekit.propagation.events.FieldApsideDetector apside event} for apogee
+ * org.orekit.propagation.events.FieldApsideDetector apside event} for apoapsis
  * maneuvers for example.</p>
  * <p>The maneuver velocity increment is defined via {@link FieldImpulseProvider}.
  * If no AttitudeProvider is given, the current attitude of the spacecraft,

@@ -750,9 +750,9 @@ public class PoissonSeriesParser {
      * @param cTau coefficient for mean lunar time
      * @param cS coefficient for mean longitude of the Moon
      * @param cH coefficient for mean longitude of the Sun
-     * @param cP coefficient for longitude of Moon mean perigee
+     * @param cP coefficient for longitude of Moon mean periapsis
      * @param cNprime negative of the longitude of the Moon's mean ascending node on the ecliptic
-     * @param cPs coefficient for longitude of Sun mean perigee
+     * @param cPs coefficient for longitude of Sun mean periapsis
      * @return computed Doodson number
      */
     private int doodsonToDoodsonNumber(final int cTau,

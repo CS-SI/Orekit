@@ -117,7 +117,7 @@ class SolidTidesTest extends AbstractLegacyForceModelTest {
                 GravityFieldFactory.getNormalizedProvider(5, 5);
 
         // initialization
-        AbsoluteDate date = new AbsoluteDate(1970, 07, 01, 13, 59, 27.816, utc);
+        AbsoluteDate date = new AbsoluteDate(1970, 7, 1, 13, 59, 27.816, utc);
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, FastMath.toRadians(98.7),
                                          FastMath.toRadians(93.0), FastMath.toRadians(15.0 * 22.5),
                                          0, PositionAngleType.MEAN, eme2000, date,
@@ -148,7 +148,7 @@ class SolidTidesTest extends AbstractLegacyForceModelTest {
     void testTideEffect1996() {
         Frame eme2000 = FramesFactory.getEME2000();
         TimeScale utc = TimeScalesFactory.getUTC();
-        AbsoluteDate date = new AbsoluteDate(2003, 07, 01, 13, 59, 27.816, utc);
+        AbsoluteDate date = new AbsoluteDate(2003, 7, 1, 13, 59, 27.816, utc);
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, FastMath.toRadians(98.7),
                                          FastMath.toRadians(93.0), FastMath.toRadians(15.0 * 22.5),
                                          0, PositionAngleType.MEAN, eme2000, date,
@@ -160,7 +160,7 @@ class SolidTidesTest extends AbstractLegacyForceModelTest {
     void testTideEffect2003WithinAnnualPoleRange() {
         Frame eme2000 = FramesFactory.getEME2000();
         TimeScale utc = TimeScalesFactory.getUTC();
-        AbsoluteDate date = new AbsoluteDate(1969, 07, 01, 13, 59, 27.816, utc);
+        AbsoluteDate date = new AbsoluteDate(1969, 7, 1, 13, 59, 27.816, utc);
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, FastMath.toRadians(98.7),
                                          FastMath.toRadians(93.0), FastMath.toRadians(15.0 * 22.5),
                                          0, PositionAngleType.MEAN, eme2000, date,
@@ -172,7 +172,7 @@ class SolidTidesTest extends AbstractLegacyForceModelTest {
     void testTideEffect2003AfterAnnualPoleRange() {
         Frame eme2000 = FramesFactory.getEME2000();
         TimeScale utc = TimeScalesFactory.getUTC();
-        AbsoluteDate date = new AbsoluteDate(2003, 07, 01, 13, 59, 27.816, utc);
+        AbsoluteDate date = new AbsoluteDate(2003, 7, 1, 13, 59, 27.816, utc);
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, FastMath.toRadians(98.7),
                                          FastMath.toRadians(93.0), FastMath.toRadians(15.0 * 22.5),
                                          0, PositionAngleType.MEAN, eme2000, date,
@@ -184,7 +184,7 @@ class SolidTidesTest extends AbstractLegacyForceModelTest {
     void testTideEffect2010BeforePoleModelChange() {
         Frame eme2000 = FramesFactory.getEME2000();
         TimeScale utc = TimeScalesFactory.getUTC();
-        AbsoluteDate date = new AbsoluteDate(2003, 07, 01, 13, 59, 27.816, utc);
+        AbsoluteDate date = new AbsoluteDate(2003, 7, 1, 13, 59, 27.816, utc);
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, FastMath.toRadians(98.7),
                                          FastMath.toRadians(93.0), FastMath.toRadians(15.0 * 22.5),
                                          0, PositionAngleType.MEAN, eme2000, date,
@@ -497,7 +497,7 @@ class SolidTidesTest extends AbstractLegacyForceModelTest {
         final NormalizedSphericalHarmonicsProvider gravityField =
                 GravityFieldFactory.getNormalizedProvider(5, 5);
 
-        final AbsoluteDate date = new AbsoluteDate(2003, 07, 01, 13, 59, 27.816, utc);
+        final AbsoluteDate date = new AbsoluteDate(2003, 7, 1, 13, 59, 27.816, utc);
         final Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, FastMath.toRadians(98.7),
                                                FastMath.toRadians(93.0), FastMath.toRadians(15.0 * 22.5),
                                                0, PositionAngleType.MEAN, eme2000, date,
@@ -557,7 +557,7 @@ class SolidTidesTest extends AbstractLegacyForceModelTest {
         final NormalizedSphericalHarmonicsProvider gravityField =
                 GravityFieldFactory.getNormalizedProvider(5, 5);
 
-        final AbsoluteDate date = new AbsoluteDate(2003, 07, 01, 13, 59, 27.816, utc);
+        final AbsoluteDate date = new AbsoluteDate(2003, 7, 1, 13, 59, 27.816, utc);
         final Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, FastMath.toRadians(98.7),
                                                FastMath.toRadians(93.0), FastMath.toRadians(15.0 * 22.5),
                                                0, PositionAngleType.MEAN, eme2000, date,

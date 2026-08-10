@@ -58,7 +58,6 @@ import org.orekit.utils.ParameterDriver;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.text.ParseException;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -89,8 +88,9 @@ class NumericalSequentialOrbitDeterminationTest extends AbstractOrbitDeterminati
     protected NumericalPropagatorBuilder createPropagatorBuilder(final Orbit referenceOrbit,
                                                                  final ODEIntegratorBuilder builder,
                                                                  final double positionScale) {
-        return new NumericalPropagatorBuilder(referenceOrbit, builder, PositionAngleType.MEAN,
-                                              positionScale);
+        return new NumericalPropagatorBuilder(referenceOrbit.factory(PositionAngleType.MEAN,
+                                                                     positionScale),
+                                              builder);
     }
 
     /** {@inheritDoc} */
@@ -204,8 +204,7 @@ class NumericalSequentialOrbitDeterminationTest extends AbstractOrbitDeterminati
     @Test
     // Orbit determination for Lageos2 based on position measurements
     public void testLageos2()
-        throws URISyntaxException, IllegalArgumentException, IOException,
-               OrekitException, ParseException {
+        throws URISyntaxException, IllegalArgumentException, IOException, OrekitException {
 
         // input in resources directory
         final String inputPathModel = NumericalSequentialOrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/Lageos2/sequential_od_test_Lageos.in").toURI().getPath();

@@ -88,9 +88,8 @@ public class FieldDateDetectorTest {
 
     @Test
     void testExceptionTimer() {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            doTestExceptionTimer(Binary64Field.getInstance());
-        });
+        Assertions.assertThrows(IllegalArgumentException.class,
+                                () -> doTestExceptionTimer(Binary64Field.getInstance()));
     }
 
     @Test
@@ -160,7 +159,7 @@ public class FieldDateDetectorTest {
             new DormandPrince853FieldIntegrator<>(field, 0.001, 1000, absTolerance, relTolerance);
         integrator.setInitialStepSize(60);
         FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(integrator);
-        propagator.addAdditionalDerivativesProvider(new FieldAdditionalDerivativesProvider<T>() {
+        propagator.addAdditionalDerivativesProvider(new FieldAdditionalDerivativesProvider<>() {
             public String getName()                              { return "dummy"; }
             public int    getDimension()                         { return 1; }
             public FieldCombinedDerivatives<T> combinedDerivatives(FieldSpacecraftState<T> s) {
@@ -217,7 +216,7 @@ public class FieldDateDetectorTest {
                         withMinGap(minGap).withThreshold(field.getZero().newInstance(threshold));
         Assertions.assertNull(dateDetector.getDate());
         FieldEventDetector<T> nodeDetector = new FieldNodeDetector<>(iniOrbit, iniOrbit.getFrame()).
-                withHandler(new FieldContinueOnEvent<T>() {
+                withHandler(new FieldContinueOnEvent<>() {
                     public Action eventOccurred(FieldSpacecraftState<T> s, FieldEventDetector<T> nd, boolean increasing) {
                         if (increasing) {
                             nodeDate = s.getDate().toAbsoluteDate();
@@ -259,7 +258,7 @@ public class FieldDateDetectorTest {
         FieldDateDetector<T> dateDetector = new FieldDateDetector<>(field, toArray(iniDate.shiftedBy(-dt))).
                         withMinGap(minGap).
                         withThreshold(field.getZero().newInstance(threshold)).
-                        withHandler(new FieldContinueOnEvent<T >() {
+                        withHandler(new FieldContinueOnEvent<>() {
                             public Action eventOccurred(FieldSpacecraftState<T> s, FieldEventDetector<T>  dd,  boolean increasing) {
                                 FieldAbsoluteDate<T> nextDate = s.getDate().shiftedBy(-dt);
                                 ((FieldDateDetector<T>) dd).addEventDate(nextDate);
@@ -297,7 +296,7 @@ public class FieldDateDetectorTest {
         FieldDateDetector<T> dateDetector = new FieldDateDetector<>(field, toArray(iniDate.shiftedBy(dt))).
                         withMinGap(minGap).
                         withThreshold(field.getZero().newInstance(threshold)).
-                        withHandler(new FieldContinueOnEvent<T>() {
+                        withHandler(new FieldContinueOnEvent<>() {
                             public Action eventOccurred(FieldSpacecraftState<T> s, FieldEventDetector<T>  dd, boolean increasing)
                             {
                                 double step = (evtno % 2 == 0) ? 2.*minGap : minGap/2.;
@@ -340,7 +339,7 @@ public class FieldDateDetectorTest {
         final FieldDateDetector<T> dateDetector = new FieldDateDetector<>(field, toArray(iniDate.shiftedBy(dt))).
                         withMinGap(minGap).withThreshold(field.getZero().newInstance(threshold));
         // generic event handler that works with all detectors.
-        FieldEventHandler<T> handler = new FieldEventHandler<T>() {
+        FieldEventHandler<T> handler = new FieldEventHandler<>() {
             @Override
             public Action eventOccurred(FieldSpacecraftState<T> s,
                                         FieldEventDetector<T> detector,
@@ -377,7 +376,7 @@ public class FieldDateDetectorTest {
         FieldTLE<T> tle = new FieldTLE<>(field,
                                          "1 43197U 18015F   19284.07336221  .00000533  00000-0  24811-4 0  9998",
                                          "2 43197  97.4059  50.1428 0017543 265.5429 181.0400 15.24136761 93779");
-        FieldPropagator<T> propagator = FieldTLEPropagator.selectExtrapolator(tle, tle.getParameters(field));
+        FieldPropagator<T> propagator = FieldTLEPropagator.selectExtrapolator(tle);
 
         // Min gap to seconds
         int maxCheck = (int) ((end - start) / 2000);

@@ -16,6 +16,7 @@
  */
 package org.orekit.gnss.metric.parser;
 
+import org.orekit.frames.Frame;
 import org.orekit.gnss.metric.messages.ParsedMessage;
 import org.orekit.time.TimeScales;
 
@@ -32,9 +33,12 @@ public interface MessageType {
      *
      * @param encodedMessage encoded message to parse
      * @param messageNumber  message number
-     * @param timeScales known time scales
+     * @param timeScales     known time scales
+     * @param inertial       reference inertial frame
+     * @param bodyFixed      body fixed frame (will be frozen at {@code date} to build the orbital elements
      * @return parsed message
      */
-    ParsedMessage parse(EncodedMessage encodedMessage, int messageNumber, TimeScales timeScales);
+    ParsedMessage parse(EncodedMessage encodedMessage, int messageNumber, TimeScales timeScales,
+                        Frame inertial, Frame bodyFixed);
 
 }

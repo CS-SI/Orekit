@@ -17,9 +17,9 @@
 package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
-
-import java.util.function.Function;
+import org.orekit.orbits.FieldKeplerianOrbit;
+import org.orekit.time.FieldGNSSDate;
+import org.orekit.time.TimeScales;
 
 /**
  * Container for data contained in a GPS/QZNSS civilian navigation message.
@@ -37,90 +37,101 @@ public abstract class FieldCivilianNavigationMessage<T extends CalculusFieldElem
     private final boolean cnv2;
 
     /** The user SV accuracy (m). */
-    private T svAccuracy;
+    private final T svAccuracy;
 
     /** Satellite health status. */
-    private int svHealth;
+    private final int svHealth;
 
     /** Inter Signal Delay for L1 C/A. */
-    private T iscL1CA;
+    private final T iscL1CA;
 
     /** Inter Signal Delay for L1 CD. */
-    private T iscL1CD;
+    private final T iscL1CD;
 
     /** Inter Signal Delay for L1 CP. */
-    private T iscL1CP;
+    private final T iscL1CP;
 
     /** Inter Signal Delay for L2 C. */
-    private T iscL2C;
+    private final T iscL2C;
 
     /** Inter Signal Delay for L5I. */
-    private T iscL5I5;
+    private final T iscL5I5;
 
     /** Inter Signal Delay for L5Q. */
-    private T iscL5Q5;
+    private final T iscL5Q5;
 
     /** Elevation-Dependent User Range Accuracy. */
-    private int uraiEd;
+    private final int uraiEd;
 
     /** Term 0 of Non-Elevation-Dependent User Range Accuracy. */
-    private int uraiNed0;
+    private final int uraiNed0;
 
     /** Term 1 of Non-Elevation-Dependent User Range Accuracy. */
-    private int uraiNed1;
+    private final int uraiNed1;
 
     /** Term 2 of Non-Elevation-Dependent User Range Accuracy. */
-    private int uraiNed2;
+    private final int uraiNed2;
 
     /** Flags.
      * @since 14.0
      */
-    private int flags;
+    private final int flags;
 
-    /** Constructor from non-field instance.
-     * @param field    field to which elements belong
-     * @param original regular non-field instance
+    /** Creates a new instance.
+     * @param cnv2             indicator for CNV2 messages
+     * @param angularVelocity  mean angular velocity of the Earth for the GNSS model
+     * @param weeksInCycle     number of weeks in the GNSS cycle
+     * @param timeScales       known time scales
+     * @param type             type (null if not a navigation message)
+     * @param prn              PRN number of the satellite
+     * @param toe              time of ephemeris (<em>must</em> be consistent with {@code orbit})
+     * @param orbit            Keplerian orbit in Earth-frozen frame
+     * @param nonKeplerian     15 non-Keplerian parameters (in the order given by {@link NonKeplerianDriversFactory}
+     * @param tgd              group delay differential TGD for L1-L2 correction
+     * @param toc              time of clock
+     * @param transmissionTime transmission time
+     * @param svAccuracy       user SV accuracy (m)
+     * @param svHealth         satellite health status
+     * @param iscL1CA          inter signal delay for L1 C/A
+     * @param iscL1CD          inter signal delay for L1 CD
+     * @param iscL1CP          inter signal delay for L1 CP
+     * @param iscL2C           inter signal delay for L2 C
+     * @param iscL5I5          inter signal delay for L5I
+     * @param iscL5Q5          inter signal delay for L5Q
+     * @param uraiEd           elevation-dependent user range accuracy
+     * @param uraiNed0         term 0 of non-elevation-dependent user range accuracy
+     * @param uraiNed1         term 1 of non-elevation-dependent user range accuracy
+     * @param uraiNed2         term 2 of non-elevation-dependent user range accuracy
+     * @param flags            flags
+     * @since 14.0
      */
-    protected FieldCivilianNavigationMessage(final Field<T> field, final O original) {
-        super(field, original);
-        this.cnv2 = original.isCnv2();
-        setSvAccuracy(field.getZero().newInstance(original.getSvAccuracy()));
-        setSvHealth(original.getSvHealth());
-        setIscL1CA(field.getZero().newInstance(original.getIscL1CA()));
-        setIscL1CD(field.getZero().newInstance(original.getIscL1CD()));
-        setIscL1CP(field.getZero().newInstance(original.getIscL1CP()));
-        setIscL2C(field.getZero().newInstance(original.getIscL2C()));
-        setIscL5I5(field.getZero().newInstance(original.getIscL5I5()));
-        setIscL5Q5(field.getZero().newInstance(original.getIscL5Q5()));
-        setUraiEd(original.getUraiEd());
-        setUraiNed0(original.getUraiNed0());
-        setUraiNed1(original.getUraiNed1());
-        setUraiNed2(original.getUraiNed2());
-        setFlags(original.getFlags());
-    }
-
-    /** Constructor from different field instance.
-     * @param <V> type of the old field elements
-     * @param original regular non-field instance
-     * @param converter for field elements
-     */
-    protected <V extends CalculusFieldElement<V>> FieldCivilianNavigationMessage(final Function<V, T> converter,
-                                                                                 final FieldCivilianNavigationMessage<V, O> original) {
-        super(converter, original);
-        this.cnv2 = original.isCnv2();
-        setSvAccuracy(converter.apply(original.getSvAccuracy()));
-        setSvHealth(original.getSvHealth());
-        setIscL1CA(converter.apply(original.getIscL1CA()));
-        setIscL1CD(converter.apply(original.getIscL1CD()));
-        setIscL1CP(converter.apply(original.getIscL1CP()));
-        setIscL2C(converter.apply(original.getIscL2C()));
-        setIscL5I5(converter.apply(original.getIscL5I5()));
-        setIscL5Q5(converter.apply(original.getIscL5Q5()));
-        setUraiEd(original.getUraiEd());
-        setUraiNed0(original.getUraiNed0());
-        setUraiNed1(original.getUraiNed1());
-        setUraiNed2(original.getUraiNed2());
-        setFlags(original.getFlags());
+    public FieldCivilianNavigationMessage(final boolean cnv2,
+                                          final double angularVelocity, final int weeksInCycle,
+                                          final TimeScales timeScales, final String type, final int prn,
+                                          final FieldGNSSDate<T> toe, final FieldKeplerianOrbit<T> orbit,
+                                          final T[] nonKeplerian, final T tgd,
+                                          final FieldGNSSDate<T> toc, final FieldGNSSDate<T>  transmissionTime,
+                                          final T svAccuracy, final int svHealth,
+                                          final T iscL1CA, final T iscL1CD, final T iscL1CP,
+                                          final T iscL2C, final T iscL5I5, final T iscL5Q5,
+                                          final int uraiEd, final int uraiNed0, final int uraiNed1, final int uraiNed2,
+                                          final int flags) {
+        super(angularVelocity, weeksInCycle, timeScales, type, prn, toe, orbit, nonKeplerian,
+              tgd, toc, transmissionTime);
+        this.cnv2       = cnv2;
+        this.svAccuracy = svAccuracy;
+        this.svHealth   = svHealth;
+        this.iscL1CA    = iscL1CA;
+        this.iscL1CD    = iscL1CD;
+        this.iscL1CP    = iscL1CP;
+        this.iscL2C     = iscL2C;
+        this.iscL5I5    = iscL5I5;
+        this.iscL5Q5    = iscL5Q5;
+        this.uraiEd     = uraiEd;
+        this.uraiNed0   = uraiNed0;
+        this.uraiNed1   = uraiNed1;
+        this.uraiNed2   = uraiNed2;
+        this.flags      = flags;
     }
 
     /** {@inheritDoc} */
@@ -145,27 +156,11 @@ public abstract class FieldCivilianNavigationMessage<T extends CalculusFieldElem
     }
 
     /**
-     * Setter for the user SV accuracy.
-     * @param svAccuracy the value to set
-     */
-    public void setSvAccuracy(final T svAccuracy) {
-        this.svAccuracy = svAccuracy;
-    }
-
-    /**
      * Getter for the satellite health status.
      * @return the satellite health status
      */
     public int getSvHealth() {
         return svHealth;
-    }
-
-    /**
-     * Setter for the satellite health status.
-     * @param svHealth the value to set
-     */
-    public void setSvHealth(final int svHealth) {
-        this.svHealth = svHealth;
     }
 
     /**
@@ -177,27 +172,11 @@ public abstract class FieldCivilianNavigationMessage<T extends CalculusFieldElem
     }
 
     /**
-     * Setter for inter Signal Delay for L1 C/A.
-     * @param delay delay to set
-     */
-    public void setIscL1CA(final T delay) {
-        this.iscL1CA = delay;
-    }
-
-    /**
      * Getter for inter Signal Delay for L1 CD.
      * @return inter signal delay
      */
     public T getIscL1CD() {
         return iscL1CD;
-    }
-
-    /**
-     * Setter for inter Signal Delay for L1 CD.
-     * @param delay delay to set
-     */
-    public void setIscL1CD(final T delay) {
-        this.iscL1CD = delay;
     }
 
     /**
@@ -209,27 +188,11 @@ public abstract class FieldCivilianNavigationMessage<T extends CalculusFieldElem
     }
 
     /**
-     * Setter for inter Signal Delay for L1 CP.
-     * @param delay delay to set
-     */
-    public void setIscL1CP(final T delay) {
-        this.iscL1CP = delay;
-    }
-
-    /**
      * Getter for inter Signal Delay for L2 C.
      * @return inter signal delay
      */
     public T getIscL2C() {
         return iscL2C;
-    }
-
-    /**
-     * Setter for inter Signal Delay for L2 C.
-     * @param delay delay to set
-     */
-    public void setIscL2C(final T delay) {
-        this.iscL2C = delay;
     }
 
     /**
@@ -241,27 +204,11 @@ public abstract class FieldCivilianNavigationMessage<T extends CalculusFieldElem
     }
 
     /**
-     * Setter for inter Signal Delay for L5I.
-     * @param delay delay to set
-     */
-    public void setIscL5I5(final T delay) {
-        this.iscL5I5 = delay;
-    }
-
-    /**
      * Getter for inter Signal Delay for L5Q.
      * @return inter signal delay
      */
     public T getIscL5Q5() {
         return iscL5Q5;
-    }
-
-    /**
-     * Setter for inter Signal Delay for L5Q.
-     * @param delay delay to set
-     */
-    public void setIscL5Q5(final T delay) {
-        this.iscL5Q5 = delay;
     }
 
     /**
@@ -273,27 +220,11 @@ public abstract class FieldCivilianNavigationMessage<T extends CalculusFieldElem
     }
 
     /**
-     * Setter for Elevation-Dependent User Range Accuracy.
-     * @param uraiEd Elevation-Dependent User Range Accuracy
-     */
-    public void setUraiEd(final int uraiEd) {
-        this.uraiEd = uraiEd;
-    }
-
-    /**
      * Getter for term 0 of Non-Elevation-Dependent User Range Accuracy.
      * @return term 0 of Non-Elevation-Dependent User Range Accuracy
      */
     public int getUraiNed0() {
         return uraiNed0;
-    }
-
-    /**
-     * Setter for term 0 of Non-Elevation-Dependent User Range Accuracy.
-     * @param uraiNed0 term 0 of Non-Elevation-Dependent User Range Accuracy
-     */
-    public void setUraiNed0(final int uraiNed0) {
-        this.uraiNed0 = uraiNed0;
     }
 
     /**
@@ -305,27 +236,11 @@ public abstract class FieldCivilianNavigationMessage<T extends CalculusFieldElem
     }
 
     /**
-     * Setter for term 1 of Non-Elevation-Dependent User Range Accuracy.
-     * @param uraiNed1 term 1 of Non-Elevation-Dependent User Range Accuracy
-     */
-    public void setUraiNed1(final int uraiNed1) {
-        this.uraiNed1 = uraiNed1;
-    }
-
-    /**
      * Getter for term 2 of Non-Elevation-Dependent User Range Accuracy.
      * @return term 2 of Non-Elevation-Dependent User Range Accuracy
      */
     public int getUraiNed2() {
         return uraiNed2;
-    }
-
-    /**
-     * Setter for term 2 of Non-Elevation-Dependent User Range Accuracy.
-     * @param uraiNed2 term 2 of Non-Elevation-Dependent User Range Accuracy
-     */
-    public void setUraiNed2(final int uraiNed2) {
-        this.uraiNed2 = uraiNed2;
     }
 
     /** Get the flags.
@@ -334,14 +249,6 @@ public abstract class FieldCivilianNavigationMessage<T extends CalculusFieldElem
      */
     public int getFlags() {
         return flags;
-    }
-
-    /** Set the flags.
-     * @param flags flags
-     * @since 14.0
-     */
-    public void setFlags(final int flags) {
-        this.flags = flags;
     }
 
 }

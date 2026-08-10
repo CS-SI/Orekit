@@ -40,12 +40,11 @@ import org.orekit.utils.FieldPVCoordinates;
  * This solver combines Dario Izzo's algorithm with Gim Der design to find all possible solutions.
  * <p>
  * An orbit is determined from two position vectors.
- *
  * References:
  *  Battin, R.H., An Introduction to the Mathematics and Methods of Astrodynamics, AIAA Education, 1999.
  *  Lancaster, E.R. and Blanchard, R.C., A Unified Form of Lambert’s Theorem, Goddard Space Flight Center, 1968.
- *  Dario Izzo. Revisiting Lambert’s problem. Celestial Mechanics and Dynamical Astronomy, 2015. https://arxiv.org/abs/1403.2705
- *  Gim J. Der. The Superior Lambert Algorithm. Advanced Maui Optical and Space Surveillance Technologies, 2011. https://amostech.com/TechnicalPapers/2011/Poster/DER.pdf
+ *  Dario Izzo. <a href="https://arxiv.org/abs/1403.2705">Revisiting Lambert’s problem. Celestial Mechanics and Dynamical Astronomy</a>, 2015
+ *  Gim J. Der. <a href="https://amostech.com/TechnicalPapers/2011/Poster/DER.pdf>The Superior Lambert Algorithm. Advanced Maui Optical and Space Surveillance Technologies</a>, 2011.
  * </p>
  * @author Joris Olympio
  * @author Romain Serra
@@ -595,8 +594,9 @@ public class LambertSolver {
     * Calculate the value of Gaussian hypergeometric function 2F1.
     * Currently we use the raw series expansion. This means we have the following
     * constraints: |z| smaller than 1, c larger than 0, c != 0.
-    * Implementation based on Taylor series expansion method (a) in John Pearson's thesis
-    * https://people.maths.ox.ac.uk/porterm/research/pearson_final.pdf , page 31.
+    * Implementation based on Taylor series expansion method (a) in
+    * <a href="https://people.maths.ox.ac.uk/porterm/research/pearson_final.pdf">John Pearson's thesis</a>,
+    * page 31.
     * @param a value of a
     * @param b value of b
     * @param c value of c

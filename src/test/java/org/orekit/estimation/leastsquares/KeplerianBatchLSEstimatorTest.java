@@ -160,7 +160,8 @@ class KeplerianBatchLSEstimatorTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final KeplerianPropagatorBuilder propagatorBuilder = context.createKeplerian(PositionAngleType.MEAN, true, 1.0);
-        propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getFrame(), LOFType.LVLH));
+        propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getOrbitalParameterFactory().getFrame(),
+                                                            LOFType.LVLH));
         final Vector3D antennaPhaseCenter = new Vector3D(-1.2, 2.3, -0.7);
 
         // create perfect range measurements with antenna offset
@@ -188,8 +189,8 @@ class KeplerianBatchLSEstimatorTest {
         estimator.setMaxEvaluations(20);
 
         EstimationTestUtils.checkFit(false, context, estimator, 1, 2,
-                                     0.0, 4.6e-7, 
-                                     0.0, 1.1e-6, 
+                                     0.0, 4.6e-7,
+                                     0.0, 1.1e-6,
                                      0.0, 9.7e-9,
                                      0.0, 9.6e-12);
 
@@ -229,9 +230,9 @@ class KeplerianBatchLSEstimatorTest {
         estimator.setMaxEvaluations(20);
 
         EstimationTestUtils.checkFit(false, context, estimator, 1, 2,
-                                     0.0, 6.0e-11,  
+                                     0.0, 6.0e-11,
                                      0.0, 1.8e-10,
-                                     0.0, 9.2e-9, 
+                                     0.0, 9.2e-9,
                                      0.0, 8.3e-12);
     }
 

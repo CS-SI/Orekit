@@ -996,28 +996,19 @@ public class AcmParserTest {
                     throw new IllegalArgumentException("" + epoch);
                 }
                 if ("ZZ".equals(center.getName())) {
-                    if ("SC_BODY_1".equals(orientation.getName())) {
-                        return scBodyFrame;
-                    } else if ("SC_BODY_2".equals(orientation.getName())) {
-                        return scBodyFrame2;
-                    } else if ("EME2000".equals(orientation.getName()) || "J2000".equals(orientation.getName())) {
-                        return myJ2000;
-                    } else if ("GYRO_3".equals(orientation.getName())) {
-                        return gyro3;
-                    } else if ("ACC_0".equals(orientation.getName())) {
-                        return acc0;
-                    } else if ("AST_1".equals(orientation.getName())) {
-                        return ast1;
-                    } else if ("CSS_7".equals(orientation.getName())) {
-                        return css7;
-                    } else if ("ESA_9".equals(orientation.getName())) {
-                        return esa9;
-                    } else {
-                        throw new IllegalArgumentException(center + " " + orientation + " " + epoch);
-                    }
+                    return switch (orientation.getName()) {
+                        case "SC_BODY_1" -> scBodyFrame;
+                        case "SC_BODY_2" -> scBodyFrame2;
+                        case "EME2000", "J2000" -> myJ2000;
+                        case "GYRO_3" -> gyro3;
+                        case "ACC_0" -> acc0;
+                        case "AST_1" -> ast1;
+                        case "CSS_7" -> css7;
+                        case "ESA_9" -> esa9;
+                        case null, default -> throw new IllegalArgumentException(center + " " + orientation + " " + epoch);
+                    };
                 } else {
-                    throw new IllegalArgumentException(
-                            center + " " + orientation + " " + epoch);
+                    throw new IllegalArgumentException(center + " " + orientation + " " + epoch);
                 }
             }
 

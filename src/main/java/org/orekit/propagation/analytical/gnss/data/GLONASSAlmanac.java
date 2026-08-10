@@ -63,7 +63,7 @@ public class GLONASSAlmanac implements GLONASSOrbitalElements {
     /** Correction to the mean value of inclination. */
     private final double deltaI;
 
-    /** Argument of perigee. */
+    /** Argument of periapsis. */
     private final double pa;
 
     /** Eccentricity. */
@@ -100,7 +100,7 @@ public class GLONASSAlmanac implements GLONASSOrbitalElements {
      * @param ta the reference time of the almanac (s)
      * @param lambda the Greenwich longitude of ascending node of orbit (rad)
      * @param deltaI the correction to the mean value of inclination (rad)
-     * @param pa the argument of perigee (rad)
+     * @param pa the argument of periapsis (rad)
      * @param ecc the eccentricity
      * @param deltaT the correction to the mean value of Draconian period (s)
      * @param deltaTDot the rate of change of orbital period
@@ -133,7 +133,7 @@ public class GLONASSAlmanac implements GLONASSOrbitalElements {
      * @param ta the reference time of the almanac (s)
      * @param lambda the Greenwich longitude of ascending node of orbit (rad)
      * @param deltaI the correction to the mean value of inclination (rad)
-     * @param pa the argument of perigee (rad)
+     * @param pa the argument of periapsis (rad)
      * @param ecc the eccentricity
      * @param deltaT the correction to the mean value of Draconian period (s)
      * @param deltaTDot the rate of change of orbital period

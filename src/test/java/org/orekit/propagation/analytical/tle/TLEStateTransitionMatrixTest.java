@@ -40,6 +40,10 @@ import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.analytical.tle.generation.FixedPointTleGenerationAlgorithm;
 import org.orekit.propagation.analytical.tle.generation.TleGenerationAlgorithm;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterDriversList.DelegatingDriver;
+
+import java.util.List;
 
 public class TLEStateTransitionMatrixTest {
 
@@ -64,12 +68,22 @@ public class TLEStateTransitionMatrixTest {
 
     @Test
     public void testPropagationSGP4() {
-        doTestStateJacobian(8.35e-10, tleSPOT);
+        doTestStateJacobian(8.37e-10, tleSPOT);
     }
 
     @Test
     public void testPropagationSDP4() {
         doTestStateJacobian(2.53e-9, tleGPS);
+    }
+
+    @Test
+    public void testInitialVsBuildSGP4() {
+        doTestInitialVsBuild(3.5e-13, tleSPOT);
+    }
+
+    @Test
+    public void testInitialVsBuildSDP4() {
+        doTestInitialVsBuild(3.3e-12, tleGPS);
     }
 
     @Test
@@ -95,7 +109,7 @@ public class TLEStateTransitionMatrixTest {
         dYdY0 = harvester.getStateTransitionMatrix(finalState);
 
         // TLE generation algorithm
-        TleGenerationAlgorithm algorithm = new FixedPointTleGenerationAlgorithm();
+        TleGenerationAlgorithm algorithm = new FixedPointTleGenerationAlgorithm(tle);
 
         // compute reference state Jacobian using finite differences
         double[][] dYdY0Ref = new double[6][6];
@@ -126,6 +140,58 @@ public class TLEStateTransitionMatrixTest {
             for (int j = 0; j < 6; ++j) {
                 if (stateVector[i] != 0) {
                     double error = FastMath.abs((dYdY0.getEntry(i, j) - dYdY0Ref[i][j]) / stateVector[i]) * steps[j];
+                    Assertions.assertEquals(0, error, tolerance);
+                }
+            }
+        }
+    }
+
+    private void doTestInitialVsBuild(double tolerance, TLE tle) {
+
+        // compute state Jacobian using PartialDerivatives
+        TLEPropagator propagator = TLEPropagator.selectExtrapolator(tle);
+        final SpacecraftState initialState = propagator.getInitialState();
+        final double[] stateVector = new double[6];
+        OrbitType.CARTESIAN.mapOrbitToArray(initialState.getOrbit(), PositionAngleType.MEAN, stateVector, null);
+        MatricesHarvester harvester = propagator.setupMatricesComputation("stm", null, null);
+        RealMatrix dY0dB0 = harvester.getStateJacobianVsBuilderParameters(initialState);
+
+        // TLE generation algorithm
+        TleGenerationAlgorithm algorithm = new FixedPointTleGenerationAlgorithm(tle);
+        final List<DelegatingDriver> drivers = algorithm.getOrbitalParametersDrivers().getDrivers();
+
+        // compute reference state Jacobian using finite differences
+        double[][] dY0dB0Ref = new double[6][6];
+        for (int i = 0; i < 6; ++i) {
+            final ParameterDriver driver = drivers.get(i);
+            final double referenceParameter = driver.getValue();
+            final double h = 100 * driver.getScale();
+            driver.setValue(referenceParameter - 4 * h);
+            SpacecraftState sM4h = TLEPropagator.selectExtrapolator(algorithm.createFromDrivers()).getBaseInitialState();
+            driver.setValue(referenceParameter - 3 * h);
+            SpacecraftState sM3h = TLEPropagator.selectExtrapolator(algorithm.createFromDrivers()).getBaseInitialState();
+            driver.setValue(referenceParameter - 2 * h);
+            SpacecraftState sM2h = TLEPropagator.selectExtrapolator(algorithm.createFromDrivers()).getBaseInitialState();
+            driver.setValue(referenceParameter - 1 * h);
+            SpacecraftState sM1h = TLEPropagator.selectExtrapolator(algorithm.createFromDrivers()).getBaseInitialState();
+            driver.setValue(referenceParameter + 1 * h);
+            SpacecraftState sP1h = TLEPropagator.selectExtrapolator(algorithm.createFromDrivers()).getBaseInitialState();
+            driver.setValue(referenceParameter + 2 * h);
+            SpacecraftState sP2h = TLEPropagator.selectExtrapolator(algorithm.createFromDrivers()).getBaseInitialState();
+            driver.setValue(referenceParameter + 3 * h);
+            SpacecraftState sP3h = TLEPropagator.selectExtrapolator(algorithm.createFromDrivers()).getBaseInitialState();
+            driver.setValue(referenceParameter + 4 * h);
+            SpacecraftState sP4h = TLEPropagator.selectExtrapolator(algorithm.createFromDrivers()).getBaseInitialState();
+            driver.setValue(referenceParameter);
+            fillJacobianColumn(dY0dB0Ref, i, OrbitType.CARTESIAN, h,
+                               sM4h, sM3h, sM2h, sM1h, sP1h, sP2h, sP3h, sP4h);
+        }
+
+        for (int i = 0; i < 6; ++i) {
+            for (int j = 0; j < 6; ++j) {
+                if (stateVector[i] != 0) {
+                    double error = FastMath.abs((dY0dB0.getEntry(i, j) - dY0dB0Ref[i][j]) / stateVector[i]) *
+                                   drivers.get(j).getScale();
                     Assertions.assertEquals(0, error, tolerance);
                 }
             }
@@ -183,13 +249,20 @@ public class TLEStateTransitionMatrixTest {
     }
 
     /** Counts how many times the algo is called. */
-    private static class CountingTleGenerationAlgorithm implements TleGenerationAlgorithm {
+    private static class CountingTleGenerationAlgorithm extends TleGenerationAlgorithm {
 
         private final TleGenerationAlgorithm delegate;
         int count;
 
         CountingTleGenerationAlgorithm(final TleGenerationAlgorithm delegate) {
+            super(delegate.getTemplateTLE(), delegate.getFrame(), delegate.getConverter());
             this.delegate = delegate;
+        }
+
+        @Override
+        public TLE createFromDrivers() {
+            count++;
+            return delegate.createFromDrivers();
         }
 
         @Override
@@ -211,7 +284,7 @@ public class TLEStateTransitionMatrixTest {
     @Test
     public void testConfiguredAlgorithmUsedDeepSpace() {
         final CountingTleGenerationAlgorithm counter =
-                new CountingTleGenerationAlgorithm(new FixedPointTleGenerationAlgorithm());
+                new CountingTleGenerationAlgorithm(new FixedPointTleGenerationAlgorithm(tleGPS));
         final TLEPropagator propagator =
                 TLEPropagator.selectExtrapolator(tleGPS,
                                                   FrameAlignedProvider.of(FramesFactory.getTEME()),

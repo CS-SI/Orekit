@@ -100,7 +100,7 @@ Available orbit representations are :
     * a : semi-major axis (m)
     * e : eccentricity (any value of e is supported, i.e. both elliptical and hyperbolic orbits can be used)
     * i : inclination (rad)
-    * ω : perigee argument (rad)
+    * ω : periapsis argument (rad)
     * Ω : right ascension of the ascending node (rad)
     * v, M or E  (rad) : respectively true anomaly, mean anomaly or eccentric anomaly
 
@@ -138,14 +138,14 @@ be used in any other model.
 All representations can be converted into all other ones. No error is triggered
 if some conversion is ambiguous (like converting a perfectly circular orbit from
 Cartesian representation to Keplerian representation, with an ambiguity on the
-perigee argument). This design choice is the result of _many_
+periapsis argument). This design choice is the result of _many_
 different attempts and pragmatic considerations. The rationale is that from a
 physical point of view, there is no singularity. The singularity is only introduced
 by a choice of _representations_. Even considering this, it appears that
 rather than having a parameter with _no_ realistic value, there is an
 _infinite_ possible number of values that all represent the same physical
 orbit. Orekit simply does an arbitrary choice, often choosing simply the value 0.
-In our example case, we would then get a converted orbit with a 0 perigee argument.
+In our example case, we would then get a converted orbit with a 0 periapsis argument.
 This choice is valid, just as any other choice (π/2, π, whatever ...) would
 have been valid, in the sense that it _does_ represent correctly the orbit
 and when converted back to the original non-ambiguous representation it does give

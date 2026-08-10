@@ -81,12 +81,24 @@ class StateTransitionMatrixGenerator extends AbstractStateTransitionMatrixGenera
 
         // regular multiplication for the last three rows
         for (int j = 0; j < columns; ++j) {
-            y[n + j              ] = factor[ 0] * x[j              ] + factor[ 1] * x[j +     columns] + factor[ 2] * x[j + 2 * columns] +
-                    factor[ 3] * x[j + 3 * columns] + factor[ 4] * x[j + 4 * columns] + factor[ 5] * x[j + 5 * columns];
-            y[n + j +     columns] = factor[ 6] * x[j              ] + factor[ 7] * x[j +     columns] + factor[ 8] * x[j + 2 * columns] +
-                    factor[ 9] * x[j + 3 * columns] + factor[10] * x[j + 4 * columns] + factor[11] * x[j + 5 * columns];
-            y[n + j + 2 * columns] = factor[12] * x[j              ] + factor[13] * x[j +     columns] + factor[14] * x[j + 2 * columns] +
-                    factor[15] * x[j + 3 * columns] + factor[16] * x[j + 4 * columns] + factor[17] * x[j + 5 * columns];
+            y[n + j              ] = factor[ 0] * x[j              ] +
+                                     factor[ 1] * x[j +     columns] +
+                                     factor[ 2] * x[j + 2 * columns] +
+                                     factor[ 3] * x[j + 3 * columns] +
+                                     factor[ 4] * x[j + 4 * columns] +
+                                     factor[ 5] * x[j + 5 * columns];
+            y[n + j +     columns] = factor[ 6] * x[j              ] +
+                                     factor[ 7] * x[j +     columns] +
+                                     factor[ 8] * x[j + 2 * columns] +
+                                     factor[ 9] * x[j + 3 * columns] +
+                                     factor[10] * x[j + 4 * columns] +
+                                     factor[11] * x[j + 5 * columns];
+            y[n + j + 2 * columns] = factor[12] * x[j              ] +
+                                     factor[13] * x[j +     columns] +
+                                     factor[14] * x[j + 2 * columns] +
+                                     factor[15] * x[j + 3 * columns] +
+                                     factor[16] * x[j + 4 * columns] +
+                                     factor[17] * x[j + 5 * columns];
         }
 
     }

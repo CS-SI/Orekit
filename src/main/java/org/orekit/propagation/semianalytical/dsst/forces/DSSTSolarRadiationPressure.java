@@ -213,7 +213,7 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
         final double beta  = sunDir.dotProduct(auxiliaryElements.getVectorG());
         final double gamma = sunDir.dotProduct(auxiliaryElements.getVectorW());
 
-        // Compute limits only if the perigee is close enough from the central body to be in the shadow
+        // Compute limits only if the periapsis is close enough from the central body to be in the shadow
         if (FastMath.abs(gamma * auxiliaryElements.getSma() * (1. - auxiliaryElements.getEcc())) < ae) {
 
             // Compute the coefficients of the quartic equation in cos(L) 3.5-(2)
@@ -310,7 +310,7 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
         final T beta  = sunDir.dotProduct(auxiliaryElements.getVectorG());
         final T gamma = sunDir.dotProduct(auxiliaryElements.getVectorW());
 
-        // Compute limits only if the perigee is close enough from the central body to be in the shadow
+        // Compute limits only if the periapsis is close enough from the central body to be in the shadow
         if (FastMath.abs(gamma.multiply(auxiliaryElements.getSma()).multiply(auxiliaryElements.getEcc().negate().add(one))).getReal() < ae) {
 
             // Compute the coefficients of the quartic equation in cos(L) 3.5-(2)

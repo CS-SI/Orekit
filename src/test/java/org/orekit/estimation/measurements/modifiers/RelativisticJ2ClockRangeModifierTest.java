@@ -43,15 +43,12 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 
-/**
+/** test for RelativisticJ2ClockRangeModifier.
  * Check against prediction in
- *
  * "Springer Handbook oƒ Global Navigation Satellite Systems, Teunissen, Montenbruck"
- *
  * An approximate value is given in terms of delay for Galileo satellites.
  * As these satellites are close to GPS satellites, we consider the delays to be
  * of the same order, namely around 62ps.
- *
  * The values produced by the modifiers are translated in terms of delay and checked against
  * the approximate value.
  */
@@ -111,7 +108,7 @@ public class RelativisticJ2ClockRangeModifierTest {
     }
 
     @Test
-    /**
+    /*
      * Testing if the 2 way case is taken into account in the computation of the delay.
      * This has the effect of shifting the index from 0 to 1 for the selected PV coordinates
      * to get the emitter's parameters and not the station's.

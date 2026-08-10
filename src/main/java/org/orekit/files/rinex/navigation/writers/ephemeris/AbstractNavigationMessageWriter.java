@@ -16,6 +16,7 @@
  */
 package org.orekit.files.rinex.navigation.writers.ephemeris;
 
+import org.hipparchus.util.FastMath;
 import org.orekit.files.rinex.navigation.RecordType;
 import org.orekit.files.rinex.navigation.RinexNavigationHeader;
 import org.orekit.files.rinex.navigation.RinexNavigationParser;
@@ -107,11 +108,11 @@ public abstract class AbstractNavigationMessageWriter<T extends AbstractNavigati
         throws IOException {
         if (header.getFormatVersion() < 3.0) {
             // Rinex 2 supports only Glonass and GPS
-            final TimeScale ts = message.getSystem() == SatelliteSystem.GLONASS ?
+            final TimeScale ts = message.getTimeOfEphemeris().getSystem() == SatelliteSystem.GLONASS ?
                                  writer.getTimeScales().getGLONASS() :
                                  writer.getTimeScales().getGPS();
-            final DateTimeComponents dtc = message.getEpochToc().getComponents(ts);
-            writer.outputField(TWO_DIGITS_INTEGER, message.getPRN(),                2);
+            final DateTimeComponents dtc = message.getTimeOfClock().getDate().getComponents(ts);
+            writer.outputField(TWO_DIGITS_INTEGER, message.getPrn(), 2);
             writer.outputField(THREE_DIGITS_INTEGER, dtc.getDate().getYear() % 100, 5);
             writer.outputField(THREE_DIGITS_INTEGER, dtc.getDate().getMonth(),      8);
             writer.outputField(THREE_DIGITS_INTEGER, dtc.getDate().getDay(),       11);
@@ -124,7 +125,7 @@ public abstract class AbstractNavigationMessageWriter<T extends AbstractNavigati
         } else {
             writer.outputField(identifier, 3, true);
             writer.outputField(' ', 4);
-            writer.writeDate(message.getEpochToc(), message.getSystem());
+            writer.writeDate(message.getTimeOfClock().getDate(), message.getTimeOfClock().getSystem());
             writer.writeDouble(message.getAf0(), Unit.SECOND);
             writer.writeDouble(message.getAf1(), RinexNavigationParser.S_PER_S);
             writer.writeDouble(message.getAf2(), RinexNavigationParser.S_PER_S2);
@@ -145,7 +146,7 @@ public abstract class AbstractNavigationMessageWriter<T extends AbstractNavigati
         writeField1Line1(message, writer);
         writer.writeDouble(message.getCrs(), Unit.METRE);
         writer.writeDouble(message.getDeltaN0(), RinexNavigationParser.RAD_PER_S);
-        writer.writeDouble(message.getM0(), Unit.RADIAN);
+        writer.writeDouble(message.getOrbit().getMeanAnomaly(), Unit.RADIAN);
         writer.finishLine();
     }
 
@@ -168,9 +169,9 @@ public abstract class AbstractNavigationMessageWriter<T extends AbstractNavigati
         throws IOException {
         writer.indentLine(header);
         writer.writeDouble(message.getCuc(), Unit.RADIAN);
-        writer.writeDouble(message.getE(), Unit.NONE);
+        writer.writeDouble(message.getOrbit().getE(), Unit.NONE);
         writer.writeDouble(message.getCus(), Unit.RADIAN);
-        writer.writeDouble(message.getSqrtA(), RinexNavigationParser.SQRT_M);
+        writer.writeDouble(FastMath.sqrt(message.getOrbit().getA()), RinexNavigationParser.SQRT_M);
         writer.finishLine();
     }
 
@@ -184,9 +185,9 @@ public abstract class AbstractNavigationMessageWriter<T extends AbstractNavigati
                                  final RinexNavigationHeader header, final RinexNavigationWriter writer)
         throws IOException {
         writer.indentLine(header);
-        writer.writeDouble(message.getTime(), Unit.SECOND);
+        writer.writeDouble(message.getTimeOfEphemeris().getSecondsInWeek(), Unit.SECOND);
         writer.writeDouble(message.getCic(), Unit.RADIAN);
-        writer.writeDouble(message.getOmega0(), Unit.RADIAN);
+        writer.writeDouble(message.getOrbit().getRightAscensionOfAscendingNode(), Unit.RADIAN);
         writer.writeDouble(message.getCis(), Unit.RADIAN);
         writer.finishLine();
     }
@@ -201,9 +202,9 @@ public abstract class AbstractNavigationMessageWriter<T extends AbstractNavigati
                                  final RinexNavigationHeader header, final RinexNavigationWriter writer)
         throws IOException {
         writer.indentLine(header);
-        writer.writeDouble(message.getI0(), Unit.RADIAN);
+        writer.writeDouble(message.getOrbit().getI(), Unit.RADIAN);
         writer.writeDouble(message.getCrc(), Unit.METRE);
-        writer.writeDouble(message.getPa(), Unit.RADIAN);
+        writer.writeDouble(message.getOrbit().getPeriapsisArgument(), Unit.RADIAN);
         writer.writeDouble(message.getOmegaDot(), RinexNavigationParser.RAD_PER_S);
         writer.finishLine();
     }

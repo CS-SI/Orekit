@@ -26,10 +26,10 @@ import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.handlers.FieldStopOnIncreasing;
 
 /** Finder for apside crossing events.
- * <p>This class finds apside crossing events (i.e. apogee or perigee crossing).</p>
+ * <p>This class finds apside crossing events (i.e. apoapsis or periapsis crossing).</p>
  * <p>The default implementation behavior is to {@link Action#CONTINUE continue}
- * propagation at apogee crossing and to {@link Action#STOP stop} propagation
- * at perigee crossing. This can be changed by calling
+ * propagation at apoapsis crossing and to {@link Action#STOP stop} propagation
+ * at periapsis crossing. This can be changed by calling
  * {@link #withHandler(FieldEventHandler)} after construction.</p>
  * <p>Beware that apside detection will fail for almost circular orbits. If
  * for example an apside detector is used to trigger an {@link

@@ -441,7 +441,7 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
     }
     /**
      * check against example in Tapley, Schutz, and Born, p 65-66. They predict a
-     * progression of perigee of 11 arcsec/year. To get the same results we must set the
+     * progression of periapsis of 11 arcsec/year. To get the same results we must set the
      * propagation tolerances to 1e-5.
      */
     @Test
@@ -472,7 +472,7 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
         double dp = endOrbit.getPeriapsisArgument() - startOrbit.getPeriapsisArgument();
         double dtYears = end.durationFrom(orbit.getDate()) / Constants.JULIAN_YEAR;
         double dpDeg = FastMath.toDegrees(dp);
-        //change in argument of perigee in arcseconds per year
+        //change in Argument of periapsis in arcseconds per year
         double arcsecPerYear = dpDeg * 3600 / dtYears;
         Assertions.assertEquals(11, arcsecPerYear, 0.5);
     }

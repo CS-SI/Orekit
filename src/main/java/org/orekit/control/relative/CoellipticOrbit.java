@@ -119,7 +119,7 @@ public class CoellipticOrbit {
             chaserRaan = targetOrbit.getRightAscensionOfAscendingNode() - alpha;
         }
 
-        final double chaserPerigeeArgument = targetOrbit.getPeriapsisArgument();
+        final double chaserPeriapsisArgument = targetOrbit.getPeriapsisArgument();
 
         final double fxPlaneCenter = targetOrbit.getTrueAnomaly() -
                                       (chaserRaan - targetOrbit.getRightAscensionOfAscendingNode()) *
@@ -129,7 +129,7 @@ public class CoellipticOrbit {
 
         final double chaserTrueAnomaly = fxPlaneCenter + deltaFinPlaneCenter + deltaFVBarOffset;
 
-        return new KeplerianOrbit(chaserA, chaserE, chaserI, chaserPerigeeArgument, chaserRaan, chaserTrueAnomaly,
+        return new KeplerianOrbit(chaserA, chaserE, chaserI, chaserPeriapsisArgument, chaserRaan, chaserTrueAnomaly,
                                   PositionAngleType.TRUE, targetOrbit.getFrame(), targetOrbit.getDate(),
                                   targetOrbit.getMu());
     }
@@ -205,7 +205,7 @@ public class CoellipticOrbit {
             chaserRaan = targetOrbit.getRightAscensionOfAscendingNode().subtract(alpha);
         }
 
-        final T chaserPerigeeArgument = targetOrbit.getPeriapsisArgument();
+        final T chaserPeriapsisArgument = targetOrbit.getPeriapsisArgument();
 
         final T fxPlaneCenter = targetOrbit.getTrueAnomaly().subtract(chaserRaan.subtract(
                         targetOrbit.getRightAscensionOfAscendingNode()).multiply(targetOrbit.getI().cos()));
@@ -214,7 +214,7 @@ public class CoellipticOrbit {
 
         final T chaserTrueAnomaly = fxPlaneCenter.add(deltaFinPlaneCenter).add(deltaFVBarOffset);
 
-        return new FieldKeplerianOrbit<>(chaserA, chaserE, chaserI, chaserPerigeeArgument, chaserRaan,
+        return new FieldKeplerianOrbit<>(chaserA, chaserE, chaserI, chaserPeriapsisArgument, chaserRaan,
                                          chaserTrueAnomaly, PositionAngleType.TRUE, targetOrbit.getFrame(),
                                          targetOrbit.getDate(), targetOrbit.getMu());
     }

@@ -138,15 +138,15 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
     @Override
     protected double[] getLLimits(final SpacecraftState state, final AuxiliaryElements auxiliaryElements) {
 
-        final double perigee = auxiliaryElements.getSma() * (1. - auxiliaryElements.getEcc());
+        final double periapsis = auxiliaryElements.getSma() * (1. - auxiliaryElements.getEcc());
 
         // Trajectory entirely out of the atmosphere
-        if (perigee > rbar) {
+        if (periapsis > rbar) {
             return new double[2];
         }
-        final double apogee  = auxiliaryElements.getSma() * (1. + auxiliaryElements.getEcc());
+        final double apoapsis  = auxiliaryElements.getSma() * (1. + auxiliaryElements.getEcc());
         // Trajectory entirely within of the atmosphere
-        if (apogee < rbar) {
+        if (apoapsis < rbar) {
             return new double[] { -FastMath.PI + MathUtils.normalizeAngle(state.getOrbit().getLv(), 0),
                                   FastMath.PI + MathUtils.normalizeAngle(state.getOrbit().getLv(), 0) };
         }
@@ -165,14 +165,14 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
 
         final T[] tab = MathArrays.buildArray(field, 2);
 
-        final T perigee = auxiliaryElements.getSma().multiply(auxiliaryElements.getEcc().negate().add(1.));
+        final T periapsis = auxiliaryElements.getSma().multiply(auxiliaryElements.getEcc().negate().add(1.));
         // Trajectory entirely out of the atmosphere
-        if (perigee.getReal() > rbar) {
+        if (periapsis.getReal() > rbar) {
             return tab;
         }
-        final T apogee  = auxiliaryElements.getSma().multiply(auxiliaryElements.getEcc().add(1.));
+        final T apoapsis  = auxiliaryElements.getSma().multiply(auxiliaryElements.getEcc().add(1.));
         // Trajectory entirely within of the atmosphere
-        if (apogee.getReal() < rbar) {
+        if (apoapsis.getReal() < rbar) {
             final T zero = field.getZero();
             final T pi   = zero.getPi();
             tab[0] = MathUtils.normalizeAngle(state.getOrbit().getLv(), zero).subtract(pi);

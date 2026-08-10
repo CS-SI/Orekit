@@ -357,8 +357,8 @@ class KeplerianOrbitTest {
         Vector3D velocity = p.getVelocity();
         Vector3D momentum = p.getPVCoordinates().getMomentum().normalize();
 
-        double apogeeRadius  = p.getA() * (1 + p.getE());
-        double perigeeRadius = p.getA() * (1 - p.getE());
+        double apoapsisRadius  = p.getA() * (1 + p.getE());
+        double periapsisRadius = p.getA() * (1 - p.getE());
 
         for (double lv = 0; lv <= 2 * FastMath.PI; lv += 2 * FastMath.PI/100.) {
             p = new KeplerianOrbit(p.getA(), p.getE(), p.getI(), p.getPeriapsisArgument(),
@@ -366,9 +366,9 @@ class KeplerianOrbitTest {
                                    p.getFrame(), p.getDate(), p.getMu());
             position = p.getPosition();
 
-            // test if the norm of the position is in the range [perigee radius, apogee radius]
-            Assertions.assertTrue((position.getNorm() - apogeeRadius)  <= (  apogeeRadius * Utils.epsilonTest));
-            Assertions.assertTrue((position.getNorm() - perigeeRadius) >= (- perigeeRadius * Utils.epsilonTest));
+            // test if the norm of the position is in the range [periapsis radius, apoapsis radius]
+            Assertions.assertTrue((position.getNorm() - apoapsisRadius)  <= (  apoapsisRadius * Utils.epsilonTest));
+            Assertions.assertTrue((position.getNorm() - periapsisRadius) >= (- periapsisRadius * Utils.epsilonTest));
 
             position = position.normalize();
             velocity = p.getVelocity();
@@ -386,11 +386,11 @@ class KeplerianOrbitTest {
         // apsides
         p = new KeplerianOrbit(p.getA(), p.getE(), p.getI(), p.getPeriapsisArgument(),
                                p.getRightAscensionOfAscendingNode(), 0 , PositionAngleType.TRUE, p.getFrame(), p.getDate(), p.getMu());
-        Assertions.assertEquals(p.getPosition().getNorm(), perigeeRadius, perigeeRadius * Utils.epsilonTest);
+        Assertions.assertEquals(p.getPosition().getNorm(), periapsisRadius, periapsisRadius * Utils.epsilonTest);
 
         p = new KeplerianOrbit(p.getA(), p.getE(), p.getI(), p.getPeriapsisArgument(),
                                p.getRightAscensionOfAscendingNode(), FastMath.PI , PositionAngleType.TRUE, p.getFrame(), p.getDate(), p.getMu());
-        Assertions.assertEquals(p.getPosition().getNorm(), apogeeRadius, apogeeRadius * Utils.epsilonTest);
+        Assertions.assertEquals(p.getPosition().getNorm(), apoapsisRadius, apoapsisRadius * Utils.epsilonTest);
 
         // nodes
         // descending node
@@ -417,10 +417,10 @@ class KeplerianOrbitTest {
         velocity = pCirEqua.getVelocity();
         momentum = Vector3D.crossProduct(position, velocity).normalize();
 
-        apogeeRadius  = pCirEqua.getA() * (1 + pCirEqua.getE());
-        perigeeRadius = pCirEqua.getA() * (1 - pCirEqua.getE());
-        // test if apogee equals perigee
-        Assertions.assertEquals(perigeeRadius, apogeeRadius, 1.e+4 * Utils.epsilonTest * apogeeRadius);
+        apoapsisRadius  = pCirEqua.getA() * (1 + pCirEqua.getE());
+        periapsisRadius = pCirEqua.getA() * (1 - pCirEqua.getE());
+        // test if apoapsis equals periapsis
+        Assertions.assertEquals(periapsisRadius, apoapsisRadius, 1.e+4 * Utils.epsilonTest * apoapsisRadius);
 
         for (double lv = 0; lv <= 2 * FastMath.PI; lv += 2 * FastMath.PI/100.) {
             pCirEqua = new KeplerianOrbit(pCirEqua.getA(), pCirEqua.getE(), pCirEqua.getI(), pCirEqua.getPeriapsisArgument(),
@@ -428,10 +428,10 @@ class KeplerianOrbitTest {
                                           pCirEqua.getFrame(), pCirEqua.getDate(), pCirEqua.getMu());
             position = pCirEqua.getPosition();
 
-            // test if the norm pf the position is in the range [perigee radius, apogee radius]
+            // test if the norm pf the position is in the range [periapsis radius, apoapsis radius]
             // Warning: these tests are without absolute value by choice
-            Assertions.assertTrue((position.getNorm() - apogeeRadius)  <= (  apogeeRadius * Utils.epsilonTest));
-            Assertions.assertTrue((position.getNorm() - perigeeRadius) >= (- perigeeRadius * Utils.epsilonTest));
+            Assertions.assertTrue((position.getNorm() - apoapsisRadius)  <= (  apoapsisRadius * Utils.epsilonTest));
+            Assertions.assertTrue((position.getNorm() - periapsisRadius) >= (- periapsisRadius * Utils.epsilonTest));
 
             position = position.normalize();
             velocity = pCirEqua.getVelocity();
@@ -506,8 +506,8 @@ class KeplerianOrbitTest {
                                                   PositionAngleType.TRUE,
                                                   FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
                                                   mu);
-        Vector3D perigeeP  = orbit.getPosition();
-        Vector3D u = perigeeP.normalize();
+        Vector3D periapsisP  = orbit.getPosition();
+        Vector3D u = periapsisP.normalize();
         Vector3D focus1 = Vector3D.ZERO;
         Vector3D focus2 = new Vector3D(-2 * orbit.getA() * orbit.getE(), u);
         for (double dt = -5000; dt < 5000; dt += 60) {
@@ -528,11 +528,11 @@ class KeplerianOrbitTest {
                                                   PositionAngleType.MEAN,
                                                   FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
                                                   mu);
-        Vector3D perigeeP  = new KeplerianOrbit(orbit.getA(), orbit.getE(), orbit.getI(),
+        Vector3D periapsisP  = new KeplerianOrbit(orbit.getA(), orbit.getE(), orbit.getI(),
                                                 orbit.getPeriapsisArgument(), orbit.getRightAscensionOfAscendingNode(),
                                                 0.0, PositionAngleType.TRUE, orbit.getFrame(),
                                                 orbit.getDate(), orbit.getMu()).getPosition();
-        Vector3D u = perigeeP.normalize();
+        Vector3D u = periapsisP.normalize();
         Vector3D focus1 = Vector3D.ZERO;
         Vector3D focus2 = new Vector3D(-2 * orbit.getA() * orbit.getE(), u);
         for (double dt = -5000; dt < 5000; dt += 60) {

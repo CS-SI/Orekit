@@ -121,8 +121,8 @@ public class EarthStandardAtmosphereRefraction implements AtmosphericRefractionM
         this.correfrac = (pressure / DEFAULT_PRESSURE) * (DEFAULT_TEMPERATURE / temperature);
     }
 
-    @Override
     /** {@inheritDoc} */
+    @Override
     public double getRefraction(final double trueElevation) {
         double refraction = 0.0;
         final double eld = FastMath.toDegrees(trueElevation);

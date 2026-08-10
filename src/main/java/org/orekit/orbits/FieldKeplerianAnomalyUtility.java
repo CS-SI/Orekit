@@ -187,7 +187,7 @@ public class FieldKeplerianAnomalyUtility {
      * Accurate computation of E - e sin(E).
      * <p>
      * This method is used when E is close to 0 and e close to 1, i.e. near the
-     * perigee of almost parabolic orbits
+     * periapsis of almost parabolic orbits
      * </p>
      * @param <T> field type
      * @param e eccentricity

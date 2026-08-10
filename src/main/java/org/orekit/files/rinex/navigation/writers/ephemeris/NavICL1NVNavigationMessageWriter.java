@@ -29,7 +29,7 @@ import java.io.IOException;
  * @since 14.0
  */
 public class NavICL1NVNavigationMessageWriter
-    extends CivilianNavigationMessageWriter<NavICL1NvNavigationMessage> {
+    extends CivilianLevel1NavigationMessageWriter<NavICL1NvNavigationMessage> {
 
     /** Simple constructor. */
     public NavICL1NVNavigationMessageWriter() {
@@ -47,8 +47,8 @@ public class NavICL1NVNavigationMessageWriter
 
         // EPH MESSAGE LINE - 8
         writer.indentLine(header);
-        writer.writeDouble(message.getTransmissionTime(), Unit.SECOND);
-        writer.writeInt(message.getWeek());
+        writer.writeDouble(message.getTransmissionTime().getSecondsInWeek(), Unit.SECOND);
+        writer.writeInt(message.getTransmissionTime().getWeekNumber());
         writer.finishLine();
 
     }
@@ -75,7 +75,7 @@ public class NavICL1NVNavigationMessageWriter
 
         writer.writeInt(message.getUrai());
         writer.writeInt(message.getL1SpsHealth());
-        writer.writeDouble(message.getTGD(),    Unit.SECOND);
+        writer.writeDouble(message.getTgd(),    Unit.SECOND);
         writer.writeDouble(message.getTGDSL5(), Unit.SECOND);
         writer.finishLine();
     }

@@ -24,25 +24,13 @@ import org.orekit.utils.units.Unit;
 
 import java.io.IOException;
 
-/** Base writer for civilian messages.
+/** Base writer for QZSS and GPS civilian messages.
  * @param <T> type of the navigation messages this writer handles
  * @author Luc Maisonobe
  * @since 14.0
  */
-public abstract class CivilianNavigationMessageWriter<T extends CivilianNavigationMessage<T>>
-    extends AbstractNavigationMessageWriter<T> {
-
-    /** Simple constructor. */
-    protected CivilianNavigationMessageWriter() {
-        // nothing to do
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    protected void writeField1Line1(final T message, final RinexNavigationWriter writer)
-        throws IOException {
-        writer.writeDouble(message.getADot(), RinexNavigationParser.M_PER_S);
-    }
+public abstract class CivilianLevel2NavigationMessageWriter<T extends CivilianNavigationMessage<T>>
+    extends CivilianLevel1NavigationMessageWriter<T> {
 
     /** {@inheritDoc} */
     @Override
@@ -65,7 +53,7 @@ public abstract class CivilianNavigationMessageWriter<T extends CivilianNavigati
         writer.indentLine(header);
         writer.writeInt(message.getUraiEd());
         writer.writeInt(message.getSvHealth());
-        writer.writeDouble(message.getTGD(), Unit.SECOND);
+        writer.writeDouble(message.getTgd(), Unit.SECOND);
         writer.writeInt(message.getUraiNed2());
         writer.finishLine();
     }

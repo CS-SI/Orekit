@@ -86,7 +86,7 @@ public class KeplerianParametersConverter {
             anomaly = FastMath.log((eCH + eSH) / (eCH - eSH)) / 2;
         }
 
-        // compute perigee argument
+        // compute periapsis argument
         final Vector3D node = new Vector3D(raan, 0.0);
         final double px = Vector3D.dotProduct(pvP, node);
         final double py = Vector3D.dotProduct(pvP, Vector3D.crossProduct(momentum, node)) / FastMath.sqrt(m2);
@@ -164,7 +164,7 @@ public class KeplerianParametersConverter {
 
     /** Compute reference axes.
      * @param i inclination
-     * @param pa perigee argument
+     * @param pa periapsis argument
      * @param raan right ascension of ascending node
      * @return reference axes
      */

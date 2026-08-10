@@ -58,11 +58,14 @@ class TLEGradientConverter extends AbstractAnalyticalGradientConverter {
      */
     TLEGradientConverter(final TLEPropagator propagator) {
         super(propagator, FREE_STATE_PARAMETERS);
-        this.tle                 = propagator.getTLE();
-        this.teme                = propagator.getFrame();
-        this.utc                 = tle.getUtc();
-        this.provider            = propagator.getAttitudeProvider();
-        this.propagator          = propagator;
+        // TLE and related parameters
+        this.tle      = propagator.getTLE();
+        this.teme     = propagator.getFrame();
+        this.utc      = tle.getUtc();
+        this.provider = propagator.getAttitudeProvider();
+
+        this.propagator = propagator;
+
     }
 
     /** {@inheritDoc} */
@@ -70,10 +73,10 @@ class TLEGradientConverter extends AbstractAnalyticalGradientConverter {
     public FieldTLEPropagator<Gradient> getPropagator() {
 
         final FieldSpacecraftState<Gradient> state = getState(this);
-        final Gradient[] parameters = getParameters(state, tle);
 
         // Zero
         final Gradient zero = state.getMass().getField().getZero();
+        final Gradient[] parameters = getParameters(state, propagator);
 
         // Template TLE
         final int satelliteNumber         = tle.getSatelliteNumber();
@@ -84,14 +87,15 @@ class TLEGradientConverter extends AbstractAnalyticalGradientConverter {
         final int ephemerisType           = tle.getEphemerisType();
         final int elementNumber           = tle.getElementNumber();
         final int revolutionNumberAtEpoch = tle.getRevolutionNumberAtEpoch();
-        final double bStar                = tle.getBStar(state.getDate().toAbsoluteDate());
 
         // Initialize the new TLE
         final FieldTLE<Gradient> templateTLE = new FieldTLE<>(satelliteNumber, classification,
-                launchYear, launchNumber, launchPiece,
-                ephemerisType, elementNumber, state.getDate(),
-                zero, zero, zero, zero, zero, zero, zero, zero,
-                revolutionNumberAtEpoch, bStar, utc);
+                                                              launchYear, launchNumber, launchPiece,
+                                                              ephemerisType, elementNumber, state.getDate(),
+                                                              zero, zero, zero, zero, zero, zero, zero, zero,
+                                                              revolutionNumberAtEpoch,
+                                                              parameters[0],
+                                                              utc);
 
         // TLE
         final TleGenerationAlgorithm algorithm = propagator.getTleGenerationAlgorithm();
@@ -99,7 +103,7 @@ class TLEGradientConverter extends AbstractAnalyticalGradientConverter {
 
         // Return the "Field" propagator
         final FieldTLEPropagator<Gradient> fieldPropagator =
-            FieldTLEPropagator.selectExtrapolator(gTLE, provider, state.getMass(), teme, parameters);
+            FieldTLEPropagator.selectExtrapolator(gTLE, provider, state.getMass(), teme);
         fieldPropagator.setTleGenerationAlgorithm(algorithm);
         return fieldPropagator;
     }
@@ -107,7 +111,7 @@ class TLEGradientConverter extends AbstractAnalyticalGradientConverter {
     /** {@inheritDoc} */
     @Override
     public List<ParameterDriver> getParametersDrivers() {
-        return tle.getParametersDrivers();
+        return  propagator.getParametersDrivers();
     }
 
 }

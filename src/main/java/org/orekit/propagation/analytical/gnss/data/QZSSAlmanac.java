@@ -17,9 +17,14 @@
 package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
-import org.orekit.gnss.SatelliteSystem;
+import org.orekit.frames.Frame;
+import org.orekit.orbits.FieldKeplerianOrbit;
+import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.time.FieldGNSSDate;
+import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
+
+import java.util.function.DoubleFunction;
 
 /**
  * This class holds a QZSS almanac as read from YUMA files.
@@ -28,23 +33,53 @@ import org.orekit.time.TimeScales;
  * @since 10.0
  *
  */
-public class QZSSAlmanac extends AbstractAlmanac<QZSSAlmanac> {
+public class QZSSAlmanac extends GNSSOrbitalElements<QZSSAlmanac> {
 
     /** Source of the almanac. */
-    private String src;
+    private final String source;
 
     /** Health status. */
-    private int health;
+    private final int health;
 
     /**
      * Constructor.
      * @param timeScales known time scales
-     * @param system     satellite system to consider for interpreting week number
-     *                   (may be different from real system, for example in Rinex nav, weeks
-     *                   are always according to GPS)
+     * @param prn        PRN number of the satellite
+     * @param toe        tim of ephemeris (<em>must</em> be consistent with {@code orbit})
+     * @param orbit      Keplerian orbit in Earth-frozen frame
+     * @param aDot       change rate in semi-major axis (m/s)
+     * @param deltaN0    delta of satellite mean motion
+     * @param deltaN0Dot change rate in Δn₀
+     * @param iDot       inclination rate (rad/s)
+     * @param omegaDot   rate of right ascension (rad/s)
+     * @param cuc        amplitude of the cosine harmonic correction term to the argument of latitude
+     * @param cus        amplitude of the sine harmonic correction term to the argument of latitude
+     * @param crc        amplitude of the cosine harmonic correction term to the orbit radius
+     * @param crs        amplitude of the sine harmonic correction term to the orbit radius
+     * @param cic        amplitude of the cosine harmonic correction term to the inclination
+     * @param cis        amplitude of the sine harmonic correction term to the inclination
+     * @param af0        zero-th order clock correction (s)
+     * @param af1        first order clock correction (s/s)
+     * @param af2        second order clock correction (s/s²)
+     * @param tgd        group delay differential TGD for L1-L2 correction
+     * @param toc        time of clock
+     * @param source     source of the almanac
+     * @param health     health status
      */
-    public QZSSAlmanac(final TimeScales timeScales, final SatelliteSystem system) {
-        super(GNSSConstants.QZSS_MU, GNSSConstants.QZSS_AV, GNSSConstants.QZSS_WEEK_NB, timeScales, system);
+    public QZSSAlmanac(final TimeScales timeScales, final int prn,
+                       final GNSSDate toe, final KeplerianOrbit orbit,
+                       final double aDot, final double deltaN0, final double deltaN0Dot,
+                       final double iDot, final double omegaDot,
+                       final double cuc, final double cus,
+                       final double crc, final double crs,
+                       final double cic, final double cis,
+                       final double af0, final double af1, final double af2,
+                       final double tgd, final GNSSDate toc, final String source, final int health) {
+        super(GNSSConstants.QZSS_AV, GNSSConstants.QZSS_WEEK_NB, timeScales, null, prn,
+              toe, orbit, aDot, deltaN0, deltaN0Dot, iDot, omegaDot,
+              cuc, cus, crc, crs, cic, cis, af0, af1, af2, tgd, toc);
+        this.source = source;
+        this.health = health;
     }
 
     /** Constructor from field instance.
@@ -53,63 +88,43 @@ public class QZSSAlmanac extends AbstractAlmanac<QZSSAlmanac> {
      */
     public <T extends CalculusFieldElement<T>> QZSSAlmanac(final FieldQZSSAlmanac<T> original) {
         super(original);
-        setSource(original.getSource());
-        setHealth(original.getHealth());
+        source = original.getSource();
+        health = original.getHealth();
     }
 
     /** {@inheritDoc} */
-    @SuppressWarnings("unchecked")
     @Override
-    public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, QZSSAlmanac>>
-        F toField(final Field<T> field) {
-        return (F) new FieldQZSSAlmanac<>(field, this);
+    public <T extends CalculusFieldElement<T>>
+        FieldQZSSAlmanac<T> toField(final FieldKeplerianOrbit<T> orbit,
+                                    final T[] nonKeplerian,
+                                    final DoubleFunction<T> converter) {
+        return new FieldQZSSAlmanac<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
+                                      getType(), getPrn(),
+                                      new FieldGNSSDate<>(orbit.getDate().getField(), getTimeOfEphemeris()),
+                                      orbit, nonKeplerian,
+                                      converter.apply(getTgd()),
+                                      new FieldGNSSDate<>(orbit.getDate().getField(), getTimeOfClock()),
+                                      getSource(), getHealth());
     }
 
-    /**
-     * Setter for the Square Root of Semi-Major Axis (m^1/2).
-     * <p>
-     * In addition, this method set the value of the Semi-Major Axis.
-     * </p>
-     * @param sqrtA the Square Root of Semi-Major Axis (m^1/2)
-     */
-    public void setSqrtA(final double sqrtA) {
-        setSma(sqrtA * sqrtA);
-    }
-
-    /**
-     * Gets the source of this QZSS almanac.
-     *
+    /** Get the source of this QZSS almanac.
      * @return the source of this QZSS almanac
      */
     public String getSource() {
-        return src;
+        return source;
     }
 
-    /**
-     * Sets the source of this GPS almanac.
-     *
-     * @param source the source of this GPS almanac
-     */
-    public void setSource(final String source) {
-        this.src = source;
-    }
-
-    /**
-     * Gets the Health status.
-     *
+    /** Get the Health status.
      * @return the Health status
      */
     public int getHealth() {
         return health;
     }
 
-    /**
-     * Sets the health status.
-     *
-     * @param health the health status to set
-     */
-    public void setHealth(final int health) {
-        this.health = health;
+    /** {@inheritDoc} */
+    @Override
+    public QZSSAlmanacFactory baseFactory(final Frame inertial, final Frame bodyFixed) {
+        return new QZSSAlmanacFactory(getTimeScales(), getTimeOfEphemeris().getSystem(), inertial, bodyFixed);
     }
 
 }

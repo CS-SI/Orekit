@@ -75,7 +75,7 @@ public class ElevationDetectionAdaptableIntervalFactory {
                 final Transform topoToInertial = topo.getTransformTo(state.getFrame(), state.getDate());
                 final double topoAngularVelocity = topoToInertial.getAngular().getRotationRate().getNorm();
 
-                // max angular rate of spacecraft (i.e. rate at perigee)
+                // max angular rate of spacecraft (i.e. rate at periapsis)
                 final Orbit orbit = state.getOrbit();
                 final double e     = orbit.getE();
                 final double rp    = orbit.getA() * (1 - e);

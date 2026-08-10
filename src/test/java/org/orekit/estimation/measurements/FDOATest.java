@@ -220,7 +220,7 @@ class FDOATest {
                 secondParameter.getNorthOffsetDriver(),
                 secondParameter.getZenithOffsetDriver(),
             };
-            /** {@inheritDoc} */
+
             for (ParameterDriver driver : drivers) {
                 final double[] gradient = measurement.estimate(0, 0, new SpacecraftState[]{state}).getParameterDerivatives(driver, new AbsoluteDate());
                 Assertions.assertEquals(1, measurement.getDimension());

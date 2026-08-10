@@ -18,100 +18,181 @@ package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.util.FastMath;
-import org.orekit.gnss.SatelliteSystem;
-import org.orekit.propagation.analytical.gnss.GNSSPropagator;
+import org.hipparchus.util.MathArrays;
+import org.orekit.frames.Frame;
+import org.orekit.orbits.FieldKeplerianOrbit;
+import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.orbits.OrbitalParameters;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
-import org.orekit.time.TimeStamped;
 import org.orekit.utils.ParameterDriver;
 
-/** This class provides the minimal set of orbital elements needed by the {@link GNSSPropagator}.
- * <p>
- * The parameters are split in two groups: Keplerian orbital parameters and non-Keplerian
- * evolution parameters. All parameters can be updated as they are all instances of
- * {@link ParameterDriver}. Only the non-Keplerian parameters are returned in the
- * {@link #getParametersDrivers()} method, the Keplerian orbital parameters must
- * be accessed independently. These groups ensure proper separate computation of
- * state transition matrix and Jacobian matrix by {@link GNSSPropagator}.
- * </p>
+import java.util.function.DoubleFunction;
+import java.util.function.ToDoubleFunction;
+
+/** This class provides the minimal set of orbital elements needed by
+ * {@link org.orekit.propagation.analytical.gnss.GNSSPropagator}.
  * @param <O> type of the orbital elements
- * @since 13.0
  * @author Pascal Parraud
  * @author Luc Maisonobe
-*/
+ * @since 13.0
+ */
 public abstract class GNSSOrbitalElements<O extends GNSSOrbitalElements<O>>
-    extends GNSSOrbitalElementsDriversProvider
-    implements TimeStamped {
+    implements OrbitalParameters, GNSSClockElements {
 
-    /** Name for semi major axis parameter. */
-    public static final String SEMI_MAJOR_AXIS = "GnssSemiMajorAxis";
+    /** Mean angular velocity of the Earth for the GNSS model. */
+    private final double angularVelocity;
 
-    /** Name for eccentricity parameter. */
-    public static final String ECCENTRICITY = "GnssEccentricity";
+    /** Duration of the GNSS cycle in weeks. */
+    private final int weeksInCycle;
 
-    /** Name for inclination at reference time parameter. */
-    public static final String INCLINATION = "GnssInclination";
+    /** Known time scales. */
+    private final TimeScales timeScales;
 
-    /** Name for argument of perigee parameter. */
-    public static final String ARGUMENT_OF_PERIGEE = "GnssPerigeeArgument";
+    /** Message type (null if not a navigation message). */
+    private final String type;
 
-    /** Name for longitude of ascending node at weekly epoch parameter. */
-    public static final String NODE_LONGITUDE = "GnssNodeLongitude";
+    /** PRN number of the satellite. */
+    private final int prn;
 
-    /** Name for mean anomaly at reference time parameter. */
-    public static final String MEAN_ANOMALY = "GnssMeanAnomaly";
+    /** Time of ephemeris.
+     * @since 14.0
+     */
+    private final GNSSDate toe;
 
-    /** Earth's universal gravitational parameter. */
-    private final double mu;
+    /** Orbit. */
+    private final KeplerianOrbit orbit;
 
-    /** Reference epoch. */
-    private AbsoluteDate date;
+    /** Change rate in semi-major axis (m/s).
+     * @since 14.0
+     */
+    private final double aDot;
 
-    /** Semi-Major Axis (m). */
-    private final ParameterDriver smaDriver;
+    /** Delta of satellite mean motion.
+     * @since 14.0
+     */
+    private final double deltaN0;
 
-    /** Eccentricity. */
-    private final ParameterDriver eccDriver;
+    /** Change rate in Δn₀.
+     * @since 14.0
+     */
+    private final double deltaN0Dot;
 
-    /** Inclination angle at reference time (rad). */
-    private final ParameterDriver i0Driver;
+    /** Inclination rate (rad/s). */
+    private final double iDot;
 
-    /** Argument of perigee (rad). */
-    private final ParameterDriver aopDriver;
+    /** Rate of right ascension (rad/s). */
+    private final double omegaDot;
 
-    /** Longitude of ascending node of orbit plane at weekly epoch (rad). */
-    private final ParameterDriver om0Driver;
+    /** Amplitude of the cosine harmonic correction term to the argument of latitude. */
+    private final double cuc;
 
-    /** Mean anomaly at reference time (rad). */
-    private final ParameterDriver anomDriver;
+    /** Amplitude of the sine harmonic correction term to the argument of latitude. */
+    private final double cus;
+
+    /** Amplitude of the cosine harmonic correction term to the orbit radius. */
+    private final double crc;
+
+    /** Amplitude of the sine harmonic correction term to the orbit radius. */
+    private final double crs;
+
+    /** Amplitude of the cosine harmonic correction term to the inclination. */
+    private final double cic;
+
+    /** Amplitude of the sine harmonic correction term to the inclination. */
+    private final double cis;
+
+    /** SV zero-th order clock correction (s). */
+    private final double af0;
+
+    /** SV first order clock correction (s/s). */
+    private final double af1;
+
+    /** SV second order clock correction (s/s²). */
+    private final double af2;
+
+    /** Time of clock.
+     * @since 14.0
+     */
+    private final GNSSDate toc;
+
+    /** Group delay differential TGD for L1-L2 correction. */
+    private final double tgd;
 
     /**
-     * Constructor.
-     * @param mu              Earth's universal gravitational parameter
+     * Creates a new instance.
+     *
      * @param angularVelocity mean angular velocity of the Earth for the GNSS model
      * @param weeksInCycle    number of weeks in the GNSS cycle
      * @param timeScales      known time scales
-     * @param system          satellite system to consider for interpreting week number
-     *                        (may be different from real system, for example in Rinex nav, weeks
-     *                        are always according to GPS)
+     * @param type            type (null if not a navigation message)
+     * @param prn             PRN number of the satellite
+     * @param toe             time of ephemeris (<em>must</em> be consistent with {@code orbit})
+     * @param orbit           Keplerian orbit in Earth-frozen frame
+     * @param aDot            change rate in semi-major axis (m/s)
+     * @param deltaN0         delta of satellite mean motion
+     * @param deltaN0Dot      change rate in Δn₀
+     * @param iDot            inclination rate (rad/s)
+     * @param omegaDot        rate of right ascension (rad/s)
+     * @param cuc             amplitude of the cosine harmonic correction term to the argument of latitude
+     * @param cus             amplitude of the sine harmonic correction term to the argument of latitude
+     * @param crc             amplitude of the cosine harmonic correction term to the orbit radius
+     * @param crs             amplitude of the sine harmonic correction term to the orbit radius
+     * @param cic             amplitude of the cosine harmonic correction term to the inclination
+     * @param cis             amplitude of the sine harmonic correction term to the inclination
+     * @param af0             zero-th order clock correction (s)
+     * @param af1             first order clock correction (s/s)
+     * @param af2             second order clock correction (s/s²)
+     * @param tgd             group delay differential TGD for L1-L2 correction
+     * @param toc             time of clock
+     * @since 14.0
      */
-    protected GNSSOrbitalElements(final double mu, final double angularVelocity, final int weeksInCycle,
-                                  final TimeScales timeScales, final SatelliteSystem system) {
+    protected GNSSOrbitalElements(final double angularVelocity, final int weeksInCycle,
+                                  final TimeScales timeScales, final String type,
+                                  final int prn, final GNSSDate toe, final KeplerianOrbit orbit,
+                                  final double aDot, final double deltaN0, final double deltaN0Dot,
+                                  final double iDot, final double omegaDot,
+                                  final double cuc, final double cus,
+                                  final double crc, final double crs,
+                                  final double cic, final double cis,
+                                  final double af0, final double af1, final double af2,
+                                  final double tgd, final GNSSDate toc) {
 
-        super(angularVelocity, weeksInCycle, timeScales, system);
+        // system parameters
+        this.angularVelocity = angularVelocity;
+        this.weeksInCycle    = weeksInCycle;
+        this.timeScales      = timeScales;
+        this.type            = type;
 
-        // immutable field
-        this.mu         = mu;
+        // satellite identifier
+        this.prn             = prn;
 
-        // fields controlled by parameter drivers for Keplerian orbital elements
-        this.smaDriver  = createDriver(SEMI_MAJOR_AXIS,       0);
-        this.eccDriver  = createDriver(ECCENTRICITY,        -24);
-        this.i0Driver   = createDriver(INCLINATION,         -24);
-        this.aopDriver  = createDriver(ARGUMENT_OF_PERIGEE, -24);
-        this.om0Driver  = createDriver(NODE_LONGITUDE,      -24);
-        this.anomDriver = createDriver(MEAN_ANOMALY,        -24);
+        // date
+        this.toe             = toe;
+
+        // Keplerian orbit
+        this.orbit           = orbit;
+
+        // non-Keplerian elements
+        this.aDot            = aDot;
+        this.deltaN0         = deltaN0;
+        this.deltaN0Dot      = deltaN0Dot;
+        this.iDot            = iDot;
+        this.omegaDot        = omegaDot;
+        this.cuc             = cuc;
+        this.cus             = cus;
+        this.crc             = crc;
+        this.crs             = crs;
+        this.cic             = cic;
+        this.cis             = cis;
+
+        // clock elements
+        this.af0             = af0;
+        this.af1             = af1;
+        this.af2             = af2;
+        this.toc             = toc;
+        this.tgd             = tgd;
 
     }
 
@@ -122,185 +203,315 @@ public abstract class GNSSOrbitalElements<O extends GNSSOrbitalElements<O>>
      */
     protected <T extends CalculusFieldElement<T>,
                A extends GNSSOrbitalElements<A>> GNSSOrbitalElements(final FieldGnssOrbitalElements<T, A> original) {
-        this(original.getMu().getReal(), original.getAngularVelocity(), original.getWeeksInCycle(),
-             original.getTimeScales(), original.getSystem());
-
-        // non-Keplerian parameters
-        copyNonKeplerian(original);
-
-        // Keplerian orbital elements
-        setSma(original.getSma().getReal());
-        setE(original.getE().getReal());
-        setI0(original.getI0().getReal());
-        setPa(original.getPa().getReal());
-        setOmega0(original.getOmega0().getReal());
-        setM0(original.getM0().getReal());
-
-        // copy selection settings
-        copySelectionSettings(original);
-
-    }
-
-    /** Create a field version of the instance.
-     * @param <T> type of the field elements
-     * @param <F> type of the orbital elements (field version)
-     * @param field field to which elements belong
-     * @return field version of the instance
-     */
-    public abstract <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, O>>
-        F toField(Field<T> field);
-
-    /** {@inheritDoc} */
-    protected void setGnssDate(final GNSSDate gnssDate) {
-        this.date = gnssDate.getDate();
+        this(original.getAngularVelocity(), original.getWeeksInCycle(), original.getTimeScales(),
+             original.getType(), original.getPrn(),
+             original.getTimeOfEphemeris().getGnssDate(), original.getOrbit().toOrbit(),
+             original.getADot().getReal(),
+             original.getDeltaN0().getReal(), original.getDeltaN0Dot().getReal(),
+             original.getIDot().getReal(), original.getOmegaDot().getReal(),
+             original.getCuc().getReal(), original.getCus().getReal(),
+             original.getCrc().getReal(), original.getCrs().getReal(),
+             original.getCic().getReal(), original.getCis().getReal(),
+             original.getAf0().getReal(), original.getAf1().getReal(), original.getAf2().getReal(),
+             original.getTgd().getReal(), original.getTimeOfClock().getGnssDate());
     }
 
     /** {@inheritDoc} */
     @Override
     public AbsoluteDate getDate() {
-        return date;
+        return toe.getDate();
     }
 
-    /** Get the Earth's universal gravitational parameter.
-     * @return the Earth's universal gravitational parameter
+    /** Get the time of ephemeris.
+     * @return time of ephemeris
+     * @since 14.0
      */
-    public double getMu() {
-        return mu;
+    public GNSSDate getTimeOfEphemeris() {
+        return toe;
     }
 
-    /** Get semi-major axis.
-     * @return driver for the semi-major axis (m)
-     */
-    public ParameterDriver getSmaDriver() {
-        return smaDriver;
+    /** {@inheritDoc} */
+    @Override
+    public GNSSDate getTimeOfClock() {
+        return toc;
     }
 
-    /** Get semi-major axis.
-     * @return semi-major axis (m)
+    /** Create a field version of the instance.
+     * @param <T> type of the field elements
+     * @param field field
+     * @return field version of the instance
+     * @since 14.0
      */
-    public double getSma() {
-        return getSmaDriver().getValue();
+    public <T extends CalculusFieldElement<T>>
+        FieldGnssOrbitalElements<T, O> toField(final Field<T> field) {
+        final T zero = field.getZero();
+        final T[] parameters = MathArrays.buildArray(field, NonKeplerianDriversFactory.SIZE);
+        parameters[NonKeplerianDriversFactory.TIME_INDEX]         = zero.newInstance(getTimeOfEphemeris().getSecondsInWeek());
+        parameters[NonKeplerianDriversFactory.A_DOT_INDEX]        = zero.newInstance(getADot());
+        parameters[NonKeplerianDriversFactory.DELTA_N0_INDEX]     = zero.newInstance(getDeltaN0());
+        parameters[NonKeplerianDriversFactory.DELTA_N0_DOT_INDEX] = zero.newInstance(getDeltaN0Dot());
+        parameters[NonKeplerianDriversFactory.I_DOT_INDEX]        = zero.newInstance(getIDot());
+        parameters[NonKeplerianDriversFactory.OMEGA_DOT_INDEX]    = zero.newInstance(getOmegaDot());
+        parameters[NonKeplerianDriversFactory.CUC_INDEX]          = zero.newInstance(getCuc());
+        parameters[NonKeplerianDriversFactory.CUS_INDEX]          = zero.newInstance(getCus());
+        parameters[NonKeplerianDriversFactory.CRC_INDEX]          = zero.newInstance(getCrc());
+        parameters[NonKeplerianDriversFactory.CRS_INDEX]          = zero.newInstance(getCrs());
+        parameters[NonKeplerianDriversFactory.CIC_INDEX]          = zero.newInstance(getCic());
+        parameters[NonKeplerianDriversFactory.CIS_INDEX]          = zero.newInstance(getCis());
+        parameters[NonKeplerianDriversFactory.AF0_INDEX]          = zero.newInstance(getAf0());
+        parameters[NonKeplerianDriversFactory.AF1_INDEX]          = zero.newInstance(getAf1());
+        parameters[NonKeplerianDriversFactory.AF2_INDEX]          = zero.newInstance(getAf2());
+        return toField(new FieldKeplerianOrbit<>(field, getOrbit()), parameters, zero::newInstance);
     }
 
-    /** Set semi-major axis.
-     * @param sma demi-major axis (m)
+    /** Create another field version of the instance.
+     * @param <T>          type of the field elements
+     * @param keplerian    orbit in the correct gradient field
+     * @param nonKeplerian non-Keplerian parameters
+     * @param converter    converter for remaining elements
+     * @return gradient version of the instance
+     * @since 14.0
      */
-    public void setSma(final double sma) {
-        getSmaDriver().setValue(sma);
+    public abstract <T extends CalculusFieldElement<T>>
+        FieldGnssOrbitalElements<T, O> toField(FieldKeplerianOrbit<T> keplerian,
+                                               T[] nonKeplerian,
+                                               DoubleFunction<T> converter);
+
+    /** Get known time scales.
+     * @return known time scales
+     */
+    public TimeScales getTimeScales() {
+        return timeScales;
     }
 
-    /** Get the computed mean motion n₀.
-     * @return the computed mean motion n₀ (rad/s)
-     * @since 13.0
+    /** Get the message type.
+     * @return message type (null if not a navigation message)
      */
-    public double getMeanMotion0() {
-        final double absA = FastMath.abs(getSma());
-        return FastMath.sqrt(getMu() / absA) / absA;
+    public String getType() {
+        return type;
     }
 
-    /** Get the driver for the eccentricity.
-     * @return driver for the eccentricity
+    /** Get the mean angular velocity of the Earth of the GNSS model.
+     * @return mean angular velocity of the Earth of the GNSS model
      */
-    public ParameterDriver getEDriver() {
-        return eccDriver;
+    public double getAngularVelocity() {
+        return angularVelocity;
     }
 
-    /** Get eccentricity.
-     * @return eccentricity
+    /** Get for the duration of the GNSS cycle in weeks.
+     * @return the duration of the GNSS cycle in weeks
      */
-    public double getE() {
-        return getEDriver().getValue();
+    public int getWeeksInCycle() {
+        return weeksInCycle;
     }
 
-    /** Set eccentricity.
-     * @param e eccentricity
+    /** Get for the duration of the GNSS cycle in seconds.
+     * @return the duration of the GNSS cycle in seconds
      */
-    public void setE(final double e) {
-        getEDriver().setValue(e);
+    public double getCycleDuration() {
+        return GNSSConstants.GNSS_WEEK_IN_SECONDS * weeksInCycle;
     }
 
-    /** Get the driver for the inclination angle at reference time.
-     * @return driver for the inclination angle at reference time (rad)
+    /** Get the PRN number of the satellite.
+     * @return PRN number of the satellite
      */
-    public ParameterDriver getI0Driver() {
-        return i0Driver;
+    public int getPrn() {
+        return prn;
     }
 
-    /** Get the inclination angle at reference time.
-     * @return inclination angle at reference time (rad)
+    /** Get the underlying Keplerian orbit.
+     * @return underlying Keplerian orbit
+     * @since 14.0
      */
-    public double getI0() {
-        return getI0Driver().getValue();
+    public KeplerianOrbit getOrbit() {
+        return orbit;
     }
 
-    /** Set inclination angle at reference time.
-     * @param i0 inclination angle at reference time (rad)
+    /** Get change rate in semi-major axis.
+     * @return the change rate in semi-major axis
+     * @since 14.0
      */
-    public void setI0(final double i0) {
-        getI0Driver().setValue(i0);
+    public double getADot() {
+        return aDot;
     }
 
-    /** Get the driver for the longitude of ascending node of orbit plane at weekly epoch.
-     * @return driver for the longitude of ascending node of orbit plane at weekly epoch (rad)
+    /** Get the delta of satellite mean motion.
+     * @return the delta of satellite mean motion
+     * @since 14.0
      */
-    public ParameterDriver getOmega0Driver() {
-        return om0Driver;
+    public double getDeltaN0() {
+        return deltaN0;
     }
 
-    /** Get longitude of ascending node of orbit plane at weekly epoch.
-     * @return longitude of ascending node of orbit plane at weekly epoch (rad)
+    /** Get the change rate in Δn₀.
+     * @return change rate in Δn₀
+     * @since 14.0
      */
-    public double getOmega0() {
-        return getOmega0Driver().getValue();
+    public double getDeltaN0Dot() {
+        return deltaN0Dot;
     }
 
-    /** Set longitude of ascending node of orbit plane at weekly epoch.
-     * @param om0 longitude of ascending node of orbit plane at weekly epoch (rad)
+    /** Get rate of inclination angle.
+     * @return rate of inclination angle (rad/s)
      */
-    public void setOmega0(final double om0) {
-        getOmega0Driver().setValue(om0);
+    public double getIDot() {
+        return iDot;
     }
 
-    /** Get the driver for the argument of perigee.
-     * @return driver for the argument of perigee (rad)
+    /** Get rate of right ascension.
+     * @return rate of right ascension (rad/s)
      */
-    public ParameterDriver getPaDriver() {
-        return aopDriver;
+    public double getOmegaDot() {
+        return omegaDot;
     }
 
-    /** Get argument of perigee.
-     * @return argument of perigee (rad)
+    /** Get amplitude of the cosine harmonic correction term to the argument of latitude.
+     * @return amplitude of the cosine harmonic correction term to the argument of latitude (rad)
      */
-    public double getPa() {
-        return getPaDriver().getValue();
+    public double getCuc() {
+        return cuc;
     }
 
-    /** Set argument of perigee.
-     * @param aop argument of perigee (rad)
+    /** Get amplitude of the sine harmonic correction term to the argument of latitude.
+     * @return amplitude of the sine harmonic correction term to the argument of latitude (rad)
      */
-    public void setPa(final double aop) {
-        getPaDriver().setValue(aop);
+    public double getCus() {
+        return cus;
     }
 
-    /** Get the driver for the mean anomaly at reference time.
-     * @return driver for the mean anomaly at reference time (rad)
+    /** Get amplitude of the cosine harmonic correction term to the orbit radius.
+     * @return amplitude of the cosine harmonic correction term to the orbit radius (m)
      */
-    public ParameterDriver getM0Driver() {
-        return anomDriver;
+    public double getCrc() {
+        return crc;
     }
 
-    /** Get mean anomaly at reference time.
-     * @return mean anomaly at reference time (rad)
+    /** Get amplitude of the sine harmonic correction term to the orbit radius.
+     * @return amplitude of the sine harmonic correction term to the orbit radius (m)
      */
-    public double getM0() {
-        return getM0Driver().getValue();
+    public double getCrs() {
+        return crs;
     }
 
-    /** Set mean anomaly at reference time.
-     * @param anom mean anomaly at reference time (rad)
+    /** Get amplitude of the cosine harmonic correction term to the angle of inclination.
+     * @return amplitude of the cosine harmonic correction term to the angle of inclination (rad)
      */
-    public void setM0(final double anom) {
-        getM0Driver().setValue(anom);
+    public double getCic() {
+        return cic;
+    }
+
+    /** Get amplitude of the sine harmonic correction term to the angle of inclination.
+     * @return amplitude of the sine harmonic correction term to the angle of inclination (rad)
+     */
+    public double getCis() {
+        return cis;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public double getAf0() {
+        return af0;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public double getAf1() {
+        return af1;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public double getAf2() {
+        return af2;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public double getTgd() {
+        return tgd;
+    }
+
+    /** Check if elements correspond to a civilian message.
+     * @return true if elements correspond to a civilian message
+     */
+    public boolean isCivilianMessage() {
+        return false;
+    }
+
+    /** Factory for the orbital elements.
+     * @param inertial  reference inertial frame
+     * @param bodyFixed body fixed frame (will be frozen at {@code date} to build the orbital elements
+     * @return factory for the orbital elements
+     * @since 14.0
+     */
+    public GNSSOrbitalElementsFactory<O> factory(final Frame inertial, final Frame bodyFixed) {
+
+        // create base factory
+        final GNSSOrbitalElementsFactory<O> factory = baseFactory(inertial, bodyFixed);
+
+        // initialize date
+        factory.setTimeOfEphemeris(toe);
+
+        // initialize the satellite identifier
+        factory.setPrn(prn);
+
+        // initialize the orbital parameters
+        reset(factory, GNSSOrbitalElementsFactory.SEMI_MAJOR_AXIS,       KeplerianOrbit::getA);
+        reset(factory, GNSSOrbitalElementsFactory.ECCENTRICITY,          KeplerianOrbit::getE);
+        reset(factory, GNSSOrbitalElementsFactory.INCLINATION,           KeplerianOrbit::getI);
+        reset(factory, GNSSOrbitalElementsFactory.ARGUMENT_OF_PERIAPSIS, KeplerianOrbit::getPeriapsisArgument);
+        reset(factory, GNSSOrbitalElementsFactory.NODE_LONGITUDE,        KeplerianOrbit::getRightAscensionOfAscendingNode);
+        reset(factory, GNSSOrbitalElementsFactory.MEAN_ANOMALY,          KeplerianOrbit::getMeanAnomaly);
+
+        // initialize the non-Keplerian elements
+        reset(factory.getADotDriver(),       aDot);
+        reset(factory.getDeltaN0Driver(),    deltaN0);
+        reset(factory.getDeltaN0DotDriver(), deltaN0);
+        reset(factory.getIDotDriver(),       iDot);
+        reset(factory.getOmegaDotDriver(),   omegaDot);
+        reset(factory.getCucDriver(),        cuc);
+        reset(factory.getCusDriver(),        cus);
+        reset(factory.getCrcDriver(),        crc);
+        reset(factory.getCrsDriver(),        crs);
+        reset(factory.getCicDriver(),        cic);
+        reset(factory.getCisDriver(),        cis);
+
+        // initialize the clock elements
+        reset(factory.getAf0Driver(),        af0);
+        reset(factory.getAf1Driver(),        af1);
+        reset(factory.getAf2Driver(),        af2);
+        factory.setTimeOfClock(toc);
+        factory.setTgd(tgd);
+
+        return factory;
+
+    }
+
+    /** Factory for the orbital elements.
+     * @param inertial  reference inertial frame
+     * @param bodyFixed body fixed frame (will be frozen at {@code date} to build the orbital elements
+     * @return factory for the orbital elements
+     * @since 14.0
+     */
+    protected abstract GNSSOrbitalElementsFactory<O> baseFactory(Frame inertial, Frame bodyFixed);
+
+    /** Set a parameter.
+     * @param factory factory
+     * @param name name of the parameter driver
+     * @param getter value getter
+     */
+    private void reset(final GNSSOrbitalElementsFactory<O> factory, final String name,
+                       final ToDoubleFunction<KeplerianOrbit> getter) {
+        reset(factory.getOrbitalParametersDrivers().findByName(name), getter.applyAsDouble(orbit));
+    }
+
+    /** Set a parameter.
+     * @param driver parameter driver
+     * @param value new value
+     */
+    private void reset(final ParameterDriver driver, final double value) {
+        driver.setValue(value);
+        driver.setReferenceValue(value);
     }
 
 }

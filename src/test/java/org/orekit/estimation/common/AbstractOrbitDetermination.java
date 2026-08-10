@@ -751,10 +751,10 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
         estimatedMeasurementsParameters.sort();
 
         // Orbital covariance matrix initialization
-        // Jacobian of the orbital parameters w/r to Cartesian
-        final double[][] dYdC = new double[6][6];
-        initialGuess.getJacobianWrtCartesian(propagatorBuilder.getPositionAngleType(), dYdC);
-        final RealMatrix Jac = MatrixUtils.createRealMatrix(dYdC);
+        // Jacobian of the builder parameters w/r to Cartesian. It is asked to the builder
+        // rather than to the orbit, as the builder parameters are not necessarily an orbit
+        // type: TLE and specialized GNSS propagators use their own orbital elements.
+        final RealMatrix Jac = propagatorBuilder.getOrbitalParameterFactory().getJacobianWrtCartesian();
         RealMatrix orbitalP = Jac.multiply(cartesianOrbitalP.multiply(Jac.transpose()));
 
         // Orbital process noise matrix

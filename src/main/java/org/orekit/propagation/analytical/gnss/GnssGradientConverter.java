@@ -17,51 +17,100 @@
 package org.orekit.propagation.analytical.gnss;
 
 import org.hipparchus.analysis.differentiation.Gradient;
+import org.orekit.orbits.FieldKeplerianOrbit;
+import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.analytical.AbstractAnalyticalGradientConverter;
+import org.orekit.propagation.analytical.gnss.data.FieldGnssOrbitalElements;
+import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElements;
+import org.orekit.propagation.analytical.gnss.data.NonKeplerianDriversFactory;
 import org.orekit.utils.ParameterDriver;
 
 import java.util.List;
 
 /** Converter for GNSS propagator.
+ * @param <O> type of the orbital elements (non-field version)
  * @author Luc Maisonobe
  * @since 13.0
  */
-class GnssGradientConverter extends AbstractAnalyticalGradientConverter {
+class GnssGradientConverter<O extends GNSSOrbitalElements<O>>
+    extends AbstractAnalyticalGradientConverter {
 
     /** Fixed dimension of the state. */
     public static final int FREE_STATE_PARAMETERS = 6;
 
     /** Orbit propagator. */
-    private final GNSSPropagator propagator;
+    private final GNSSPropagator<O> propagator;
 
     /** Simple constructor.
      * @param propagator orbit propagator used to access initial orbit
      */
-    GnssGradientConverter(final GNSSPropagator propagator) {
+    GnssGradientConverter(final GNSSPropagator<O> propagator) {
         super(propagator, FREE_STATE_PARAMETERS);
         this.propagator = propagator;
     }
 
-    /** {@inheritDoc} */
+    /** {@inheritDoc}
+     * <p>
+     * The free variables of the returned gradients are the six <em>Cartesian</em> coordinates
+     * of the initial state, extended with one slot per selected non-Keplerian driver. The
+     * state transition matrix built from this propagator is therefore a genuine dY/dY₀, with
+     * the same representation for its rows and its columns, consistent with
+     * {@link org.orekit.propagation.analytical.AbstractAnalyticalMatricesHarvester#getOrbitType()}
+     * returning {@link OrbitType#CARTESIAN}. The change of representation towards the
+     * propagator builder parameters is a separate quantity, provided by
+     * {@link org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElementsFactory#jacobianWrtParameters}.
+     * </p>
+     */
     @Override
-    public FieldGnssPropagator<Gradient> getPropagator() {
+    public FieldGnssPropagator<Gradient, O> getPropagator() {
 
-        // prepare initial state with proper derivatives
-        final FieldSpacecraftState<Gradient> state = getState(this);
+        // Cartesian state whose coordinates are the free variables of the gradients
+        final FieldSpacecraftState<Gradient> gState = getState(this);
+        final int nbParams = gState.getMass().getFreeParameters();
+
+        // Keplerian view of that very state; the conversion carries the derivatives along,
+        // so the free variables remain the Cartesian coordinates
+        final FieldKeplerianOrbit<Gradient> gOrbit =
+            (FieldKeplerianOrbit<Gradient>) OrbitType.KEPLERIAN.convertType(gState.getOrbit());
+
+        // prepare non-Keplerian elements with proper derivatives
+        final Gradient[] parameters = propagator.getDriversFactory().toGradients(nbParams);
+
+        // convert elements to support gradient
+        final FieldGnssOrbitalElements<Gradient, O> nonKeplerian =
+            propagator.getOrbitalElements().toField(gOrbit, parameters, d  -> Gradient.constant(nbParams, d));
+        final FieldGnssOrbitalElements<Gradient, O> gElements =
+            FieldGnssPropagator.buildOrbitalElements(gState, nonKeplerian,
+                                                     new NonKeplerianDriversFactory(),
+                                                     propagator.getECEF(),
+                                                     propagator.getAttitudeProvider(),
+                                                     gState.getMass());
 
         // build propagator handling gradient
-        return new FieldGnssPropagator<>(state,
-                                         propagator.getOrbitalElements().toField(state.getDate().getField()),
-                                         propagator.getECEF(), propagator.getAttitudeProvider(),
-                                         state.getMass());
+        final FieldGnssPropagator<Gradient, O> gPropagator =
+            new FieldGnssPropagator<>(gElements, gState.getFrame(),
+                                      propagator.getECEF(), propagator.getAttitudeProvider(),
+                                      gState.getMass());
+        final List<ParameterDriver> gDrivers = gPropagator.getParametersDrivers();
+        for (final ParameterDriver driver : getParametersDrivers()) {
+            if (driver.isSelected()) {
+                gDrivers.
+                    stream().
+                    filter(gDriver -> driver.getName().equals(gDriver.getName())).
+                    findFirst().
+                    ifPresent(gDriver -> gDriver.setSelected(true));
+            }
+        }
+
+        return gPropagator;
 
     }
 
     /** {@inheritDoc} */
     @Override
     public List<ParameterDriver> getParametersDrivers() {
-        return propagator.getOrbitalElements().getParametersDrivers();
+        return propagator.getParametersDrivers();
     }
 
 }

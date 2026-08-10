@@ -17,9 +17,9 @@
 package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
-
-import java.util.function.Function;
+import org.orekit.orbits.FieldKeplerianOrbit;
+import org.orekit.time.FieldGNSSDate;
+import org.orekit.time.TimeScales;
 
 /**
  * Container for data contained in a GPS/QZNSS legacy navigation message.
@@ -30,64 +30,71 @@ import java.util.function.Function;
  */
 public abstract class FieldLegacyNavigationMessage<T extends CalculusFieldElement<T>,
                                                    O extends LegacyNavigationMessage<O>>
-    extends FieldAbstractNavigationMessage<T, O>
-    implements FieldGNSSClockElements<T> {
+    extends FieldAbstractNavigationMessage<T, O> {
 
     /** Issue of Data, Ephemeris. */
-    private int iode;
+    private final int iode;
 
     /** Issue of Data, Clock. */
-    private int iodc;
+    private final int iodc;
 
     /** The user SV accuracy (m). */
-    private T svAccuracy;
+    private final T svAccuracy;
 
     /** Satellite health status. */
-    private int svHealth;
+    private final int svHealth;
 
     /** Fit interval. */
-    private int fitInterval;
+    private final int fitInterval;
 
     /** Codes on L2 channel.
      * @since 14.0
      */
-    private int l2Codes;
+    private final int l2Codes;
 
     /** L2 P data flags.
      * @since 14.0
      */
-    private int l2PFlags;
+    private final int l2PFlags;
 
-    /** Constructor from non-field instance.
-     * @param field    field to which elements belong
-     * @param original regular non-field instance
+    /** Creates a new instance.
+     * @param angularVelocity  mean angular velocity of the Earth for the GNSS model
+     * @param weeksInCycle     number of weeks in the GNSS cycle
+     * @param timeScales       known time scales
+     * @param type             type (null if not a navigation message)
+     * @param prn              PRN number of the satellite
+     * @param toe              time of ephemeris (<em>must</em> be consistent with {@code orbit})
+     * @param orbit            Keplerian orbit in Earth-frozen frame
+     * @param nonKeplerian     15 non-Keplerian parameters (in the order given by {@link NonKeplerianDriversFactory}
+     * @param tgd              group delay differential TGD for L1-L2 correction
+     * @param toc              time of clock
+     * @param transmissionTime transmission time
+     * @param iode             issue of data, ephemeris
+     * @param iodc             issue of data, clock
+     * @param svAccuracy       user SV accuracy (m)
+     * @param svHealth         satellite health status
+     * @param fitInterval      fit interval
+     * @param l2Codes          codes on L2 channel
+     * @param l2PFlags         L2 P data flags.
+     * @since 14.0
      */
-    protected FieldLegacyNavigationMessage(final Field<T> field, final O original) {
-        super(field, original);
-        setIODE(field.getZero().newInstance(original.getIODE()));
-        setIODC(original.getIODC());
-        setSvAccuracy(field.getZero().newInstance(original.getSvAccuracy()));
-        setSvHealth(original.getSvHealth());
-        setFitInterval(original.getFitInterval());
-        setL2Codes(original.getL2Codes());
-        setL2PFlags(original.getL2PFlags());
-    }
-
-    /** Constructor from different field instance.
-     * @param <V> type of the old field elements
-     * @param original regular non-field instance
-     * @param converter for field elements
-     */
-    protected <V extends CalculusFieldElement<V>> FieldLegacyNavigationMessage(final Function<V, T> converter,
-                                                                               final FieldLegacyNavigationMessage<V, O> original) {
-        super(converter, original);
-        setIODE(getMu().newInstance(original.getIODE()));
-        setIODC(original.getIODC());
-        setSvAccuracy(converter.apply(original.getSvAccuracy()));
-        setSvHealth(original.getSvHealth());
-        setFitInterval(original.getFitInterval());
-        setL2Codes(original.getL2Codes());
-        setL2PFlags(original.getL2PFlags());
+    public FieldLegacyNavigationMessage(final double angularVelocity, final int weeksInCycle,
+                                        final TimeScales timeScales, final String type, final int prn,
+                                        final FieldGNSSDate<T> toe, final FieldKeplerianOrbit<T> orbit,
+                                        final T[] nonKeplerian, final T tgd,
+                                        final FieldGNSSDate<T> toc, final FieldGNSSDate<T>  transmissionTime,
+                                        final int iode, final int iodc, final T svAccuracy,
+                                        final int svHealth, final int fitInterval,
+                                        final int l2Codes, final int l2PFlags) {
+        super(angularVelocity, weeksInCycle, timeScales, type, prn, toe,
+              orbit, nonKeplerian, tgd, toc, transmissionTime);
+        this.iode        = iode;
+        this.iodc        = iodc;
+        this.svAccuracy  = svAccuracy;
+        this.svHealth    = svHealth;
+        this.fitInterval = fitInterval;
+        this.l2Codes     = l2Codes;
+        this.l2PFlags    = l2PFlags;
     }
 
     /**
@@ -99,28 +106,11 @@ public abstract class FieldLegacyNavigationMessage<T extends CalculusFieldElemen
     }
 
     /**
-     * Setter for the Issue of Data Ephemeris.
-     * @param value the IODE to set
-     */
-    public void setIODE(final T value) {
-        // The value is given as a floating number in the navigation message
-        this.iode = (int) value.getReal();
-    }
-
-    /**
      * Getter for the Issue Of Data Clock (IODC).
      * @return the Issue Of Data Clock (IODC)
      */
     public int getIODC() {
         return iodc;
-    }
-
-    /**
-     * Setter for the Issue of Data Clock.
-     * @param value the IODC to set
-     */
-    public void setIODC(final int value) {
-        this.iodc = value;
     }
 
     /**
@@ -132,27 +122,11 @@ public abstract class FieldLegacyNavigationMessage<T extends CalculusFieldElemen
     }
 
     /**
-     * Setter for the user SV accuracy.
-     * @param svAccuracy the value to set
-     */
-    public void setSvAccuracy(final T svAccuracy) {
-        this.svAccuracy = svAccuracy;
-    }
-
-    /**
      * Getter for the satellite health status.
      * @return the satellite health status
      */
     public int getSvHealth() {
         return svHealth;
-    }
-
-    /**
-     * Setter for the satellite health status.
-     * @param svHealth the value to set
-     */
-    public void setSvHealth(final int svHealth) {
-        this.svHealth = svHealth;
     }
 
     /**
@@ -163,14 +137,6 @@ public abstract class FieldLegacyNavigationMessage<T extends CalculusFieldElemen
         return fitInterval;
     }
 
-    /**
-     * Setter for the fit interval.
-     * @param fitInterval fit interval
-     */
-    public void setFitInterval(final int fitInterval) {
-        this.fitInterval = fitInterval;
-    }
-
     /** Get the codes on L2 channel.
      * @return codes on L2 channel
      * @since 14.0
@@ -179,28 +145,12 @@ public abstract class FieldLegacyNavigationMessage<T extends CalculusFieldElemen
         return l2Codes;
     }
 
-    /** Set the codes on L2 channel.
-     * @param l2Codes codes on L2 channel
-     * @since 14.0
-     */
-    public void setL2Codes(final int l2Codes) {
-        this.l2Codes = l2Codes;
-    }
-
     /** Get the L2 P data flags.
      * @return L2 P data flags
      * @since 14.0
      */
     public int getL2PFlags() {
         return l2PFlags;
-    }
-
-    /** Set the L2 P data flags.
-     * @param l2PFlags L2 P data flags
-     * @since 14.0
-     */
-    public void setL2PFlags(final int l2PFlags) {
-        this.l2PFlags = l2PFlags;
     }
 
 }

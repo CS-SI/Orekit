@@ -20,7 +20,6 @@ import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
-import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.generation.FixedPointTleGenerationAlgorithm;
 import org.orekit.time.UTCScale;
@@ -63,8 +62,7 @@ public class OsculatingToSGP4Converter
      * @param dataContext data context
      */
     public OsculatingToSGP4Converter(final DataContext dataContext) {
-        this(DEFAULT_EPSILON, DEFAULT_MAX_ITERATIONS, FixedPointTleGenerationAlgorithm.SCALE_DEFAULT,
-                dataContext);
+        this(DEFAULT_EPSILON, DEFAULT_MAX_ITERATIONS, FixedPointTleGenerationAlgorithm.SCALE_DEFAULT, dataContext);
     }
 
     /**
@@ -85,11 +83,11 @@ public class OsculatingToSGP4Converter
     /** {@inheritDoc} */
     @Override
     public SGP4OrbitalState convertToAveraged(final Orbit osculatingOrbit) {
-        final FixedPointTleGenerationAlgorithm fixedPointAlgorithm = new FixedPointTleGenerationAlgorithm(getEpsilon(),
-                getMaxIterations(), scale, utc, teme);
-        final SpacecraftState osculatingState = new SpacecraftState(osculatingOrbit);
         final TLE templateTLe = new TLE(TEMPLATE_LINE_1, TEMPLATE_LINE_2, utc);
-        final TLE tle = fixedPointAlgorithm.generate(osculatingState, templateTLe);
+        final FixedPointTleGenerationAlgorithm fixedPointAlgorithm =
+            new FixedPointTleGenerationAlgorithm(templateTLe, getEpsilon(), getMaxIterations(), scale, utc, teme);
+        fixedPointAlgorithm.reset(osculatingOrbit);
+        final TLE tle = fixedPointAlgorithm.createFromDrivers();
         return SGP4OrbitalState.of(tle, teme);
     }
 }

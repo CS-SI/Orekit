@@ -75,9 +75,9 @@ class KeplerianConverterTest {
             sample.add(p.propagate(orbit.getDate().shiftedBy(dt)));
         }
 
-        PropagatorBuilder builder = new KeplerianPropagatorBuilder(OrbitType.KEPLERIAN.convertType(orbit),
-                                                                   PositionAngleType.MEAN,
-                                                                   1.0);
+        PropagatorBuilder builder =
+            new KeplerianPropagatorBuilder(OrbitType.KEPLERIAN.convertType(orbit).
+                                           factory(PositionAngleType.MEAN, 1.0));
 
         FiniteDifferencePropagatorConverter fitter = new FiniteDifferencePropagatorConverter(builder, threshold, 1000);
 

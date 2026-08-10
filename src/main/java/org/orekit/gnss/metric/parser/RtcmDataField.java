@@ -321,7 +321,7 @@ public enum RtcmDataField implements DataField {
         }
     },
 
-    /** GPS ω (Argument of Perigee). */
+    /** GPS ω (Argument of Periapsis). */
     DF099 {
         /** {@inheritDoc} */
         @Override
@@ -361,8 +361,8 @@ public enum RtcmDataField implements DataField {
     DF103 {
         /** {@inheritDoc} */
         @Override
-        public boolean booleanValue(final EncodedMessage message) {
-            return DataType.BIT_1.decode(message) == 0;
+        public int intValue(final EncodedMessage message) {
+            return DataType.BIT_1.decode(message).intValue();
         }
     },
 

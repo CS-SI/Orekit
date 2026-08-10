@@ -62,7 +62,7 @@ public class AttitudeTypeTest {
         Utils.setDataRoot("regular-data");
         metadata = new AemMetadata(4, FRAME_MAPPER);
         context  =  new ContextBinding(() -> IERSConventions.IERS_2010,
-                                       () -> true, () -> DataContext.getDefault(),
+                                       () -> true, DataContext::getDefault,
                                        () -> ParsedUnitsBehavior.STRICT_COMPLIANCE, () -> null,
                                        metadata::getTimeSystem, () -> 0.0, () -> 1.0);
         metadata.setTimeSystem(TimeSystem.TAI);
@@ -562,7 +562,7 @@ public class AttitudeTypeTest {
                                boolean rateFrameIsA, boolean isFirst, RotationOrder order,
                                boolean a2b, double tolAngle, double tolRate) {
         ContextBinding context = new ContextBinding(() -> IERSConventions.IERS_2010,
-                                                    () -> true, () -> DataContext.getDefault(),
+                                                    () -> true, DataContext::getDefault,
                                                     () -> ParsedUnitsBehavior.STRICT_COMPLIANCE, () -> null,
                                                     () -> TimeSystem.UTC, () -> 0.0, () -> 1.0);
         AemMetadata metadata = new AemMetadata(3, FRAME_MAPPER);

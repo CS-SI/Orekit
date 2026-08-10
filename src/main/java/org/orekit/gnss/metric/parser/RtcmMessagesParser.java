@@ -16,6 +16,7 @@
  */
 package org.orekit.gnss.metric.parser;
 
+import org.orekit.frames.Frame;
 import org.orekit.time.TimeScales;
 
 import java.util.List;
@@ -31,10 +32,13 @@ public class RtcmMessagesParser extends MessagesParser {
      * Constructor.
      * @param messages list of needed messages
      * @param timeScales known time scales
+     * @param inertial       reference inertial frame
+     * @param bodyFixed      body fixed frame (will be frozen at {@code date} to build the orbital elements
      * @since 13.0
      */
-    public RtcmMessagesParser(final List<Integer> messages, final TimeScales timeScales) {
-        super(messages, timeScales);
+    public RtcmMessagesParser(final List<Integer> messages, final TimeScales timeScales,
+                              final Frame inertial, final Frame bodyFixed) {
+        super(messages, timeScales, inertial, bodyFixed);
     }
 
     /** {@inheritDoc} */

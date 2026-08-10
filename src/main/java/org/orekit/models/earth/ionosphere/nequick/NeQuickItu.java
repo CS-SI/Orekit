@@ -162,7 +162,7 @@ public class NeQuickItu extends NeQuickModel {
      *
      * @param dateTime current date and time components
      * @param eps convergence criterion
-     * @param ray ray-perigee parameters
+     * @param ray ray-periapsis parameters
      * @param s1  lower boundary of integration
      * @param s2  upper boundary for integration
      * @return result of the integration
@@ -205,7 +205,7 @@ public class NeQuickItu extends NeQuickModel {
      * @param <T> type of the field elements
      * @param dateTime current date and time components
      * @param eps convergence criterion
-     * @param ray ray-perigee parameters
+     * @param ray ray-periapsis parameters
      * @param s1  lower boundary of integration
      * @param s2  upper boundary for integration
      * @return result of the integration

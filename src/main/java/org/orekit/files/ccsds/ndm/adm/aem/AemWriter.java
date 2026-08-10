@@ -60,7 +60,8 @@ import org.orekit.utils.units.Unit;
  * or in the metadata section at the start of an AEM attitude segment.
  * </p>
  *
- * <p> The AEM header for the whole AEM file is set when calling {@link #writeHeader(Generator, Header)},
+ * <p> The AEM header for the whole AEM file is set when calling
+ * {@link AbstractMessageWriter#writeHeader(Generator, Header)},
  * the entries are defined in table 4-2 of the ADM standard.
  *
  * <table>
@@ -286,7 +287,7 @@ public class AemWriter extends AbstractMessageWriter<AdmHeader, AemSegment, Aem>
 
         // Loop on attitude data
         startAttitudeBlock(generator);
-        generator.writeComments(((AemSegment) segment).getData().getComments());
+        generator.writeComments(segment.getData().getComments());
         for (final TimeStampedAngularCoordinates coordinates : segment.getAngularCoordinates()) {
             writeAttitudeEphemerisLine(generator, formatVersion, metadata, coordinates);
         }

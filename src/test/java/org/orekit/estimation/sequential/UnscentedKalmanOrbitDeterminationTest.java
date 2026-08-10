@@ -322,7 +322,8 @@ public class UnscentedKalmanOrbitDeterminationTest {
         final PropagatorBuilder builder;
 
         // Initialize the numerical builder
-        final NumericalPropagatorBuilder propagator = new NumericalPropagatorBuilder(orbit, integrator, PositionAngleType.MEAN, 10.0);
+        final NumericalPropagatorBuilder propagator =
+            new NumericalPropagatorBuilder(orbit.factory(PositionAngleType.MEAN, 10.0), integrator);
 
         // Add force models to the numerical propagator
         addNumericalForceModels(propagator, orbit, centralBody, gravityField, convention, simpleEop, surface, useDrag, useSrp, useSun, useMoon, useTides);
@@ -525,13 +526,13 @@ public class UnscentedKalmanOrbitDeterminationTest {
     public static class Observer implements KalmanObserver {
 
         /** Statistics on X position residuals. */
-        private StreamingStatistics statX;
+        private final StreamingStatistics statX;
 
         /** Statistics on Y position residuals. */
-        private StreamingStatistics statY;
+        private final StreamingStatistics statY;
 
         /** Statistics on Z position residuals. */
-        private StreamingStatistics statZ;
+        private final StreamingStatistics statZ;
 
         /** Kalman estimation. */
         private KalmanEstimation estimation;

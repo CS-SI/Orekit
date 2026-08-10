@@ -180,9 +180,15 @@ public class GNSSDate implements Serializable, TimeStamped {
     public GNSSDate(final int weekNumber, final TimeOffset secondsInWeek,
                     final SatelliteSystem system, final TimeScales timeScales) {
 
-        final int day = (int) (secondsInWeek.getSeconds() / TimeOffset.DAY.getSeconds());
-        final TimeOffset secondsInDay = new TimeOffset(secondsInWeek.getSeconds() % TimeOffset.DAY.getSeconds(),
+        int day = (int) (secondsInWeek.getSeconds() / TimeOffset.DAY.getSeconds());
+        TimeOffset secondsInDay = new TimeOffset(secondsInWeek.getSeconds() % TimeOffset.DAY.getSeconds(),
                                                        secondsInWeek.getAttoSeconds());
+        while (secondsInDay.compareTo(TimeOffset.ZERO) < 0) {
+            // manage negative secondsInWeek
+            // (this happens for example in some GPS navigation messages, where secondsInWeek = -60)
+            --day;
+            secondsInDay = secondsInDay.add(TimeOffset.DAY);
+        }
 
         int w = weekNumber;
         DateComponents dc = new DateComponents(getWeekReferenceDateComponents(system), weekNumber * 7 + day);

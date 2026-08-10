@@ -346,7 +346,7 @@ public class NdmTestUtils {
     }
 
     public static void checkDouble(final Double original, final Double rebuilt) {
-        Assertions.assertTrue(Precision.equalsIncludingNaN(original.doubleValue(), rebuilt.doubleValue(), ULPS));
+        Assertions.assertTrue(Precision.equalsIncludingNaN(original, rebuilt, ULPS));
     }
 
 

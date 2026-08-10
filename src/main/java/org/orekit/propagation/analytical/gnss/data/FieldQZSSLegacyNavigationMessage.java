@@ -17,7 +17,9 @@
 package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
+import org.orekit.orbits.FieldKeplerianOrbit;
+import org.orekit.time.FieldGNSSDate;
+import org.orekit.time.TimeScales;
 
 import java.util.function.Function;
 
@@ -30,22 +32,37 @@ import java.util.function.Function;
 public class FieldQZSSLegacyNavigationMessage<T extends CalculusFieldElement<T>>
     extends FieldLegacyNavigationMessage<T, QZSSLegacyNavigationMessage> {
 
-    /** Constructor from non-field instance.
-     * @param field    field to which elements belong
-     * @param original regular non-field instance
+    /** Creates a new instance.
+     * @param angularVelocity  mean angular velocity of the Earth for the GNSS model
+     * @param weeksInCycle     number of weeks in the GNSS cycle
+     * @param timeScales       known time scales
+     * @param type             type (null if not a navigation message)
+     * @param prn              PRN number of the satellite
+     * @param toe              time of ephemeris (<em>must</em> be consistent with {@code orbit})
+     * @param orbit            Keplerian orbit in Earth-frozen frame
+     * @param nonKeplerian     15 non-Keplerian parameters (in the order given by {@link NonKeplerianDriversFactory}
+     * @param tgd              group delay differential TGD for L1-L2 correction
+     * @param toc              time of clock
+     * @param transmissionTime transmission time
+     * @param iode             issue of data, ephemeris
+     * @param iodc             issue of data, clock
+     * @param svAccuracy       user SV accuracy (m)
+     * @param svHealth         satellite health status
+     * @param fitInterval      fit interval
+     * @param l2Codes          codes on L2 channel
+     * @param l2PFlags         L2 P data flags.
+     * @since 14.0
      */
-    public FieldQZSSLegacyNavigationMessage(final Field<T> field, final QZSSLegacyNavigationMessage original) {
-        super(field, original);
-    }
-
-    /** Constructor from different field instance.
-     * @param <V> type of the old field elements
-     * @param original regular non-field instance
-     * @param converter for field elements
-     */
-    public <V extends CalculusFieldElement<V>> FieldQZSSLegacyNavigationMessage(final Function<V, T> converter,
-                                                                                final FieldQZSSLegacyNavigationMessage<V> original) {
-        super(converter, original);
+    public FieldQZSSLegacyNavigationMessage(final double angularVelocity, final int weeksInCycle,
+                                            final TimeScales timeScales, final String type, final int prn,
+                                            final FieldGNSSDate<T> toe, final FieldKeplerianOrbit<T> orbit,
+                                            final T[] nonKeplerian, final T tgd,
+                                            final FieldGNSSDate<T> toc, final FieldGNSSDate<T>  transmissionTime,
+                                            final int iode, final int iodc, final T svAccuracy,
+                                            final int svHealth, final int fitInterval,
+                                            final int l2Codes, final int l2PFlags) {
+        super(angularVelocity, weeksInCycle, timeScales, type, prn, toe, orbit, nonKeplerian,
+              tgd, toc, transmissionTime, iode, iodc, svAccuracy, svHealth, fitInterval, l2Codes, l2PFlags);
     }
 
     /** {@inheritDoc} */
@@ -55,11 +72,25 @@ public class FieldQZSSLegacyNavigationMessage<T extends CalculusFieldElement<T>>
     }
 
     /** {@inheritDoc} */
-    @SuppressWarnings("unchecked")
     @Override
-    public <U extends CalculusFieldElement<U>, G extends FieldGnssOrbitalElements<U, QZSSLegacyNavigationMessage>>
-        G changeField(final Function<T, U> converter) {
-        return (G) new FieldQZSSLegacyNavigationMessage<>(converter, this);
+    public <U extends CalculusFieldElement<U>>
+        FieldQZSSLegacyNavigationMessage<U> toField(final FieldKeplerianOrbit<U> orbit,
+                                                    final U[] nonKeplerian,
+                                                    final Function<T, U> converter) {
+        return new FieldQZSSLegacyNavigationMessage<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
+                                                      getType(), getPrn(),
+                                                      new FieldGNSSDate<>(orbit.getDate().getField(),
+                                                                          getTimeOfEphemeris().getGnssDate()),
+                                                      orbit, nonKeplerian,
+                                                      converter.apply(getTgd()),
+                                                      new FieldGNSSDate<>(orbit.getDate().getField(),
+                                                                          getTimeOfClock().getGnssDate()),
+                                                      new FieldGNSSDate<>(orbit.getDate().getField(),
+                                                                           getTransmissionTime().getGnssDate()),
+                                                      getIODE(), getIODC(),
+                                                      converter.apply(getSvAccuracy()),
+                                                      getSvHealth(), getFitInterval(),
+                                                      getL2Codes(), getL2PFlags());
     }
 
 }

@@ -855,8 +855,8 @@ class FieldKeplerianOrbitTest {
         FieldVector3D<T> velocity = p.getVelocity();
         FieldVector3D<T> momentum = p.getPVCoordinates().getMomentum().normalize();
 
-        T apogeeRadius  = p.getA().multiply(p.getE().add(1));
-        T perigeeRadius = p.getA().multiply(p.getE().multiply(-1).add(1));
+        T apoapsisRadius  = p.getA().multiply(p.getE().add(1));
+        T periapsisRadius = p.getA().multiply(p.getE().multiply(-1).add(1));
 
         for (T lv = field.getZero(); lv.getReal() <= field.getZero().add(2 * FastMath.PI).getReal(); lv =lv.add(2 * FastMath.PI/100.)) {
             p = new FieldKeplerianOrbit<>(p.getA(), p.getE(), p.getI(), p.getPeriapsisArgument(),
@@ -865,11 +865,11 @@ class FieldKeplerianOrbitTest {
             position = p.getPosition();
 
 
-            // test if the norm of the position is in the range [perigee radius, apogee radius]
+            // test if the norm of the position is in the range [periapsis radius, apoapsis radius]
 
 
-            Assertions.assertTrue((position.getNorm().getReal() - apogeeRadius.getReal())  <= (  apogeeRadius.getReal() * Utils.epsilonTest));
-            Assertions.assertTrue((position.getNorm().getReal() - perigeeRadius.getReal()) >= (- perigeeRadius.getReal() * Utils.epsilonTest));
+            Assertions.assertTrue((position.getNorm().getReal() - apoapsisRadius.getReal())  <= (  apoapsisRadius.getReal() * Utils.epsilonTest));
+            Assertions.assertTrue((position.getNorm().getReal() - periapsisRadius.getReal()) >= (- periapsisRadius.getReal() * Utils.epsilonTest));
 
             position = position.normalize();
             velocity = p.getVelocity();
@@ -887,11 +887,11 @@ class FieldKeplerianOrbitTest {
         // apsides
         p = new FieldKeplerianOrbit<>(p.getA(), p.getE(), p.getI(), p.getPeriapsisArgument(),
                                       p.getRightAscensionOfAscendingNode(), field.getZero(), PositionAngleType.TRUE, p.getFrame(), p.getDate(), p.getMu());
-        Assertions.assertEquals(p.getPosition().getNorm().getReal(), perigeeRadius.getReal(), perigeeRadius.getReal() * Utils.epsilonTest);
+        Assertions.assertEquals(p.getPosition().getNorm().getReal(), periapsisRadius.getReal(), periapsisRadius.getReal() * Utils.epsilonTest);
 
         p = new FieldKeplerianOrbit<>(p.getA(), p.getE(), p.getI(), p.getPeriapsisArgument(),
                                       p.getRightAscensionOfAscendingNode(), field.getZero().add(FastMath.PI) , PositionAngleType.TRUE, p.getFrame(), p.getDate(), p.getMu());
-        Assertions.assertEquals(p.getPosition().getNorm().getReal(), apogeeRadius.getReal(), apogeeRadius.getReal() * Utils.epsilonTest);
+        Assertions.assertEquals(p.getPosition().getNorm().getReal(), apoapsisRadius.getReal(), apoapsisRadius.getReal() * Utils.epsilonTest);
 
         // nodes
         // descending node
@@ -925,11 +925,11 @@ class FieldKeplerianOrbitTest {
         velocity = pCirEqua.getVelocity();
         momentum = FieldVector3D.crossProduct(position, velocity).normalize();
 
-        apogeeRadius  = pCirEqua.getA().multiply(pCirEqua.getE().add(1));
-        perigeeRadius = pCirEqua.getA().multiply(pCirEqua.getE().multiply(-1).add(1));
+        apoapsisRadius  = pCirEqua.getA().multiply(pCirEqua.getE().add(1));
+        periapsisRadius = pCirEqua.getA().multiply(pCirEqua.getE().multiply(-1).add(1));
 
-        // test if apogee equals perigee
-        Assertions.assertEquals(perigeeRadius.getReal(), apogeeRadius.getReal(), 1.e+4 * Utils.epsilonTest * apogeeRadius.getReal());
+        // test if apoapsis equals periapsis
+        Assertions.assertEquals(periapsisRadius.getReal(), apoapsisRadius.getReal(), 1.e+4 * Utils.epsilonTest * apoapsisRadius.getReal());
 //TESTED UNTIL HERE
 
 
@@ -940,10 +940,10 @@ class FieldKeplerianOrbitTest {
                                                 pCirEqua.getFrame(), pCirEqua.getDate(), pCirEqua.getMu());
             position = pCirEqua.getPosition();
 
-            // test if the norm pf the position is in the range [perigee radius, apogee radius]
+            // test if the norm pf the position is in the range [periapsis radius, apoapsis radius]
             // Warning: these tests are without absolute value by choice
-            Assertions.assertTrue((position.getNorm().getReal() - apogeeRadius.getReal())  <= (  apogeeRadius.getReal() * Utils.epsilonTest));
-            Assertions.assertTrue((position.getNorm().getReal() - perigeeRadius.getReal()) >= (- perigeeRadius.getReal() * Utils.epsilonTest));
+            Assertions.assertTrue((position.getNorm().getReal() - apoapsisRadius.getReal())  <= (  apoapsisRadius.getReal() * Utils.epsilonTest));
+            Assertions.assertTrue((position.getNorm().getReal() - periapsisRadius.getReal()) >= (- periapsisRadius.getReal() * Utils.epsilonTest));
 
             position = position.normalize();
             velocity = pCirEqua.getVelocity();
@@ -1013,8 +1013,8 @@ class FieldKeplerianOrbitTest {
                                                                  PositionAngleType.TRUE,
                                                                  FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field),
                                                                  field.getZero().add(mu));
-        FieldVector3D<T> perigeeP  = orbit.getPosition();
-        FieldVector3D<T> u = perigeeP.normalize();
+        FieldVector3D<T> periapsisP  = orbit.getPosition();
+        FieldVector3D<T> u = periapsisP.normalize();
         FieldVector3D<T> focus1 = new FieldVector3D<>(zero, zero, zero);
         FieldVector3D<T> focus2 = new FieldVector3D<>(orbit.getA().multiply(-2).multiply(orbit.getE()), u);
         for (T dt = zero.add(-5000); dt.getReal() < 5000; dt = dt.add(60)) {
@@ -1036,11 +1036,11 @@ class FieldKeplerianOrbitTest {
                                                                  PositionAngleType.MEAN,
                                                                  FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field),
                                                                  field.getZero().add(mu));
-        FieldVector3D<T> perigeeP  = new FieldKeplerianOrbit<>(orbit.getA(), orbit.getE(), orbit.getI(),
+        FieldVector3D<T> periapsisP  = new FieldKeplerianOrbit<>(orbit.getA(), orbit.getE(), orbit.getI(),
                                                                orbit.getPeriapsisArgument(), orbit.getRightAscensionOfAscendingNode(),
                                                                zero, PositionAngleType.TRUE, orbit.getFrame(),
                                                                orbit.getDate(), orbit.getMu()).getPosition();
-        FieldVector3D<T> u = perigeeP.normalize();
+        FieldVector3D<T> u = periapsisP.normalize();
         FieldVector3D<T> focus1 = new FieldVector3D<>(zero, zero, zero);
         FieldVector3D<T> focus2 = new FieldVector3D<>(orbit.getA().multiply(-2).multiply(orbit.getE()), u);
         for (T dt = zero.add(-5000); dt.getReal() < 5000; dt = dt.add(60)) {

@@ -18,12 +18,12 @@ package org.orekit.propagation.analytical;
 
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.integration.AbstractGradientConverter;
+import org.orekit.propagation.AbstractGradientConverter;
 import org.orekit.utils.ParameterDriversProvider;
 
 /**
  * Converter for analytical orbit propagator.
- *
+ * <img src="doc-files/gradient-converters-class-diagram.png" alt="class diagram">
  * @author Bryan Cazabonne
  * @since 11.1
  */

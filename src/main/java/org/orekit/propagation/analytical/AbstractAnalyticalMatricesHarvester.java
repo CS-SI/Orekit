@@ -32,7 +32,6 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.DoubleArrayDictionary;
-import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeSpanMap;
 import org.orekit.utils.TimeSpanMap.Span;
@@ -54,7 +53,7 @@ public abstract class AbstractAnalyticalMatricesHarvester extends AbstractMatric
     private AbsoluteDate epoch;
 
     /** Analytical derivatives that apply to State Transition Matrix. */
-    private final double[][] analyticalDerivativesStm;
+    private double[][] analyticalDerivativesStm;
 
     /** Analytical derivatives that apply to Jacobians columns. */
     private final DoubleArrayDictionary analyticalDerivativesJacobianColumns;
@@ -69,21 +68,19 @@ public abstract class AbstractAnalyticalMatricesHarvester extends AbstractMatric
      * and {@link PositionAngleType position angle} that will be used by propagator
      * </p>
      * @param propagator propagator bound to this harvester
-     * @param stmName State Transition Matrix state name
-     * @param initialStm initial State Transition Matrix ∂Y/∂Y₀,
-     * if null (which is the most frequent case), assumed to be 6x6 identity
-     * @param initialJacobianColumns initial columns of the Jacobians matrix with respect to parameters,
-     * if null or if some selected parameters are missing from the dictionary, the corresponding
-     * initial column is assumed to be 0
      */
-    protected AbstractAnalyticalMatricesHarvester(final AbstractAnalyticalPropagator propagator, final String stmName,
-                                                  final RealMatrix initialStm, final DoubleArrayDictionary initialJacobianColumns) {
-        super(stmName, initialStm, initialJacobianColumns);
+    protected AbstractAnalyticalMatricesHarvester(final AbstractAnalyticalPropagator propagator) {
         this.propagator                           = propagator;
         this.epoch                                = propagator.getInitialState().getDate();
         this.columnsNames                         = null;
-        this.analyticalDerivativesStm             = getInitialStateTransitionMatrix().getData();
         this.analyticalDerivativesJacobianColumns = new DoubleArrayDictionary();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected void setInitialStm(final String stmName, final RealMatrix stm) {
+        super.setInitialStm(stmName, stm);
+        this.analyticalDerivativesStm = getInitialStateTransitionMatrix().getData();
     }
 
     /** {@inheritDoc} */
@@ -127,6 +124,7 @@ public abstract class AbstractAnalyticalMatricesHarvester extends AbstractMatric
     /** {@inheritDoc} */
     @Override
     public RealMatrix getParametersJacobian(final SpacecraftState state) {
+
         // Update the partial derivatives if needed
         updateDerivativesIfNeeded(state);
 
@@ -151,6 +149,7 @@ public abstract class AbstractAnalyticalMatricesHarvester extends AbstractMatric
 
         // Return
         return dYdP;
+
     }
 
     /** {@inheritDoc} */
@@ -167,28 +166,19 @@ public abstract class AbstractAnalyticalMatricesHarvester extends AbstractMatric
         final FieldAbstractAnalyticalPropagator<Gradient> gPropagator = converter.getPropagator();
 
         // Compute Jacobian
-        final AbsoluteDate                   target     = reference.getDate();
-        final FieldAbsoluteDate<Gradient>    start      = gPropagator.getInitialState().getDate();
-        final double                         dt         = target.durationFrom(start.toAbsoluteDate());
-        final FieldSpacecraftState<Gradient> state      = gPropagator.getInitialState();
-        final Gradient[]                     parameters = converter.getParameters(state, converter);
-        final FieldOrbit<Gradient>           gOrbit     = gPropagator.propagateOrbit(start.shiftedBy(dt), parameters);
-        final FieldPVCoordinates<Gradient>   gPv        = gOrbit.getPVCoordinates();
-
-        final double[] derivativesX  = gPv.getPosition().getX().getGradient();
-        final double[] derivativesY  = gPv.getPosition().getY().getGradient();
-        final double[] derivativesZ  = gPv.getPosition().getZ().getGradient();
-        final double[] derivativesVx = gPv.getVelocity().getX().getGradient();
-        final double[] derivativesVy = gPv.getVelocity().getY().getGradient();
-        final double[] derivativesVz = gPv.getVelocity().getZ().getGradient();
+        final AbsoluteDate                   target           = reference.getDate();
+        final FieldAbsoluteDate<Gradient>    start            = gPropagator.getInitialState().getDate();
+        final double                         dt               = target.durationFrom(start.toAbsoluteDate());
+        final FieldSpacecraftState<Gradient> state            = gPropagator.getInitialState();
+        final Gradient[]                     parameters       = converter.getParameters(state, converter);
+        final FieldOrbit<Gradient>           gOrbit           = gPropagator.propagateOrbit(start.shiftedBy(dt), parameters);
+        final Gradient[]                     orbitDerivatives = new Gradient[6];
+        getOrbitType().mapOrbitToArray(gOrbit, getPositionAngleType(), orbitDerivatives, null);
 
         // Update Jacobian with respect to state
-        addToRow(derivativesX,  0);
-        addToRow(derivativesY,  1);
-        addToRow(derivativesZ,  2);
-        addToRow(derivativesVx, 3);
-        addToRow(derivativesVy, 4);
-        addToRow(derivativesVz, 5);
+        for (int i = 0; i < orbitDerivatives.length; ++i) {
+            addToRow(orbitDerivatives[i].getGradient(), i);
+        }
 
         // Partial derivatives of the state with respect to propagation parameters
         int paramsIndex = converter.getFreeStateParameters();
@@ -208,8 +198,12 @@ public abstract class AbstractAnalyticalMatricesHarvester extends AbstractMatric
 
                     // add the contribution of the current force model
                     entry.increment(new double[] {
-                        derivativesX[paramsIndex], derivativesY[paramsIndex], derivativesZ[paramsIndex],
-                        derivativesVx[paramsIndex], derivativesVy[paramsIndex], derivativesVz[paramsIndex]
+                        orbitDerivatives[0].getPartialDerivative(paramsIndex),
+                        orbitDerivatives[1].getPartialDerivative(paramsIndex),
+                        orbitDerivatives[2].getPartialDerivative(paramsIndex),
+                        orbitDerivatives[3].getPartialDerivative(paramsIndex),
+                        orbitDerivatives[4].getPartialDerivative(paramsIndex),
+                        orbitDerivatives[5].getPartialDerivative(paramsIndex)
                     });
                     ++paramsIndex;
                 }

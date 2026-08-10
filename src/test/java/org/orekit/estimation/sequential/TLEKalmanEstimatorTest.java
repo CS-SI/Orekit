@@ -16,12 +16,10 @@
  */
 package org.orekit.estimation.sequential;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
+import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.attitudes.LofOffset;
@@ -38,13 +36,16 @@ import org.orekit.estimation.measurements.modifiers.PhaseCentersRangeModifier;
 import org.orekit.frames.LOFType;
 import org.orekit.gnss.antenna.FrequencyPattern;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.propagation.conversion.TLEPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
+
+import java.io.Serial;
+import java.util.ArrayList;
+import java.util.List;
 
 public class TLEKalmanEstimatorTest {
 
@@ -70,7 +71,6 @@ public class TLEKalmanEstimatorTest {
         Context context = EstimationTestUtils.contextFromTle("regular-data:potential:tides");
 
         // Create initial orbit and propagator builder
-        final PositionAngleType positionAngleType = PositionAngleType.MEAN;
         final double        dP            = 1.;
         final TLEPropagatorBuilder propagatorBuilder = context.createTleBuilder(dP);
 
@@ -88,15 +88,19 @@ public class TLEKalmanEstimatorTest {
         final Orbit refOrbit = referencePropagator.
                         propagate(measurements.getLast().getDate()).getOrbit();
 
-        // Covariance matrix initialization
-        final RealMatrix initialP = MatrixUtils.createRealDiagonalMatrix(new double [] {
+        // Covariance and process noise matrices initialization, expressed in Cartesian formalism
+        final RealMatrix initialCartesianP = MatrixUtils.createRealDiagonalMatrix(new double [] {
             1e-2, 1e-2, 1e-2, 1e-5, 1e-5, 1e-5
         });
-
-        // Process noise matrix
-        RealMatrix Q = MatrixUtils.createRealDiagonalMatrix(new double [] {
+        final RealMatrix initialCartesianQ = MatrixUtils.createRealDiagonalMatrix(new double [] {
             1.e-8, 1.e-8, 1.e-8, 1.e-8, 1.e-8, 1.e-8
         });
+
+        // the filter state vector holds the builder parameters, not the Cartesian coordinates,
+        // so both matrices have to be converted: P(B) = dB/dC P(C) (dB/dC)^T
+        final RealMatrix dBdC = propagatorBuilder.getOrbitalParameterFactory().getJacobianWrtCartesian();
+        final RealMatrix initialP = dBdC.multiply(initialCartesianP.multiply(dBdC.transpose()));
+        final RealMatrix Q = dBdC.multiply(initialCartesianQ.multiply(dBdC.transpose()));
 
 
         // Build the Kalman filter
@@ -107,16 +111,15 @@ public class TLEKalmanEstimatorTest {
 
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
-        final double   posEps            = 9.61e-2;
+        final double   posEps            = 1.70e-1;
         final double   expectedDeltaVel  = 0.;
-        final double   velEps            = 7.86e-5;
-        final double[] expectedSigmasPos = {0.387328, 0.447026, 0.398594};
+        final double   velEps            = 8.47e-5;
+        final double[] expectedSigmasPos = {0.179554, 0.130144, 0.416558};
         final double   sigmaPosEps       = 1e-6;
-        final double[] expectedSigmasVel = {2.452197E-4, 3.233220E-4, 2.367788E-4};
+        final double[] expectedSigmasVel = {2.469155E-4, 2.548258E-4, 2.165680E-4};
         final double   sigmaVelEps       = 1e-10;
         EstimationTestUtils.checkExtendedKalmanFit(false, kalman, measurements,
-                                                   refOrbit, positionAngleType,
-                                                   expectedDeltaPos, posEps,
+                                                   refOrbit, expectedDeltaPos, posEps,
                                                    expectedDeltaVel, velEps,
                                                    expectedSigmasPos, sigmaPosEps,
                                                    expectedSigmasVel, sigmaVelEps);
@@ -133,7 +136,6 @@ public class TLEKalmanEstimatorTest {
         Context context = EstimationTestUtils.contextFromTle("regular-data:potential:tides");
 
         // Create initial orbit and propagator builder
-        final PositionAngleType positionAngleType = PositionAngleType.MEAN;
         final double        dP            = 1.;
         final TLEPropagatorBuilder propagatorBuilder = context.createTleBuilder(dP);
 
@@ -153,38 +155,51 @@ public class TLEKalmanEstimatorTest {
         final Orbit refOrbit = referencePropagator.
                         propagate(measurements.getLast().getDate()).getOrbit();
 
-        // Change X position of 10m as in the batch test
-        ParameterDriver xDriver = propagatorBuilder.getOrbitalParametersDrivers().getDrivers().getFirst();
-        xDriver.setValue(xDriver.getValue() + 10.0);
-        xDriver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
+        // FIXME: Bias the start as in the batch test, where the X position was shifted by 10 m.
+        // The builder parameters are TLE mean elements, whose first one is the mean motion,
+        // so the shift is applied as an equivalent semi-major axis change. Differentiating
+        // n = sqrt(mu/a^3) gives dn = -3/2 (n/a) da. This is not the very same perturbation
+        // as a 10 m shift along X, but it is of the same order of magnitude, which is all
+        // this test needs to start away from the solution.
+        final ParameterDriver meanMotionDriver =
+            propagatorBuilder.getOrbitalParameterFactory().getOrbitalParametersDrivers().getDrivers().getFirst();
+        final double meanMotion = meanMotionDriver.getValue();
+        final double semiMajorAxis = FastMath.cbrt(TLEPropagator.getMU() / (meanMotion * meanMotion));
+        final double deltaMeanMotion = -1.5 * meanMotion / semiMajorAxis * 10;
+        meanMotionDriver.setValue(meanMotion + deltaMeanMotion);
+        meanMotionDriver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
-        // Cartesian covariance matrix initialization
+        // Covariance matrix initialization, expressed in Cartesian formalism
         // 100m on position / 1e-2m/s on velocity
         final RealMatrix cartesianP = MatrixUtils.createRealDiagonalMatrix(new double [] {
             100., 100., 100., 1e-2, 1e-2, 1e-2
         });
+
+        // the filter state vector holds the builder parameters, not the Cartesian coordinates,
+        // so the covariance has to be converted: P(B) = dB/dC P(C) (dB/dC)^T
+        final RealMatrix dBdC = propagatorBuilder.getOrbitalParameterFactory().getJacobianWrtCartesian();
+        final RealMatrix initialP = dBdC.multiply(cartesianP.multiply(dBdC.transpose()));
 
         // Process noise matrix is set to 0 here
         RealMatrix Q = MatrixUtils.createRealMatrix(6, 6);
 
         // Build the Kalman filter
         final KalmanEstimator kalman = new KalmanEstimatorBuilder().
-                        addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(cartesianP, Q)).
+                        addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(initialP, Q)).
                         estimatedMeasurementsParameters(new ParameterDriversList(), null).
                         build();
 
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
-        final double   posEps            = 0.32;
+        final double   posEps            = 3.61e-1;
         final double   expectedDeltaVel  = 0.;
-        final double   velEps            = 7.45e-5;
-        final double[] expectedSigmasPos = {0.741641, 0.282908, 0.564609,};
+        final double   velEps            = 8.22e-5;
+        final double[] expectedSigmasPos = {0.741634, 0.282909, 0.564608,};
         final double   sigmaPosEps       = 1e-6;
-        final double[] expectedSigmasVel = {2.188273E-4, 1.308109E-4, 1.300570E-4};
+        final double[] expectedSigmasVel = {2.188267E-4, 1.308106E-4, 1.300569E-4};
         final double   sigmaVelEps       = 1e-10;
         EstimationTestUtils.checkExtendedKalmanFit(false, kalman, measurements,
-                                                   refOrbit, positionAngleType,
-                                                   expectedDeltaPos, posEps,
+                                                   refOrbit, expectedDeltaPos, posEps,
                                                    expectedDeltaVel, velEps,
                                                    expectedSigmasPos, sigmaPosEps,
                                                    expectedSigmasVel, sigmaVelEps);
@@ -201,10 +216,10 @@ public class TLEKalmanEstimatorTest {
         Context context = EstimationTestUtils.contextFromTle("regular-data:potential:tides");
 
         // Create initial orbit and propagator builder
-        final PositionAngleType positionAngleType = PositionAngleType.MEAN;
         final double        dP            = 1.;
         final TLEPropagatorBuilder propagatorBuilder = context.createTleBuilder(dP);
-        propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getFrame(), LOFType.LVLH));
+        propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getOrbitalParameterFactory().getFrame(),
+                                                            LOFType.LVLH));
 
         // Antenna phase center definition
         final Vector3D antennaPhaseCenter = new Vector3D(-1.2, 2.3, -0.7);
@@ -236,38 +251,51 @@ public class TLEKalmanEstimatorTest {
         final Orbit refOrbit = referencePropagator.
                         propagate(measurements.getLast().getDate()).getOrbit();
 
-        // Change X position of 10m as in the batch test
-        ParameterDriver xDriver = propagatorBuilder.getOrbitalParametersDrivers().getDrivers().getFirst();
-        xDriver.setValue(xDriver.getValue() + 10.0);
-        xDriver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
+        // FIXME: Bias the start as in the batch test, where the X position was shifted by 10 m.
+        // The builder parameters are TLE mean elements, whose first one is the mean motion,
+        // so the shift is applied as an equivalent semi-major axis change. Differentiating
+        // n = sqrt(mu/a^3) gives dn = -3/2 (n/a) da. This is not the very same perturbation
+        // as a 10 m shift along X, but it is of the same order of magnitude, which is all
+        // this test needs to start away from the solution.
+        final ParameterDriver meanMotionDriver =
+            propagatorBuilder.getOrbitalParameterFactory().getOrbitalParametersDrivers().getDrivers().getFirst();
+        final double meanMotion = meanMotionDriver.getValue();
+        final double semiMajorAxis = FastMath.cbrt(TLEPropagator.getMU() / (meanMotion * meanMotion));
+        final double deltaMeanMotion = -1.5 * meanMotion / semiMajorAxis * 10;
+        meanMotionDriver.setValue(meanMotion + deltaMeanMotion);
+        meanMotionDriver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
-        // Cartesian covariance matrix initialization
+        // Covariance matrix initialization, expressed in Cartesian formalism
         // 100m on position / 1e-2m/s on velocity
         final RealMatrix cartesianP = MatrixUtils.createRealDiagonalMatrix(new double [] {
             100., 100., 100., 1e-2, 1e-2, 1e-2
         });
+
+        // the filter state vector holds the builder parameters, not the Cartesian coordinates,
+        // so the covariance has to be converted: P(B) = dB/dC P(C) (dB/dC)^T
+        final RealMatrix dBdC = propagatorBuilder.getOrbitalParameterFactory().getJacobianWrtCartesian();
+        final RealMatrix initialP = dBdC.multiply(cartesianP.multiply(dBdC.transpose()));
 
         // Process noise matrix is set to 0 here
         RealMatrix Q = MatrixUtils.createRealMatrix(6, 6);
 
         // Build the Kalman filter
         final KalmanEstimator kalman = new KalmanEstimatorBuilder().
-                        addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(cartesianP, Q)).
+                        addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(initialP, Q)).
                         estimatedMeasurementsParameters(new ParameterDriversList(), null).
                         build();
 
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
-        final double   posEps            = 0.69;
+        final double   posEps            = 9.39e-1;
         final double   expectedDeltaVel  = 0.;
-        final double   velEps            = 2.69e-4;
-        final double[] expectedSigmasPos = {1.250710, 1.197467, 1.543259};
+        final double   velEps            = 3.16e-4;
+        final double[] expectedSigmasPos = {1.250697, 1.197468, 1.543244};
         final double   sigmaPosEps       = 1e-6;
-        final double[] expectedSigmasVel = {7.114021E-4, 4.470958E-4, 4.333322E-4};
+        final double[] expectedSigmasVel = {7.114008E-4, 4.470950E-4, 4.333291E-4};
         final double   sigmaVelEps       = 1e-10;
         EstimationTestUtils.checkExtendedKalmanFit(false, kalman, measurements,
-                                                   refOrbit, positionAngleType,
-                                                   expectedDeltaPos, posEps,
+                                                   refOrbit, expectedDeltaPos, posEps,
                                                    expectedDeltaVel, velEps,
                                                    expectedSigmasPos, sigmaPosEps,
                                                    expectedSigmasVel, sigmaVelEps);
@@ -283,7 +311,6 @@ public class TLEKalmanEstimatorTest {
         Context context = EstimationTestUtils.contextFromTle("regular-data:potential:tides");
 
         // Create initial orbit and propagator builder
-        final PositionAngleType positionAngleType = PositionAngleType.MEAN;
         final double        dP            = 1.;
         final TLEPropagatorBuilder propagatorBuilder = context.createTleBuilder(dP);
 
@@ -313,23 +340,37 @@ public class TLEKalmanEstimatorTest {
         final Orbit refOrbit = referencePropagator.
                         propagate(measurements.getLast().getDate()).getOrbit();
 
-        // Change X position of 10m as in the batch test
-        ParameterDriver xDriver = propagatorBuilder.getOrbitalParametersDrivers().getDrivers().getFirst();
-        xDriver.setValue(xDriver.getValue() + 10.0);
-        xDriver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
+        // FIXME: Bias the start as in the batch test, where the X position was shifted by 10 m.
+        // The builder parameters are TLE mean elements, whose first one is the mean motion,
+        // so the shift is applied as an equivalent semi-major axis change. Differentiating
+        // n = sqrt(mu/a^3) gives dn = -3/2 (n/a) da. This is not the very same perturbation
+        // as a 10 m shift along X, but it is of the same order of magnitude, which is all
+        // this test needs to start away from the solution.
+        final ParameterDriver meanMotionDriver =
+            propagatorBuilder.getOrbitalParameterFactory().getOrbitalParametersDrivers().getDrivers().getFirst();
+        final double meanMotion = meanMotionDriver.getValue();
+        final double semiMajorAxis = FastMath.cbrt(TLEPropagator.getMU() / (meanMotion * meanMotion));
+        final double deltaMeanMotion = -1.5 * meanMotion / semiMajorAxis * 10;
+        meanMotionDriver.setValue(meanMotion + deltaMeanMotion);
+        meanMotionDriver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
-        // Cartesian covariance matrix initialization
+        // Covariance matrix initialization, expressed in Cartesian formalism
         // 100m on position / 1e-2m/s on velocity
         final RealMatrix cartesianP = MatrixUtils.createRealDiagonalMatrix(new double [] {
             100., 100., 100., 1e-2, 1e-2, 1e-2
         });
+
+        // the filter state vector holds the builder parameters, not the Cartesian coordinates,
+        // so the covariance has to be converted: P(B) = dB/dC P(C) (dB/dC)^T
+        final RealMatrix dBdC = propagatorBuilder.getOrbitalParameterFactory().getJacobianWrtCartesian();
+        final RealMatrix initialP = dBdC.multiply(cartesianP.multiply(dBdC.transpose()));
 
         // Process noise matrix is set to 0 here
         RealMatrix Q = MatrixUtils.createRealMatrix(6, 6);
 
         // Build the Kalman filter
         final KalmanEstimator kalman = new KalmanEstimatorBuilder().
-                        addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(cartesianP, Q)).
+                        addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(initialP, Q)).
                         build();
 
         // Filter the measurements and check the results
@@ -337,13 +378,12 @@ public class TLEKalmanEstimatorTest {
         final double   posEps            = 0.45;
         final double   expectedDeltaVel  = 0.;
         final double   velEps            = 1.86e-4;
-        final double[] expectedSigmasPos = {1.250710, 1.197466, 1.543258};
+        final double[] expectedSigmasPos = {1.250697, 1.197467, 1.543243};
         final double   sigmaPosEps       = 1e-6;
-        final double[] expectedSigmasVel = {7.114018E-4, 4.470955E-4, 4.333319E-4};
+        final double[] expectedSigmasVel = {7.114004E-4, 4.470947E-4, 4.333288E-4};
         final double   sigmaVelEps       = 1e-10;
         EstimationTestUtils.checkExtendedKalmanFit(false, kalman, measurements,
-                                                   refOrbit, positionAngleType,
-                                                   expectedDeltaPos, posEps,
+                                                   refOrbit, expectedDeltaPos, posEps,
                                                    expectedDeltaVel, velEps,
                                                    expectedSigmasPos, sigmaPosEps,
                                                    expectedSigmasVel, sigmaVelEps);
@@ -359,7 +399,6 @@ public class TLEKalmanEstimatorTest {
         Context context = EstimationTestUtils.contextFromTle("regular-data:potential:tides");
 
         // Create initial orbit and propagator builder
-        final PositionAngleType positionAngleType = PositionAngleType.TRUE;
         final double        dP            = 1.;
         final TLEPropagatorBuilder propagatorBuilder = context.createTleBuilder(dP);
 
@@ -385,8 +424,7 @@ public class TLEKalmanEstimatorTest {
         try {
             // Filter the measurements and expect an exception to occur
             EstimationTestUtils.checkExtendedKalmanFit(false, kalman, measurements,
-                                                       initialOrbit, positionAngleType,
-                                                       0., 0., 0., 0., new double[0], 0., new double[0], 0.);
+                                                       initialOrbit, 0., 0., 0., 0., new double[0], 0., new double[0], 0.);
         } catch (DummyException de) {
             // expected
         }
@@ -394,6 +432,7 @@ public class TLEKalmanEstimatorTest {
     }
 
     private static class DummyException extends OrekitException {
+        @Serial
         private static final long serialVersionUID = 1L;
         public DummyException() {
             super(OrekitMessages.INTERNAL_ERROR);

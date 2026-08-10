@@ -114,6 +114,11 @@ class FieldPropagatorTest {
         }
 
         @Override
+        public FieldSpacecraftState<Complex> getBaseInitialState() {
+            return null;
+        }
+
+        @Override
         public FieldSpacecraftState<Complex> getInitialState() {
             return null;
         }

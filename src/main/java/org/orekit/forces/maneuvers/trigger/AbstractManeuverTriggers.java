@@ -250,20 +250,30 @@ public abstract class AbstractManeuverTriggers implements ResettableManeuverTrig
      */
     protected <T extends CalculusFieldElement<T>> FieldEventDetector<T> convertDetector(final Field<T> field,
                                                                                         final EventDetector detector) {
-        if (detector instanceof EventEnablingPredicateFilter predicateFilter) {
-            final FieldEventDetector<T> fieldDetector = convertDetector(field, predicateFilter.getDetector());
-            return new FieldEventEnablingPredicateFilter<>(fieldDetector, (state, fieldEventDetector, g) -> predicateFilter
-                    .getPredicate().eventIsEnabled(state.toSpacecraftState(), null, g.getReal()));
-        } else if (detector instanceof EventSlopeFilter<?> eventSlopeFilter) {
-            final FieldEventDetector<T> fieldDetector = convertDetector(field, eventSlopeFilter.getDetector());
-            return new FieldEventSlopeFilter<>(fieldDetector, eventSlopeFilter.getFilterType());
-        } else if (detector instanceof EventShifter eventShifter) {
-            final FieldEventDetector<T> fieldDetector = convertDetector(field, eventShifter.getDetector());
-            final T zero = field.getZero();
-            return new FieldEventShifter<>(fieldDetector, eventShifter.isUseShiftedStates(),
-                    zero.newInstance(eventShifter.getIncreasingTimeShift()), zero.newInstance(eventShifter.getDecreasingTimeShift()));
-        } else {
-            return FieldEventDetector.of(field, new FieldContinueOnEvent<>(), detector);
+        switch (detector) {
+            case EventEnablingPredicateFilter predicateFilter -> {
+                final FieldEventDetector<T> fieldDetector = convertDetector(field, predicateFilter.getDetector());
+                return new FieldEventEnablingPredicateFilter<>(fieldDetector,
+                                                               (state, fieldEventDetector, g) ->
+                                                                   predicateFilter.getPredicate().
+                                                                                   eventIsEnabled(state.toSpacecraftState(),
+                                                                                                  null,
+                                                                                                  g.getReal()));
+            }
+            case EventSlopeFilter<?> eventSlopeFilter -> {
+                final FieldEventDetector<T> fieldDetector = convertDetector(field, eventSlopeFilter.getDetector());
+                return new FieldEventSlopeFilter<>(fieldDetector, eventSlopeFilter.getFilterType());
+            }
+            case EventShifter eventShifter -> {
+                final FieldEventDetector<T> fieldDetector = convertDetector(field, eventShifter.getDetector());
+                final T zero = field.getZero();
+                return new FieldEventShifter<>(fieldDetector, eventShifter.isUseShiftedStates(),
+                                               zero.newInstance(eventShifter.getIncreasingTimeShift()),
+                                               zero.newInstance(eventShifter.getDecreasingTimeShift()));
+            }
+            case null, default -> {
+                return FieldEventDetector.of(field, new FieldContinueOnEvent<>(), detector);
+            }
         }
     }
 

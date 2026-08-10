@@ -117,7 +117,7 @@ public class AbstractRelativisticJ2ClockModifier implements ParameterDriversProv
         final KeplerianOrbit remoteOrbit = new KeplerianOrbit(pvRemote, remoteFrame, gm);
         final double orbitInclination = remoteOrbit.getI();
 
-        // u = perigee argument + true anomaly
+        // u = periapsis argument + true anomaly
         final double orbitU = remoteOrbit.getTrueAnomaly() + remoteOrbit.getPeriapsisArgument();
         final double n = remoteOrbit.getKeplerianMeanMotion();
 

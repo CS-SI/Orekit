@@ -17,6 +17,7 @@
 package org.orekit.propagation.analytical.gnss;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
@@ -37,16 +38,19 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.gnss.SEMParser;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.AdditionalDataProvider;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.analytical.gnss.data.CommonGnssData;
 import org.orekit.propagation.analytical.gnss.data.FieldGPSAlmanac;
 import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElements;
+import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElementsFactory;
 import org.orekit.propagation.analytical.gnss.data.GPSAlmanac;
 import org.orekit.propagation.analytical.gnss.data.GPSLegacyNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.GPSLegacyNavigationMessageFactory;
+import org.orekit.propagation.analytical.gnss.data.NonKeplerianDriversFactory;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.time.AbsoluteDate;
@@ -61,6 +65,7 @@ import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinatesHermiteInterpolator;
 
@@ -68,6 +73,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.ToDoubleFunction;
 
 class GPSPropagatorTest {
 
@@ -90,12 +96,11 @@ class GPSPropagatorTest {
 
     @Test
     void testClockCorrections() {
-        final GNSSPropagator propagator =
-            almanacs.getFirst().
-                getPropagator(context.getFrames().getEME2000(),
-                              context.getFrames().getITRF(IERSConventions.IERS_2010, false));
-        propagator.addAdditionalDataProvider(new ClockCorrectionsProvider(almanacs.getFirst(),
-                                                                          almanacs.getFirst().getCycleDuration()));
+        final GNSSPropagator<GPSAlmanac> propagator =
+            new GNSSPropagator<>(almanacs.getFirst().factory(context.getFrames().getEME2000(),
+                                                             context.getFrames().getITRF(IERSConventions.IERS_2010, false)));
+        propagator.addAdditionalDataProvider(
+            new ClockCorrectionsProvider(almanacs.getFirst(), almanacs.getFirst().getCycleDuration()));
         // Propagate at the GPS date and one GPS cycle later
         final AbsoluteDate date0 = almanacs.getFirst().getDate();
         double dtRelMin = 0;
@@ -109,19 +114,22 @@ class GPSPropagatorTest {
             dtRelMax = FastMath.max(dtRelMax, corrections[1]);
             Assertions.assertEquals(0.0, corrections[2], Precision.SAFE_MIN);
         }
-        Assertions.assertEquals(0.0,        almanacs.getFirst().getToc(), 1.0e-12);
+        Assertions.assertEquals(almanacs.getFirst().getTimeOfEphemeris().getDate(),
+                                almanacs.getFirst().getTimeOfClock().getDate());
         Assertions.assertEquals(-1.1679e-8, dtRelMin, 1.0e-12);
         Assertions.assertEquals(+1.1679e-8, dtRelMax, 1.0e-12);
     }
 
     @Test
     void testFieldClockCorrections() {
-        final FieldGPSAlmanac<Binary64> gpsAlmanac = almanacs.getFirst().toField(Binary64Field.getInstance());
-        final FieldGnssPropagator<Binary64> propagator =
-            gpsAlmanac.getPropagator(context.getFrames().getEME2000(),
-                                     context.getFrames().getITRF(IERSConventions.IERS_2010, false));
-        propagator.addAdditionalDataProvider(new FieldClockCorrectionsProvider<>(gpsAlmanac,
-                                                                                  gpsAlmanac.getCycleDuration()));
+        final FieldGPSAlmanac<Binary64> gpsAlmanac =
+            (FieldGPSAlmanac<Binary64>) almanacs.getFirst().toField(Binary64Field.getInstance());
+        final FieldGnssPropagator<Binary64, GPSAlmanac> propagator =
+            new FieldGnssPropagator<>(Binary64Field.getInstance(), almanacs.getFirst()
+                .factory(context.getFrames().getEME2000(),
+                         context.getFrames().getITRF(IERSConventions.IERS_2010, false)));
+        propagator.addAdditionalDataProvider(
+            new FieldClockCorrectionsProvider<>(gpsAlmanac, gpsAlmanac.getCycleDuration()));
         // Propagate at the GPS date and one GPS cycle later
         final FieldAbsoluteDate<Binary64> date0 = gpsAlmanac.getDate();
         double dtRelMin = 0;
@@ -135,7 +143,8 @@ class GPSPropagatorTest {
             dtRelMax = FastMath.max(dtRelMax, corrections[1].getReal());
             Assertions.assertEquals(0.0, corrections[2].getReal(), Precision.SAFE_MIN);
         }
-        Assertions.assertEquals(0.0,        gpsAlmanac.getToc().getReal(), 1.0e-12);
+        Assertions.assertEquals(gpsAlmanac.getTimeOfEphemeris().getGnssDate(),
+                                gpsAlmanac.getTimeOfClock().getGnssDate());
         Assertions.assertEquals(-1.1679e-8, dtRelMin, 1.0e-12);
         Assertions.assertEquals(+1.1679e-8, dtRelMax, 1.0e-12);
     }
@@ -143,11 +152,11 @@ class GPSPropagatorTest {
     @Test
     void testGPSCycle() {
         // Builds the GPSPropagator from the almanac
-        final GNSSPropagator propagator =
-            almanacs.getFirst().getPropagator(Utils.defaultLaw(),
-                                          context.getFrames().getEME2000(),
-                                          context.getFrames().getITRF(IERSConventions.IERS_2010, false),
-                                          1521.0);
+        final GNSSPropagator<GPSAlmanac>
+            propagator =
+            new GNSSPropagator<>(almanacs.getFirst(), context.getFrames().getEME2000(),
+                                 context.getFrames().getITRF(IERSConventions.IERS_2010, false), Utils.defaultLaw(),
+                                 1521.0);
         // Propagate at the GPS date and one GPS cycle later
         final AbsoluteDate date0 = almanacs.getFirst().getDate();
         final Vector3D p0 = propagator.propagateInEcef(date0).getPosition();
@@ -162,11 +171,12 @@ class GPSPropagatorTest {
     @Test
     void testFrames() {
         // Builds the GPSPropagator from the almanac
-        final GNSSPropagator propagator = almanacs.getFirst().
-            getPropagator(context.getFrames().getEME2000(),
-                          context.getFrames().getITRF(IERSConventions.IERS_2010, true));
+        final GNSSPropagator<GPSAlmanac>
+            propagator =
+            new GNSSPropagator<>(almanacs.getFirst().factory(context.getFrames().getEME2000(),
+                                                         context.getFrames().getITRF(IERSConventions.IERS_2010, true)));
         Assertions.assertEquals("EME2000", propagator.getFrame().getName());
-        Assertions.assertEquals(3.986005e14, almanacs.getFirst().getMu(), 1.0e6);
+        Assertions.assertEquals(3.986005e14, almanacs.getFirst().getOrbit().getMu(), 1.0e6);
         // Defines some date
         final AbsoluteDate date = new AbsoluteDate(2016, 3, 3, 12, 0, 0., context.getTimeScales().getUTC());
         // Get PVCoordinates at the date in the ECEF
@@ -181,146 +191,114 @@ class GPSPropagatorTest {
 
     @Test
     void testResetInitialState() {
-        final GNSSPropagator propagator =
-            almanacs.getFirst().getPropagator(context.getFrames().getEME2000(),
-                                          context.getFrames().getITRF(IERSConventions.IERS_2010, false));
+        final GNSSPropagator<GPSAlmanac>
+            propagator =
+            new GNSSPropagator<>(almanacs.getFirst().factory(context.getFrames().getEME2000(),
+                                                         context.getFrames().getITRF(IERSConventions.IERS_2010, true)));
         final SpacecraftState old = propagator.getInitialState();
-        propagator.resetInitialState(new SpacecraftState(old.getOrbit(), old.getAttitude()).withMass(old.getMass() + 1000));
+        propagator.resetInitialState(
+            new SpacecraftState(old.getOrbit(), old.getAttitude()).withMass(old.getMass() + 1000));
         Assertions.assertEquals(old.getMass() + 1000, propagator.getInitialState().getMass(), 1.0e-9);
     }
 
     @Test
     void testResetIntermediateState() {
-        GNSSPropagator propagator =
-            new GNSSPropagatorBuilder(almanacs.getFirst(),
-                                      context.getFrames().getEME2000(),
-                                      context.getFrames().getITRF(IERSConventions.IERS_2010, false)).
-                buildPropagator();
+        GNSSPropagator<GPSAlmanac>
+            propagator =
+            new GNSSPropagator<>(almanacs.getFirst().factory(context.getFrames().getEME2000(),
+                                                         context.getFrames().getITRF(IERSConventions.IERS_2010, true)));
         final SpacecraftState old = propagator.getInitialState();
-        propagator.resetIntermediateState(new SpacecraftState(old.getOrbit(), old.getAttitude()).withMass( old.getMass() + 1000),
-                                          true);
+        propagator.resetIntermediateState(
+            new SpacecraftState(old.getOrbit(), old.getAttitude()).withMass(old.getMass() + 1000), true);
         Assertions.assertEquals(old.getMass() + 1000, propagator.getInitialState().getMass(), 1.0e-9);
     }
 
     @Test
     void testTLE() {
 
-        List<GNSSPropagator> gpsPropagators = new ArrayList<>();
+        List<GNSSPropagator<GPSAlmanac>> gpsPropagators = new ArrayList<>();
         for (final GPSAlmanac almanac : almanacs) {
-            gpsPropagators.add(almanac.getPropagator(context.getFrames().getEME2000(),
-                                                     context.getFrames().getITRF(IERSConventions.IERS_2010, false)));
+            gpsPropagators.add(new GNSSPropagator<>(almanac.factory(context.getFrames().getEME2000(),
+                                                                    context.getFrames()
+                                                                        .getITRF(IERSConventions.IERS_2010, false))));
         }
 
         // the following map corresponds to the GPS constellation status in early 2016
         final Map<Integer, TLE> prnToTLE = new HashMap<>();
-        prnToTLE.put( 1,
-                     new TLE("1 37753U 11036A   16059.51505483 -.00000016  00000-0  00000+0 0  9995",
-                             "2 37753  55.2230 119.7200 0049958  23.9363 306.3749  2.00566105 33828"));
-        prnToTLE.put( 2,
-                     new TLE("1 28474U 04045A   16059.68518942 -.00000018 +00000-0 +00000-0 0  9992",
-                             "2 28474 054.0048 117.2153 0156693 236.8152 092.4773 02.00556694082981"));
-        prnToTLE.put( 3,
-                     new TLE("1 40294U 14068A   16059.64183862 +.00000012 +00000-0 +00000-0 0  9990",
-                             "2 40294 054.9632 179.3690 0003634 223.4011 136.5596 02.00553679009768"));
-        prnToTLE.put( 4,
-                      new TLE("1 34661U 09014A   16059.51658765 -.00000072  00000-0  00000+0 0  9997",
-                              "2 34661  56.3471   0.6400 0080177  48.0430 129.2467  2.00572451 50844"));
-        prnToTLE.put( 5,
-                      new TLE("1 35752U 09043A   16059.39819238  .00000011  00000-0  00000+0 0  9993",
-                              "2 35752  54.2243 178.7652 0044753  24.8598  29.4422  2.00555538 47893"));
-        prnToTLE.put( 6,
-                      new TLE("1 39741U 14026A   16059.18044747 -.00000016  00000-0  00000+0 0  9990",
-                              "2 39741  55.2140 119.2493 0005660 259.2190 100.7882  2.00566982 13061"));
-        prnToTLE.put( 7,
-                      new TLE("1 32711U 08012A   16059.36304856 -.00000033 +00000-0 +00000-0 0  9998",
-                              "2 32711 055.4269 300.7399 0091867 207.6311 151.9340 02.00564257058321"));
-        prnToTLE.put( 8,
-                      new TLE("1 40730U 15033A   16059.44106931 -.00000026 +00000-0 +00000-0 0  9994",
-                              "2 40730 055.1388 059.0069 0020452 282.1769 077.6168 02.00566073004562"));
-        prnToTLE.put( 9,
-                      new TLE("1 40105U 14045A   16059.27451329  .00000045  00000-0  00000+0 0  9996",
-                              "2 40105  54.7529 238.9873 0004485 121.4766 238.5557  2.00568637 11512"));
-        prnToTLE.put(10,
-                     new TLE("1 41019U 15062A   16059.49433942  .00000013  00000-0  00000+0 0  9991",
-                             "2 41019  54.9785 179.1399 0012328 204.9013 155.0292  2.00561967  2382"));
-        prnToTLE.put(11,
-                     new TLE("1 25933U 99055A   16059.51073770 -.00000024  00000-0  00000+0 0  9997",
-                             "2 25933  51.3239  98.4815 0159812  86.1576 266.7718  2.00565163120122"));
-        prnToTLE.put(12,
-                     new TLE("1 29601U 06052A   16059.62966898 -.00000070 +00000-0 +00000-0 0  9994",
-                             "2 29601 056.7445 002.2755 0057667 037.0706 323.3313 02.00552237067968"));
-        prnToTLE.put(13,
-                     new TLE("1 24876U 97035A   16059.41696335  .00000046  00000-0  00000+0 0  9998",
-                             "2 24876  55.6966 245.8203 0044339 114.8899 245.5712  2.00562657136305"));
-        prnToTLE.put(14,
-                     new TLE("1 26605U 00071A   16059.56211888  .00000047  00000-0  00000+0 0  9997",
-                             "2 26605  55.2663 243.7251 0085518 248.7231  95.5323  2.00557009112094"));
-        prnToTLE.put(15,
-                     new TLE("1 32260U 07047A   16059.45678257 +.00000044 +00000-0 +00000-0 0  9994",
-                             "2 32260 053.3641 236.0940 0079746 026.4105 333.9774 02.00547771061402"));
-        prnToTLE.put(16,
-                     new TLE("1 27663U 03005A   16059.14440417 -.00000071  00000-0  00000+0 0  9996",
-                             "2 27663  56.7743   3.3691 0085346  17.6322 214.4333  2.00559487 95843"));
-        prnToTLE.put(17,
-                     new TLE("1 28874U 05038A   16059.21070933 -.00000024  00000-0  00000+0 0  9997",
-                             "2 28874  55.8916  61.9596 0112077 248.9647 205.7384  2.00567116 76379"));
-        prnToTLE.put(18,
-                     new TLE("1 26690U 01004A   16059.51332910  .00000008  00000-0  00000+0 0  9990",
-                             "2 26690  52.9999 177.6630 0169501 250.8579 153.6293  2.00563995110499"));
-        prnToTLE.put(19,
-                     new TLE("1 28190U 04009A   16058.12363503 -.00000030  00000-0  00000+0 0  9999",
-                             "2 28190  55.7230  64.8110 0105865  40.0254 321.4519  2.00572212 87500"));
-        prnToTLE.put(20,
-                     new TLE("1 26360U 00025A   16059.44770263  .00000005  00000-0  00000+0 0  9992",
-                             "2 26360  53.0712 174.6895 0046205  76.0615 334.4302  2.00559931115818"));
-        prnToTLE.put(21,
-                     new TLE("1 27704U 03010A   16059.50719524 -.00000019  00000-0  00000+0 0  9998",
-                             "2 27704  53.6134 117.9454 0234081 255.6874 199.2128  2.00564673 94659"));
-        prnToTLE.put(22,
-                     new TLE("1 28129U 03058A   16059.06680941  .00000008  00000-0  00000+0 0  9990",
-                             "2 28129  52.8771 177.7253 0079127 245.1376 114.0279  2.00398763 89357"));
-        prnToTLE.put(23,
-                     new TLE("1 28361U 04023A   16059.54310021  .00000046  00000-0  00000+0 0  9995",
-                             "2 28361  54.2347 239.3240 0106509 211.5355  11.7648  2.00557932 85613"));
-        prnToTLE.put(24,
-                     new TLE("1 38833U 12053A   16059.04618549 -.00000032  00000-0  00000+0 0  9999",
-                             "2 38833  54.4591 298.1383 0042253  18.7074 341.5041  2.00568407 24895"));
-        prnToTLE.put(25,
-                     new TLE("1 36585U 10022A   16059.29300735 -.00000074  00000-0  00000+0 0  9993",
-                             "2 36585  56.0738 359.4320 0050768  38.3425  49.1794  2.00578535 42134"));
-        prnToTLE.put(26,
-                     new TLE("1 40534U 15013A   16059.28299301 -.00000076  00000-0  00000+0 0  9994",
-                             "2 40534  55.0430 359.0082 0009349 342.4081  17.5685  2.00558853  6801"));
-        prnToTLE.put(27,
-                     new TLE("1 39166U 13023A   16059.40401153 -.00000025  00000-0  00000+0 0  9990",
-                             "2 39166  55.6020  59.1224 0032420   7.7969 352.2759  2.00568484 20414"));
-        prnToTLE.put(28,
-                     new TLE("1 26407U 00040A   16059.80383354 -.00000069 +00000-0 +00000-0 0  9994",
-                             "2 26407 056.6988 003.6328 0201499 267.0948 317.6209 02.00569902114508"));
-        prnToTLE.put(29,
-                     new TLE("1 32384U 07062A   16059.44770263 -.00000021  00000-0  00000+0 0  9992",
-                             "2 32384  55.9456  62.5022 0011922 319.9531 172.6730  2.00571577 60128"));
-        prnToTLE.put(30,
-                     new TLE("1 39533U 14008A   16059.40267873 -.00000038 +00000-0 +00000-0 0  9996",
-                             "2 39533 054.6126 303.3404 0017140 179.4267 180.6311 02.00568364014251"));
-        prnToTLE.put(31,
-                     new TLE("1 29486U 06042A   16059.50651990 -.00000032  00000-0  00000+0 0  9992",
-                             "2 29486  55.7041 301.2472 0084115 334.2804 254.9897  2.00560606 69098"));
-        prnToTLE.put(32,
-                     new TLE("1 41328U 16007A   16059.56873502  .00000049  00000-0  00000+0 0  9991",
-                             "2 41328  55.0137 239.0304 0002157 298.9074  61.0768  1.99172830   453"));
+        prnToTLE.put(1, new TLE("1 37753U 11036A   16059.51505483 -.00000016  00000-0  00000+0 0  9995",
+                                "2 37753  55.2230 119.7200 0049958  23.9363 306.3749  2.00566105 33828"));
+        prnToTLE.put(2, new TLE("1 28474U 04045A   16059.68518942 -.00000018 +00000-0 +00000-0 0  9992",
+                                "2 28474 054.0048 117.2153 0156693 236.8152 092.4773 02.00556694082981"));
+        prnToTLE.put(3, new TLE("1 40294U 14068A   16059.64183862 +.00000012 +00000-0 +00000-0 0  9990",
+                                "2 40294 054.9632 179.3690 0003634 223.4011 136.5596 02.00553679009768"));
+        prnToTLE.put(4, new TLE("1 34661U 09014A   16059.51658765 -.00000072  00000-0  00000+0 0  9997",
+                                "2 34661  56.3471   0.6400 0080177  48.0430 129.2467  2.00572451 50844"));
+        prnToTLE.put(5, new TLE("1 35752U 09043A   16059.39819238  .00000011  00000-0  00000+0 0  9993",
+                                "2 35752  54.2243 178.7652 0044753  24.8598  29.4422  2.00555538 47893"));
+        prnToTLE.put(6, new TLE("1 39741U 14026A   16059.18044747 -.00000016  00000-0  00000+0 0  9990",
+                                "2 39741  55.2140 119.2493 0005660 259.2190 100.7882  2.00566982 13061"));
+        prnToTLE.put(7, new TLE("1 32711U 08012A   16059.36304856 -.00000033 +00000-0 +00000-0 0  9998",
+                                "2 32711 055.4269 300.7399 0091867 207.6311 151.9340 02.00564257058321"));
+        prnToTLE.put(8, new TLE("1 40730U 15033A   16059.44106931 -.00000026 +00000-0 +00000-0 0  9994",
+                                "2 40730 055.1388 059.0069 0020452 282.1769 077.6168 02.00566073004562"));
+        prnToTLE.put(9, new TLE("1 40105U 14045A   16059.27451329  .00000045  00000-0  00000+0 0  9996",
+                                "2 40105  54.7529 238.9873 0004485 121.4766 238.5557  2.00568637 11512"));
+        prnToTLE.put(10, new TLE("1 41019U 15062A   16059.49433942  .00000013  00000-0  00000+0 0  9991",
+                                 "2 41019  54.9785 179.1399 0012328 204.9013 155.0292  2.00561967  2382"));
+        prnToTLE.put(11, new TLE("1 25933U 99055A   16059.51073770 -.00000024  00000-0  00000+0 0  9997",
+                                 "2 25933  51.3239  98.4815 0159812  86.1576 266.7718  2.00565163120122"));
+        prnToTLE.put(12, new TLE("1 29601U 06052A   16059.62966898 -.00000070 +00000-0 +00000-0 0  9994",
+                                 "2 29601 056.7445 002.2755 0057667 037.0706 323.3313 02.00552237067968"));
+        prnToTLE.put(13, new TLE("1 24876U 97035A   16059.41696335  .00000046  00000-0  00000+0 0  9998",
+                                 "2 24876  55.6966 245.8203 0044339 114.8899 245.5712  2.00562657136305"));
+        prnToTLE.put(14, new TLE("1 26605U 00071A   16059.56211888  .00000047  00000-0  00000+0 0  9997",
+                                 "2 26605  55.2663 243.7251 0085518 248.7231  95.5323  2.00557009112094"));
+        prnToTLE.put(15, new TLE("1 32260U 07047A   16059.45678257 +.00000044 +00000-0 +00000-0 0  9994",
+                                 "2 32260 053.3641 236.0940 0079746 026.4105 333.9774 02.00547771061402"));
+        prnToTLE.put(16, new TLE("1 27663U 03005A   16059.14440417 -.00000071  00000-0  00000+0 0  9996",
+                                 "2 27663  56.7743   3.3691 0085346  17.6322 214.4333  2.00559487 95843"));
+        prnToTLE.put(17, new TLE("1 28874U 05038A   16059.21070933 -.00000024  00000-0  00000+0 0  9997",
+                                 "2 28874  55.8916  61.9596 0112077 248.9647 205.7384  2.00567116 76379"));
+        prnToTLE.put(18, new TLE("1 26690U 01004A   16059.51332910  .00000008  00000-0  00000+0 0  9990",
+                                 "2 26690  52.9999 177.6630 0169501 250.8579 153.6293  2.00563995110499"));
+        prnToTLE.put(19, new TLE("1 28190U 04009A   16058.12363503 -.00000030  00000-0  00000+0 0  9999",
+                                 "2 28190  55.7230  64.8110 0105865  40.0254 321.4519  2.00572212 87500"));
+        prnToTLE.put(20, new TLE("1 26360U 00025A   16059.44770263  .00000005  00000-0  00000+0 0  9992",
+                                 "2 26360  53.0712 174.6895 0046205  76.0615 334.4302  2.00559931115818"));
+        prnToTLE.put(21, new TLE("1 27704U 03010A   16059.50719524 -.00000019  00000-0  00000+0 0  9998",
+                                 "2 27704  53.6134 117.9454 0234081 255.6874 199.2128  2.00564673 94659"));
+        prnToTLE.put(22, new TLE("1 28129U 03058A   16059.06680941  .00000008  00000-0  00000+0 0  9990",
+                                 "2 28129  52.8771 177.7253 0079127 245.1376 114.0279  2.00398763 89357"));
+        prnToTLE.put(23, new TLE("1 28361U 04023A   16059.54310021  .00000046  00000-0  00000+0 0  9995",
+                                 "2 28361  54.2347 239.3240 0106509 211.5355  11.7648  2.00557932 85613"));
+        prnToTLE.put(24, new TLE("1 38833U 12053A   16059.04618549 -.00000032  00000-0  00000+0 0  9999",
+                                 "2 38833  54.4591 298.1383 0042253  18.7074 341.5041  2.00568407 24895"));
+        prnToTLE.put(25, new TLE("1 36585U 10022A   16059.29300735 -.00000074  00000-0  00000+0 0  9993",
+                                 "2 36585  56.0738 359.4320 0050768  38.3425  49.1794  2.00578535 42134"));
+        prnToTLE.put(26, new TLE("1 40534U 15013A   16059.28299301 -.00000076  00000-0  00000+0 0  9994",
+                                 "2 40534  55.0430 359.0082 0009349 342.4081  17.5685  2.00558853  6801"));
+        prnToTLE.put(27, new TLE("1 39166U 13023A   16059.40401153 -.00000025  00000-0  00000+0 0  9990",
+                                 "2 39166  55.6020  59.1224 0032420   7.7969 352.2759  2.00568484 20414"));
+        prnToTLE.put(28, new TLE("1 26407U 00040A   16059.80383354 -.00000069 +00000-0 +00000-0 0  9994",
+                                 "2 26407 056.6988 003.6328 0201499 267.0948 317.6209 02.00569902114508"));
+        prnToTLE.put(29, new TLE("1 32384U 07062A   16059.44770263 -.00000021  00000-0  00000+0 0  9992",
+                                 "2 32384  55.9456  62.5022 0011922 319.9531 172.6730  2.00571577 60128"));
+        prnToTLE.put(30, new TLE("1 39533U 14008A   16059.40267873 -.00000038 +00000-0 +00000-0 0  9996",
+                                 "2 39533 054.6126 303.3404 0017140 179.4267 180.6311 02.00568364014251"));
+        prnToTLE.put(31, new TLE("1 29486U 06042A   16059.50651990 -.00000032  00000-0  00000+0 0  9992",
+                                 "2 29486  55.7041 301.2472 0084115 334.2804 254.9897  2.00560606 69098"));
+        prnToTLE.put(32, new TLE("1 41328U 16007A   16059.56873502  .00000049  00000-0  00000+0 0  9991",
+                                 "2 41328  55.0137 239.0304 0002157 298.9074  61.0768  1.99172830   453"));
 
-        for (final GNSSPropagator gpsPropagator : gpsPropagators) {
-            final int prn = gpsPropagator.getOrbitalElements().getPRN();
+        for (final GNSSPropagator<GPSAlmanac> gpsPropagator : gpsPropagators) {
+            final int prn = gpsPropagator.getOrbitalElements().getPrn();
             TLE tle = prnToTLE.get(prn);
             TLEPropagator tlePropagator = TLEPropagator.selectExtrapolator(tle);
             for (double dt = 0; dt < Constants.JULIAN_DAY; dt += 600) {
                 final AbsoluteDate date = tlePropagator.getInitialState().getDate().shiftedBy(dt);
                 final PVCoordinates gpsPV = gpsPropagator.getPVCoordinates(date, gpsPropagator.getECI());
                 final PVCoordinates tlePV = tlePropagator.getPVCoordinates(date, gpsPropagator.getECI());
-                Assertions.assertEquals(0.0,
-                                    Vector3D.distance(gpsPV.getPosition(), tlePV.getPosition()),
-                                    8400.0);
+                Assertions.assertEquals(0.0, Vector3D.distance(gpsPV.getPosition(), tlePV.getPosition()), 8400.0);
             }
         }
     }
@@ -333,11 +311,12 @@ class GPSPropagatorTest {
         double errorV = 0;
         double errorA = 0;
         for (final GPSAlmanac almanac : almanacs) {
-            final GNSSPropagator propagator =
-                almanac.getPropagator(context.getFrames().getEME2000(),
-                                      context.getFrames().getITRF(IERSConventions.IERS_2010, true));
+            final GNSSPropagator<GPSAlmanac>
+                propagator =
+                new GNSSPropagator<>(almanac.factory(context.getFrames().getEME2000(),
+                                                     context.getFrames().getITRF(IERSConventions.IERS_2010, true)));
             GNSSOrbitalElements<?> elements = propagator.getOrbitalElements();
-            AbsoluteDate t0 = new GNSSDate(elements.getWeek(), elements.getTime(), SatelliteSystem.GPS).getDate();
+            AbsoluteDate t0 = elements.getOrbit().getDate();
             for (double dt = 0; dt < Constants.JULIAN_DAY; dt += 600) {
                 final AbsoluteDate central = t0.shiftedBy(dt);
                 final PVCoordinates pv = propagator.getPVCoordinates(central, eme2000);
@@ -348,8 +327,9 @@ class GPSPropagatorTest {
                 }
 
                 // create interpolator
-                final TimeInterpolator<TimeStampedPVCoordinates> interpolator =
-                        new TimeStampedPVCoordinatesHermiteInterpolator(sample.size(), CartesianDerivativesFilter.USE_P);
+                final TimeInterpolator<TimeStampedPVCoordinates>
+                    interpolator =
+                    new TimeStampedPVCoordinatesHermiteInterpolator(sample.size(), CartesianDerivativesFilter.USE_P);
 
                 final PVCoordinates interpolated = interpolator.interpolate(central, sample);
                 errorP = FastMath.max(errorP, Vector3D.distance(pv.getPosition(), interpolated.getPosition()));
@@ -366,38 +346,44 @@ class GPSPropagatorTest {
     @Test
     void testPosition() {
         // Initial GPS orbital elements (Ref: IGS)
-        final GPSLegacyNavigationMessage goe = new GPSLegacyNavigationMessage(context.getTimeScales(),
-                                                                              SatelliteSystem.GPS,
-                                                                              GPSLegacyNavigationMessage.LNAV);
-        goe.setPRN(7);
-        goe.setWeek(0);
-        goe.setTime(288000);
-        goe.setSqrtA(5153.599830627441);
-        goe.setE(0.012442796607501805);
-        goe.setDeltaN0(4.419469802942352E-9);
-        goe.setI0(0.9558937988021613);
-        goe.setIDot(-2.4608167886110235E-10);
-        goe.setOmega0(1.0479401362158658);
-        goe.setOmegaDot(-7.967117576712062E-9);
-        goe.setPa(-2.4719019944000538);
-        goe.setM0(-1.0899023379614294);
-        goe.setCuc(4.3995678424835205E-6);
-        goe.setCus(1.002475619316101E-5);
-        goe.setCrc(183.40625);
-        goe.setCrs(87.03125);
-        goe.setCic(3.203749656677246E-7);
-        goe.setCis(4.0978193283081055E-8);
+        final GPSLegacyNavigationMessageFactory
+            factory =
+            new GPSLegacyNavigationMessageFactory(context.getTimeScales(), SatelliteSystem.GPS,
+                                                  GPSLegacyNavigationMessage.LNAV, context.getFrames().getEME2000(),
+                                                  context.getFrames().getITRF(IERSConventions.IERS_2010, false));
+        factory.setPrn(7);
+        factory.setTimeOfEphemeris(new GNSSDate(0, 288000, SatelliteSystem.GPS));
+        final double sqrtA = 5153.599830627441;
+        factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.SEMI_MAJOR_AXIS)
+            .setValue(sqrtA * sqrtA);
+        factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.ECCENTRICITY)
+            .setValue(0.012442796607501805);
+        factory.getDeltaN0Driver().setValue(4.419469802942352E-9);
+        factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.INCLINATION)
+            .setValue(0.9558937988021613);
+        factory.getIDotDriver().setValue(-2.4608167886110235E-10);
+        factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.NODE_LONGITUDE)
+            .setValue(1.0479401362158658);
+        factory.getOmegaDotDriver().setValue(-7.967117576712062E-9);
+        factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.ARGUMENT_OF_PERIAPSIS)
+            .setValue(-2.4719019944000538);
+        factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.MEAN_ANOMALY)
+            .setValue(-1.0899023379614294);
+        factory.getCucDriver().setValue(4.3995678424835205E-6);
+        factory.getCusDriver().setValue(1.002475619316101E-5);
+        factory.getCrcDriver().setValue(183.40625);
+        factory.getCrsDriver().setValue(87.03125);
+        factory.getCicDriver().setValue(3.203749656677246E-7);
+        factory.getCisDriver().setValue(4.0978193283081055E-8);
 
         // Date of the GPS orbital elements
-        final AbsoluteDate target = goe.getDate();
+        final AbsoluteDate target = factory.getDate();
         // Build the GPS propagator
-        final GNSSPropagator propagator =
-            goe.getPropagator(context.getFrames().getEME2000(),
-                              context.getFrames().getITRF(IERSConventions.IERS_2010, true));
+        final GNSSPropagator<GPSLegacyNavigationMessage> propagator = new GNSSPropagator<>(factory);
         // Compute the PV coordinates at the date of the GPS orbital elements
-        final PVCoordinates pv =
-            propagator.getPVCoordinates(target,
-                                        context.getFrames().getITRF(IERSConventions.IERS_2010, true));
+        final PVCoordinates
+            pv =
+            propagator.getPVCoordinates(target, context.getFrames().getITRF(IERSConventions.IERS_2010, true));
         // Computed position
         final Vector3D computedPos = pv.getPosition();
         // Expected position (reference from IGS file igu20484_00.sp3)
@@ -409,144 +395,237 @@ class GPSPropagatorTest {
     @Test
     void testStmAndJacobian() {
         // Initial GPS orbital elements (Ref: IGS)
-        final GPSLegacyNavigationMessage goe = new GPSLegacyNavigationMessage(context.getTimeScales(),
-                                                                              SatelliteSystem.GPS,
-                                                                              GPSLegacyNavigationMessage.LNAV);
-        goe.setPRN(7);
-        goe.setWeek(0);
-        goe.setTime(288000);
-        goe.setSqrtA(5153.599830627441);
-        goe.setE(0.012442796607501805);
-        goe.setDeltaN0(4.419469802942352E-9);
-        goe.setI0(0.9558937988021613);
-        goe.setIDot(-2.4608167886110235E-10);
-        goe.setOmega0(1.0479401362158658);
-        goe.setOmegaDot(-7.967117576712062E-9);
-        goe.setPa(-2.4719019944000538);
-        goe.setM0(-1.0899023379614294);
-        goe.setCuc(4.3995678424835205E-6);
-        goe.setCus(1.002475619316101E-5);
-        goe.setCrc(183.40625);
-        goe.setCrs(87.03125);
-        goe.setCic(3.203749656677246E-7);
-        goe.setCis(4.0978193283081055E-8);
-        GNSSPropagator propagator =
-            goe.getPropagator(context.getFrames().getEME2000(),
-                              context.getFrames().getITRF(IERSConventions.IERS_2010, false));
+        final GPSLegacyNavigationMessageFactory
+            factory =
+            new GPSLegacyNavigationMessageFactory(context.getTimeScales(), SatelliteSystem.GPS,
+                                                  GPSLegacyNavigationMessage.LNAV, context.getFrames().getEME2000(),
+                                                  context.getFrames().getITRF(IERSConventions.IERS_2010, false));
+        factory.setPrn(7);
+        factory.setTimeOfEphemeris(new GNSSDate(0, 288000, SatelliteSystem.GPS));
+        factory.setTransmissionTime(new GNSSDate(0, 288000, SatelliteSystem.GPS));
+        final double sqrtA = 5153.599830627441;
+        factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.SEMI_MAJOR_AXIS)
+            .setValue(sqrtA * sqrtA);
+        factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.ECCENTRICITY)
+            .setValue(0.012442796607501805);
+        factory.getDeltaN0Driver().setValue(4.419469802942352E-9);
+        factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.INCLINATION)
+            .setValue(0.9558937988021613);
+        factory.getIDotDriver().setValue(-2.4608167886110235E-10);
+        factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.NODE_LONGITUDE)
+            .setValue(1.0479401362158658);
+        factory.getOmegaDotDriver().setValue(-7.967117576712062E-9);
+        factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.ARGUMENT_OF_PERIAPSIS)
+            .setValue(-2.4719019944000538);
+        factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.MEAN_ANOMALY)
+            .setValue(-1.0899023379614294);
+        factory.getCucDriver().setValue(4.3995678424835205E-6);
+        factory.getCusDriver().setValue(1.002475619316101E-5);
+        factory.getCrcDriver().setValue(183.40625);
+        factory.getCrsDriver().setValue(87.03125);
+        factory.getCicDriver().setValue(3.203749656677246E-7);
+        factory.getCisDriver().setValue(4.0978193283081055E-8);
+        GNSSPropagator<GPSLegacyNavigationMessage> propagator = new GNSSPropagator<>(factory);
 
         // we want to compute the partial derivatives with respect to Crs and Crc parameters
-        Assertions.assertEquals(12, propagator.getOrbitalElements().getParameters().length);
-        propagator.getOrbitalElements().getParameterDriver(CommonGnssData.RADIUS_SINE).setSelected(true);
-        propagator.getOrbitalElements().getParameterDriver(CommonGnssData.RADIUS_COSINE).setSelected(true);
+        Assertions.assertEquals(15, propagator.getParameters().length);
+        propagator.getParametersDrivers().get(NonKeplerianDriversFactory.CRS_INDEX).setSelected(true);
+        propagator.getParametersDrivers().get(NonKeplerianDriversFactory.CRC_INDEX).setSelected(true);
         final DoubleArrayDictionary initialJacobianColumns = new DoubleArrayDictionary();
-        initialJacobianColumns.put(CommonGnssData.RADIUS_SINE,   new double[6]);
-        initialJacobianColumns.put(CommonGnssData.RADIUS_COSINE, new double[6]);
+        initialJacobianColumns.put(NonKeplerianDriversFactory.RADIUS_SINE, new double[6]);
+        initialJacobianColumns.put(NonKeplerianDriversFactory.RADIUS_COSINE, new double[6]);
         final MatricesHarvester harvester = propagator.setupMatricesComputation("stm", null, initialJacobianColumns);
 
         // harvester sorts the columns lexicographically, and wraps them as SpanXxx##
         Assertions.assertEquals(2, harvester.getJacobiansColumnsNames().size());
-        Assertions.assertEquals("Span" + CommonGnssData.RADIUS_COSINE + "0", harvester.getJacobiansColumnsNames().getFirst());
-        Assertions.assertEquals("Span" + CommonGnssData.RADIUS_SINE   + "0", harvester.getJacobiansColumnsNames().get(1));
+        Assertions.assertEquals("Span" + NonKeplerianDriversFactory.RADIUS_COSINE + "0",
+                                harvester.getJacobiansColumnsNames().get(0));
+        Assertions.assertEquals("Span" + NonKeplerianDriversFactory.RADIUS_SINE + "0",
+                                harvester.getJacobiansColumnsNames().get(1));
 
         // propagate orbit
-        final SpacecraftState state = propagator.propagate(goe.getDate().shiftedBy(3600.0));
+        final AbsoluteDate targetDate = factory.getDate().shiftedBy(3600.0);
+        final SpacecraftState state = propagator.propagate(targetDate);
 
         // extract state transition matrix
-        final RealMatrix stm = harvester.getStateTransitionMatrix(state);
+        final RealMatrix stm    = harvester.getStateTransitionMatrix(state);
+        final RealMatrix dY0dB0 = harvester.getStateJacobianVsBuilderParameters(propagator.getBaseInitialState());
         Assertions.assertEquals(OrbitType.CARTESIAN, harvester.getOrbitType());
         Assertions.assertEquals(6, stm.getRowDimension());
         Assertions.assertEquals(6, stm.getColumnDimension());
-        Assertions.assertEquals(1.202731937, stm.getEntry(0, 0), 1.0e-9);
+
+        factory.
+            getNonKeplerianParametersDrivers().
+            getDrivers().
+            stream().
+            filter(d -> !d.getName().equals(NonKeplerianDriversFactory.TIME)).
+            forEach(d -> d.setValue(0.0));
+        final ParameterDriver aDriver =
+            factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.SEMI_MAJOR_AXIS);
+        final double dada = finiteDifference(factory, targetDate, aDriver, 10.0, s -> s.getOrbit().getA());
+        // stm * dY0dB0 is dC(t)/dB0, the very expression AbstractBatchLSModel uses: its rows are
+        // Cartesian. The reference above is da(t)/da(B0), a Keplerian row, so the rows have to be
+        // converted before the two can be compared.
+        final double[][] dKepdC = new double[6][6];
+        OrbitType.KEPLERIAN.convertType(state.getOrbit()).
+            getJacobianWrtCartesian(PositionAngleType.MEAN, dKepdC);
+        final RealMatrix dKepdB0 = MatrixUtils.createRealMatrix(dKepdC).multiply(stm.multiply(dY0dB0));
+        Assertions.assertEquals(dada, dKepdB0.getEntry(0, 0), 6.0e-5);
 
         // extract Jacobian matrix
         final RealMatrix jacobian = harvester.getParametersJacobian(state);
         Assertions.assertEquals(6, jacobian.getRowDimension());
         Assertions.assertEquals(2, jacobian.getColumnDimension());
-        Assertions.assertEquals(0.959547021, jacobian.getEntry(0, 0), 1.0e-9);
+        // its rows are Cartesian too, and the references below are Keplerian, so the same row
+        // conversion as above applies
+        final RealMatrix dKepdP = MatrixUtils.createRealMatrix(dKepdC).multiply(jacobian);
+        final ParameterDriver crcDriver =
+            factory.getNonKeplerianParametersDrivers().findByName(NonKeplerianDriversFactory.RADIUS_COSINE);
+        final double dadcrc = finiteDifference(factory, targetDate, crcDriver, 1.0, s -> s.getOrbit().getA());
+        Assertions.assertEquals(dadcrc, dKepdP.getEntry(0, 0), 6.0e-4);
+        final ParameterDriver crsDriver =
+            factory.getNonKeplerianParametersDrivers().findByName(NonKeplerianDriversFactory.RADIUS_SINE);
+        final double dadcrs = finiteDifference(factory, targetDate, crsDriver, 10.0, s -> s.getOrbit().getA());
+        Assertions.assertEquals(dadcrs, dKepdP.getEntry(0, 1), 3.0e-4);
 
+    }
+
+    private double finiteDifference(final GPSLegacyNavigationMessageFactory factory,
+                                    final AbsoluteDate targetDate,
+                                    final ParameterDriver driver, final double h,
+                                    final ToDoubleFunction<SpacecraftState> extractor) {
+        final double d4 = delta(factory, targetDate, driver, 4 * h, extractor);
+        final double d3 = delta(factory, targetDate, driver, 3 * h, extractor);
+        final double d2 = delta(factory, targetDate, driver, 2 * h, extractor);
+        final double d1 = delta(factory, targetDate, driver, 1 * h, extractor);
+        return (-3 * d4 + 32 * d3 - 168 * d2 + 672 * d1) / (840 * h);
+    }
+
+    private double delta(final GPSLegacyNavigationMessageFactory factory, final AbsoluteDate targetDate,
+                         final ParameterDriver driver, final double delta,
+                         final ToDoubleFunction<SpacecraftState> extractor) {
+        final double pRef = driver.getValue();
+        driver.setValue(pRef + delta);
+        final SpacecraftState sPlus  = new GNSSPropagator<>(factory).propagate(targetDate);
+        driver.setValue(pRef - delta);
+        final SpacecraftState sMinus = new GNSSPropagator<>(factory).propagate(targetDate);
+        driver.setValue(pRef);
+        return extractor.applyAsDouble(sPlus) - extractor.applyAsDouble(sMinus);
     }
 
     @Test
     void testRebuildModel() {
 
-        final Frame            eci              = context.getFrames().getEME2000();
-        final Frame            ecef             = context.getFrames().getITRF(IERSConventions.IERS_2010, false);
-        final double           mass             = Propagator.DEFAULT_MASS;
+        final Frame eci = context.getFrames().getEME2000();
+        final Frame ecef = context.getFrames().getITRF(IERSConventions.IERS_2010, false);
+        final double mass = Propagator.DEFAULT_MASS;
         final AttitudeProvider attitudeProvider = FrameAlignedProvider.of(eci);
 
         // Initial GPS orbital elements (Ref: IGS)
-        final GPSLegacyNavigationMessage goe = new GPSLegacyNavigationMessage(context.getTimeScales(),
-                                                                              SatelliteSystem.GPS,
-                                                                              GPSLegacyNavigationMessage.LNAV);
-        goe.setPRN(7);
-        goe.setWeek(0);
-        goe.setTime(288000);
-        goe.setSqrtA(5153.599830627441);
-        goe.setE(0.012442796607501805);
-        goe.setDeltaN0(4.419469802942352E-9);
-        goe.setI0(0.9558937988021613);
-        goe.setIDot(-2.4608167886110235E-10);
-        goe.setOmega0(1.0479401362158658);
-        goe.setOmegaDot(-7.967117576712062E-9);
-        goe.setPa(-2.4719019944000538);
-        goe.setM0(-1.0899023379614294);
-        goe.setCuc(4.3995678424835205E-6);
-        goe.setCus(1.002475619316101E-5);
-        goe.setCrc(183.40625);
-        goe.setCrs(87.03125);
-        goe.setCic(3.203749656677246E-7);
-        goe.setCis(4.0978193283081055E-8);
-        GNSSPropagator propagator = goe.getPropagator(attitudeProvider, eci, ecef, mass);
+        final GPSLegacyNavigationMessageFactory
+            factory =
+            new GPSLegacyNavigationMessageFactory(context.getTimeScales(), SatelliteSystem.GPS,
+                                                  GPSLegacyNavigationMessage.LNAV, context.getFrames().getEME2000(),
+                                                  context.getFrames().getITRF(IERSConventions.IERS_2010, false));
+        factory.setPrn(7);
+        factory.setTimeOfEphemeris(new GNSSDate(0, 288000, SatelliteSystem.GPS));
+        factory.setTransmissionTime(new GNSSDate(0, 288000, SatelliteSystem.GPS));
+        final double sqrtA = 5153.599830627441;
+        factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.SEMI_MAJOR_AXIS)
+            .setValue(sqrtA * sqrtA);
+        factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.ECCENTRICITY)
+            .setValue(0.012442796607501805);
+        factory.getDeltaN0Driver().setValue(4.419469802942352E-9);
+        factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.INCLINATION)
+            .setValue(0.9558937988021613);
+        factory.getIDotDriver().setValue(-2.4608167886110235E-10);
+        factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.NODE_LONGITUDE)
+            .setValue(1.0479401362158658);
+        factory.getOmegaDotDriver().setValue(-7.967117576712062E-9);
+        factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.ARGUMENT_OF_PERIAPSIS)
+            .setValue(-2.4719019944000538);
+        factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.MEAN_ANOMALY)
+            .setValue(-1.0899023379614294);
+        factory.getCucDriver().setValue(4.3995678424835205E-6);
+        factory.getCusDriver().setValue(1.002475619316101E-5);
+        factory.getCrcDriver().setValue(183.40625);
+        factory.getCrsDriver().setValue(87.03125);
+        factory.getCicDriver().setValue(3.203749656677246E-7);
+        factory.getCisDriver().setValue(4.0978193283081055E-8);
+        GNSSPropagator<GPSLegacyNavigationMessage>
+            propagator =
+            new GNSSPropagator<>(factory.createFromDrivers(), eci, ecef, attitudeProvider, mass);
 
-        final GNSSPropagator rebuilt = new GNSSPropagator(propagator.getInitialState(), goe,
-                                                          ecef, attitudeProvider, mass);
+        final GNSSPropagator<GPSLegacyNavigationMessage> rebuilt =
+            new GNSSPropagator<>(propagator.getInitialState(), factory.createFromDrivers(), ecef, attitudeProvider,
+                                 mass);
         final GNSSOrbitalElements<?> oe2 = rebuilt.getOrbitalElements();
-        Assertions.assertEquals(0, goe.getDate().durationFrom(oe2),               1.0e-20);
-        Assertions.assertEquals(0,
-                                Vector3D.distance(propagator.getInitialState().getPVCoordinates().getPosition(),
-                                                  rebuilt.getInitialState().getPVCoordinates().getPosition()),
+        Assertions.assertEquals(0, factory.getDate().durationFrom(oe2), 1.0e-20);
+        Assertions.assertEquals(0, Vector3D.distance(propagator.getInitialState().getPVCoordinates().getPosition(),
+                                                     rebuilt.getInitialState().getPVCoordinates().getPosition()),
                                 3.8e-7);
-        Assertions.assertEquals(0,
-                                Vector3D.distance(propagator.getInitialState().getVelocity(),
-                                                  rebuilt.getInitialState().getVelocity()),
-                                4.0e-11);
+        Assertions.assertEquals(0, Vector3D.distance(propagator.getInitialState().getVelocity(),
+                                                     rebuilt.getInitialState().getVelocity()), 4.0e-11);
 
         // general parameters
-        Assertions.assertEquals(goe.getMu(),            oe2.getMu(),            1.0e-20);
-        Assertions.assertEquals(goe.getCycleDuration(), oe2.getCycleDuration(), 1.0e-20);
-        Assertions.assertEquals(goe.getSystem(),        oe2.getSystem());
-        Assertions.assertEquals(goe.getPRN(),           oe2.getPRN());
-        Assertions.assertEquals(goe.getWeek(),          oe2.getWeek());
+        Assertions.assertEquals(factory.getMu(), oe2.getOrbit().getMu(), 1.0e-20);
+        Assertions.assertEquals(factory.getSystem(), oe2.getTimeOfEphemeris().getSystem());
+        Assertions.assertEquals(factory.getPrn(), oe2.getPrn());
+        Assertions.assertEquals(factory.getTimeOfEphemeris().getWeekNumber(), oe2.getTimeOfEphemeris().getWeekNumber());
 
         // non-Keplerian parameters, which are just copied
-        Assertions.assertEquals(goe.getTime(),     oe2.getTime(),     1.0e-20);
-        Assertions.assertEquals(goe.getIDot(),     oe2.getIDot(),     1.0e-20);
-        Assertions.assertEquals(goe.getOmegaDot(), oe2.getOmegaDot(), 1.0e-20);
-        Assertions.assertEquals(goe.getCuc(),      oe2.getCuc(),      1.0e-20);
-        Assertions.assertEquals(goe.getCus(),      oe2.getCus(),      1.0e-20);
-        Assertions.assertEquals(goe.getCrc(),      oe2.getCrc(),      1.0e-20);
-        Assertions.assertEquals(goe.getCrs(),      oe2.getCrs(),      1.0e-20);
-        Assertions.assertEquals(goe.getCic(),      oe2.getCic(),      1.0e-20);
-        Assertions.assertEquals(goe.getCis(),      oe2.getCis(),      1.0e-20);
+        Assertions.assertEquals(factory.getTimeDriver().getValue(), oe2.getTimeOfEphemeris().getSecondsInWeek(), 1.0e-20);
+        Assertions.assertEquals(factory.getIDotDriver().getValue(), oe2.getIDot(), 1.0e-20);
+        Assertions.assertEquals(factory.getOmegaDotDriver().getValue(), oe2.getOmegaDot(), 1.0e-20);
+        Assertions.assertEquals(factory.getCucDriver().getValue(), oe2.getCuc(), 1.0e-20);
+        Assertions.assertEquals(factory.getCusDriver().getValue(), oe2.getCus(), 1.0e-20);
+        Assertions.assertEquals(factory.getCrcDriver().getValue(), oe2.getCrc(), 1.0e-20);
+        Assertions.assertEquals(factory.getCrsDriver().getValue(), oe2.getCrs(), 1.0e-20);
+        Assertions.assertEquals(factory.getCicDriver().getValue(), oe2.getCic(), 1.0e-20);
+        Assertions.assertEquals(factory.getCisDriver().getValue(), oe2.getCis(), 1.0e-20);
 
         // orbital parameters, those are rebuilt from the initial state
-        Assertions.assertEquals(goe.getSma(),    oe2.getSma(),                                               4.0e-8);
-        Assertions.assertEquals(goe.getE(),      oe2.getE(),                                                 1.e-15);
-        Assertions.assertEquals(goe.getI0(),     oe2.getI0(),                                                1.0e-20);
-        Assertions.assertEquals(goe.getPa(),     MathUtils.normalizeAngle(oe2.getPa(),     goe.getPa()),     1.e-13);
-        Assertions.assertEquals(goe.getOmega0(), MathUtils.normalizeAngle(oe2.getOmega0(), goe.getOmega0()), 1.7e-14);
-        Assertions.assertEquals(goe.getM0(),     MathUtils.normalizeAngle(oe2.getM0(),     goe.getM0()),     1.e-13);
+        checkParameter(oe2.getOrbit().getA(),
+                       factory, GNSSOrbitalElementsFactory.SEMI_MAJOR_AXIS,
+                       false, 4.9e-8);
+        checkParameter(oe2.getOrbit().getE(),
+                       factory, GNSSOrbitalElementsFactory.ECCENTRICITY,
+                       false, 5.9e-16);
+        checkParameter(oe2.getOrbit().getI(),
+                       factory, GNSSOrbitalElementsFactory.INCLINATION,
+                       false, 2.3e-16);
+        checkParameter(oe2.getOrbit().getPeriapsisArgument(),
+                       factory, GNSSOrbitalElementsFactory.ARGUMENT_OF_PERIAPSIS,
+                       true, 8.7e-14);
+        checkParameter(oe2.getOrbit().getRightAscensionOfAscendingNode(),
+                       factory, GNSSOrbitalElementsFactory.NODE_LONGITUDE,
+                       true, 1.8e-15);
+        checkParameter(oe2.getOrbit().getMeanAnomaly(),
+                       factory, GNSSOrbitalElementsFactory.MEAN_ANOMALY,
+                       true, 8.6e-14);
 
+    }
+
+    private void checkParameter(final double rebuilt,
+                                final GPSLegacyNavigationMessageFactory factory, final String parameterName,
+                                final boolean normalize, final double tolerance) {
+        final double original = factory.getOrbitalParametersDrivers().findByName(parameterName).getValue();
+        if (normalize) {
+            Assertions.assertEquals(original,
+                                    MathUtils.normalizeAngle(rebuilt, original),
+                                    tolerance);
+        } else {
+            Assertions.assertEquals(original, rebuilt, tolerance);
+        }
     }
 
     @Test
     void testIssue544() {
         // Builds the GPSPropagator from the almanac
-        final GNSSPropagator propagator =
-            new GNSSPropagatorBuilder(almanacs.getFirst(),
-                                      context.getFrames().getEME2000(),
-                                      context.getFrames().getITRF(IERSConventions.IERS_2010, false)).
-                buildPropagator();
+        final GNSSPropagator<GPSAlmanac>
+            propagator =
+            new GNSSPropagator<>(almanacs.getFirst().factory(context.getFrames().getEME2000(), context.getFrames()
+                .getITRF(IERSConventions.IERS_2010, false)));
         // In order to test the issue, we voluntarily set a Double.NaN value in the date.
         final AbsoluteDate date0 = new AbsoluteDate(2010, 5, 7, 7, 50, Double.NaN, TimeScalesFactory.getUTC());
         final PVCoordinates pv0 = propagator.propagateInEcef(date0);
@@ -559,17 +638,20 @@ class GPSPropagatorTest {
     @Test
     void testFieldIssue544() {
         // Builds the GPSPropagator from the almanac
-        final FieldGnssPropagator<Binary64> propagator =
-            new FieldGnssPropagator<>(almanacs.getFirst().toField(Binary64Field.getInstance()),
-                                      context.getFrames().getEME2000(),
+        final FieldGPSAlmanac<Binary64> a0 =
+            (FieldGPSAlmanac<Binary64>) almanacs.getFirst().toField(Binary64Field.getInstance());
+        final FieldGnssPropagator<Binary64, GPSAlmanac> propagator =
+            new FieldGnssPropagator<>(a0, context.getFrames().getEME2000(),
                                       context.getFrames().getITRF(IERSConventions.IERS_2010, false),
                                       new FrameAlignedProvider(context.getFrames().getEME2000()),
                                       new Binary64(Propagator.DEFAULT_MASS));
         // In order to test the issue, we voluntarily set a Double.NaN value in the date.
-        final FieldAbsoluteDate<Binary64> date0 =
-            new FieldAbsoluteDate<>(Binary64Field.getInstance(),
-                                    2010, 5, 7, 7, 50, Double.NaN, TimeScalesFactory.getUTC());
-        final FieldPVCoordinates<Binary64> pv0 =
+        final FieldAbsoluteDate<Binary64>
+            date0 =
+            new FieldAbsoluteDate<>(Binary64Field.getInstance(), 2010, 5, 7, 7, 50, Double.NaN,
+                                    TimeScalesFactory.getUTC());
+        final FieldPVCoordinates<Binary64>
+            pv0 =
             propagator.propagateInEcef(date0, propagator.getParameters(Binary64Field.getInstance()));
         // Verify that an infinite loop did not occur
         Assertions.assertTrue(pv0.getPosition().isNaN());
@@ -582,18 +664,18 @@ class GPSPropagatorTest {
     void testIssue949() {
         // GIVEN
         // Setup propagator
-        final GNSSPropagator propagator =
-            new GNSSPropagatorBuilder(almanacs.getFirst(),
-                                      context.getFrames().getEME2000(),
-                                      context.getFrames().getITRF(IERSConventions.IERS_2010, false)).
-                buildPropagator();
+        final GNSSPropagator<GPSAlmanac>
+            propagator =
+            new GNSSPropagator<>(almanacs.getFirst().factory(context.getFrames().getEME2000(), context.getFrames()
+                .getITRF(IERSConventions.IERS_2010, false)));
 
         // Setup additional data provider which use the initial state in its init method
         final AdditionalDataProvider<double[]> additionalDataProvider = TestUtils.getAdditionalProviderWithInit();
         propagator.addAdditionalDataProvider(additionalDataProvider);
 
         // WHEN & THEN
-        Assertions.assertDoesNotThrow(() -> propagator.propagate(new AbsoluteDate()), "No error should have been thrown");
+        Assertions.assertDoesNotThrow(() -> propagator.propagate(new AbsoluteDate()),
+                                      "No error should have been thrown");
 
     }
 

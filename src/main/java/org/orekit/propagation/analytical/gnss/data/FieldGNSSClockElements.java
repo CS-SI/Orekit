@@ -17,6 +17,7 @@
 package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
+import org.orekit.time.FieldGNSSDate;
 import org.orekit.time.FieldTimeStamped;
 
 /** This interface provides the minimal set of clock elements needed by the
@@ -60,15 +61,14 @@ public interface FieldGNSSClockElements<T extends CalculusFieldElement<T>>
      * Get the estimated group delay differential TGD for L1-L2 correction.
      * @return the estimated group delay differential TGD for L1-L2 correction (s)
      */
-    T getTGD();
+    T getTgd();
 
     /**
      * Get the time of clock.
-     * @return the time of clock (s)
-     * @see #getAf0()
-     * @see #getAf1()
-     * @see #getAf2()
+     * @return the time of clock
+     * @since 14.0
      */
-    T getToc();
+    FieldGNSSDate<T> getTimeOfClock();
+
 
 }

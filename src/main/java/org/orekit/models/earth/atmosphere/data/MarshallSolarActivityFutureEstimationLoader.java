@@ -144,21 +144,20 @@ public class MarshallSolarActivityFutureEstimationLoader
 
         // select the groups we want to store
         final int f107Group;
-        final int apGroup;
-        switch (strengthLevel) {
-            case STRONG:
+        final int apGroup = switch (strengthLevel) {
+            case STRONG -> {
                 f107Group = 3;
-                apGroup = 6;
-                break;
-            case AVERAGE:
+                yield 6;
+            }
+            case AVERAGE -> {
                 f107Group = 4;
-                apGroup = 7;
-                break;
-            default:
+                yield 7;
+            }
+            default -> {
                 f107Group = 5;
-                apGroup = 8;
-                break;
-        }
+                yield 8;
+            }
+        };
 
         boolean        inData   = false;
         DateComponents fileDate = null;

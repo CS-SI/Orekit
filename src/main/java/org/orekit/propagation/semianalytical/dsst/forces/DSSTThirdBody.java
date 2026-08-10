@@ -1463,7 +1463,7 @@ public class DSSTThirdBody implements DSSTForceModel {
             //Compute derivatives of c
             if (auxiliaryElements.getEcc() == 0.0) {
                 // we are at a perfectly circular orbit singularity here
-                // we arbitrarily consider the perigee is along the X axis,
+                // we arbitrarily consider the periapsis is along the X axis,
                 // i.e cos(ω + Ω) = h/ecc 1 and sin(ω + Ω) = k/ecc = 0
                 dcdh = auxiliaryElements.getEcc() * dbdh + context.getb();
                 dcdk = auxiliaryElements.getEcc() * dbdk;
@@ -1653,7 +1653,7 @@ public class DSSTThirdBody implements DSSTForceModel {
             //Compute derivatives of c
             if (auxiliaryElements.getEcc().getReal() == 0.0) {
                 // we are at a perfectly circular orbit singularity here
-                // we arbitrarily consider the perigee is along the X axis,
+                // we arbitrarily consider the periapsis is along the X axis,
                 // i.e cos(ω + Ω) = h/ecc 1 and sin(ω + Ω) = k/ecc = 0
                 dcdh = auxiliaryElements.getEcc().multiply(dbdh).add(context.getb());
                 dcdk = auxiliaryElements.getEcc().multiply(dbdk);

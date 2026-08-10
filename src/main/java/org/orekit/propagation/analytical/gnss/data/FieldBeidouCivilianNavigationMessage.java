@@ -17,8 +17,9 @@
 package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
-import org.orekit.gnss.RadioWave;
+import org.orekit.orbits.FieldKeplerianOrbit;
+import org.orekit.time.FieldGNSSDate;
+import org.orekit.time.TimeScales;
 
 import java.util.function.Function;
 
@@ -31,107 +32,130 @@ import java.util.function.Function;
 public class FieldBeidouCivilianNavigationMessage<T extends CalculusFieldElement<T>>
     extends FieldAbstractNavigationMessage<T, BeidouCivilianNavigationMessage> {
 
-    /** Radio wave on which navigation signal is sent. */
-    private final RadioWave radioWave;
+    /** Beidou civilian message type.
+     * @since 14.0
+     */
+    private final BeidouCivilianType beidouType;
 
     /** Issue of Data, Ephemeris. */
-    private int iode;
+    private final int iode;
 
     /** Issue of Data, Clock. */
-    private int iodc;
+    private final int iodc;
 
     /** Inter Signal Delay for B1 CD. */
-    private T iscB1CD;
+    private final T iscB1CD;
 
     /** Inter Signal Delay for B1 CP. */
-    private T iscB1CP;
+    private final T iscB1CP;
 
     /** Inter Signal Delay for B2 AD. */
-    private T iscB2AD;
+    private final T iscB2AD;
 
     /** Signal In Space Accuracy Index (along track and across track). */
-    private int sisaiOe;
+    private final int sisaiOe;
 
     /** Signal In Space Accuracy Index (radial and clock). */
-    private int sisaiOcb;
+    private final int sisaiOcb;
 
     /** Signal In Space Accuracy Index (clock drift accuracy). */
-    private int sisaiOc1;
+    private final int sisaiOc1;
 
     /** Signal In Space Accuracy Index (clock drift rate accuracy). */
-    private int sisaiOc2;
+    private final int sisaiOc2;
 
     /** Signal In Space Monitoring Accuracy Index. */
-    private int sismai;
+    private final int sismai;
 
     /** Health. */
-    private int health;
+    private final int health;
 
     /** Integrity flags. */
-    private int integrityFlags;
+    private final int integrityFlags;
 
     /** B1/B3 Group Delay Differential (s). */
-    private T tgdB1Cp;
+    private final T tgdB1Cp;
 
     /** B2 AP Group Delay Differential (s). */
-    private T tgdB2ap;
+    private final T tgdB2ap;
 
     /** B2B_i / B3I Group Delay Differential (s). */
-    private T tgdB2bI;
+    private final T tgdB2bI;
 
     /** Satellite type. */
-    private BeidouSatelliteType satelliteType;
+    private final BeidouSatelliteType satelliteType;
 
-    /** Constructor from non-field instance.
-     * @param field    field to which elements belong
-     * @param original regular non-field instance
+    /** Creates a new instance.
+     * @param beidouType       Beidou civilian message type
+     * @param angularVelocity  mean angular velocity of the Earth for the GNSS model
+     * @param weeksInCycle     number of weeks in the GNSS cycle
+     * @param timeScales       known time scales
+     * @param type             type (null if not a navigation message)
+     * @param prn              PRN number of the satellite
+     * @param toe              time of ephemeris (<em>must</em> be consistent with {@code orbit})
+     * @param orbit            Keplerian orbit in Earth-frozen frame
+     * @param nonKeplerian     15 non-Keplerian parameters (in the order given by {@link NonKeplerianDriversFactory}
+     * @param tgd              group delay differential TGD for L1-L2 correction
+     * @param toc              time of clock
+     * @param transmissionTime transmission time
+     * @param iode             issue of data, ephemeris
+     * @param iodc             issue of data, clock
+     * @param iscB1CD          inter signal delay for B1 CD
+     * @param iscB1CP          inter signal delay for B1 CP
+     * @param iscB2AD          inter signal delay for B2 AD
+     * @param sisaiOe          signal in space accuracy index (along track and across track)
+     * @param sisaiOcb         signal in space accuracy index (radial and clock)
+     * @param sisaiOc1         signal in space accuracy index (clock drift accuracy)
+     * @param sisaiOc2         signal in space accuracy index (clock drift rate accuracy)
+     * @param sismai           signal in space monitoring accuracy index
+     * @param health           health
+     * @param integrityFlags   integrity flags
+     * @param tgdB1Cp          B1/B3 Group Delay Differential (s)
+     * @param tgdB2ap          B2 AP Group Delay Differential (s)
+     * @param tgdB2bI          B2B_i / B3I Group Delay Differential (s)
+     * @param satelliteType    satellite type
+     * @since 14.0
      */
-    public FieldBeidouCivilianNavigationMessage(final Field<T> field, final BeidouCivilianNavigationMessage original) {
-        super(field, original);
-        this.radioWave = original.getRadioWave();
-        setIODE(original.getIODE());
-        setIODC(original.getIODC());
-        setIscB1CD(field.getZero().newInstance(original.getIscB1CD()));
-        setIscB1CP(field.getZero().newInstance(original.getIscB1CP()));
-        setIscB2AD(field.getZero().newInstance(original.getIscB2AD()));
-        setSisaiOe(original.getSisaiOe());
-        setSisaiOcb(original.getSisaiOcb());
-        setSisaiOc1(original.getSisaiOc1());
-        setSisaiOc2(original.getSisaiOc2());
-        setSismai(original.getSismai());
-        setHealth(original.getHealth());
-        setIntegrityFlags(original.getIntegrityFlags());
-        setTgdB1Cp(field.getZero().newInstance(original.getTgdB1Cp()));
-        setTgdB2ap(field.getZero().newInstance(original.getTgdB2ap()));
-        setTgdB2bI(field.getZero().newInstance(original.getTgdB2bI()));
-        setSatelliteType(original.getSatelliteType());
+    public FieldBeidouCivilianNavigationMessage(final BeidouCivilianType beidouType,
+                                                final double angularVelocity, final int weeksInCycle,
+                                                final TimeScales timeScales, final String type, final int prn,
+                                                final FieldGNSSDate<T> toe, final FieldKeplerianOrbit<T> orbit,
+                                                final T[] nonKeplerian, final T tgd,
+                                                final FieldGNSSDate<T> toc, final FieldGNSSDate<T>  transmissionTime,
+                                                final int iode, final int iodc,
+                                                final T iscB1CD, final T iscB1CP, final T iscB2AD,
+                                                final int sisaiOe, final int sisaiOcb,
+                                                final int sisaiOc1, final int sisaiOc2,
+                                                final int sismai, final int health, final int integrityFlags,
+                                                final T tgdB1Cp, final T tgdB2ap, final T tgdB2bI,
+                                                final BeidouSatelliteType satelliteType) {
+        super(angularVelocity, weeksInCycle, timeScales, type, prn, toe, orbit, nonKeplerian,
+              tgd, toc, transmissionTime);
+        this.beidouType     = beidouType;
+        this.iode           = iode;
+        this.iodc           = iodc;
+        this.iscB1CD        = iscB1CD;
+        this.iscB1CP        = iscB1CP;
+        this.iscB2AD        = iscB2AD;
+        this.sisaiOe        = sisaiOe;
+        this.sisaiOcb       = sisaiOcb;
+        this.sisaiOc1       = sisaiOc1;
+        this.sisaiOc2       = sisaiOc2;
+        this.sismai         = sismai;
+        this.health         = health;
+        this.integrityFlags = integrityFlags;
+        this.tgdB1Cp        = tgdB1Cp;
+        this.tgdB2ap        = tgdB2ap;
+        this.tgdB2bI        = tgdB2bI;
+        this.satelliteType  = satelliteType;
     }
 
-    /** Constructor from different field instance.
-     * @param <V> type of the old field elements
-     * @param original regular non-field instance
-     * @param converter for field elements
+    /** Get the Beidou civilian message type.
+     * @return Beidou civilian message type
+     * @since 14.0
      */
-    public <V extends CalculusFieldElement<V>> FieldBeidouCivilianNavigationMessage(final Function<V, T> converter,
-                                                                                    final FieldBeidouCivilianNavigationMessage<V> original) {
-        super(converter, original);
-        this.radioWave = original.getRadioWave();
-        setIODE(original.getIODE());
-        setIODC(original.getIODC());
-        setIscB1CD(converter.apply(original.getIscB1CD()));
-        setIscB1CP(converter.apply(original.getIscB1CP()));
-        setIscB2AD(converter.apply(original.getIscB2AD()));
-        setSisaiOe(original.getSisaiOe());
-        setSisaiOcb(original.getSisaiOcb());
-        setSisaiOc1(original.getSisaiOc1());
-        setSisaiOc2(original.getSisaiOc2());
-        setSismai(original.getSismai());
-        setHealth(original.getHealth());
-        setIntegrityFlags(original.getIntegrityFlags());
-        setTgdB1Cp(converter.apply(original.getTgdB1Cp()));
-        setTgdB2ap(converter.apply(original.getTgdB2ap()));
-        setTgdB2bI(converter.apply(original.getTgdB2bI()));
-        setSatelliteType(original.getSatelliteType());
+    public BeidouCivilianType getBeidouType() {
+        return beidouType;
     }
 
     /** {@inheritDoc} */
@@ -147,19 +171,33 @@ public class FieldBeidouCivilianNavigationMessage<T extends CalculusFieldElement
     }
 
     /** {@inheritDoc} */
-    @SuppressWarnings("unchecked")
     @Override
-    public <U extends CalculusFieldElement<U>, G extends FieldGnssOrbitalElements<U, BeidouCivilianNavigationMessage>>
-        G changeField(final Function<T, U> converter) {
-        return (G) new FieldBeidouCivilianNavigationMessage<>(converter, this);
-    }
-
-    /**
-     * Getter for radio wave.
-     * @return radio wave on which navigation signal is sent
-     */
-    public RadioWave getRadioWave() {
-        return radioWave;
+    public <U extends CalculusFieldElement<U>>
+        FieldBeidouCivilianNavigationMessage<U> toField(final FieldKeplerianOrbit<U> orbit,
+                                                        final U[] nonKeplerian,
+                                                        final Function<T, U> converter) {
+        return new FieldBeidouCivilianNavigationMessage<>(getBeidouType(),
+                                                          getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
+                                                          getType(), getPrn(),
+                                                          new FieldGNSSDate<>(orbit.getDate().getField(),
+                                                                              getTimeOfEphemeris().getGnssDate()),
+                                                          orbit, nonKeplerian,
+                                                          converter.apply(getTgd()),
+                                                          new FieldGNSSDate<>(orbit.getDate().getField(),
+                                                                              getTimeOfClock().getGnssDate()),
+                                                          new FieldGNSSDate<>(orbit.getDate().getField(),
+                                                                           getTransmissionTime().getGnssDate()),
+                                                          getIODE(), getIODC(),
+                                                          converter.apply(getIscB1CD()),
+                                                          converter.apply(getIscB1CP()),
+                                                          converter.apply(getIscB2AD()),
+                                                          getSisaiOe(), getSisaiOcb(),
+                                                          getSisaiOc1(), getSisaiOc2(),
+                                                          getSismai(), getHealth(), getIntegrityFlags(),
+                                                          converter.apply(getTgdB1Cp()),
+                                                          converter.apply(getTgdB2ap()),
+                                                          converter.apply(getTgdB2bI()),
+                                                          getSatelliteType());
     }
 
     /**
@@ -171,27 +209,11 @@ public class FieldBeidouCivilianNavigationMessage<T extends CalculusFieldElement
     }
 
     /**
-     * Setter for the Issue of Data Ephemeris.
-     * @param value the IODE to set
-     */
-    public void setIODE(final int value) {
-        this.iode = value;
-    }
-
-    /**
      * Getter for the Issue Of Data Clock (IODC).
      * @return the Issue Of Data Clock (IODC)
      */
     public int getIODC() {
         return iodc;
-    }
-
-    /**
-     * Setter for the Issue of Data Clock.
-     * @param value the IODC to set
-     */
-    public void setIODC(final int value) {
-        this.iodc = value;
     }
 
     /**
@@ -203,27 +225,11 @@ public class FieldBeidouCivilianNavigationMessage<T extends CalculusFieldElement
     }
 
     /**
-     * Setter for inter Signal Delay for B1 CD.
-     * @param delay delay to set
-     */
-    public void setIscB1CD(final T delay) {
-        this.iscB1CD = delay;
-    }
-
-    /**
      * Getter for inter Signal Delay for B2 AD.
      * @return inter signal delay
      */
     public T getIscB2AD() {
         return iscB2AD;
-    }
-
-    /**
-     * Setter for inter Signal Delay for B2 AD.
-     * @param delay delay to set
-     */
-    public void setIscB2AD(final T delay) {
-        this.iscB2AD = delay;
     }
 
     /**
@@ -235,27 +241,11 @@ public class FieldBeidouCivilianNavigationMessage<T extends CalculusFieldElement
     }
 
     /**
-     * Setter for inter Signal Delay for B1 CP.
-     * @param delay delay to set
-     */
-    public void setIscB1CP(final T delay) {
-        this.iscB1CP = delay;
-    }
-
-    /**
      * Getter for Signal In Space Accuracy Index (along track and across track).
      * @return Signal In Space Accuracy Index (along track and across track)
      */
     public int getSisaiOe() {
         return sisaiOe;
-    }
-
-    /**
-     * Setter for Signal In Space Accuracy Index (along track and across track).
-     * @param sisaiOe Signal In Space Accuracy Index (along track and across track)
-     */
-    public void setSisaiOe(final int sisaiOe) {
-        this.sisaiOe = sisaiOe;
     }
 
     /**
@@ -267,27 +257,11 @@ public class FieldBeidouCivilianNavigationMessage<T extends CalculusFieldElement
     }
 
     /**
-     * Setter for Signal In Space Accuracy Index (radial and clock).
-     * @param sisaiOcb Signal In Space Accuracy Index (radial and clock)
-     */
-    public void setSisaiOcb(final int sisaiOcb) {
-        this.sisaiOcb = sisaiOcb;
-    }
-
-    /**
      * Getter for Signal In Space Accuracy Index (clock drift accuracy).
      * @return Signal In Space Accuracy Index (clock drift accuracy)
      */
     public int getSisaiOc1() {
         return sisaiOc1;
-    }
-
-    /**
-     * Setter for Signal In Space Accuracy Index (clock drift accuracy).
-     * @param sisaiOc1 Signal In Space Accuracy Index (clock drift accuracy)
-     */
-    public void setSisaiOc1(final int sisaiOc1) {
-        this.sisaiOc1 = sisaiOc1;
     }
 
     /**
@@ -299,27 +273,11 @@ public class FieldBeidouCivilianNavigationMessage<T extends CalculusFieldElement
     }
 
     /**
-     * Setter for Signal In Space Accuracy Index (clock drift rate accuracy).
-     * @param sisaiOc2 Signal In Space Accuracy Index (clock drift rate accuracy)
-     */
-    public void setSisaiOc2(final int sisaiOc2) {
-        this.sisaiOc2 = sisaiOc2;
-    }
-
-    /**
      * Getter for Signal In Space Monitoring Accuracy Index.
      * @return Signal In Space Monitoring Accuracy Index
      */
     public int getSismai() {
         return sismai;
-    }
-
-    /**
-     * Setter for Signal In Space Monitoring Accuracy Index.
-     * @param sismai Signal In Space Monitoring Accuracy Index
-     */
-    public void setSismai(final int sismai) {
-        this.sismai = sismai;
     }
 
     /**
@@ -331,27 +289,11 @@ public class FieldBeidouCivilianNavigationMessage<T extends CalculusFieldElement
     }
 
     /**
-     * Setter for health.
-     * @param health health
-     */
-    public void setHealth(final int health) {
-        this.health = health;
-    }
-
-    /**
      * Getter for B1C integrity flags.
      * @return B1C integrity flags
      */
     public int getIntegrityFlags() {
         return integrityFlags;
-    }
-
-    /**
-     * Setter for B1C integrity flags.
-     * @param integrityFlags integrity flags
-     */
-    public void setIntegrityFlags(final int integrityFlags) {
-        this.integrityFlags = integrityFlags;
     }
 
     /**
@@ -363,27 +305,11 @@ public class FieldBeidouCivilianNavigationMessage<T extends CalculusFieldElement
     }
 
     /**
-     * Setter for B1/B3 Group Delay Differential (s).
-     * @param tgdB1Cp B1/B3 Group Delay Differential (s)
-     */
-    public void setTgdB1Cp(final T tgdB1Cp) {
-        this.tgdB1Cp = tgdB1Cp;
-    }
-
-    /**
      * Getter for B2 AP Group Delay Differential (s).
      * @return B2 AP Group Delay Differential (s)
      */
     public T getTgdB2ap() {
         return tgdB2ap;
-    }
-
-    /**
-     * Setter for B2 AP Group Delay Differential (s).
-     * @param tgdB2ap B2 AP Group Delay Differential (s)
-     */
-    public void setTgdB2ap(final T tgdB2ap) {
-        this.tgdB2ap = tgdB2ap;
     }
 
     /**
@@ -395,27 +321,11 @@ public class FieldBeidouCivilianNavigationMessage<T extends CalculusFieldElement
     }
 
     /**
-     * Setter for B2B_i / B3I Group Delay Differential (s).
-     * @param tgdB2bI B2B_i / B3I Group Delay Differential (s)
-     */
-    public void setTgdB2bI(final T tgdB2bI) {
-        this.tgdB2bI = tgdB2bI;
-    }
-
-    /**
      * Getter for satellite type.
      * @return satellite type
      */
     public BeidouSatelliteType getSatelliteType() {
         return satelliteType;
-    }
-
-    /**
-     * Setter for satellite type.
-     * @param satelliteType satellite type
-     */
-    public void setSatelliteType(final BeidouSatelliteType satelliteType) {
-        this.satelliteType = satelliteType;
     }
 
 }

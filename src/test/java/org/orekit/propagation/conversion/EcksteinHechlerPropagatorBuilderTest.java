@@ -53,8 +53,8 @@ public class EcksteinHechlerPropagatorBuilderTest {
 
         final UnnormalizedSphericalHarmonicsProvider harmonicsProvider = GravityFieldFactory.getUnnormalizedProvider(6, 0);
 
-        final EcksteinHechlerPropagatorBuilder builder = new EcksteinHechlerPropagatorBuilder(orbit, harmonicsProvider,
-                PositionAngleType.MEAN, 10.0);
+        final EcksteinHechlerPropagatorBuilder builder =
+            new EcksteinHechlerPropagatorBuilder(orbit.factory(PositionAngleType.MEAN, 10.0), harmonicsProvider);
 
         // When
         final EcksteinHechlerPropagatorBuilder copyBuilder = builder.clone();
@@ -79,8 +79,8 @@ public class EcksteinHechlerPropagatorBuilderTest {
 
         final UnnormalizedSphericalHarmonicsProvider harmonicsProvider = GravityFieldFactory.getUnnormalizedProvider(6, 0);
 
-        final EcksteinHechlerPropagatorBuilder builder = new EcksteinHechlerPropagatorBuilder(orbit, harmonicsProvider,
-                                                                                              PositionAngleType.MEAN, 10.0);
+        final EcksteinHechlerPropagatorBuilder builder =
+            new EcksteinHechlerPropagatorBuilder(orbit.factory(PositionAngleType.MEAN, 10.0), harmonicsProvider);
 
         // When
         final EcksteinHechlerPropagatorBuilder copyBuilder = builder.clone();
@@ -92,7 +92,7 @@ public class EcksteinHechlerPropagatorBuilderTest {
         // Then
         // Original builder should still have original orbit
         final PVCoordinates originalPv = orbit.getPVCoordinates();
-        final PVCoordinates initialPv = builder.createInitialOrbit().getPVCoordinates();
+        final PVCoordinates initialPv = builder.getOrbitalParameterFactory().createFromDrivers().getPVCoordinates();
         final double dP = originalPv.getPosition().distance(initialPv.getPosition());
         final double dV = originalPv.getVelocity().distance(initialPv.getVelocity());
         final double dA = originalPv.getAcceleration().distance(initialPv.getAcceleration());

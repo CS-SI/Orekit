@@ -17,19 +17,23 @@
 package org.orekit.propagation.conversion;
 
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngleType;
+import org.orekit.orbits.OrbitalParameterFactory;
+import org.orekit.orbits.OrbitalParameters;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
 
 /**
  * Abstract class for builders for integrator-based propagators.
  * @param <T> field type
+ * @param <O> type of the orbital parameters
+ * @param <F> type of the orbital parameters factory
  * @since 13.0
  * @author Romain Serra
  */
-public abstract class AbstractIntegratedPropagatorBuilder<T extends AbstractIntegratedPropagator>
-        extends AbstractPropagatorBuilder<T> {
+public abstract class AbstractIntegratedPropagatorBuilder<T extends AbstractIntegratedPropagator,
+                                                          O extends OrbitalParameters,
+                                                          F extends OrbitalParameterFactory<O>>
+    extends AbstractPropagatorBuilder<T, O, F> {
 
     /** First order integrator builder for propagation. */
     private final ODEIntegratorBuilder builder;
@@ -38,20 +42,17 @@ public abstract class AbstractIntegratedPropagatorBuilder<T extends AbstractInte
     private final PropagationType propagationType;
 
     /** Build a new instance.
-     * @param templateOrbit reference orbit from which real orbits will be built
+     * @param factory factory for initial orbit
      * @param builder integrator builder
-     * @param positionAngleType position angle type
-     * @param positionScale scaling factor used for orbital parameters normalization
-     * (typically set to the expected standard deviation of the position)
      * @param propagationType type of the orbit used for the propagation (mean or osculating)
      * @param attitudeProvider attitude law.
      * @param mass initial mass
      */
-    protected AbstractIntegratedPropagatorBuilder(final Orbit templateOrbit, final ODEIntegratorBuilder builder,
-                                                  final PositionAngleType positionAngleType, final double positionScale,
+    protected AbstractIntegratedPropagatorBuilder(final F factory,
+                                                  final ODEIntegratorBuilder builder,
                                                   final PropagationType propagationType,
                                                   final AttitudeProvider attitudeProvider, final double mass) {
-        super(templateOrbit, positionAngleType, positionScale, true, attitudeProvider, mass);
+        super(factory, true, attitudeProvider, mass);
         this.builder = builder;
         this.propagationType = propagationType;
     }

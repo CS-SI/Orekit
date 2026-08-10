@@ -168,7 +168,7 @@ public class RinexNavigation extends RinexFile<RinexNavigationHeader> {
      * @since 12.0
      */
     public void addGPSLegacyNavigationMessage(final GPSLegacyNavigationMessage message) {
-        final int    gpsPRN = message.getPRN();
+        final int    gpsPRN = message.getPrn();
         final String prnString = gpsPRN < 10 ? "0" + gpsPRN : String.valueOf(gpsPRN);
         final String satId = SatelliteSystem.GPS.getKey() + prnString;
         gpsLegacyData.putIfAbsent(satId, new ArrayList<>());
@@ -200,7 +200,7 @@ public class RinexNavigation extends RinexFile<RinexNavigationHeader> {
      * @since 13.0
      */
     public void addGPSCivilianNavigationMessage(final GPSCivilianNavigationMessage message) {
-        final int    gpsPRN = message.getPRN();
+        final int    gpsPRN = message.getPrn();
         final String prnString = gpsPRN < 10 ? "0" + gpsPRN : String.valueOf(gpsPRN);
         final String satId = SatelliteSystem.GPS.getKey() + prnString;
         gpsCivilianData.putIfAbsent(satId, new ArrayList<>());
@@ -229,7 +229,7 @@ public class RinexNavigation extends RinexFile<RinexNavigationHeader> {
      * @param message message to add
      */
     public void addGalileoNavigationMessage(final GalileoNavigationMessage message) {
-        final int    galPRN = message.getPRN();
+        final int    galPRN = message.getPrn();
         final String prnString = galPRN < 10 ? "0" + galPRN : String.valueOf(galPRN);
         final String satId = SatelliteSystem.GALILEO.getKey() + prnString;
         galileoData.putIfAbsent(satId, new ArrayList<>());
@@ -261,7 +261,7 @@ public class RinexNavigation extends RinexFile<RinexNavigationHeader> {
      * @since 12.0
      */
     public void addBeidouLegacyNavigationMessage(final BeidouLegacyNavigationMessage message) {
-        final int    bdtPRN = message.getPRN();
+        final int    bdtPRN = message.getPrn();
         final String prnString = bdtPRN < 10 ? "0" + bdtPRN : String.valueOf(bdtPRN);
         final String satId = SatelliteSystem.BEIDOU.getKey() + prnString;
         beidouLegacyData.putIfAbsent(satId, new ArrayList<>());
@@ -293,7 +293,7 @@ public class RinexNavigation extends RinexFile<RinexNavigationHeader> {
      * @since 12.0
      */
     public void addBeidouCivilianNavigationMessage(final BeidouCivilianNavigationMessage message) {
-        final int    bdtPRN = message.getPRN();
+        final int    bdtPRN = message.getPrn();
         final String prnString = bdtPRN < 10 ? "0" + bdtPRN : String.valueOf(bdtPRN);
         final String satId = SatelliteSystem.BEIDOU.getKey() + prnString;
         beidouCivilianData.putIfAbsent(satId, new ArrayList<>());
@@ -325,7 +325,7 @@ public class RinexNavigation extends RinexFile<RinexNavigationHeader> {
      * @since 12.0
      */
     public void addQZSSLegacyNavigationMessage(final QZSSLegacyNavigationMessage message) {
-        final int    qzsPRN = message.getPRN();
+        final int    qzsPRN = message.getPrn();
         final String prnString = qzsPRN < 10 ? "0" + qzsPRN : String.valueOf(qzsPRN);
         final String satId = SatelliteSystem.QZSS.getKey() + prnString;
         qzssLegacyData.putIfAbsent(satId, new ArrayList<>());
@@ -357,7 +357,7 @@ public class RinexNavigation extends RinexFile<RinexNavigationHeader> {
      * @since 12.0
      */
     public void addQZSSCivilianNavigationMessage(final QZSSCivilianNavigationMessage message) {
-        final int    qzsPRN = message.getPRN();
+        final int    qzsPRN = message.getPrn();
         final String prnString = qzsPRN < 10 ? "0" + qzsPRN : String.valueOf(qzsPRN);
         final String satId = SatelliteSystem.QZSS.getKey() + prnString;
         qzssCivilianData.putIfAbsent(satId, new ArrayList<>());
@@ -386,7 +386,7 @@ public class RinexNavigation extends RinexFile<RinexNavigationHeader> {
      * @param message message to add
      */
     public void addNavICLegacyNavigationMessage(final NavICLegacyNavigationMessage message) {
-        final int    irsPRN = message.getPRN();
+        final int    irsPRN = message.getPrn();
         final String prnString = irsPRN < 10 ? "0" + irsPRN : String.valueOf(irsPRN);
         final String satId = SatelliteSystem.NAVIC.getKey() + prnString;
         navicLegacyData.putIfAbsent(satId, new ArrayList<>());
@@ -415,7 +415,7 @@ public class RinexNavigation extends RinexFile<RinexNavigationHeader> {
      * @param message message to add
      */
     public void addNavICL1NVNavigationMessage(final NavICL1NvNavigationMessage message) {
-        final int    irsPRN = message.getPRN();
+        final int    irsPRN = message.getPrn();
         final String prnString = irsPRN < 10 ? "0" + irsPRN : String.valueOf(irsPRN);
         final String satId = SatelliteSystem.NAVIC.getKey() + prnString;
         navicL1NVData.putIfAbsent(satId, new ArrayList<>());

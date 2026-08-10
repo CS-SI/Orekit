@@ -882,7 +882,7 @@ public class OemParserTest {
                 if ("TOD".equals(orientation.getName()) && null == epoch) {
                     return myTod;
                 }
-                throw new IllegalArgumentException("" + orientation + " " + epoch);
+                throw new IllegalArgumentException(orientation + " " + epoch);
             }
 
             @Override

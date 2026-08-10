@@ -768,7 +768,8 @@ public class CdmParser extends AbstractConstituentParser<CdmHeader, Cdm, CdmPars
         anticipateNext(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processMetadataToken);
 
         if (COMMENT.equals(token.getName())) {
-            return token.getType() == TokenType.ENTRY ? userDefinedBlock.addComment(token.getContentAsNormalizedString()) : true;
+            return token.getType() != TokenType.ENTRY ||
+                   userDefinedBlock.addComment(token.getContentAsNormalizedString());
         } else if (token.getName().startsWith(UserDefined.USER_DEFINED_PREFIX)) {
             if (token.getType() == TokenType.ENTRY) {
                 userDefinedBlock.addEntry(token.getName().substring(UserDefined.USER_DEFINED_PREFIX.length()),

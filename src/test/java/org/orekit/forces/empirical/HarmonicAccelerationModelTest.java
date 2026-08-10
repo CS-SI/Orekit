@@ -414,9 +414,8 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
 
         // set up an estimator to retrieve the maneuver as several harmonic accelerations in inertial frame
         final NumericalPropagatorBuilder propagatorBuilder =
-                        new NumericalPropagatorBuilder(orbit,
-                                                       new DormandPrince853IntegratorBuilder(minStep, maxStep, dP),
-                                                       PositionAngleType.TRUE, dP);
+                        new NumericalPropagatorBuilder(orbit.factory(PositionAngleType.TRUE, dP),
+                                                       new DormandPrince853IntegratorBuilder(minStep, maxStep, dP));
         propagatorBuilder.addForceModel(new ParametricAcceleration(Vector3D.PLUS_I, true,
                                                                    new HarmonicAccelerationModel("X1", null, period, 1)));
         propagatorBuilder.addForceModel(new ParametricAcceleration(Vector3D.PLUS_J, true,

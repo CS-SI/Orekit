@@ -45,7 +45,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  *     hy = tan(i/2) sin(Ω)
  *     lv = v + ω + Ω
  *   </pre>
- * where ω stands for the Perigee Argument and Ω stands for the
+ * where ω stands for the Periapsis Argument and Ω stands for the
  * Right Ascension of the Ascending Node.
  *
  * <p>
@@ -404,6 +404,13 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased<Equino
     @Override
     public OrbitType getType() {
         return OrbitType.EQUINOCTIAL;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public AbstractOrbitFactory<EquinoctialOrbit> factory(final PositionAngleType positionAngleType,
+                                                          final double positionScale) {
+        return new EquinoctialOrbitFactory(this, positionScale, positionAngleType);
     }
 
     /** {@inheritDoc} */

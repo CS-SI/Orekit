@@ -33,7 +33,7 @@ public abstract class AbstractEphemerisMessage implements TimeStamped, Navigatio
     private AbsoluteDate date;
 
     /** Time of clock epoch. */
-    private AbsoluteDate epochToc;
+    private AbsoluteDate toc;
 
     /** PRN number of the satellite. */
     private int prn;
@@ -93,16 +93,16 @@ public abstract class AbstractEphemerisMessage implements TimeStamped, Navigatio
      * Getter for the time of clock epoch.
      * @return the time of clock epoch
      */
-    public AbsoluteDate getEpochToc() {
-        return epochToc;
+    public AbsoluteDate getToc() {
+        return toc;
     }
 
     /**
      * Setter for the time of clock epoch.
-     * @param epochToc the epoch to set
+     * @param toc the epoch to set
      */
-    public void setEpochToc(final AbsoluteDate epochToc) {
-        this.epochToc = epochToc;
+    public void setToc(final AbsoluteDate toc) {
+        this.toc = toc;
     }
 
     /**

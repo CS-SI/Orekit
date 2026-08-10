@@ -309,7 +309,7 @@ public class CPFWriterTest {
          double a = 24396159;                     // semi major axis in meters
          double e = 0.72831215;                   // eccentricity
          double i = FastMath.toRadians(7);        // inclination
-         double omega = FastMath.toRadians(180);  // perigee argument
+         double omega = FastMath.toRadians(180);  // periapsis argument
          double raan = FastMath.toRadians(261);   // right ascension of ascending node
          double lM = 0;                           // mean anomaly
 

@@ -139,7 +139,6 @@ public class SemiAnalyticalKalmanEstimatorTest {
 
         // Create initial orbit and DSST propagator builder
         final OrbitType     orbitType     = OrbitType.EQUINOCTIAL;
-        final PositionAngleType positionAngleType = PositionAngleType.MEAN;
         final boolean       perfectStart  = true;
         final double        minStep       = 120.0;
         final double        maxStep       = 1200.0;
@@ -200,8 +199,7 @@ public class SemiAnalyticalKalmanEstimatorTest {
         final double[] expectedSigmasVel = {0.0, 0.0, 0.0};
         final double   sigmaVelEps       = 1e-15;
         EstimationTestUtils.checkExtendedSemiAnalyticalKalmanFit(false, kalman, measurements,
-                                                                 refOrbit, positionAngleType,
-                                                                 expectedDeltaPos, posEps,
+                                                                 refOrbit, expectedDeltaPos, posEps,
                                                                  expectedDeltaVel, velEps,
                                                                  expectedSigmasPos, sigmaPosEps,
                                                                  expectedSigmasVel, sigmaVelEps);
@@ -232,7 +230,6 @@ public class SemiAnalyticalKalmanEstimatorTest {
 
         // Create initial orbit and propagator builder
         final OrbitType     orbitType     = OrbitType.EQUINOCTIAL;
-        final PositionAngleType positionAngleType = PositionAngleType.MEAN;
         final boolean       perfectStart  = true;
         final double        minStep       = 120.0;
         final double        maxStep       = 1200.0;
@@ -261,7 +258,8 @@ public class SemiAnalyticalKalmanEstimatorTest {
         final Orbit refOrbit = referencePropagator.
                         propagate(measurements.getLast().getDate()).getOrbit();
 
-        ParameterDriver aDriver = propagatorBuilder.getOrbitalParametersDrivers().getDrivers().getFirst();
+        ParameterDriver aDriver =
+            propagatorBuilder.getOrbitalParameterFactory().getOrbitalParametersDrivers().getDrivers().getFirst();
         aDriver.setValue(aDriver.getValue() + 1.2);
 
         // Cartesian covariance matrix initialization
@@ -299,8 +297,7 @@ public class SemiAnalyticalKalmanEstimatorTest {
         final double[] expectedSigmasVel = {1.485500E-4, 6.60585E-5, 1.439015E-4};
         final double   sigmaVelEps       = 1e-10;
         EstimationTestUtils.checkExtendedSemiAnalyticalKalmanFit(false, kalman, measurements,
-                                                                 refOrbit, positionAngleType,
-                                                                 expectedDeltaPos, posEps,
+                                                                 refOrbit, expectedDeltaPos, posEps,
                                                                  expectedDeltaVel, velEps,
                                                                  expectedSigmasPos, sigmaPosEps,
                                                                  expectedSigmasVel, sigmaVelEps);
@@ -332,7 +329,6 @@ public class SemiAnalyticalKalmanEstimatorTest {
 
         // Create initial orbit and propagator builder
         final OrbitType     orbitType     = OrbitType.EQUINOCTIAL;
-        final PositionAngleType positionAngleType = PositionAngleType.MEAN;
         final boolean       perfectStart  = true;
         final double        minStep       = 120.0;
         final double        maxStep       = 1200.0;
@@ -371,7 +367,8 @@ public class SemiAnalyticalKalmanEstimatorTest {
         final Orbit refOrbit = referencePropagator.
                         propagate(measurements.getLast().getDate()).getOrbit();
 
-        ParameterDriver aDriver = propagatorBuilder.getOrbitalParametersDrivers().getDrivers().getFirst();
+        ParameterDriver aDriver =
+            propagatorBuilder.getOrbitalParameterFactory().getOrbitalParametersDrivers().getDrivers().getFirst();
         aDriver.setValue(aDriver.getValue() + 1.2);
 
         // Cartesian covariance matrix initialization
@@ -409,8 +406,7 @@ public class SemiAnalyticalKalmanEstimatorTest {
         final double[] expectedSigmasVel = {1.485497E-4, 6.60586E-5, 1.439015E-4};
         final double   sigmaVelEps       = 1e-10;
         EstimationTestUtils.checkExtendedSemiAnalyticalKalmanFit(false, kalman, measurements,
-                                                                 refOrbit, positionAngleType,
-                                                                 expectedDeltaPos, posEps,
+                                                                 refOrbit, expectedDeltaPos, posEps,
                                                                  expectedDeltaVel, velEps,
                                                                  expectedSigmasPos, sigmaPosEps,
                                                                  expectedSigmasVel, sigmaVelEps);
@@ -472,7 +468,6 @@ public class SemiAnalyticalKalmanEstimatorTest {
 
         // Create initial orbit and propagator builder
         final OrbitType     orbitType     = OrbitType.EQUINOCTIAL;
-        final PositionAngleType positionAngleType = PositionAngleType.MEAN;
         final boolean       perfectStart  = true;
         final double        minStep       = 120.0;
         final double        maxStep       = 1200.0;
@@ -546,8 +541,7 @@ public class SemiAnalyticalKalmanEstimatorTest {
         final double[] expectedSigmasVel = {1.485500E-4, 6.60585E-5, 1.439015E-4};
         final double   sigmaVelEps       = 1e-10;
         EstimationTestUtils.checkExtendedSemiAnalyticalKalmanFit(false, kalman, measurements,
-                                                                 refOrbit, positionAngleType,
-                                                                 expectedDeltaPos, posEps,
+                                                                 refOrbit, expectedDeltaPos, posEps,
                                                                  expectedDeltaVel, velEps,
                                                                  expectedSigmasPos, sigmaPosEps,
                                                                  expectedSigmasVel, sigmaVelEps);
@@ -571,7 +565,6 @@ public class SemiAnalyticalKalmanEstimatorTest {
 
         // Create initial orbit and propagator builder
         final OrbitType     orbitType     = OrbitType.EQUINOCTIAL;
-        final PositionAngleType positionAngleType = PositionAngleType.MEAN;
         final boolean       perfectStart  = true;
         final double        minStep       = 120.0;
         final double        maxStep       = 1200.0;
@@ -661,8 +654,7 @@ public class SemiAnalyticalKalmanEstimatorTest {
         final double[] expectedSigmasVel = {1.485500E-4, 6.60585E-5, 1.439015E-4};
         final double   sigmaVelEps       = 1e-10;
         EstimationTestUtils.checkExtendedSemiAnalyticalKalmanFit(false, kalman, measurements,
-                                                                 refOrbit, positionAngleType,
-                                                                 expectedDeltaPos, posEps,
+                                                                 refOrbit, expectedDeltaPos, posEps,
                                                                  expectedDeltaVel, velEps,
                                                                  expectedSigmasPos, sigmaPosEps,
                                                                  expectedSigmasVel, sigmaVelEps);

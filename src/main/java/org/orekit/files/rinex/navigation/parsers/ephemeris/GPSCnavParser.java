@@ -19,20 +19,23 @@ package org.orekit.files.rinex.navigation.parsers.ephemeris;
 import org.orekit.files.rinex.navigation.RinexNavigation;
 import org.orekit.files.rinex.navigation.parsers.ParseInfo;
 import org.orekit.propagation.analytical.gnss.data.GPSCivilianNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.GPSCivilianNavigationMessageFactory;
 
 /** Parser for GPS civilian.
  * @author Bryan Cazabonne
  * @author Luc Maisonobe
  * @since 14.0
  */
-public class GPSCnavParser extends CivilianNavigationParser<GPSCivilianNavigationMessage> {
+public class GPSCnavParser
+    extends CivilianLevel2NavigationParser<GPSCivilianNavigationMessage, GPSCivilianNavigationMessageFactory> {
 
     /** Simple constructor.
      * @param parseInfo container for parsing data
-     * @param message container for navigation message
+     * @param factory factory for navigation message
      */
-    public GPSCnavParser(final ParseInfo parseInfo, final GPSCivilianNavigationMessage message) {
-        super(parseInfo, message);
+    public GPSCnavParser(final ParseInfo parseInfo,
+                         final GPSCivilianNavigationMessageFactory factory) {
+        super(parseInfo, factory);
     }
 
     /** {@inheritDoc} */

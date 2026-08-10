@@ -123,8 +123,8 @@ public class NumericalPropagationHarvesterTest {
         propulsion.getParametersDrivers().getFirst().setSelected(true);
         List<String> columnsNames = harvester.getJacobiansColumnsNames();
         Assertions.assertEquals(2, columnsNames.size());
-        Assertions.assertEquals("SpanABM-" + BasicConstantThrustPropulsionModel.THRUST + Integer.toString(0), columnsNames.getFirst());
-        Assertions.assertEquals("Spanapogee_boost_STOP" + Integer.toString(0), columnsNames.get(1));
+        Assertions.assertEquals("SpanABM-" + BasicConstantThrustPropulsionModel.THRUST + 0, columnsNames.getFirst());
+        Assertions.assertEquals("Spanapogee_boost_STOP" + 0, columnsNames.get(1));
 
     }
 
@@ -144,6 +144,7 @@ public class NumericalPropagationHarvesterTest {
         Assertions.assertEquals(deltaId, stm.subtract(identity7).getNorm1(), 1.0e-3);
         Assertions.assertEquals(type, harvester.getOrbitType());
         Assertions.assertEquals(angle, harvester.getPositionAngleType());
+        Assertions.assertNull(harvester.getStateJacobianVsBuilderParameters(s));
     }
 
     @BeforeEach

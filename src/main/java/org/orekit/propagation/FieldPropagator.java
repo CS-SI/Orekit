@@ -132,8 +132,20 @@ public interface FieldPropagator<T extends CalculusFieldElement<T>> extends Fiel
      */
     FieldEphemerisGenerator<T> getEphemerisGenerator();
 
+    /** Get the base initial state without additional data.
+     * @return base initial state without additional data
+     * @see #getInitialState()
+     * @since 14.0
+     */
+    FieldSpacecraftState<T> getBaseInitialState();
+
     /** Get the propagator initial state.
-     * @return initial state
+     * <p>
+     * If additional data has been {@link #addAdditionalDataProvider(FieldAdditionalDataProvider) added}
+     * to the propagator, the initial state returned here includes it.
+     * </p>
+     * @return initial state, ultimately with additional data
+     * @see #getBaseInitialState()
      */
     FieldSpacecraftState<T> getInitialState();
 

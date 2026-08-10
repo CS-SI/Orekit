@@ -222,7 +222,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
 
         // search for next events that may occur during the step
         final int orderingSign = interpolator.isForward() ? +1 : -1;
-        final Queue<EventState<?>> occurringEvents = new PriorityQueue<>(new Comparator<EventState<?>>() {
+        final Queue<EventState<?>> occurringEvents = new PriorityQueue<>(new Comparator<>() {
             /** {@inheritDoc} */
             @Override
             public int compare(final EventState<?> es0, final EventState<?> es1) {

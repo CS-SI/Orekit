@@ -18,6 +18,7 @@ package org.orekit.propagation.analytical.tle;
 
 import org.hipparchus.linear.RealMatrix;
 import org.orekit.orbits.PositionAngleType;
+import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.AbstractAnalyticalGradientConverter;
 import org.orekit.propagation.analytical.AbstractAnalyticalMatricesHarvester;
 import org.orekit.utils.DoubleArrayDictionary;
@@ -41,16 +42,52 @@ class TLEHarvester extends AbstractAnalyticalMatricesHarvester {
      * </p>
      * @param propagator propagator bound to this harvester
      * @param stmName State Transition Matrix state name
-     * @param initialStm initial State Transition Matrix ∂Y/∂Y₀,
-     * if null (which is the most frequent case), assumed to be 6x6 identity
+     * @param initialStm initial State Transition Matrix ∂C/∂K₀,
+     *                   if null (which is the most frequent case), assumed to be just the
+     *                   conversion from Keplerian type to Cartesian type at t₀
      * @param initialJacobianColumns initial columns of the Jacobians matrix with respect to parameters,
      * if null or if some selected parameters are missing from the dictionary, the corresponding
      * initial column is assumed to be 0
      */
     TLEHarvester(final TLEPropagator propagator, final String stmName,
                  final RealMatrix initialStm, final DoubleArrayDictionary initialJacobianColumns) {
-        super(propagator, stmName, initialStm, initialJacobianColumns);
+        super(propagator);
         this.propagator = propagator;
+        setInitialStm(stmName, initialStm);
+        setInitialJacobianColumns(initialJacobianColumns);
+    }
+
+    /** {@inheritDoc}
+     * <p>
+     * As the propagated state is Cartesian for TLE propagators, this is the Jacobian of the
+     * Cartesian coordinates with respect to the TLE mean elements representing the state.
+     * </p>
+     */
+    @Override
+    public RealMatrix getStateJacobianVsBuilderParameters(final SpacecraftState state) {
+        return propagator.getTleGenerationAlgorithm().getJacobianWrtParameters(builderParameters(state));
+    }
+
+    /** Get the TLE whose orbital elements are the builder parameters representing a state.
+     * @param state state to represent
+     * @return TLE holding the mean elements that represent the given state
+     */
+    private TLE builderParameters(final SpacecraftState state) {
+
+        final TLE current = propagator.getTLE();
+
+        if (state.getDate().isEqualTo(current.getDate())) {
+            // the TLE held by the propagator already is the exact representation of the
+            // state at its own epoch, so we use it as is rather than rebuilding it, which
+            // would only add the convergence noise of the osculating to mean iterations
+            return current;
+        }
+
+        // rebuild the mean elements matching the state, keeping the identification data
+        // (satellite number, launch data, B*, …) of the TLE held by the propagator
+        // FIXME: not sure about the performance of this one
+        return propagator.getTleGenerationAlgorithm().generate(state, current);
+
     }
 
     /** {@inheritDoc} */

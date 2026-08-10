@@ -40,11 +40,11 @@ public class SBASOrbitalElementsTest {
             public double getZ()          { return 0; }
             public double getZDot()       { return 0; }
             public double getZDotDot()    { return 0; }
+            public AbsoluteDate getToc()  { return AbsoluteDate.ARBITRARY_EPOCH; }
         };
         Assertions.assertEquals(0,   soe.getIODN());
         Assertions.assertEquals(0.0, soe.getAGf0(), Precision.SAFE_MIN);
         Assertions.assertEquals(0.0, soe.getAGf1(), Precision.SAFE_MIN);
-        Assertions.assertEquals(0.0, soe.getToc(), Precision.SAFE_MIN);
 
     }
 

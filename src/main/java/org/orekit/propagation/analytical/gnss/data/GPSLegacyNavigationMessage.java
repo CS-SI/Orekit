@@ -17,9 +17,14 @@
 package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
-import org.orekit.gnss.SatelliteSystem;
+import org.orekit.frames.Frame;
+import org.orekit.orbits.FieldKeplerianOrbit;
+import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.time.FieldGNSSDate;
+import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
+
+import java.util.function.DoubleFunction;
 
 /**
  * Container for data contained in a GPS navigation message.
@@ -34,16 +39,52 @@ public class GPSLegacyNavigationMessage extends LegacyNavigationMessage<GPSLegac
     public static final String LNAV = "LNAV";
 
     /** Constructor.
-     * @param timeScales known time scales
-     * @param system     satellite system to consider for interpreting week number
-     *                   (may be different from real system, for example in Rinex nav, weeks
-     *                   are always according to GPS)
-     * @param type       message type
+     * @param timeScales       known time scales
+     * @param type             message type
+     * @param prn              PRN number of the satellite
+     * @param toe              time of ephemeris (<em>must</em> be consistent with {@code orbit})
+     * @param orbit            Keplerian orbit in Earth-frozen frame
+     * @param aDot             change rate in semi-major axis (m/s)
+     * @param deltaN0          delta of satellite mean motion
+     * @param deltaN0Dot       change rate in Δn₀
+     * @param iDot             inclination rate (rad/s)
+     * @param omegaDot         rate of right ascension (rad/s)
+     * @param cuc              amplitude of the cosine harmonic correction term to the argument of latitude
+     * @param cus              amplitude of the sine harmonic correction term to the argument of latitude
+     * @param crc              amplitude of the cosine harmonic correction term to the orbit radius
+     * @param crs              amplitude of the sine harmonic correction term to the orbit radius
+     * @param cic              amplitude of the cosine harmonic correction term to the inclination
+     * @param cis              amplitude of the sine harmonic correction term to the inclination
+     * @param af0              zero-th order clock correction (s)
+     * @param af1              first order clock correction (s/s)
+     * @param af2              second order clock correction (s/s²)
+     * @param tgd              group delay differential TGD for L1-L2 correction
+     * @param toc              time of clock
+     * @param transmissionTime transmission time
+     * @param iode             issue of data, ephemeris
+     * @param iodc             issue of data, clock
+     * @param svAccuracy       user SV accuracy (m)
+     * @param svHealth         satellite health status
+     * @param fitInterval      fit interval
+     * @param l2Codes          codes on L2 channel
+     * @param l2PFlags         L2 P data flags.
      */
-    public GPSLegacyNavigationMessage(final TimeScales timeScales, final SatelliteSystem system,
-                                      final String type) {
-        super(GNSSConstants.GPS_MU, GNSSConstants.GPS_AV, GNSSConstants.GPS_WEEK_NB,
-              timeScales, system, type);
+    public GPSLegacyNavigationMessage(final TimeScales timeScales, final String type,
+                                      final int prn, final GNSSDate toe, final KeplerianOrbit orbit,
+                                      final double aDot, final double deltaN0, final double deltaN0Dot,
+                                      final double iDot, final double omegaDot,
+                                      final double cuc, final double cus,
+                                      final double crc, final double crs,
+                                      final double cic, final double cis,
+                                      final double af0, final double af1, final double af2,
+                                      final double tgd, final GNSSDate toc, final GNSSDate  transmissionTime,
+                                      final int iode, final int iodc, final double svAccuracy,
+                                      final int svHealth, final int fitInterval,
+                                      final int l2Codes, final int l2PFlags) {
+        super(GNSSConstants.GPS_AV, GNSSConstants.GPS_WEEK_NB,
+              timeScales, type, prn, toe, orbit, aDot, deltaN0, deltaN0Dot, iDot, omegaDot, cuc, cus,
+              crc, crs, cic, cis, af0, af1, af2, tgd, toc, transmissionTime, iode, iodc, svAccuracy, svHealth,
+              fitInterval, l2Codes, l2PFlags);
     }
 
     /** Constructor from field instance.
@@ -55,11 +96,29 @@ public class GPSLegacyNavigationMessage extends LegacyNavigationMessage<GPSLegac
     }
 
     /** {@inheritDoc} */
-    @SuppressWarnings("unchecked")
     @Override
-    public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, GPSLegacyNavigationMessage>>
-        F toField(final Field<T> field) {
-        return (F) new FieldGPSLegacyNavigationMessage<>(field, this);
+    public <T extends CalculusFieldElement<T>>
+        FieldGPSLegacyNavigationMessage<T> toField(final FieldKeplerianOrbit<T> orbit,
+                                                   final T[] nonKeplerian,
+                                                   final DoubleFunction<T> converter) {
+        return new FieldGPSLegacyNavigationMessage<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
+                                                     getType(), getPrn(),
+                                                     new FieldGNSSDate<>(orbit.getDate().getField(), getTimeOfEphemeris()),
+                                                     orbit, nonKeplerian,
+                                                     converter.apply(getTgd()),
+                                                     new FieldGNSSDate<>(orbit.getDate().getField(), getTimeOfClock()),
+                                                     new FieldGNSSDate<>(orbit.getDate().getField(), getTransmissionTime()),
+                                                     getIODE(), getIODC(),
+                                                     converter.apply(getSvAccuracy()),
+                                                     getSvHealth(), getFitInterval(),
+                                                     getL2Codes(), getL2PFlags());
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public GPSLegacyNavigationMessageFactory baseFactory(final Frame inertial, final Frame bodyFixed) {
+        return new GPSLegacyNavigationMessageFactory(getTimeScales(), getTimeOfEphemeris().getSystem(), getType(),
+                                                     inertial, bodyFixed);
     }
 
 }

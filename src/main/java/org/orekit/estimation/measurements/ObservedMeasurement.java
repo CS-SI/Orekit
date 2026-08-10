@@ -25,12 +25,12 @@ import org.orekit.utils.ParameterDriversProvider;
 /** Interface for measurements used for orbit determination.
  * <p>
  * The most important methods of this interface allow to:
+ * </p>
  * <ul>
  *   <li>get the observed value,</li>
  *   <li>estimate the theoretical value of a measurement,</li>
- *   <li>compute the corresponding partial derivatives (with respect to state and parameters)</li>
+ *   <li>compute the corresponding partial derivatives (with respect to Cartesian state and parameters)</li>
  * </ul>
- *
  * <p>
  * The estimated theoretical values can be modified by registering one or several {@link
  * EstimationModifier EstimationModifier} objects. These objects will manage notions

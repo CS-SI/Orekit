@@ -68,14 +68,14 @@ public class OrekitStepHandlerTest {
         final double semimajorAxis = 8000e3; // meters
         final double eccentricity = 0.001; // unitless
         final double inclination = FastMath.toRadians(15.0);
-        final double argPerigee = FastMath.toRadians(10.0);
+        final double argPeriapsis = FastMath.toRadians(10.0);
         final double raan = FastMath.toRadians(45.0);
         final double trueAnomaly = FastMath.toRadians(10.0);
 
         KeplerianOrbit initialOrbit = new KeplerianOrbit(semimajorAxis,
                                                          eccentricity,
                                                          inclination,
-                                                         argPerigee, raan,
+                                                         argPeriapsis, raan,
                                                          trueAnomaly,
                                                          PositionAngleType.TRUE,
                                                          inertialFrame,

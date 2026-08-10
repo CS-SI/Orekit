@@ -16,6 +16,7 @@
  */
 package org.orekit.estimation.leastsquares;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,9 +39,9 @@ import org.orekit.estimation.measurements.RangeRateMeasurementCreator;
 import org.orekit.estimation.measurements.TwoWayRangeMeasurementCreator;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
+import org.orekit.propagation.analytical.tle.generation.TleGenerationAlgorithm;
 import org.orekit.propagation.conversion.TLEPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
@@ -89,7 +90,7 @@ class TLEBatchLSEstimatorTest {
         Assertions.assertEquals(6,       normalizedCovariances.getColumnDimension());
         Assertions.assertEquals(6,       physicalCovariances.getRowDimension());
         Assertions.assertEquals(6,       physicalCovariances.getColumnDimension());
-        Assertions.assertEquals(0.03071, physicalCovariances.getEntry(0, 0), 1.0e-5);
+        Assertions.assertEquals(3.04e-24, physicalCovariances.getEntry(0, 0), 1.0e-26);
 
     }
 
@@ -132,7 +133,7 @@ class TLEBatchLSEstimatorTest {
         Assertions.assertEquals(6,       normalizedCovariances.getColumnDimension());
         Assertions.assertEquals(6,       physicalCovariances.getRowDimension());
         Assertions.assertEquals(6,       physicalCovariances.getColumnDimension());
-        Assertions.assertEquals(0.03420, physicalCovariances.getEntry(0, 0), 1.0e-5);
+        Assertions.assertEquals(3.04e-24, physicalCovariances.getEntry(0, 0), 1.0e-26);
 
     }
 
@@ -207,10 +208,10 @@ class TLEBatchLSEstimatorTest {
             }
         });
 
-        ParameterDriver xDriver = estimator.getOrbitalParametersDrivers(true).getDrivers().getFirst();
-        Assertions.assertEquals(OrbitType.POS_X, xDriver.getName());
-        xDriver.setValue(xDriver.getValue() + 10.0);
-        xDriver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
+        ParameterDriver nDriver = estimator.getOrbitalParametersDrivers(true).getDrivers().getFirst();
+        Assertions.assertEquals(TleGenerationAlgorithm.MEAN_MOTION, nDriver.getName());
+        nDriver.setValue(nDriver.getValue() + 1.0e-10);
+        nDriver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
         EstimationTestUtils.checkFit(false, context, estimator, 2, 3,
                                      0.0, 9e-6,
@@ -221,12 +222,14 @@ class TLEBatchLSEstimatorTest {
         // after the call to estimate, the parameters lacking a user-specified reference date
         // got a default one
         for (final ParameterDriver driver : estimator.getOrbitalParametersDrivers(true).getDrivers()) {
-            if (OrbitType.POS_X.equals(driver.getName())) {
+            if (TleGenerationAlgorithm.MEAN_MOTION.equals(driver.getName())) {
                 // user-specified reference date
                 Assertions.assertEquals(0, driver.getReferenceDate().durationFrom(AbsoluteDate.GALILEO_EPOCH), 1.0e-15);
             } else {
                 // default reference date
-                Assertions.assertEquals(0, driver.getReferenceDate().durationFrom(propagatorBuilder.getInitialOrbitDate()), 1.0e-15);
+                Assertions.assertEquals(0,
+                                        driver.getReferenceDate().durationFrom(propagatorBuilder.getOrbitalParameterFactory().getDate()),
+                                        1.0e-15);
             }
         }
     }
@@ -283,6 +286,7 @@ class TLEBatchLSEstimatorTest {
     }
 
     private static class DummyException extends OrekitException {
+        @Serial
         private static final long serialVersionUID = 1L;
         public DummyException() {
             super(OrekitMessages.INTERNAL_ERROR);

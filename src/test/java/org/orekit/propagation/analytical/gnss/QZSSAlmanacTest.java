@@ -24,12 +24,16 @@ import org.orekit.Utils;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
+import org.orekit.data.LazyLoadedDataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.YUMAParser;
+import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElementsFactory;
 import org.orekit.propagation.analytical.gnss.data.QZSSAlmanac;
+import org.orekit.propagation.analytical.gnss.data.QZSSAlmanacFactory;
 import org.orekit.time.GNSSDate;
+import org.orekit.utils.IERSConventions;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -58,18 +62,18 @@ public class QZSSAlmanacTest {
         Assertions.assertEquals(4, reader.getPRNNumbers().size());
 
         // Checks the last almanac read
-        final QZSSAlmanac alm = reader.getAlmanacs().get(reader.getAlmanacs().size() - 1);
-        Assertions.assertEquals(199, alm.getPRN());
-        Assertions.assertEquals(1015, alm.getWeek());
-        Assertions.assertEquals(262144.0, alm.getTime(), 0.);
-        Assertions.assertEquals(6493.484863, FastMath.sqrt(alm.getSma()), FastMath.ulp(5.E+03));
-        Assertions.assertEquals(1.387596130E-04, alm.getE(), FastMath.ulp(8E-05));
-        Assertions.assertEquals(0.0007490141,  alm.getI0(), 0.);
+        final QZSSAlmanac alm = reader.getAlmanacs().getLast();
+        Assertions.assertEquals(199, alm.getPrn());
+        Assertions.assertEquals(1015, alm.getTimeOfEphemeris().getWeekNumber());
+        Assertions.assertEquals(262144.0, alm.getTimeOfEphemeris().getSecondsInWeek(), 0.);
+        Assertions.assertEquals(6493.484863, FastMath.sqrt(alm.getOrbit().getA()), FastMath.ulp(5.E+03));
+        Assertions.assertEquals(1.387596130E-04, alm.getOrbit().getE(), FastMath.ulp(8E-05));
+        Assertions.assertEquals(0.0007490141,  alm.getOrbit().getI(), 0.);
         Assertions.assertEquals(0., alm.getIDot(), 0.);
-        Assertions.assertEquals(9.194173760E-01, alm.getOmega0(), 0.);
+        Assertions.assertEquals(9.194173760E-01, alm.getOrbit().getRightAscensionOfAscendingNode(), 0.);
         Assertions.assertEquals(9.714690370E-10, alm.getOmegaDot(), FastMath.ulp(-8E-09));
-        Assertions.assertEquals(2.722442515, alm.getPa(), 0.);
-        Assertions.assertEquals(-1.158294811, alm.getM0(), 0.);
+        Assertions.assertEquals(2.722442515, alm.getOrbit().getPeriapsisArgument(), 0.);
+        Assertions.assertEquals(-1.158294811, alm.getOrbit().getMeanAnomaly(), 0.);
         Assertions.assertEquals(6.351470947E-04, alm.getAf0(), 0.);
         Assertions.assertEquals(0.0, alm.getAf1(), 0.);
         Assertions.assertEquals(0, alm.getHealth());
@@ -107,7 +111,7 @@ public class QZSSAlmanacTest {
             "rate", // Rate of Right Ascen(r/s)
             "sqrt", // SQRT(A)  (m 1/2)
             "right", // Right Ascen at Week(rad)
-            "argument", // Argument of Perigee(rad)
+            "argument", // Argument of periapsis(rad)
             "mean", // Mean Anom(rad)
             "af0", // Af0(s)
             "af1", // Af1(s/s)
@@ -180,7 +184,7 @@ public class QZSSAlmanacTest {
                         // Adds the QZSSAlmanac to the list
                         almanacs.add(almanac);
                         // Adds the PRN number of the QZSSAlmanac to the list
-                        prnList.add(almanac.getPRN());
+                        prnList.add(almanac.getPrn());
                         // Clears the entries
                         entries.clear();
                     }
@@ -231,9 +235,13 @@ public class QZSSAlmanacTest {
         private QZSSAlmanac getAlmanac(final List<Pair<String, String>> entries, final String name) {
             try {
                 // Initializes almanac
-                final QZSSAlmanac almanac = new QZSSAlmanac(DataContext.getDefault().getTimeScales(),
-                                                            SatelliteSystem.QZSS);
-                almanac.setSource(SOURCE);
+                final LazyLoadedDataContext context = DataContext.getDefault();
+                final QZSSAlmanacFactory factory =
+                    new QZSSAlmanacFactory(context.getTimeScales(),
+                                           SatelliteSystem.QZSS,
+                                           context.getFrames().getEME2000(),
+                                           context.getFrames().getITRF(IERSConventions.IERS_2010, false));
+                factory.setSource(SOURCE);
 
                 // Initializes checks
                 final boolean[] checks = new boolean[KEY.length];
@@ -241,55 +249,58 @@ public class QZSSAlmanacTest {
                 for (Pair<String, String> entry: entries) {
                     if (entry.getKey().toLowerCase().startsWith(KEY[0])) {
                         // Gets the PRN of the SVN
-                        almanac.setPRN(Integer.parseInt(entry.getValue()));
+                        factory.setPrn(Integer.parseInt(entry.getValue()));
                         checks[0] = true;
                     } else if (entry.getKey().toLowerCase().startsWith(KEY[1])) {
                         // Gets the Health status
-                        almanac.setHealth(Integer.parseInt(entry.getValue()));
+                        factory.setHealth(Integer.parseInt(entry.getValue()));
                         checks[1] = true;
                     } else if (entry.getKey().toLowerCase().startsWith(KEY[2])) {
                         // Gets the eccentricity
-                        almanac.setE(Double.parseDouble(entry.getValue()));
+                        factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.ECCENTRICITY).setValue(Double.parseDouble(entry.getValue()));
                         checks[2] = true;
                     } else if (entry.getKey().toLowerCase().startsWith(KEY[3])) {
                         // Gets the Time of Applicability
-                        almanac.setTime(Double.parseDouble(entry.getValue()));
+                        factory.getTimeDriver().setValue(Double.parseDouble(entry.getValue()));
                         checks[3] = true;
                     } else if (entry.getKey().toLowerCase().startsWith(KEY[4])) {
                         // Gets the Inclination
-                        almanac.setI0(Double.parseDouble(entry.getValue()));
+                        factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.INCLINATION).setValue(Double.parseDouble(entry.getValue()));
                         checks[4] = true;
                     } else if (entry.getKey().toLowerCase().startsWith(KEY[5])) {
                         // Gets the Rate of Right Ascension
-                        almanac.setOmegaDot(Double.parseDouble(entry.getValue()));
+                        factory.getOmegaDotDriver().setValue(Double.parseDouble(entry.getValue()));
                         checks[5] = true;
                     } else if (entry.getKey().toLowerCase().startsWith(KEY[6])) {
                         // Gets the square root of the semi-major axis
-                        almanac.setSqrtA(Double.parseDouble(entry.getValue()));
+                        final double sqrtA = Double.parseDouble(entry.getValue());
+                        factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.SEMI_MAJOR_AXIS).setValue(sqrtA * sqrtA);
                         checks[6] = true;
                     } else if (entry.getKey().toLowerCase().startsWith(KEY[7])) {
                         // Gets the Right Ascension of Ascending Node
-                        almanac.setOmega0(Double.parseDouble(entry.getValue()));
+                        factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.NODE_LONGITUDE).setValue(Double.parseDouble(entry.getValue()));
                         checks[7] = true;
                     } else if (entry.getKey().toLowerCase().startsWith(KEY[8])) {
-                        // Gets the Argument of Perigee
-                        almanac.setPa(Double.parseDouble(entry.getValue()));
+                        // Gets the Argument of periapsis
+                        factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.ARGUMENT_OF_PERIAPSIS).setValue(Double.parseDouble(entry.getValue()));
                         checks[8] = true;
                     } else if (entry.getKey().toLowerCase().startsWith(KEY[9])) {
                         // Gets the Mean Anomalie
-                        almanac.setM0(Double.parseDouble(entry.getValue()));
+                        factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.MEAN_ANOMALY).setValue(Double.parseDouble(entry.getValue()));
                         checks[9] = true;
                     } else if (entry.getKey().toLowerCase().startsWith(KEY[10])) {
                         // Gets the SV clock bias
-                        almanac.setAf0(Double.parseDouble(entry.getValue()));
+                        factory.getAf0Driver().setValue(Double.parseDouble(entry.getValue()));
                         checks[10] = true;
                     } else if (entry.getKey().toLowerCase().startsWith(KEY[11])) {
                         // Gets the SV clock Drift
-                        almanac.setAf1(Double.parseDouble(entry.getValue()));
+                        factory.getAf1Driver().setValue(Double.parseDouble(entry.getValue()));
                         checks[11] = true;
                     } else if (entry.getKey().toLowerCase().startsWith(KEY[12])) {
                         // Gets the week number
-                        almanac.setWeek(Integer.parseInt(entry.getValue()));
+                        factory.setTimeOfEphemeris(new GNSSDate(Integer.parseInt(entry.getValue()),
+                                                                factory.getTimeDriver().getValue(),
+                                                                factory.getSystem(), factory.getTimeScales()));
                         checks[12] = true;
                     } else {
                         // Unknown entry: the file is not a YUMA file
@@ -300,7 +311,7 @@ public class QZSSAlmanacTest {
                 // If all expected fields have been read
                 if (readOK(checks)) {
                     // Returns a QZSSAlmanac built from the entries
-                    return almanac;
+                    return factory.createFromDrivers();
                 } else {
                     // The file is not a YUMA file
                     throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_YUMA_ALMANAC_FILE, name);

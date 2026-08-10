@@ -45,7 +45,7 @@ import org.orekit.utils.ParameterDriversProvider;
  * TimeDerivativesEquations)} method. The force model instance will extract all the
  * state data it needs (date, position, velocity, frame, attitude, mass) from the first
  * parameter. From these state data, it will compute the perturbing acceleration. It
- * will then add this acceleration to the second parameter which will take thins
+ * will then add this acceleration to the second parameter which will take this
  * contribution into account and will use the Gauss equations to evaluate its impact
  * on the global state derivative.
  * </p>

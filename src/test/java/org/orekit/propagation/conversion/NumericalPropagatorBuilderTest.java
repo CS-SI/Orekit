@@ -57,7 +57,8 @@ public class NumericalPropagatorBuilderTest {
         final ODEIntegratorBuilder integratorBuilder = new ClassicalRungeKuttaIntegratorBuilder(60);
         final Orbit orbit = getOrbit();
         final NumericalPropagatorBuilder builder =
-                new NumericalPropagatorBuilder(orbit, integratorBuilder, PositionAngleType.MEAN, 1.0, Utils.defaultLaw());
+                new NumericalPropagatorBuilder(orbit.factory(PositionAngleType.MEAN, 1.0),
+                                               integratorBuilder, Utils.defaultLaw());
         final ImpulseManeuver mockedManeuver = Mockito.mock(ImpulseManeuver.class);
         builder.addImpulseManeuver(mockedManeuver);
         // WHEN
@@ -74,7 +75,8 @@ public class NumericalPropagatorBuilderTest {
         final ODEIntegratorBuilder integratorBuilder = new ClassicalRungeKuttaIntegratorBuilder(60);
         final Orbit orbit = getOrbit();
         final NumericalPropagatorBuilder builder =
-                new NumericalPropagatorBuilder(orbit, integratorBuilder, PositionAngleType.MEAN, 1.0, Utils.defaultLaw());
+                new NumericalPropagatorBuilder(orbit.factory(PositionAngleType.MEAN, 1.0),
+                                               integratorBuilder, Utils.defaultLaw());
         final ImpulseManeuver mockedManeuver = Mockito.mock(ImpulseManeuver.class);
         // WHEN
         builder.addImpulseManeuver(mockedManeuver);
@@ -93,7 +95,8 @@ public class NumericalPropagatorBuilderTest {
         final Orbit orbit = getOrbit();
 
         final NumericalPropagatorBuilder builder =
-                new NumericalPropagatorBuilder(orbit, integratorBuilder, PositionAngleType.MEAN, 1.0, Utils.defaultLaw());
+                new NumericalPropagatorBuilder(orbit.factory(PositionAngleType.MEAN, 1.0),
+                                               integratorBuilder, Utils.defaultLaw());
 
         builder.addForceModel(new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true),
                 GravityFieldFactory.getNormalizedProvider(2, 0)));
@@ -120,7 +123,8 @@ public class NumericalPropagatorBuilderTest {
         final Orbit orbit = getOrbit();
 
         final NumericalPropagatorBuilder builder =
-                        new NumericalPropagatorBuilder(orbit, integratorBuilder, PositionAngleType.MEAN, 1.0, Utils.defaultLaw());
+                        new NumericalPropagatorBuilder(orbit.factory(PositionAngleType.MEAN, 1.0),
+                                                       integratorBuilder, Utils.defaultLaw());
 
         builder.addForceModel(new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true),
                                                                     GravityFieldFactory.getNormalizedProvider(2, 0)));
@@ -136,7 +140,7 @@ public class NumericalPropagatorBuilderTest {
         // Then
         // Original builder should still have original orbit
         final PVCoordinates originalPv = orbit.getPVCoordinates();
-        final PVCoordinates initialPv = builder.createInitialOrbit().getPVCoordinates();
+        final PVCoordinates initialPv = builder.getOrbitalParameterFactory().createFromDrivers().getPVCoordinates();
         final double dP = originalPv.getPosition().distance(initialPv.getPosition());
         final double dV = originalPv.getVelocity().distance(initialPv.getVelocity());
         final double dA = originalPv.getAcceleration().distance(initialPv.getAcceleration());

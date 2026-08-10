@@ -67,8 +67,10 @@ import org.orekit.models.earth.atmosphere.NRLMSISE00;
 import org.orekit.models.earth.atmosphere.data.MarshallSolarActivityFutureEstimation;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
+import org.orekit.orbits.EquinoctialOrbitFactory;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.conversion.ClassicalRungeKuttaIntegratorBuilder;
@@ -165,15 +167,15 @@ public class UnscentedSemiAnalyticalKalmanOrbitDeterminationTest {
         final StreamingStatistics statX      = observer.getXStatistics();
         final StreamingStatistics statY      = observer.getYStatistics();
         final StreamingStatistics statZ      = observer.getZStatistics();
-        Assertions.assertEquals(0.0, statX.getMean(), 1.365e-4);
+        Assertions.assertEquals(0.0, statX.getMean(), 4.133e-4);
         Assertions.assertEquals(0.0, statY.getMean(), 4.931e-4);
         Assertions.assertEquals(0.0, statZ.getMean(), 3.80e-4);
-        Assertions.assertEquals(0.0, statX.getMin(),  0.027); // Value is negative
-        Assertions.assertEquals(0.0, statY.getMin(),  0.028); // Value is negative
-        Assertions.assertEquals(0.0, statZ.getMin(),  0.026); // Value is negative
+        Assertions.assertEquals(0.0, statX.getMin(),  0.032); // Value is negative
+        Assertions.assertEquals(0.0, statY.getMin(),  0.030); // Value is negative
+        Assertions.assertEquals(0.0, statZ.getMin(),  0.027); // Value is negative
         Assertions.assertEquals(0.0, statX.getMax(),  0.029);
-        Assertions.assertEquals(0.0, statY.getMax(),  0.027);
-        Assertions.assertEquals(0.0, statZ.getMax(),  0.026);
+        Assertions.assertEquals(0.0, statY.getMax(),  0.033);
+        Assertions.assertEquals(0.0, statZ.getMax(),  0.028);
 
         // Check that "physical" matrices are not null
         Assertions.assertNotNull(estimation.getPhysicalInnovationCovarianceMatrix());
@@ -189,10 +191,9 @@ public class UnscentedSemiAnalyticalKalmanOrbitDeterminationTest {
      * Initialize the Position/Velocity observations.
      * @param fileName measurement file name
      * @return the ephemeris contained in the input file
-     * @throws IOException if observations file cannot be read properly
      * @throws URISyntaxException if URI syntax is wrong
      */
-    private CPFEphemeris initializeObservations(final String fileName) throws URISyntaxException, IOException {
+    private CPFEphemeris initializeObservations(final String fileName) throws URISyntaxException {
 
         // Input in tutorial resources directory
         final String inputPath = UnscentedSemiAnalyticalKalmanOrbitDeterminationTest.class.getClassLoader().
@@ -306,7 +307,9 @@ public class UnscentedSemiAnalyticalKalmanOrbitDeterminationTest {
         final EquinoctialOrbit equinoctial = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(orbit);
 
         // Initialize the numerical builder
-        final DSSTPropagatorBuilder propagator = new DSSTPropagatorBuilder(equinoctial, integrator, 1.0, PropagationType.MEAN, PropagationType.OSCULATING);
+        final DSSTPropagatorBuilder propagator =
+            new DSSTPropagatorBuilder(new EquinoctialOrbitFactory(equinoctial, 1.0, PositionAngleType.ECCENTRIC),
+                                      integrator, PropagationType.MEAN, PropagationType.OSCULATING);
 
         // Add force models to the numerical propagator
         addDSSTForceModels(propagator, orbit, centralBody, gravityField, convention, simpleEop, surface, useDrag, useSrp, useSun, useMoon);
@@ -489,12 +492,15 @@ public class UnscentedSemiAnalyticalKalmanOrbitDeterminationTest {
      * @param orbit initial orbit
      * @return the covariance matrix provider
      */
-    private static CovarianceMatrixProvider buildCovarianceProvider(final RealMatrix initialNoiseMatrix, final RealMatrix processNoiseMatrix,
-                                                                    final DSSTPropagatorBuilder propagatorBuilder, final Orbit orbit)  {
+    private static CovarianceMatrixProvider buildCovarianceProvider(final RealMatrix initialNoiseMatrix,
+                                                                    final RealMatrix processNoiseMatrix,
+                                                                    final DSSTPropagatorBuilder propagatorBuilder,
+                                                                    final Orbit orbit)  {
         // Jacobian of the orbital parameters w/r to Cartesian
         final Orbit initialOrbit = OrbitType.EQUINOCTIAL.convertType(orbit);
         final double[][] dYdC = new double[6][6];
-        initialOrbit.getJacobianWrtCartesian(propagatorBuilder.getPositionAngleType(), dYdC);
+        initialOrbit.getJacobianWrtCartesian(propagatorBuilder.getOrbitalParameterFactory().getPositionAngleType(),
+                                             dYdC);
         final RealMatrix Jac = MatrixUtils.createRealMatrix(dYdC);
 
         // Keplerian initial covariance matrix
@@ -508,13 +514,13 @@ public class UnscentedSemiAnalyticalKalmanOrbitDeterminationTest {
     public static class Observer implements KalmanObserver {
 
         /** Statistics on X position residuals. */
-        private StreamingStatistics statX;
+        private final StreamingStatistics statX;
 
         /** Statistics on Y position residuals. */
-        private StreamingStatistics statY;
+        private final StreamingStatistics statY;
 
         /** Statistics on Z position residuals. */
-        private StreamingStatistics statZ;
+        private final StreamingStatistics statZ;
 
         /** Kalman estimation. */
         private KalmanEstimation estimation;

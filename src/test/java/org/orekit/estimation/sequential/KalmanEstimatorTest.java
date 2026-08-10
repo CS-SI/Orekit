@@ -17,6 +17,7 @@
 package org.orekit.estimation.sequential;
 
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -79,9 +80,11 @@ class KalmanEstimatorTest {
         String line1 = "1 07276U 74026A   00055.48318287  .00000000  00000-0  22970+3 0  9994";
         String line2 = "2 07276  71.6273  78.7838 1248323  14.0598   3.8405  4.72707036231812";
         final TLE tle = new TLE(line1, line2);
-        final TLEPropagatorBuilder propagatorBuilder = new TLEPropagatorBuilder(tle,
-                PositionAngleType.TRUE, 1., new FixedPointTleGenerationAlgorithm());
-        for (final ParameterDriver driver: propagatorBuilder.getOrbitalParametersDrivers().getDrivers()) {
+        final TLEPropagatorBuilder propagatorBuilder =
+            new TLEPropagatorBuilder(new FixedPointTleGenerationAlgorithm(tle));
+        final ParameterDriversList drivers =
+            propagatorBuilder.getOrbitalParameterFactory().getOrbitalParametersDrivers();
+        for (final ParameterDriver driver: drivers.getDrivers()) {
             driver.setSelected(false);
         }
         propagatorBuilder.getPropagationParametersDrivers().getDrivers().getFirst().setSelected(true);
@@ -124,12 +127,13 @@ class KalmanEstimatorTest {
                 5.0, 5.0, 1.0, new ObservableSatellite(0));
 
         // Unselect all orbital propagation parameters
-        propagatorBuilder.getOrbitalParametersDrivers().getDrivers()
-                .forEach(driver -> driver.setSelected(false));
+        final ParameterDriversList drivers =
+            propagatorBuilder.getOrbitalParameterFactory().getOrbitalParametersDrivers();
+        drivers.getDrivers().forEach(driver -> driver.setSelected(false));
 
         // Select eccentricity and anomaly
-        propagatorBuilder.getOrbitalParametersDrivers().findByName("e").setSelected(true);
-        propagatorBuilder.getOrbitalParametersDrivers().findByName("v").setSelected(true);
+        drivers.findByName("e").setSelected(true);
+        drivers.findByName("v").setSelected(true);
 
         // Covariance matrix initialization
         final RealMatrix initialP = MatrixUtils.createRealDiagonalMatrix(new double[]{
@@ -151,20 +155,14 @@ class KalmanEstimatorTest {
 
         // Unchanged orbital parameters (two-body propagation)
         final KeplerianOrbit initialOrbit = (KeplerianOrbit) context.initialOrbit;
-        Assertions.assertEquals(initialOrbit.getA(),
-                propagatorBuilder.getOrbitalParametersDrivers().findByName("a").getValue());
-        Assertions.assertEquals(initialOrbit.getI(),
-                propagatorBuilder.getOrbitalParametersDrivers().findByName("i").getValue());
-        Assertions.assertEquals(initialOrbit.getRightAscensionOfAscendingNode(),
-                propagatorBuilder.getOrbitalParametersDrivers().findByName("Ω").getValue());
-        Assertions.assertEquals(initialOrbit.getPeriapsisArgument(),
-                propagatorBuilder.getOrbitalParametersDrivers().findByName("ω").getValue());
+        Assertions.assertEquals(initialOrbit.getA(), drivers.findByName("a").getValue());
+        Assertions.assertEquals(initialOrbit.getI(), drivers.findByName("i").getValue());
+        Assertions.assertEquals(initialOrbit.getRightAscensionOfAscendingNode(), drivers.findByName("Ω").getValue());
+        Assertions.assertEquals(initialOrbit.getPeriapsisArgument(), drivers.findByName("ω").getValue());
 
         // Changed orbital parameters
-        Assertions.assertNotEquals(initialOrbit.getE(),
-                propagatorBuilder.getOrbitalParametersDrivers().findByName("e").getValue());
-        Assertions.assertNotEquals(initialOrbit.getTrueAnomaly(),
-                propagatorBuilder.getOrbitalParametersDrivers().findByName("v").getValue());
+        Assertions.assertNotEquals(initialOrbit.getE(), drivers.findByName("e").getValue());
+        Assertions.assertNotEquals(initialOrbit.getTrueAnomaly(), drivers.findByName("v").getValue());
     }
 
     @Test
@@ -204,17 +202,19 @@ class KalmanEstimatorTest {
                 new MultiplexedMeasurement(Arrays.asList(measurement1, measurement2));
 
         // Unselect all orbital propagation parameters
-        propagatorBuilder1.getOrbitalParametersDrivers().getDrivers()
-                .forEach(driver -> driver.setSelected(false));
-        propagatorBuilder2.getOrbitalParametersDrivers().getDrivers()
-                .forEach(driver -> driver.setSelected(false));
+        final ParameterDriversList oDrivers1 =
+            propagatorBuilder1.getOrbitalParameterFactory().getOrbitalParametersDrivers();
+        final ParameterDriversList oDrivers2 =
+            propagatorBuilder2.getOrbitalParameterFactory().getOrbitalParametersDrivers();
+        oDrivers1.getDrivers().forEach(driver -> driver.setSelected(false));
+        oDrivers2.getDrivers().forEach(driver -> driver.setSelected(false));
 
         // Select eccentricity and anomaly
-        propagatorBuilder1.getOrbitalParametersDrivers().findByName("e").setSelected(true);
-        propagatorBuilder1.getOrbitalParametersDrivers().findByName("v").setSelected(true);
+        oDrivers1.findByName("e").setSelected(true);
+        oDrivers1.findByName("v").setSelected(true);
 
-        propagatorBuilder2.getOrbitalParametersDrivers().findByName("e").setSelected(true);
-        propagatorBuilder2.getOrbitalParametersDrivers().findByName("v").setSelected(true);
+        oDrivers2.findByName("e").setSelected(true);
+        oDrivers2.findByName("v").setSelected(true);
 
         // Select reflection coefficient for second sat
         propagatorBuilder2.getPropagationParametersDrivers().findByName("reflection coefficient").setSelected(true);
@@ -261,46 +261,34 @@ class KalmanEstimatorTest {
         kalman.estimationStep(combinedMeasurement);
 
         // Unchanged orbital parameters
-        Assertions.assertEquals(refOrbit1.getA(),
-                propagatorBuilder1.getOrbitalParametersDrivers().findByName("a[0]").getValue());
-        Assertions.assertEquals(refOrbit1.getI(),
-                propagatorBuilder1.getOrbitalParametersDrivers().findByName("i[0]").getValue());
-        Assertions.assertEquals(refOrbit1.getRightAscensionOfAscendingNode(),
-                propagatorBuilder1.getOrbitalParametersDrivers().findByName("Ω[0]").getValue());
-        Assertions.assertEquals(refOrbit1.getPeriapsisArgument(),
-                propagatorBuilder1.getOrbitalParametersDrivers().findByName("ω[0]").getValue());
+        Assertions.assertEquals(refOrbit1.getA(), oDrivers1.findByName("a[0]").getValue());
+        Assertions.assertEquals(refOrbit1.getI(), oDrivers1.findByName("i[0]").getValue());
+        Assertions.assertEquals(refOrbit1.getRightAscensionOfAscendingNode(), oDrivers1.findByName("Ω[0]").getValue());
+        Assertions.assertEquals(refOrbit1.getPeriapsisArgument(), oDrivers1.findByName("ω[0]").getValue());
 
-        Assertions.assertEquals(refOrbit2.getA(),
-                propagatorBuilder2.getOrbitalParametersDrivers().findByName("a[1]").getValue());
-        Assertions.assertEquals(refOrbit2.getI(),
-                propagatorBuilder2.getOrbitalParametersDrivers().findByName("i[1]").getValue());
-        Assertions.assertEquals(refOrbit2.getRightAscensionOfAscendingNode(),
-                propagatorBuilder2.getOrbitalParametersDrivers().findByName("Ω[1]").getValue());
-        Assertions.assertEquals(refOrbit2.getPeriapsisArgument(),
-                propagatorBuilder2.getOrbitalParametersDrivers().findByName("ω[1]").getValue());
+        Assertions.assertEquals(refOrbit2.getA(), oDrivers2.findByName("a[1]").getValue());
+        Assertions.assertEquals(refOrbit2.getI(), oDrivers2.findByName("i[1]").getValue());
+        Assertions.assertEquals(refOrbit2.getRightAscensionOfAscendingNode(), oDrivers2.findByName("Ω[1]").getValue());
+        Assertions.assertEquals(refOrbit2.getPeriapsisArgument(), oDrivers2.findByName("ω[1]").getValue());
 
         // Changed orbital parameters
-        Assertions.assertNotEquals(refOrbit1.getE(),
-                propagatorBuilder1.getOrbitalParametersDrivers().findByName("e[0]").getValue());
-        Assertions.assertNotEquals(refOrbit1.getTrueAnomaly(),
-                propagatorBuilder1.getOrbitalParametersDrivers().findByName("v[0]").getValue());
+        Assertions.assertNotEquals(refOrbit1.getE(), oDrivers1.findByName("e[0]").getValue());
+        Assertions.assertNotEquals(refOrbit1.getTrueAnomaly(), oDrivers1.findByName("v[0]").getValue());
 
-        Assertions.assertNotEquals(refOrbit2.getE(),
-                propagatorBuilder2.getOrbitalParametersDrivers().findByName("e[1]").getValue());
-        Assertions.assertNotEquals(refOrbit2.getTrueAnomaly(),
-                propagatorBuilder2.getOrbitalParametersDrivers().findByName("v[1]").getValue());
+        Assertions.assertNotEquals(refOrbit2.getE(), oDrivers2.findByName("e[1]").getValue());
+        Assertions.assertNotEquals(refOrbit2.getTrueAnomaly(), oDrivers2.findByName("v[1]").getValue());
 
         // Propagation parameters
-        final List<DelegatingDriver> drivers1 = propagatorBuilder1.getPropagationParametersDrivers().getDrivers();
+        final List<DelegatingDriver> pDrivers1 = propagatorBuilder1.getPropagationParametersDrivers().getDrivers();
         for (int i = 0; i < parameterValues1.length; ++i) {
-            double postEstimation = drivers1.get(i).getValue();
+            double postEstimation = pDrivers1.get(i).getValue();
             Assertions.assertEquals(parameterValues1[i], postEstimation);
         }
 
-        final List<DelegatingDriver> drivers2 = propagatorBuilder2.getPropagationParametersDrivers().getDrivers();
+        final List<DelegatingDriver> pDrivers2 = propagatorBuilder2.getPropagationParametersDrivers().getDrivers();
         for (int i = 0; i < parameterValues2.length; ++i) {
-            double postEstimation = drivers2.get(i).getValue();
-            if (drivers2.get(i).getName().equals("reflection coefficient")) {
+            double postEstimation = pDrivers2.get(i).getValue();
+            if (pDrivers2.get(i).getName().equals("reflection coefficient")) {
                 Assertions.assertNotEquals(parameterValues2[i], postEstimation);
             } else {
                 Assertions.assertEquals(parameterValues2[i], postEstimation);
@@ -333,12 +321,12 @@ class KalmanEstimatorTest {
                5.0, 5.0, 1.0, new ObservableSatellite(0));
 
         // Unselect all orbital propagation parameters
-        propagatorBuilder.getOrbitalParametersDrivers().getDrivers()
-                .forEach(driver -> driver.setSelected(false));
+        final ParameterDriversList drivers =propagatorBuilder.getOrbitalParameterFactory().getOrbitalParametersDrivers();
+        drivers.getDrivers().forEach(driver -> driver.setSelected(false));
 
         // Select eccentricity and anomaly
-        propagatorBuilder.getOrbitalParametersDrivers().findByName("e").setSelected(true);
-        propagatorBuilder.getOrbitalParametersDrivers().findByName("v").setSelected(true);
+        drivers.findByName("e").setSelected(true);
+        drivers.findByName("v").setSelected(true);
 
         // Covariance matrix initialization
         final RealMatrix initialP = MatrixUtils.createRealDiagonalMatrix(new double[]{
@@ -399,11 +387,11 @@ class KalmanEstimatorTest {
         measurement.addModifier(pvBias);
 
         // Initialize the Kalman builder
-        ParameterDriversList drivers = new ParameterDriversList();
-        drivers.add(pvBias.getParameterDriver("x bias"));
+        ParameterDriversList pDrivers = new ParameterDriversList();
+        pDrivers.add(pvBias.getParameterDriver("x bias"));
         final KalmanEstimator estimatorBadMeasurementNoise = new KalmanEstimatorBuilder()
                 .addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(initialP, badQ))
-                .estimatedMeasurementsParameters(drivers, new ConstantProcessNoise(measQ, measQ)).build();
+                .estimatedMeasurementsParameters(pDrivers, new ConstantProcessNoise(measQ, measQ)).build();
 
         // Run the filter (should not succeed)
         thrown = Assertions.assertThrows(OrekitException.class, () -> estimatorBadMeasurementNoise.estimationStep(measurement));
@@ -446,7 +434,8 @@ class KalmanEstimatorTest {
         measurementParameters.add(rangeBias.getParameterDriver("range bias"));
 
         // Change semi-major axis of 1.2m as in the batch test
-        ParameterDriver aDriver = propagatorBuilder.getOrbitalParametersDrivers().getDrivers().getFirst();
+        ParameterDriver aDriver =
+            propagatorBuilder.getOrbitalParameterFactory().getOrbitalParametersDrivers().getDrivers().getFirst();
         aDriver.setValue(aDriver.getValue() + 1.2);
         aDriver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
@@ -600,8 +589,7 @@ class KalmanEstimatorTest {
         final double[] expectedSigmasVel = {9.478853e-4, 9.910788e-4, 5.0438709e-4};
         final double   sigmaVelEps       = 1e-10;
         EstimationTestUtils.checkExtendedKalmanFit(false, kalman, measurements,
-                                                   refOrbit, positionAngleType,
-                                                   expectedDeltaPos, posEps,
+                                                   refOrbit, expectedDeltaPos, posEps,
                                                    expectedDeltaVel, velEps,
                                                    expectedsigmasPos, sigmaPosEps,
                                                    expectedSigmasVel, sigmaVelEps);
@@ -642,7 +630,8 @@ class KalmanEstimatorTest {
                         propagate(measurements.getLast().getDate()).getOrbit();
 
         // Change semi-major axis of 1.2m as in the batch test
-        ParameterDriver aDriver = propagatorBuilder.getOrbitalParametersDrivers().getDrivers().getFirst();
+        ParameterDriver aDriver =
+            propagatorBuilder.getOrbitalParameterFactory().getOrbitalParametersDrivers().getDrivers().getFirst();
         aDriver.setValue(aDriver.getValue() + 1.2);
         aDriver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
@@ -679,8 +668,7 @@ class KalmanEstimatorTest {
         final double[] expectedSigmasVel = {2.206636e-4, 1.306656e-4, 1.293981e-4};
         final double   sigmaVelEps       = 1e-10;
         EstimationTestUtils.checkExtendedKalmanFit(false, kalman, measurements,
-                                                   refOrbit, positionAngleType,
-                                                   expectedDeltaPos, posEps,
+                                                   refOrbit, expectedDeltaPos, posEps,
                                                    expectedDeltaVel, velEps,
                                                    expectedSigmasPos, sigmaPosEps,
                                                    expectedSigmasVel, sigmaVelEps);
@@ -704,8 +692,10 @@ class KalmanEstimatorTest {
         final double        maxStep       = 60.;
         final double        dP            = 1.;
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createNumerical(orbitType, positionAngleType, perfectStart, minStep, maxStep, dP);
-        propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getFrame(), LOFType.LVLH));
+                        context.createNumerical(orbitType, positionAngleType, perfectStart,
+                                              minStep, maxStep, dP);
+        propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getOrbitalParameterFactory().getFrame(),
+                                                            LOFType.LVLH));
 
         // Antenna phase center definition
         final Vector3D antennaPhaseCenter = new Vector3D(-1.2, 2.3, -0.7);
@@ -736,7 +726,8 @@ class KalmanEstimatorTest {
                         propagate(measurements.getLast().getDate()).getOrbit();
 
         // Change semi-major axis of 1.2m as in the batch test
-        ParameterDriver aDriver = propagatorBuilder.getOrbitalParametersDrivers().getDrivers().getFirst();
+        ParameterDriver aDriver =
+            propagatorBuilder.getOrbitalParameterFactory().getOrbitalParametersDrivers().getDrivers().getFirst();
         aDriver.setValue(aDriver.getValue() + 1.2);
         aDriver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
@@ -773,8 +764,7 @@ class KalmanEstimatorTest {
         final double[] expectedSigmasVel = {6.193757e-4, 4.088798e-4, 3.299140e-4};
         final double   sigmaVelEps       = 1e-10;
         EstimationTestUtils.checkExtendedKalmanFit(false, kalman, measurements,
-                                                   refOrbit, positionAngleType,
-                                                   expectedDeltaPos, posEps,
+                                                   refOrbit, expectedDeltaPos, posEps,
                                                    expectedDeltaVel, velEps,
                                                    expectedSigmasPos, sigmaPosEps,
                                                    expectedSigmasVel, sigmaVelEps);
@@ -850,8 +840,7 @@ class KalmanEstimatorTest {
         final double[] expectedSigmasVel = {2.85688e-4,  5.765933e-4, 5.056124e-4};
         final double   sigmaVelEps       = 1e-10;
         EstimationTestUtils.checkExtendedKalmanFit(false, kalman, measurements,
-                                                   refOrbit, positionAngleType,
-                                                   expectedDeltaPos, posEps,
+                                                   refOrbit, expectedDeltaPos, posEps,
                                                    expectedDeltaVel, velEps,
                                                    expectedSigmasPos, sigmaPosEps,
                                                    expectedSigmasVel, sigmaVelEps);
@@ -926,8 +915,7 @@ class KalmanEstimatorTest {
         final double[] expectedSigmasVel = {2.468745e-4, 5.810027e-4, 3.887394e-4};
         final double   sigmaVelEps       = 1e-10;
         EstimationTestUtils.checkExtendedKalmanFit(false, kalman, measurements,
-                                                   refOrbit, positionAngleType,
-                                                   expectedDeltaPos, posEps,
+                                                   refOrbit, expectedDeltaPos, posEps,
                                                    expectedDeltaVel, velEps,
                                                    expectedSigmasPos, sigmaPosEps,
                                                    expectedSigmasVel, sigmaVelEps);
@@ -1002,8 +990,7 @@ class KalmanEstimatorTest {
         final double[] expectedSigmasVel = {2.468746e-4, 5.810028e-4, 3.887394e-4};
         final double   sigmaVelEps       = 1e-10;
         EstimationTestUtils.checkExtendedKalmanFit(false, kalman, measurements,
-                                                   refOrbit, positionAngleType,
-                                                   expectedDeltaPos, posEps,
+                                                   refOrbit, expectedDeltaPos, posEps,
                                                    expectedDeltaVel, velEps,
                                                    expectedSigmasPos, sigmaPosEps,
                                                    expectedSigmasVel, sigmaVelEps);
@@ -1103,8 +1090,7 @@ class KalmanEstimatorTest {
         final double[] expectedSigmasVel = {5.413689e-4, 4.088394e-4, 4.315366e-4};
         final double   sigmaVelEps       = 1e-10;
         EstimationTestUtils.checkExtendedKalmanFit(false, kalman, measurements,
-                                                   refOrbit, positionAngleType,
-                                                   expectedDeltaPos, posEps,
+                                                   refOrbit, expectedDeltaPos, posEps,
                                                    expectedDeltaVel, velEps,
                                                    expectedSigmasPos, sigmaPosEps,
                                                    expectedSigmasVel, sigmaVelEps);
@@ -1189,8 +1175,7 @@ class KalmanEstimatorTest {
         final double[] expectedSigmasVel = {1.167859e-3, 1.036492e-3, 2.834413e-3};
         final double   sigmaVelEps       = 1e-9;
         EstimationTestUtils.checkExtendedKalmanFit(false, kalman, measurements,
-                                                   refOrbit, positionAngleType,
-                                                   expectedDeltaPos, posEps,
+                                                   refOrbit, expectedDeltaPos, posEps,
                                                    expectedDeltaVel, velEps,
                                                    expectedSigmasPos, sigmaPosEps,
                                                    expectedSigmasVel, sigmaVelEps);
@@ -1207,15 +1192,16 @@ class KalmanEstimatorTest {
         final NumericalPropagatorBuilder propagatorBuilder2 =
                         context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 1.0);
-        final AbsoluteDate referenceDate = propagatorBuilder1.getInitialOrbitDate();
+        final AbsoluteDate referenceDate = propagatorBuilder1.getOrbitalParameterFactory().getDate();
 
         // Create perfect inter-satellites range measurements
         final TimeStampedPVCoordinates original = context.initialOrbit.getPVCoordinates();
-        final Orbit closeOrbit = new CartesianOrbit(new TimeStampedPVCoordinates(context.initialOrbit.getDate(),
-                                                                                 original.getPosition().add(new Vector3D(1000, 2000, 3000)),
-                                                                                 original.getVelocity().add(new Vector3D(-0.03, 0.01, 0.02))),
-                                                    context.initialOrbit.getFrame(),
-                                                    context.initialOrbit.getMu());
+        final Orbit closeOrbit =
+            new CartesianOrbit(new TimeStampedPVCoordinates(context.initialOrbit.getDate(),
+                                                            original.getPosition().add(new Vector3D(1000, 2000, 3000)),
+                                                            original.getVelocity().add(new Vector3D(-0.03, 0.01, 0.02))),
+                               context.initialOrbit.getFrame(),
+                               context.initialOrbit.getMu());
         final Propagator closePropagator = EstimationTestUtils.createPropagator(closeOrbit,
                                                                                 propagatorBuilder2);
         final EphemerisGenerator generator = closePropagator.getEphemerisGenerator();
@@ -1284,8 +1270,7 @@ class KalmanEstimatorTest {
             propagatorBuilder2.buildPropagator().propagate(measurements.getLast().getDate()).getOrbit()
         };
         EstimationTestUtils.checkExtendedKalmanFit(false, kalman, measurements,
-                                           refOrbits, new PositionAngleType[] { PositionAngleType.TRUE, PositionAngleType.TRUE },
-                                           new double[] { 38.3,  172.3 }, new double[] { 0.1,  0.1 },
+                                           refOrbits, new double[] { 38.3,  172.3 }, new double[] { 0.1,  0.1 },
                                            new double[] { 0.015, 0.068 }, new double[] { 1.0e-3, 1.0e-3 },
                                            new double[][] {
                                                { 6.9e5, 6.0e5, 12.5e5 },
@@ -1350,8 +1335,7 @@ class KalmanEstimatorTest {
         try {
             // Filter the measurements and expect an exception to occur
             EstimationTestUtils.checkExtendedKalmanFit(false, kalman, measurements,
-                                               context.initialOrbit, positionAngleType,
-                                               0., 0.,
+                                               context.initialOrbit, 0., 0.,
                                                0., 0.,
                                                new double[3], 0.,
                                                new double[3], 0.);
@@ -1402,7 +1386,7 @@ class KalmanEstimatorTest {
         final NumericalPropagatorBuilder propagatorBuilder2 =
                         context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 1.0);
-        final AbsoluteDate referenceDate = propagatorBuilder1.getInitialOrbitDate();
+        final AbsoluteDate referenceDate = propagatorBuilder1.getOrbitalParameterFactory().getDate();
 
         // Create perfect inter-satellites range measurements
         final TimeStampedPVCoordinates original = context.initialOrbit.getPVCoordinates();
@@ -1492,8 +1476,7 @@ class KalmanEstimatorTest {
             propagatorBuilder2.buildPropagator().propagate(measurements.getLast().getDate()).getOrbit()
         };
         EstimationTestUtils.checkExtendedKalmanFit(false, kalman, measurements,
-                                           refOrbits, new PositionAngleType[] { PositionAngleType.TRUE, PositionAngleType.TRUE },
-                                           new double[] { 38.3,  172.3 }, new double[] { 0.1,  0.1 },
+                                           refOrbits, new double[] { 38.3,  172.3 }, new double[] { 0.1,  0.1 },
                                            new double[] { 0.015, 0.068 }, new double[] { 1.0e-3, 1.0e-3 },
                                            new double[][] {
                                                { 6.9e5, 6.0e5, 12.5e5 },
@@ -1587,6 +1570,7 @@ class KalmanEstimatorTest {
     }
 
     private static class DummyException extends OrekitException {
+        @Serial
         private static final long serialVersionUID = 1L;
         public DummyException() {
             super(OrekitMessages.INTERNAL_ERROR);

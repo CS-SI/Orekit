@@ -25,7 +25,6 @@ import org.orekit.propagation.analytical.tle.FieldTLE;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.time.TimeScale;
 
 /**
  * Utility class for TLE generation algorithm.
@@ -47,12 +46,9 @@ public final class TleGenerationUtil {
      * Builds a new TLE from Keplerian parameters and a template for TLE data.
      * @param keplerianOrbit the Keplerian parameters to build the TLE from
      * @param templateTLE TLE used to get object identification
-     * @param bStar TLE B* parameter
-     * @param utc UTC scale
      * @return TLE with template identification and new orbital parameters
      */
-    public static TLE newTLE(final KeplerianOrbit keplerianOrbit, final TLE templateTLE,
-                             final double bStar, final TimeScale utc) {
+    public static TLE newTLE(final KeplerianOrbit keplerianOrbit, final TLE templateTLE) {
 
         // Keplerian parameters
         final double meanMotion  = keplerianOrbit.getKeplerianMeanMotion();
@@ -83,10 +79,12 @@ public final class TleGenerationUtil {
         final double meanMotionFirstDerivative  = templateTLE.getMeanMotionFirstDerivative();
         final double meanMotionSecondDerivative = templateTLE.getMeanMotionSecondDerivative();
 
+        final double bStar = templateTLE.getBStar();
+
         // Returns the new TLE
         return new TLE(satelliteNumber, classification, launchYear, launchNumber, launchPiece, ephemerisType,
                        elementNumber, epoch, meanMotion, meanMotionFirstDerivative, meanMotionSecondDerivative,
-                       e, i, pa, raan, meanAnomaly, newRevolutionNumberAtEpoch, bStar, utc);
+                       e, i, pa, raan, meanAnomaly, newRevolutionNumberAtEpoch, bStar, templateTLE.getUtc());
 
     }
 
@@ -94,14 +92,11 @@ public final class TleGenerationUtil {
      * Builds a new TLE from Keplerian parameters and a template for TLE data.
      * @param keplerianOrbit the Keplerian parameters to build the TLE from
      * @param templateTLE TLE used to get object identification
-     * @param bStar TLE B* parameter
-     * @param utc UTC scale
      * @param <T> type of the element
      * @return TLE with template identification and new orbital parameters
      */
     public static <T extends CalculusFieldElement<T>> FieldTLE<T> newTLE(final FieldKeplerianOrbit<T> keplerianOrbit,
-                                                                         final FieldTLE<T> templateTLE, final T bStar,
-                                                                         final TimeScale utc) {
+                                                                         final FieldTLE<T> templateTLE) {
 
         // Keplerian parameters
         final T meanMotion  = keplerianOrbit.getKeplerianMeanMotion();
@@ -126,16 +121,19 @@ public final class TleGenerationUtil {
         // Updates revolutionNumberAtEpoch
         final int revolutionNumberAtEpoch = templateTLE.getRevolutionNumberAtEpoch();
         final T dt = epoch.durationFrom(templateTLE.getDate());
-        final int newRevolutionNumberAtEpoch = (int) ((int) revolutionNumberAtEpoch + FastMath.floor(MathUtils.normalizeAngle(meanAnomaly, e.getPi()).add(dt.multiply(meanMotion)).divide(MathUtils.TWO_PI)).getReal());
+        final int newRevolutionNumberAtEpoch = (int) (revolutionNumberAtEpoch + FastMath.floor(MathUtils.normalizeAngle(meanAnomaly, e.getPi()).add(dt.multiply(meanMotion)).divide(MathUtils.TWO_PI)).getReal());
 
         // Gets Mean Motion derivatives
         final T meanMotionFirstDerivative  = templateTLE.getMeanMotionFirstDerivative();
         final T meanMotionSecondDerivative = templateTLE.getMeanMotionSecondDerivative();
 
+        final T bStar = templateTLE.getBStar();
+
         // Returns the new TLE
         return new FieldTLE<>(satelliteNumber, classification, launchYear, launchNumber, launchPiece, ephemerisType,
                               elementNumber, epoch, meanMotion, meanMotionFirstDerivative, meanMotionSecondDerivative,
-                              e, i, pa, raan, meanAnomaly, newRevolutionNumberAtEpoch, bStar.getReal(), utc);
+                              e, i, pa, raan, meanAnomaly, newRevolutionNumberAtEpoch, bStar,
+                              templateTLE.getUtc());
 
     }
 

@@ -133,8 +133,16 @@ public class CartesianOrbit extends Orbit {
     }
 
     /** {@inheritDoc} */
+    @Override
     public OrbitType getType() {
         return OrbitType.CARTESIAN;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public AbstractOrbitFactory<CartesianOrbit> factory(final PositionAngleType positionAngleType,
+                                                        final double positionScale) {
+        return new CartesianOrbitFactory(this, positionScale);
     }
 
     /** {@inheritDoc} */

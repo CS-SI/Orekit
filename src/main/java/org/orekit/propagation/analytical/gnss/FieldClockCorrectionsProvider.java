@@ -37,7 +37,7 @@ import org.orekit.utils.FieldPVCoordinates;
  *               {@link FieldGNSSClockElements#getAf1() a₂} (t - {@link FieldGNSSClockElements#getToc() toc})²
  *   </li>
  *   <li>at index 1 the relativistic clock correction due to eccentricity</li>
- *   <li>at index 2 the estimated group delay differential {@link FieldGNSSClockElements#getTGD() TGD} for L1-L2 correction</li>
+ *   <li>at index 2 the estimated group delay differential {@link FieldGNSSClockElements#getTgd() TGD} for L1-L2 correction</li>
  * </ul>
  *
  * @param <T> type of the field elements
@@ -108,7 +108,7 @@ public class FieldClockCorrectionsProvider<T extends CalculusFieldElement<T>>
                                             multiply(-2 / (Constants.SPEED_OF_LIGHT * Constants.SPEED_OF_LIGHT));
 
         // estimated group delay differential
-        final T tg = gnssClk.getTGD();
+        final T tg = gnssClk.getTgd();
 
         final T[] array = MathArrays.buildArray(dt.getField(), 3);
         array[0] = dtSat;

@@ -46,6 +46,13 @@ public interface OsculatingToMeanConverter {
     MeanTheory getMeanTheory();
 
     /**
+     * Gets the non-dimensional convergence threshold.
+     * @return non-dimensional convergence threshold
+     * @since 14.0
+     */
+    double getThreshold();
+
+    /**
      * Converts an osculating orbit into a mean orbit.
      * @param osculating osculating orbit
      * @return mean orbit

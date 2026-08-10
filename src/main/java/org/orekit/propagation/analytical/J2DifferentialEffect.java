@@ -43,7 +43,7 @@ public class J2DifferentialEffect
     /** Reference date. */
     private final AbsoluteDate referenceDate;
 
-    /** Differential drift on perigee argument. */
+    /** Differential drift on periapsis argument. */
     private final double dPaDot;
 
     /** Differential drift on ascending node. */
@@ -152,7 +152,7 @@ public class J2DifferentialEffect
         final double refPaDot   =  0.75 * c * (4 - 5 * scI.sin() * scI.sin());
         final double refRaanDot = -1.5  * c * scI.cos();
 
-        // differential model on perigee argument drift
+        // differential model on periapsis argument drift
         final double dPaDotDa = -3.5 * refPaDot / a0;
         final double dPaDotDe = 4 * refPaDot * e0 / oMe2;
         final double dPaDotDi = -7.5 * c * scI.sin() * scI.cos();

@@ -40,7 +40,7 @@ class SGP4OrbitalStateTest {
         Assertions.assertEquals(elements.getAveragedSemiMajorAxis(), keplerianOrbit.getA(), 1e3);
         Assertions.assertEquals(elements.getAveragedEccentricity(), keplerianOrbit.getE(), 1e-3);
         Assertions.assertEquals(elements.getAveragedInclination(), keplerianOrbit.getI(), 1e-3);
-        Assertions.assertEquals(elements.getAveragedPerigeeArgument(),
+        Assertions.assertEquals(elements.getAveragedPeriapsisArgument(),
                 keplerianOrbit.getPeriapsisArgument(), 1e-2);
         Assertions.assertEquals(elements.getAveragedRightAscensionOfTheAscendingNode(),
                 keplerianOrbit.getRightAscensionOfAscendingNode(), 1e-3);
@@ -62,7 +62,7 @@ class SGP4OrbitalStateTest {
         Assertions.assertEquals(tle.getE(), elements.getAveragedEccentricity());
         Assertions.assertEquals(tle.getI(), elements.getAveragedInclination());
         Assertions.assertEquals(tle.getRaan(), elements.getAveragedRightAscensionOfTheAscendingNode());
-        Assertions.assertEquals(tle.getPerigeeArgument(), elements.getAveragedPerigeeArgument());
+        Assertions.assertEquals(tle.getPeriapsisArgument(), elements.getAveragedPeriapsisArgument());
         Assertions.assertEquals(tle.getMeanAnomaly(), elements.getAveragedMeanAnomaly());
     }
 

@@ -31,7 +31,7 @@ orbit.date = 2010-11-02T02:56:15.690
 # orbit.keplerian.i = 0.0
 ## Right Ascension of Ascending Node (degrees)
 # orbit.keplerian.raan = 0.0
-## Perigee Argument (degrees)
+## Periapsis Argument (degrees)
 # orbit.keplerian.pa = 0.0
 ## Anomaly (degrees)
 # orbit.keplerian.anomaly = 0.0

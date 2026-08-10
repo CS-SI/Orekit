@@ -48,8 +48,10 @@ class KeplerianHarvester extends AbstractAnalyticalMatricesHarvester {
      */
     KeplerianHarvester(final KeplerianPropagator propagator, final String stmName,
                        final RealMatrix initialStm, final DoubleArrayDictionary initialJacobianColumns) {
-        super(propagator, stmName, initialStm, initialJacobianColumns);
+        super(propagator);
         this.propagator = propagator;
+        setInitialStm(stmName, initialStm);
+        setInitialJacobianColumns(initialJacobianColumns);
     }
 
     /** {@inheritDoc} */

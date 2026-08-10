@@ -53,7 +53,7 @@ public class SemiAnalyticalUnscentedKalmanEstimatorTest {
     public static class Observer implements KalmanObserver {
 
         /** Residuals statistics. */
-        private StreamingStatistics stats;
+        private final StreamingStatistics stats;
 
         /** Constructor. */
         public Observer() {
@@ -126,7 +126,6 @@ public class SemiAnalyticalUnscentedKalmanEstimatorTest {
 
         // Create initial orbit and DSST propagator builder
         final OrbitType     orbitType     = OrbitType.EQUINOCTIAL;
-        final PositionAngleType positionAngleType = PositionAngleType.MEAN;
         final boolean       perfectStart  = true;
         final double        minStep       = 120.0;
         final double        maxStep       = 1200.0;
@@ -188,8 +187,7 @@ public class SemiAnalyticalUnscentedKalmanEstimatorTest {
         final double[] expectedSigmasVel = {0.0, 0.0, 0.0};
         final double   sigmaVelEps       = 1e-15;
         EstimationTestUtils.checkUnscentedSemiAnalyticalKalmanFit(false, kalman, measurements,
-                                                                  refOrbit, positionAngleType,
-                                                                  expectedDeltaPos, posEps,
+                                                                  refOrbit, expectedDeltaPos, posEps,
                                                                   expectedDeltaVel, velEps,
                                                                   expectedSigmasPos, sigmaPosEps,
                                                                   expectedSigmasVel, sigmaVelEps);
@@ -214,7 +212,6 @@ public class SemiAnalyticalUnscentedKalmanEstimatorTest {
 
         // Create initial orbit and propagator builder
         final OrbitType     orbitType     = OrbitType.EQUINOCTIAL;
-        final PositionAngleType positionAngleType = PositionAngleType.MEAN;
         final boolean       perfectStart  = true;
         final double        minStep       = 120.0;
         final double        maxStep       = 1200.0;
@@ -278,8 +275,7 @@ public class SemiAnalyticalUnscentedKalmanEstimatorTest {
         final double[] expectedSigmasVel = {0.0, 0.0, 0.0};
         final double   sigmaVelEps       = 1e-15;
         EstimationTestUtils.checkUnscentedSemiAnalyticalKalmanFit(false, kalman, measurements,
-                                                                  refOrbit, positionAngleType,
-                                                                  expectedDeltaPos, posEps,
+                                                                  refOrbit, expectedDeltaPos, posEps,
                                                                   expectedDeltaVel, velEps,
                                                                   expectedSigmasPos, sigmaPosEps,
                                                                   expectedSigmasVel, sigmaVelEps);
@@ -304,7 +300,6 @@ public class SemiAnalyticalUnscentedKalmanEstimatorTest {
 
         // Create initial orbit and propagator builder
         final OrbitType     orbitType     = OrbitType.EQUINOCTIAL;
-        final PositionAngleType positionAngleType = PositionAngleType.MEAN;
         final boolean       perfectStart  = true;
         final double        minStep       = 120.0;
         final double        maxStep       = 1200.0;
@@ -377,8 +372,7 @@ public class SemiAnalyticalUnscentedKalmanEstimatorTest {
         final double[] expectedSigmasVel = {0.0, 0.0, 0.0};
         final double   sigmaVelEps       = 1e-15;
         EstimationTestUtils.checkUnscentedSemiAnalyticalKalmanFit(false, kalman, measurements,
-                                                                  refOrbit, positionAngleType,
-                                                                  expectedDeltaPos, posEps,
+                                                                  refOrbit, expectedDeltaPos, posEps,
                                                                   expectedDeltaVel, velEps,
                                                                   expectedSigmasPos, sigmaPosEps,
                                                                   expectedSigmasVel, sigmaVelEps);

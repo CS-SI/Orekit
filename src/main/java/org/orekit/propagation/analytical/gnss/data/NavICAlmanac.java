@@ -17,9 +17,14 @@
 package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
-import org.orekit.gnss.SatelliteSystem;
+import org.orekit.frames.Frame;
+import org.orekit.orbits.FieldKeplerianOrbit;
+import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.time.FieldGNSSDate;
+import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
+
+import java.util.function.DoubleFunction;
 
 /**
  * Class for NavIC almanac.
@@ -31,18 +36,44 @@ import org.orekit.time.TimeScales;
  * @since 10.1
  *
  */
-public class NavICAlmanac
-    extends AbstractAlmanac<NavICAlmanac> {
+public class NavICAlmanac extends GNSSOrbitalElements<NavICAlmanac> {
 
     /**
      * Constructor.
      * @param timeScales known time scales
-     * @param system     satellite system to consider for interpreting week number
-     *                   (may be different from real system, for example in Rinex nav, weeks
-     *                   are always according to GPS)
+     * @param prn        PRN number of the satellite
+     * @param toe        time of ephemeris (<em>must</em> be consistent with {@code orbit})
+     * @param orbit      Keplerian orbit in Earth-frozen frame
+     * @param aDot       change rate in semi-major axis (m/s)
+     * @param deltaN0    delta of satellite mean motion
+     * @param deltaN0Dot change rate in Δn₀
+     * @param iDot       inclination rate (rad/s)
+     * @param omegaDot   rate of right ascension (rad/s)
+     * @param cuc        amplitude of the cosine harmonic correction term to the argument of latitude
+     * @param cus        amplitude of the sine harmonic correction term to the argument of latitude
+     * @param crc        amplitude of the cosine harmonic correction term to the orbit radius
+     * @param crs        amplitude of the sine harmonic correction term to the orbit radius
+     * @param cic        amplitude of the cosine harmonic correction term to the inclination
+     * @param cis        amplitude of the sine harmonic correction term to the inclination
+     * @param af0        zero-th order clock correction (s)
+     * @param af1        first order clock correction (s/s)
+     * @param af2        second order clock correction (s/s²)
+     * @param tgd        group delay differential TGD for L1-L2 correction
+     * @param toc        time of clock
      */
-    public NavICAlmanac(final TimeScales timeScales, final SatelliteSystem system) {
-        super(GNSSConstants.NAVIC_MU, GNSSConstants.NAVIC_AV, GNSSConstants.NAVIC_WEEK_NB, timeScales, system);
+    public NavICAlmanac(final TimeScales timeScales, final int prn,
+                        final GNSSDate toe, final KeplerianOrbit orbit,
+                        final double aDot, final double deltaN0, final double deltaN0Dot,
+                        final double iDot, final double omegaDot,
+                        final double cuc, final double cus,
+                        final double crc, final double crs,
+                        final double cic, final double cis,
+                        final double af0, final double af1, final double af2,
+                        final double tgd, final GNSSDate toc) {
+        super(GNSSConstants.NAVIC_AV, GNSSConstants.NAVIC_WEEK_NB,
+              timeScales, null, prn, toe, orbit,
+              aDot, deltaN0, deltaN0Dot, iDot, omegaDot, cuc, cus, crc, crs, cic, cis,
+              af0, af1, af2, tgd, toc);
     }
 
     /** Constructor from field instance.
@@ -54,22 +85,23 @@ public class NavICAlmanac
     }
 
     /** {@inheritDoc} */
-    @SuppressWarnings("unchecked")
     @Override
-    public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, NavICAlmanac>>
-        F toField(final Field<T> field) {
-        return (F) new FieldNavICAlmanac<>(field, this);
+    public <T extends CalculusFieldElement<T>>
+        FieldNavICAlmanac<T> toField(final FieldKeplerianOrbit<T> orbit,
+                                     final T[] nonKeplerian,
+                                     final DoubleFunction<T> converter) {
+        return new FieldNavICAlmanac<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
+                                       getType(), getPrn(),
+                                       new FieldGNSSDate<>(orbit.getDate().getField(), getTimeOfEphemeris()),
+                                       orbit,  nonKeplerian,
+                                       converter.apply(getTgd()),
+                                       new FieldGNSSDate<>(orbit.getDate().getField(), getTimeOfClock()));
     }
 
-    /**
-     * Setter for the Square Root of Semi-Major Axis (m^1/2).
-     * <p>
-     * In addition, this method set the value of the Semi-Major Axis.
-     * </p>
-     * @param sqrtA the Square Root of Semi-Major Axis (m^1/2)
-     */
-    public void setSqrtA(final double sqrtA) {
-        setSma(sqrtA * sqrtA);
+    /** {@inheritDoc} */
+    @Override
+    public NavICAlmanacFactory baseFactory(final Frame inertial, final Frame bodyFixed) {
+        return new NavICAlmanacFactory(getTimeScales(), getTimeOfEphemeris().getSystem(), inertial, bodyFixed);
     }
 
 }

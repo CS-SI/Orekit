@@ -782,11 +782,11 @@ public class FieldEcksteinHechlerPropagatorTest {
     }
 
     @Test
-    public void perigee() {
-        doPerigee(Binary64Field.getInstance());
+    public void periapsis() {
+        doPeriapsis(Binary64Field.getInstance());
     }
 
-    private <T extends CalculusFieldElement<T>> void doPerigee(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doPeriapsis(Field<T> field) {
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         final FieldKeplerianOrbit<T> orbit =

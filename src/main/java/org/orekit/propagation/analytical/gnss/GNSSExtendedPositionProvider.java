@@ -26,11 +26,13 @@ import org.orekit.utils.ExtendedPositionProvider;
 
 /**
  * Class for GNSS extended position provider.
+ * @param <O> type of the orbital elements
  * @see ExtendedPositionProvider
  * @author Romain Serra
  * @since 14.0
  */
-public class GNSSExtendedPositionProvider extends AbstractExtendedPositionProvider<GNSSPropagator> {
+public class GNSSExtendedPositionProvider<O extends GNSSOrbitalElements<O>>
+    extends AbstractExtendedPositionProvider<GNSSPropagator<O>> {
 
     /**
      * Build a new instance.
@@ -40,14 +42,14 @@ public class GNSSExtendedPositionProvider extends AbstractExtendedPositionProvid
      * @param provider attitude provider
      * @param mass satellite mass (kg)
      */
-    public GNSSExtendedPositionProvider(final GNSSOrbitalElements<?> orbitalElements, final Frame eci,
+    public GNSSExtendedPositionProvider(final O orbitalElements, final Frame eci,
                                         final Frame ecef, final AttitudeProvider provider, final double mass) {
-        super(new GNSSPropagator(orbitalElements, eci, ecef, provider, mass));
+        super(new GNSSPropagator<>(orbitalElements, eci, ecef, provider, mass));
     }
 
     /** {@inheritDoc} */
     @Override
-    protected  <T extends CalculusFieldElement<T>> FieldGnssPropagator<T> getFieldProvider(final Field<T> field) {
+    protected  <T extends CalculusFieldElement<T>> FieldGnssPropagator<T, O> getFieldProvider(final Field<T> field) {
         return new FieldGnssPropagator<>(getProvider().getOrbitalElements().toField(field),
                 getProvider().getECI(), getProvider().getECEF(), getProvider().getAttitudeProvider(),
                 field.getZero().newInstance(getProvider().getInitialState().getMass()));

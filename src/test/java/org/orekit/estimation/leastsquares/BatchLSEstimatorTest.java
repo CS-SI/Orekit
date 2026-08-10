@@ -16,6 +16,7 @@
  */
 package org.orekit.estimation.leastsquares;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -67,6 +68,7 @@ import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.frames.LOFType;
 import org.orekit.gnss.antenna.FrequencyPattern;
 import org.orekit.orbits.CartesianOrbit;
+import org.orekit.orbits.CartesianOrbitFactory;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -92,8 +94,9 @@ class BatchLSEstimatorTest {
         // GIVEN
         EstimationTestUtils.eccentricContext("regular-data:potential:tides");
         final Orbit orbit = TestUtils.getDefaultOrbit(AbsoluteDate.ARBITRARY_EPOCH);
-        final KeplerianPropagatorBuilder propagatorBuilder = new KeplerianPropagatorBuilder(OrbitType.CARTESIAN.convertType(orbit),
-                PositionAngleType.TRUE, 1.);
+        final KeplerianPropagatorBuilder propagatorBuilder =
+            new KeplerianPropagatorBuilder(new CartesianOrbitFactory((CartesianOrbit) OrbitType.CARTESIAN.convertType(orbit),
+                                                                     1.0));
         final BatchLSEstimator estimator = new BatchLSEstimator(new GaussNewtonOptimizer(), propagatorBuilder);
         estimator.setParametersConvergenceThreshold(1e-2);
         estimator.setMaxIterations(100);
@@ -208,9 +211,10 @@ class BatchLSEstimatorTest {
 
         // run estimation while logging RMS
         final List<Double> rms = new ArrayList<>();
-        estimator.setObserver((iterationsCount, evaluationsCount, orbits, estimatedOrbitalParameters, estimatedPropagatorParameters, estimatedMeasurementsParameters, evaluationsProvider, lspEvaluation) -> {
-            rms.add(lspEvaluation.getRMS());
-        });
+        estimator.setObserver((iterationsCount, evaluationsCount, orbits,
+                               estimatedOrbitalParameters, estimatedPropagatorParameters,
+                               estimatedMeasurementsParameters, evaluationsProvider,
+                               lspEvaluation) -> rms.add(lspEvaluation.getRMS()));
         estimator.estimate();
 
         // check
@@ -394,12 +398,13 @@ class BatchLSEstimatorTest {
             } else {
                 // default reference date
                 Assertions.assertEquals(0,
-                        driver.getReferenceDate().durationFrom(propagatorBuilder.getInitialOrbitDate()), 1.0e-15);
+                                        driver.getReferenceDate().durationFrom(propagatorBuilder.getOrbitalParameterFactory().getDate()),
+                                        1.0e-15);
             }
         }
 
     }
-    
+
     /**
      * Perfect range measurements with a biased start
      */
@@ -494,12 +499,13 @@ class BatchLSEstimatorTest {
             } else {
                 // default reference date
                 Assertions.assertEquals(0,
-                        driver.getReferenceDate().durationFrom(propagatorBuilder.getInitialOrbitDate()), 1.0e-15);
+                                        driver.getReferenceDate().durationFrom(propagatorBuilder.getOrbitalParameterFactory().getDate()),
+                                        1.0e-15);
             }
         }
 
     }
-    
+
      /**
      * Perfect range measurements with a biased start
      */
@@ -588,7 +594,8 @@ class BatchLSEstimatorTest {
             } else {
                 // default reference date
                 Assertions.assertEquals(0,
-                        driver.getReferenceDate().durationFrom(propagatorBuilder.getInitialOrbitDate()), 1.0e-15);
+                                        driver.getReferenceDate().durationFrom(propagatorBuilder.getOrbitalParameterFactory().getDate()),
+                                        1.0e-15);
             }
         }
 
@@ -605,7 +612,8 @@ class BatchLSEstimatorTest {
         final NumericalPropagatorBuilder propagatorBuilder =
                         context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 1.0);
-        propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getFrame(), LOFType.LVLH));
+        propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getOrbitalParameterFactory().getFrame(),
+                                                            LOFType.LVLH));
         final Vector3D antennaPhaseCenter = new Vector3D(-1.2, 2.3, -0.7);
 
         // create perfect range measurements with antenna offset
@@ -692,7 +700,8 @@ class BatchLSEstimatorTest {
             } else {
                 // default reference date
                 Assertions.assertEquals(0,
-                        driver.getReferenceDate().durationFrom(propagatorBuilder.getInitialOrbitDate()), 1.0e-15);
+                                        driver.getReferenceDate().durationFrom(propagatorBuilder.getOrbitalParameterFactory().getDate()),
+                                        1.0e-15);
             }
         }
 
@@ -846,7 +855,8 @@ class BatchLSEstimatorTest {
             } else {
                 // default reference date
                 Assertions.assertEquals(0,
-                        driver.getReferenceDate().durationFrom(propagatorBuilder1.getInitialOrbitDate()), 1.0e-15);
+                                        driver.getReferenceDate().durationFrom(propagatorBuilder1.getOrbitalParameterFactory().getDate()),
+                                        1.0e-15);
             }
         }
 
@@ -954,7 +964,7 @@ class BatchLSEstimatorTest {
         r12.forEach(estimator::addMeasurement);
         r1.forEach(estimator::addMeasurement);
         a1.forEach(estimator::addMeasurement);
-        estimator.setParametersConvergenceThreshold(1.0e-2);
+        estimator.setParametersConvergenceThreshold(0.2);
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
         estimator.setObserver(new BatchLSObserver() {
@@ -1010,11 +1020,11 @@ class BatchLSEstimatorTest {
                           before.getPosition()), 1.0e-3);
         Assertions.assertEquals(0.0010514, Vector3D.distance(closeOrbit.getVelocity(),
                           before.getVelocity()), 1.0e-6);
-        EstimationTestUtils.checkFit(false, context, estimator, 4, 5,
-                                     0.0, 6.7e-06,
-                                     0.0, 1.49e-05,
-                                     0.0, 9.1e-07,
-                                     0.0, 3.6e-10);
+        EstimationTestUtils.checkFit(false, context, estimator, 3, 4,
+                                     0.0, 1.3e-06,
+                                     0.0, 5.2e-06,
+                                     0.0, 5.8e-07,
+                                     0.0, 1.9e-10);
 
         final Orbit determined = new KeplerianOrbit(parameters.get( 6).getValue(),
                                                     parameters.get( 7).getValue(),
@@ -1040,7 +1050,8 @@ class BatchLSEstimatorTest {
             } else {
                 // default reference date
                 Assertions.assertEquals(0,
-                        driver.getReferenceDate().durationFrom(propagatorBuilder1.getInitialOrbitDate()), 1.0e-15);
+                                        driver.getReferenceDate().durationFrom(propagatorBuilder1.getOrbitalParameterFactory().getDate()),
+                                        1.0e-15);
             }
         }
 
@@ -1207,7 +1218,8 @@ class BatchLSEstimatorTest {
             } else {
                 // default reference date
                 Assertions.assertEquals(0,
-                        driver.getReferenceDate().durationFrom(propagatorBuilder1.getInitialOrbitDate()), 1.0e-15);
+                                        driver.getReferenceDate().durationFrom(propagatorBuilder1.getOrbitalParameterFactory().getDate()),
+                                        1.0e-15);
             }
         }
 
@@ -1264,6 +1276,7 @@ class BatchLSEstimatorTest {
     }
 
     private static class DummyException extends OrekitException {
+        @Serial
         private static final long serialVersionUID = 1L;
         public DummyException() {
             super(OrekitMessages.INTERNAL_ERROR);
@@ -1436,7 +1449,10 @@ class BatchLSEstimatorTest {
                                       1.0e-6, 60.0, 1.0e-3);
 
         // Estimate orbital parameters
-        final List<DelegatingDriver> drivers = propagatorBuilder.getOrbitalParametersDrivers().getDrivers();
+        final List<DelegatingDriver> drivers = propagatorBuilder.
+                                               getOrbitalParameterFactory().
+                                               getOrbitalParametersDrivers().
+                                               getDrivers();
         drivers.forEach(driver -> driver.setSelected(true));
         drivers.forEach(driver -> driver.setValue(1.0001 * driver.getValue()));
 
@@ -1482,7 +1498,8 @@ class BatchLSEstimatorTest {
                                                        new PVMeasurementCreator(),
                                                        0.0, 1.0, 300.0);
 
-        List<ParameterDriversList.DelegatingDriver> orbitalElementsDrivers = propagatorBuilder.getOrbitalParametersDrivers().getDrivers();
+        List<ParameterDriversList.DelegatingDriver> orbitalElementsDrivers =
+            propagatorBuilder.getOrbitalParameterFactory().getOrbitalParametersDrivers().getDrivers();
         IntStream.range(0, orbitalParametersEstimated.length).forEach(i -> {
             final ParameterDriver driver = orbitalElementsDrivers.get(i);
             if (orbitalParametersEstimated[i]) {

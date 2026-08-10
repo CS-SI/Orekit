@@ -57,7 +57,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author V&eacute;ronique Pommier-Maurussane
  */
 public abstract class Orbit
-    implements ShiftablePVCoordinatesHolder<Orbit> {
+    implements ShiftablePVCoordinatesHolder<Orbit>, OrbitalParameters {
 
     /** Absolute tolerance when checking if the rate of the position angle is Keplerian or not. */
     protected static final double TOLERANCE_POSITION_ANGLE_RATE = 1e-15;
@@ -241,6 +241,17 @@ public abstract class Orbit
      * @return orbit type
      */
     public abstract OrbitType getType();
+
+    /**
+     * Get a factory for the current orbit type.
+     *
+     * @param positionAngleType position angle type to use
+     * @param positionScale     position scale used to scale the orbital drivers
+     * @return factory building orbit instance of the correct type
+     * @since 14.0
+     */
+    public abstract AbstractOrbitFactory<? extends Orbit> factory(PositionAngleType positionAngleType,
+                                                                  double positionScale);
 
     /** Ensure the defining frame is a pseudo-inertial frame.
      * @param frame frame to check

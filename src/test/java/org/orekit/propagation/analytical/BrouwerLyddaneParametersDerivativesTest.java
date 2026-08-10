@@ -65,8 +65,8 @@ public class BrouwerLyddaneParametersDerivativesTest {
         OrbitType.CARTESIAN.mapOrbitToArray(initialState.getOrbit(), PositionAngleType.MEAN, stateVector, null);
         BrouwerLyddaneHarvester harvester = (BrouwerLyddaneHarvester) propagator.setupMatricesComputation("stm", null, null);
         harvester.freezeColumnsNames();
-        RealMatrix dYdP = harvester.getParametersJacobian(initialState);
-        Assertions.assertNull(dYdP);
+        Assertions.assertNull(harvester.getParametersJacobian(initialState));
+        Assertions.assertNull(harvester.getStateJacobianVsBuilderParameters(initialState));
     }
 
     @Test

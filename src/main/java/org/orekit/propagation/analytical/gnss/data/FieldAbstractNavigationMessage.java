@@ -17,11 +17,9 @@
 package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
-import org.hipparchus.util.FastMath;
-import org.orekit.time.FieldAbsoluteDate;
-
-import java.util.function.Function;
+import org.orekit.orbits.FieldKeplerianOrbit;
+import org.orekit.time.FieldGNSSDate;
+import org.orekit.time.TimeScales;
 
 /**
  * Base class for GNSS navigation messages.
@@ -38,100 +36,40 @@ import java.util.function.Function;
  */
 public abstract class FieldAbstractNavigationMessage<T extends CalculusFieldElement<T>,
                                                      O extends AbstractNavigationMessage<O>>
-    extends FieldAbstractAlmanac<T, O> {
-
-    /** Time of clock epoch. */
-    private FieldAbsoluteDate<T> epochToc;
+    extends FieldGnssOrbitalElements<T, O> {
 
     /** Transmission time. */
-    private T transmissionTime;
+    private final FieldGNSSDate<T> transmissionTime;
 
-    /** Message type.
+    /** Creates a new instance.
+     * @param angularVelocity  mean angular velocity of the Earth for the GNSS model
+     * @param weeksInCycle     number of weeks in the GNSS cycle
+     * @param timeScales       known time scales
+     * @param type             type (null if not a navigation message)
+     * @param prn              PRN number of the satellite
+     * @param toe              time of ephemeris (<em>must</em> be consistent with {@code orbit})
+     * @param orbit            Keplerian orbit in Earth-frozen frame
+     * @param nonKeplerian     15 non-Keplerian parameters (in the order given by {@link NonKeplerianDriversFactory}
+     * @param tgd              group delay differential TGD for L1-L2 correction
+     * @param toc              time of clock
+     * @param transmissionTime transmission time
      * @since 14.0
      */
-    private final String type;
-
-    /** Constructor from non-field instance.
-     * @param field    field to which elements belong
-     * @param original regular non-field instance
-     */
-    protected FieldAbstractNavigationMessage(final Field<T> field, final O original) {
-        super(field, original);
-        setEpochToc(new FieldAbsoluteDate<>(field, original.getEpochToc()));
-        setTransmissionTime(field.getZero().newInstance(original.getTransmissionTime()));
-        this.type = original.getNavigationMessageType();
-    }
-
-    /** Constructor from different field instance.
-     * @param <V> type of the old field elements
-     * @param original regular non-field instance
-     * @param converter for field elements
-     */
-    protected <V extends CalculusFieldElement<V>> FieldAbstractNavigationMessage(final Function<V, T> converter,
-                                                                                 final FieldAbstractNavigationMessage<V, O> original) {
-        super(converter, original);
-        setEpochToc(new FieldAbsoluteDate<>(getMu().getField(), original.getEpochToc().toAbsoluteDate()));
-        setTransmissionTime(converter.apply(original.getTransmissionTime()));
-        this.type = original.getNavigationMessageType();
-    }
-
-    /** Get navigation message type.
-     * @return the navigation message type
-     * @since 14.0
-     */
-    public String getNavigationMessageType() {
-        return type;
-    }
-
-    /**
-     * Getter for Square Root of Semi-Major Axis (√m).
-     * @return Square Root of Semi-Major Axis (√m)
-     */
-    public T getSqrtA() {
-        return FastMath.sqrt(getSma());
-    }
-
-    /**
-     * Setter for the Square Root of Semi-Major Axis (√m).
-     * <p>
-     * In addition, this method set the value of the Semi-Major Axis.
-     * </p>
-     * @param sqrtA the Square Root of Semi-Major Axis (√m)
-     */
-    public void setSqrtA(final T sqrtA) {
-        setSma(sqrtA.square());
-    }
-
-    /**
-     * Getter for the time of clock epoch.
-     * @return the time of clock epoch
-     */
-    public FieldAbsoluteDate<T> getEpochToc() {
-        return epochToc;
-    }
-
-    /**
-     * Setter for the time of clock epoch.
-     * @param epochToc the epoch to set
-     */
-    public void setEpochToc(final FieldAbsoluteDate<T> epochToc) {
-        this.epochToc = epochToc;
+    public FieldAbstractNavigationMessage(final double angularVelocity, final int weeksInCycle,
+                                          final TimeScales timeScales, final String type, final int prn,
+                                          final FieldGNSSDate<T> toe, final FieldKeplerianOrbit<T> orbit,
+                                          final T[] nonKeplerian, final T tgd,
+                                          final FieldGNSSDate<T> toc, final FieldGNSSDate<T>  transmissionTime) {
+        super(angularVelocity, weeksInCycle, timeScales, type, prn, toe, orbit, nonKeplerian, tgd, toc);
+        this.transmissionTime = transmissionTime;
     }
 
     /**
      * Getter for transmission time.
      * @return transmission time
      */
-    public T getTransmissionTime() {
+    public FieldGNSSDate<T> getTransmissionTime() {
         return transmissionTime;
-    }
-
-    /**
-     * Setter for transmission time.
-     * @param transmissionTime transmission time
-     */
-    public void setTransmissionTime(final T transmissionTime) {
-        this.transmissionTime = transmissionTime;
     }
 
 }

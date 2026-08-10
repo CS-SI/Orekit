@@ -143,12 +143,12 @@ public class DSSTJ2SquaredClosedFormTest {
 
     }
 
-    private void doTestComparisonWithNumerical(final double perigeeAltitude, final double apogeeAltitude,
+    private void doTestComparisonWithNumerical(final double periapsisAltitude, final double apoapsisAltitude,
                                                final double currentDifferenceWithoutJ2Squared,
                                                final double currentDifferenceWithJ2Squared) {
 
         // Initial spacecraft state
-        final Orbit initialOrbit = createOrbit(perigeeAltitude, apogeeAltitude);
+        final Orbit initialOrbit = createOrbit(periapsisAltitude, apoapsisAltitude);
         final SpacecraftState initialState = new SpacecraftState(initialOrbit).withMass(1000.0);
 
         // Propagation duration
@@ -312,17 +312,17 @@ public class DSSTJ2SquaredClosedFormTest {
 
     }
 
-    private Orbit createOrbit(final double perigeeAltitude, final double apogeeAltitude) {
+    private Orbit createOrbit(final double periapsisAltitude, final double apoapsisAltitude) {
 
         // Frame and epoch
         final Frame frame = FramesFactory.getEME2000();
         final AbsoluteDate epoch = new AbsoluteDate(2007, 04, 16, 0, 46, 42.400, TimeScalesFactory.getUTC());
 
         // Orbital elements
-        final double apogee  = Constants.WGS84_EARTH_EQUATORIAL_RADIUS + apogeeAltitude;
-        final double perigee = Constants.WGS84_EARTH_EQUATORIAL_RADIUS + perigeeAltitude;
-        final double sma  = 0.5 * (apogee + perigee);
-        final double ecc  = 1.0 - perigee / sma;
+        final double apoapsis  = Constants.WGS84_EARTH_EQUATORIAL_RADIUS + apoapsisAltitude;
+        final double periapsis = Constants.WGS84_EARTH_EQUATORIAL_RADIUS + periapsisAltitude;
+        final double sma  = 0.5 * (apoapsis + periapsis);
+        final double ecc  = 1.0 - periapsis / sma;
         final double inc  = FastMath.toRadians(10.0);
         final double raan = FastMath.toRadians(40.0);
         final double aop  = FastMath.toRadians(120.0);
@@ -337,7 +337,7 @@ public class DSSTJ2SquaredClosedFormTest {
 
     }
 
-    private FieldOrbit<Binary64> createOrbit(final Field<Binary64> field, final double perigeeAltitude, final double apogeeAltitude) {
+    private FieldOrbit<Binary64> createOrbit(final Field<Binary64> field, final double periapsisAltitude, final double apoapsisAltitude) {
 
         // Zero
         final Binary64 zero = field.getZero();
@@ -348,10 +348,10 @@ public class DSSTJ2SquaredClosedFormTest {
         final FieldAbsoluteDate<Binary64> fieldEpoch = new FieldAbsoluteDate<>(field, epoch);
 
         // Orbital elements (very LEO orbit)
-        final double apogee  = Constants.WGS84_EARTH_EQUATORIAL_RADIUS + apogeeAltitude;
-        final double perigee = Constants.WGS84_EARTH_EQUATORIAL_RADIUS + perigeeAltitude;
-        final double sma  = 0.5 * (apogee + perigee);
-        final double ecc  = 1.0 - perigee / sma;
+        final double apoapsis  = Constants.WGS84_EARTH_EQUATORIAL_RADIUS + apoapsisAltitude;
+        final double periapsis = Constants.WGS84_EARTH_EQUATORIAL_RADIUS + periapsisAltitude;
+        final double sma  = 0.5 * (apoapsis + periapsis);
+        final double ecc  = 1.0 - periapsis / sma;
         final double inc  = FastMath.toRadians(10.0);
         final double raan = FastMath.toRadians(40.0);
         final double aop  = FastMath.toRadians(120.0);

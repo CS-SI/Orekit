@@ -152,7 +152,7 @@
     * predefined discrete events
         * eclipse (both umbra and penumbra)
         * ascending and descending node crossing
-        * apogee and perigee crossing
+        * apoapsis and periapsis crossing
         * alignment with some body in the orbital plane
           (with customizable threshold angle)
         * angular separation thresholds crossing between spacecraft and a beacon (typically the Sun)

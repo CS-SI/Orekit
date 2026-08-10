@@ -35,8 +35,8 @@ public enum EulerKey {
     rotationRates((token, context, container) -> true),
 
     /** Comment entry. */
-    COMMENT((token, context, container) ->
-            token.getType() == TokenType.ENTRY ? container.addComment(token.getContentAsNormalizedString()) : true),
+    COMMENT((token, context, container) -> token.getType() != TokenType.ENTRY ||
+                                           container.addComment(token.getContentAsNormalizedString())),
 
     /** First reference frame entry (only for ADM V1). */
     EULER_FRAME_A((token, context, container) -> token.processAsFrame(container.getEndpoints()::setFrameA, context, true, true, true)),
