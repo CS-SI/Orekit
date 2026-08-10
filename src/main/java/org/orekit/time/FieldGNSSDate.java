@@ -43,7 +43,9 @@ public class FieldGNSSDate<T extends CalculusFieldElement<T>>
         this.fieldDate = new FieldAbsoluteDate<>(gnssDate.getDate(), field.getZero());
     }
 
-    /** {@inheritDoc} */
+    /** Get the underlying GNSS date.
+     * @return underlying GNSS date
+     */
     public GNSSDate getGnssDate() {
         return gnssDate;
     }

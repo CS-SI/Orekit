@@ -30,6 +30,17 @@ import java.io.IOException;
 public abstract class CivilianLevel1NavigationMessageWriter<T extends AbstractNavigationMessage<T>>
     extends AbstractNavigationMessageWriter<T> {
 
+    /** Empty constructor.
+     * <p>
+     * This constructor is not strictly necessary, but it prevents spurious
+     * javadoc warnings with JDK 18 and later.
+     * </p>
+     * @since 14.0
+     */
+    public CivilianLevel1NavigationMessageWriter() {
+        // nothing to do
+    }
+
     /** {@inheritDoc} */
     @Override
     protected void writeField1Line1(final T message, final RinexNavigationWriter writer)

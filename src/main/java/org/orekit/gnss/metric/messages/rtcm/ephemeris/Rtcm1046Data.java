@@ -50,7 +50,7 @@ public class Rtcm1046Data extends RtcmEphemerisData {
      * Get the Galileo navigation message corresponding to the current RTCM data.
      * <p>
      * This object can be used to initialize a {@link GNSSPropagator}
-     * <p>
+     * </p>
      * @return the Galileo navigation message
      */
     public GalileoNavigationMessage getGalileoNavigationMessage() {

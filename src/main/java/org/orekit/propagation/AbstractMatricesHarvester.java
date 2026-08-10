@@ -40,6 +40,17 @@ public abstract class AbstractMatricesHarvester implements MatricesHarvester {
     /** Initial columns of the Jacobians matrix with respect to parameters. */
     private DoubleArrayDictionary initialJacobianColumns;
 
+    /** Empty constructor.
+     * <p>
+     * This constructor is not strictly necessary, but it prevents spurious
+     * javadoc warnings with JDK 18 and later.
+     * </p>
+     * @since 14.0
+     */
+    public AbstractMatricesHarvester() {
+        // nothing to do
+    }
+
     /** Set the initial State Transition Matrix.
      * <p>
      * The arguments for initial matrices <em>must</em> be compatible with the

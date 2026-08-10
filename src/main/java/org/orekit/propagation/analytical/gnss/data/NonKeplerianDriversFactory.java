@@ -263,7 +263,7 @@ public class NonKeplerianDriversFactory {
         driver.setReferenceValue(value);
     }
 
-    /** {@inheritDoc}
+    /** Get the 15 drivers for the non-Keplerian parameters.
      * <p>
      * Only the 15 non-Keplerian parameters (12 evolution parameters and 3 clock parameters)
      * are listed here:
@@ -283,6 +283,7 @@ public class NonKeplerianDriversFactory {
      * af1 driver at index {@link #AF1_INDEX},
      * and af2 driver at index {@link #AF2_INDEX}.
      * </p>
+     * @return 15 drivers for the non-Keplerian parameters
      */
     public List<ParameterDriver> getParametersDrivers() {
 
