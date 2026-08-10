@@ -67,7 +67,7 @@ import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.EquinoctialOrbitFactory;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.PropagationType;
@@ -154,7 +154,7 @@ public class ExtendedSemiAnalyticalKalmanFilterTest {
         });
 
         // Jacobian of the orbital parameters w/r to Cartesian
-        final Orbit orbit = OrbitType.EQUINOCTIAL.convertType(initialOrbit);
+        final Orbit orbit = OrbitParamsType.EQUINOCTIAL.convertType(initialOrbit);
         final double[][] dYdC = new double[6][6];
         orbit.getJacobianWrtCartesian(PositionAngleType.TRUE, dYdC);
         final RealMatrix Jac = MatrixUtils.createRealMatrix(dYdC);
@@ -311,7 +311,7 @@ public class ExtendedSemiAnalyticalKalmanFilterTest {
         final PropagatorBuilder builder;
 
         // Convert initial orbit in equinoctial elements
-        final EquinoctialOrbit equinoctial = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(orbit);
+        final EquinoctialOrbit equinoctial = (EquinoctialOrbit) OrbitParamsType.EQUINOCTIAL.convertType(orbit);
 
         // Initialize the numerical builder
         final DSSTPropagatorBuilder propagator =

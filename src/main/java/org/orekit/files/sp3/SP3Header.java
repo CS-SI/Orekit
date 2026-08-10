@@ -361,7 +361,7 @@ public class SP3Header {
     /** Returns the {@link SP3OrbitType} for this SP3 file.
      * @return the orbit type
      */
-    public SP3OrbitType getOrbitType() {
+    public SP3OrbitType getOrbitParamsType() {
         return orbitType;
     }
 

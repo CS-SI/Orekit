@@ -46,7 +46,7 @@ public class SP3TestUtils {
         Assertions.assertEquals(original.getEpochInterval(),     rebuilt.getEpochInterval(), 1.0e-15);
         Assertions.assertEquals(original.getNumberOfEpochs(),    rebuilt.getNumberOfEpochs());
         Assertions.assertEquals(original.getCoordinateSystem(),  rebuilt.getCoordinateSystem());
-        Assertions.assertEquals(original.getOrbitType(),         rebuilt.getOrbitType());
+        Assertions.assertEquals(original.getOrbitParamsType(),         rebuilt.getOrbitParamsType());
         Assertions.assertEquals(original.getOrbitTypeKey(),      rebuilt.getOrbitTypeKey());
         Assertions.assertEquals(original.getAgency(),            rebuilt.getAgency());
         Assertions.assertEquals(original.getPosVelBase(),        rebuilt.getPosVelBase(), 1.0e-15);

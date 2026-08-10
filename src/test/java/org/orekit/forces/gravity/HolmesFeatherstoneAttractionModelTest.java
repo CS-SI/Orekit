@@ -480,7 +480,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
         FieldSpacecraftState<DerivativeStructure> initialState = new FieldSpacecraftState<>(FKO);
 
         SpacecraftState iSR = initialState.toSpacecraftState();
-        OrbitType type = OrbitType.EQUINOCTIAL;
+        OrbitParamsType type = OrbitParamsType.EQUINOCTIAL;
         double[][] tolerance = ToleranceProvider.getDefaultToleranceProvider(10.).getTolerances(FKO.toOrbit(), type);
 
 
@@ -492,12 +492,12 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
         RIntegrator.setInitialStepSize(60);
 
         FieldNumericalPropagator<DerivativeStructure> FNP = new FieldNumericalPropagator<>(integrator);
-        FNP.setOrbitType(type);
+        FNP.setOrbitParamsType(type);
         FNP.setPositionAngleType(PositionAngleType.TRUE);
         FNP.setInitialState(initialState);
 
         NumericalPropagator NP = new NumericalPropagator(RIntegrator);
-        NP.setOrbitType(FNP.getOrbitType());
+        NP.setOrbitParamsType(FNP.getOrbitParamsType());
         NP.setPositionAngleType(FNP.getPositionAngleType());
         NP.setInitialState(iSR);
 
@@ -549,7 +549,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
         FieldSpacecraftState<DerivativeStructure> initialState = new FieldSpacecraftState<>(FKO);
 
         SpacecraftState iSR = initialState.toSpacecraftState();
-        OrbitType type = OrbitType.EQUINOCTIAL;
+        OrbitParamsType type = OrbitParamsType.EQUINOCTIAL;
         double[][] tolerance = ToleranceProvider.getDefaultToleranceProvider(10.).getTolerances(FKO.toOrbit(), type);
 
 
@@ -561,11 +561,11 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
         RIntegrator.setInitialStepSize(60);
 
         FieldNumericalPropagator<DerivativeStructure> FNP = new FieldNumericalPropagator<>(integrator);
-        FNP.setOrbitType(type);
+        FNP.setOrbitParamsType(type);
         FNP.setInitialState(initialState);
 
         NumericalPropagator NP = new NumericalPropagator(RIntegrator);
-        NP.setOrbitType(type);
+        NP.setOrbitParamsType(type);
         NP.setInitialState(iSR);
 
         double[][] c = new double[3][1];
@@ -879,7 +879,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
 
         // let the step handler perform the test
         propagator.setInitialState(new SpacecraftState(initialOrbit));
-        propagator.setOrbitType(OrbitType.EQUINOCTIAL);
+        propagator.setOrbitParamsType(OrbitParamsType.EQUINOCTIAL);
         propagator.setPositionAngleType(PositionAngleType.TRUE);
         propagator.setStepHandler(20, new EckStepHandler(initialOrbit, ae,
                                                          unnormalizedC20, unnormalizedC30, unnormalizedC40,
@@ -1024,12 +1024,12 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
     private BoundedPropagator createEphemeris(double dP, SpacecraftState initialState, double duration,
                                               NormalizedSphericalHarmonicsProvider provider)
         {
-        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(dP).getTolerances(initialState.getOrbit(), OrbitType.CARTESIAN);
+        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(dP).getTolerances(initialState.getOrbit(), OrbitParamsType.CARTESIAN);
         AbstractIntegrator integrator =
                 new DormandPrince853Integrator(0.001, 120.0, tol[0], tol[1]);
         NumericalPropagator propagator = new NumericalPropagator(integrator);
         final EphemerisGenerator generator = propagator.getEphemerisGenerator();
-        propagator.setOrbitType(OrbitType.CARTESIAN);
+        propagator.setOrbitParamsType(OrbitParamsType.CARTESIAN);
         propagator.addForceModel(new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true), provider));
         propagator.setInitialState(initialState);
         propagator.propagate(initialState.getDate().shiftedBy(duration));
@@ -1052,12 +1052,12 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
         double OMEGA = FastMath.toRadians(15.0 * 22.5);
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
                                          0, PositionAngleType.MEAN, FramesFactory.getEME2000(), date, mu);
-        OrbitType integrationType = OrbitType.CARTESIAN;
+        OrbitParamsType integrationType = OrbitParamsType.CARTESIAN;
         double[][] tolerances = ToleranceProvider.getDefaultToleranceProvider(0.01).getTolerances(orbit, integrationType);
 
         propagator = new NumericalPropagator(new DormandPrince853Integrator(1.0e-3, 120,
                                                                             tolerances[0], tolerances[1]));
-        propagator.setOrbitType(integrationType);
+        propagator.setOrbitParamsType(integrationType);
         HolmesFeatherstoneAttractionModel hfModel =
                 new HolmesFeatherstoneAttractionModel(itrf, GravityFieldFactory.getNormalizedProvider(50, 50));
         Assertions.assertEquals(TideSystem.UNKNOWN, hfModel.getTideSystem());

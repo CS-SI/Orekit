@@ -44,7 +44,7 @@ import org.orekit.frames.TopocentricFrame;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
@@ -183,68 +183,68 @@ public class TimeSpanEstimatedModelTest {
 
         // Finite differences for reference values
         final double[][] refDeriv = new double[1][6];
-        final OrbitType orbitType = OrbitType.KEPLERIAN;
+        final OrbitParamsType orbitParamsType = OrbitParamsType.KEPLERIAN;
         final PositionAngleType angleType = PositionAngleType.MEAN;
         double dP = 0.001;
-        double[] steps = ToleranceProvider.getDefaultToleranceProvider(1000000 * dP).getTolerances(orbit, orbitType)[0];
+        double[] steps = ToleranceProvider.getDefaultToleranceProvider(1000000 * dP).getTolerances(orbit, orbitParamsType)[0];
         for (int i = 0; i < 6; i++) {
-            SpacecraftState stateM4 = shiftState(state, orbitType, angleType, -4 * steps[i], i);
+            SpacecraftState stateM4 = shiftState(state, orbitParamsType, angleType, -4 * steps[i], i);
             final Vector3D positionM4 = stateM4.getPosition();
             final TrackingCoordinates trackingCoordinatesM4  = station.getBaseFrame().
                                         getTrackingCoordinates(positionM4, stateM4.getFrame(), stateM4.getDate());
             double  delayM4 = timeSpanModel.pathDelay(trackingCoordinatesM4, point,
                                                       timeSpanModel.getParameters(), stateM4.getDate()).getDelay();
             
-            SpacecraftState stateM3 = shiftState(state, orbitType, angleType, -3 * steps[i], i);
+            SpacecraftState stateM3 = shiftState(state, orbitParamsType, angleType, -3 * steps[i], i);
             final Vector3D positionM3 = stateM3.getPosition();
             final TrackingCoordinates trackingCoordinatesM3  = station.getBaseFrame().
                                         getTrackingCoordinates(positionM3, stateM3.getFrame(), stateM3.getDate());
             double  delayM3 = timeSpanModel.pathDelay(trackingCoordinatesM3, point,
                                                       timeSpanModel.getParameters(), stateM3.getDate()).getDelay();
             
-            SpacecraftState stateM2 = shiftState(state, orbitType, angleType, -2 * steps[i], i);
+            SpacecraftState stateM2 = shiftState(state, orbitParamsType, angleType, -2 * steps[i], i);
             final Vector3D positionM2 = stateM2.getPosition();
             final TrackingCoordinates trackingCoordinatesM2  = station.getBaseFrame().
                                         getTrackingCoordinates(positionM2, stateM2.getFrame(), stateM2.getDate());
             double  delayM2 = timeSpanModel.pathDelay(trackingCoordinatesM2, point,
                                                       timeSpanModel.getParameters(), stateM2.getDate()).getDelay();
  
-            SpacecraftState stateM1 = shiftState(state, orbitType, angleType, -1 * steps[i], i);
+            SpacecraftState stateM1 = shiftState(state, orbitParamsType, angleType, -1 * steps[i], i);
             final Vector3D positionM1 = stateM1.getPosition();
             final TrackingCoordinates trackingCoordinatesM1  = station.getBaseFrame().
                                         getTrackingCoordinates(positionM1, stateM1.getFrame(), stateM1.getDate());
             double  delayM1 = timeSpanModel.pathDelay(trackingCoordinatesM1, point,
                                                       timeSpanModel.getParameters(), stateM1.getDate()).getDelay();
            
-            SpacecraftState stateP1 = shiftState(state, orbitType, angleType, 1 * steps[i], i);
+            SpacecraftState stateP1 = shiftState(state, orbitParamsType, angleType, 1 * steps[i], i);
             final Vector3D positionP1 = stateP1.getPosition();
             final TrackingCoordinates trackingCoordinatesP1  = station.getBaseFrame().
                                         getTrackingCoordinates(positionP1, stateP1.getFrame(), stateP1.getDate());
             double  delayP1 = timeSpanModel.pathDelay(trackingCoordinatesP1, point,
                                                       timeSpanModel.getParameters(), stateP1.getDate()).getDelay();
             
-            SpacecraftState stateP2 = shiftState(state, orbitType, angleType, 2 * steps[i], i);
+            SpacecraftState stateP2 = shiftState(state, orbitParamsType, angleType, 2 * steps[i], i);
             final Vector3D positionP2 = stateP2.getPosition();
             final TrackingCoordinates trackingCoordinatesP2  = station.getBaseFrame().
                                         getTrackingCoordinates(positionP2, stateP2.getFrame(), stateP2.getDate());
             double  delayP2 = timeSpanModel.pathDelay(trackingCoordinatesP2, point,
                                                       timeSpanModel.getParameters(), stateP2.getDate()).getDelay();
             
-            SpacecraftState stateP3 = shiftState(state, orbitType, angleType, 3 * steps[i], i);
+            SpacecraftState stateP3 = shiftState(state, orbitParamsType, angleType, 3 * steps[i], i);
             final Vector3D positionP3 = stateP3.getPosition();
             final TrackingCoordinates trackingCoordinatesP3  = station.getBaseFrame().
                                         getTrackingCoordinates(positionP3, stateP3.getFrame(), stateP3.getDate());
             double  delayP3 = timeSpanModel.pathDelay(trackingCoordinatesP3, point,
                                                       timeSpanModel.getParameters(), stateP3.getDate()).getDelay();
             
-            SpacecraftState stateP4 = shiftState(state, orbitType, angleType, 4 * steps[i], i);
+            SpacecraftState stateP4 = shiftState(state, orbitParamsType, angleType, 4 * steps[i], i);
             final Vector3D positionP4 = stateP4.getPosition();
             final TrackingCoordinates trackingCoordinatesP4  = station.getBaseFrame().
                                         getTrackingCoordinates(positionP4, stateP4.getFrame(), stateP4.getDate());
             double  delayP4 = timeSpanModel.pathDelay(trackingCoordinatesP4, point,
                                                       timeSpanModel.getParameters(), stateP4.getDate()).getDelay();
             
-            fillJacobianColumn(refDeriv, i, orbitType, angleType, steps[i],
+            fillJacobianColumn(refDeriv, i, orbitParamsType, angleType, steps[i],
                                delayM4, delayM3, delayM2, delayM1,
                                delayP1, delayP2, delayP3, delayP4);
         }
@@ -363,7 +363,7 @@ public class TimeSpanEstimatedModelTest {
         double p0 = selected.getReferenceValue();
         double h  = selected.getScale();
 
-        final OrbitType orbitType = OrbitType.KEPLERIAN;
+        final OrbitParamsType orbitParamsType = OrbitParamsType.KEPLERIAN;
         final PositionAngleType angleType = PositionAngleType.MEAN;
 
         selected.setValue(p0 - 4 * h);
@@ -398,7 +398,7 @@ public class TimeSpanEstimatedModelTest {
         double  delayP4 = model.pathDelay(trackingCoordinates, point,
                                           model.getParameters(), state.getDate()).getDelay();
             
-        fillJacobianColumn(refDeriv, 0, orbitType, angleType, h,
+        fillJacobianColumn(refDeriv, 0, orbitParamsType, angleType, h,
                            delayM4, delayM3, delayM2, delayM1,
                            delayP1, delayP2, delayP3, delayP4);
 
@@ -453,38 +453,38 @@ public class TimeSpanEstimatedModelTest {
                                 Double.MIN_VALUE);
     }
 
-    private SpacecraftState shiftState(SpacecraftState state, OrbitType orbitType, PositionAngleType angleType,
+    private SpacecraftState shiftState(SpacecraftState state, OrbitParamsType orbitParamsType, PositionAngleType angleType,
                                        double delta, int column) {
 
-        double[][] array = stateToArray(state, orbitType, angleType, true);
+        double[][] array = stateToArray(state, orbitParamsType, angleType, true);
         array[0][column] += delta;
 
-        return arrayToState(array, orbitType, angleType, state.getFrame(), state.getDate(),
+        return arrayToState(array, orbitParamsType, angleType, state.getFrame(), state.getDate(),
                             state.getOrbit().getMu(), state.getAttitude());
 
     }
 
-    private double[][] stateToArray(SpacecraftState state, OrbitType orbitType, PositionAngleType angleType,
-                                  boolean withMass) {
+    private double[][] stateToArray(SpacecraftState state, OrbitParamsType orbitParamsType, PositionAngleType angleType,
+                                    boolean withMass) {
         double[][] array = new double[2][withMass ? 7 : 6];
-        orbitType.mapOrbitToArray(state.getOrbit(), angleType, array[0], array[1]);
+        orbitParamsType.mapOrbitToArray(state.getOrbit(), angleType, array[0], array[1]);
         if (withMass) {
             array[0][6] = state.getMass();
         }
         return array;
     }
 
-    private SpacecraftState arrayToState(double[][] array, OrbitType orbitType, PositionAngleType angleType,
+    private SpacecraftState arrayToState(double[][] array, OrbitParamsType orbitParamsType, PositionAngleType angleType,
                                          Frame frame, AbsoluteDate date, double mu,
                                          Attitude attitude) {
-        Orbit orbit = orbitType.mapArrayToOrbit(array[0], array[1], angleType, date, mu, frame);
+        Orbit orbit = orbitParamsType.mapArrayToOrbit(array[0], array[1], angleType, date, mu, frame);
         return (array.length > 6) ?
                new SpacecraftState(orbit, attitude) :
                new SpacecraftState(orbit, attitude).withMass(array[0][6]);
     }
 
     private void fillJacobianColumn(double[][] jacobian, int column,
-                                    OrbitType orbitType, PositionAngleType angleType, double h,
+                                    OrbitParamsType orbitParamsType, PositionAngleType angleType, double h,
                                     double sM4h, double sM3h,
                                     double sM2h, double sM1h,
                                     double sP1h, double sP2h,

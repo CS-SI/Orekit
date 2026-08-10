@@ -46,7 +46,7 @@ import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.ToleranceProvider;
@@ -188,8 +188,8 @@ class LambertDifferentialCorrectorTest {
     }
 
     @ParameterizedTest
-    @EnumSource(OrbitType.class)
-    void testSolveTrivialAnalytical(final OrbitType orbitType) {
+    @EnumSource(OrbitParamsType.class)
+    void testSolveTrivialAnalytical(final OrbitParamsType orbitParamsType) {
         // GIVEN
         final Orbit initialOrbit = getOrbit(AbsoluteDate.ARBITRARY_EPOCH);
         final Orbit terminalOrbit = initialOrbit.shiftedBy(1e5);
@@ -198,7 +198,7 @@ class LambertDifferentialCorrectorTest {
         final LambertDifferentialCorrector corrector = buildCorrector(conditions);
         final LambertBoundaryVelocities guess = new LambertBoundaryVelocities(initialOrbit.getVelocity(),
                 terminalOrbit.getVelocity());
-        final KeplerianPropagator propagator = new KeplerianPropagator(orbitType.convertType(initialOrbit));
+        final KeplerianPropagator propagator = new KeplerianPropagator(orbitParamsType.convertType(initialOrbit));
         // WHEN
         final LambertBoundaryVelocities velocities = corrector.solve(propagator, guess.getInitialVelocity());
         // THEN
@@ -236,7 +236,7 @@ class LambertDifferentialCorrectorTest {
         final LambertBoundaryVelocities guess = new LambertBoundaryVelocities(initialOrbit.getVelocity(),
                 terminalOrbit.getVelocity());
         final NumericalPropagator propagator = new NumericalPropagator(new ClassicalRungeKuttaIntegrator(10.));
-        propagator.setOrbitType(null);
+        propagator.setOrbitParamsType(null);
         propagator.addForceModel(new NewtonianAttraction(initialOrbit.getMu()));
         propagator.setInitialState(new SpacecraftState(new AbsolutePVCoordinates(initialOrbit.getFrame(),
                 initialOrbit.getDate(), initialOrbit.getPVCoordinates())));
@@ -248,8 +248,8 @@ class LambertDifferentialCorrectorTest {
     }
 
     @ParameterizedTest
-    @EnumSource(OrbitType.class)
-    void testSolveNumericalJ2(final OrbitType orbitType) {
+    @EnumSource(OrbitParamsType.class)
+    void testSolveNumericalJ2(final OrbitParamsType orbitParamsType) {
         // GIVEN
         final Orbit initialOrbit = getOrbit(AbsoluteDate.ARBITRARY_EPOCH);
         final Orbit terminalOrbit = initialOrbit.shiftedBy(1e4);
@@ -259,7 +259,7 @@ class LambertDifferentialCorrectorTest {
         final LambertBoundaryVelocities guess = new LambertBoundaryVelocities(initialOrbit.getVelocity(),
                 terminalOrbit.getVelocity());
         final NumericalPropagator propagator = new NumericalPropagator(new ClassicalRungeKuttaIntegrator(10.));
-        propagator.setOrbitType(orbitType);
+        propagator.setOrbitParamsType(orbitParamsType);
         propagator.setInitialState(new SpacecraftState(initialOrbit));
         propagator.addForceModel(buildJ2Force());
         // WHEN
@@ -291,9 +291,9 @@ class LambertDifferentialCorrectorTest {
                 terminalOrbit.getVelocity());
         final DormandPrince54IntegratorBuilder integratorBuilder = new DormandPrince54IntegratorBuilder(1e-2,
                 1e2, 1e-3);
-        final OrbitType orbitType = OrbitType.EQUINOCTIAL;
-        final NumericalPropagator propagator = new NumericalPropagator(integratorBuilder.buildIntegrator(initialOrbit, orbitType));
-        propagator.setOrbitType(orbitType);
+        final OrbitParamsType orbitParamsType = OrbitParamsType.EQUINOCTIAL;
+        final NumericalPropagator propagator = new NumericalPropagator(integratorBuilder.buildIntegrator(initialOrbit, orbitParamsType));
+        propagator.setOrbitParamsType(orbitParamsType);
         propagator.setInitialState(new SpacecraftState(initialOrbit));
         propagator.addForceModel(buildJ2Force());
         // WHEN
@@ -335,7 +335,7 @@ class LambertDifferentialCorrectorTest {
         final AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(0.001, 1000, tolerances[0], tolerances[1]);
         integrator.setInitialStepSize(60.0);
         final NumericalPropagator perturbedPropagator = new NumericalPropagator(integrator);
-        perturbedPropagator.setOrbitType(OrbitType.CARTESIAN);
+        perturbedPropagator.setOrbitParamsType(OrbitParamsType.CARTESIAN);
         perturbedPropagator.removeForceModels();
         final NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(4, 0);
         final ForceModel holmesFeatherstone = new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true), provider);
@@ -388,7 +388,7 @@ class LambertDifferentialCorrectorTest {
         final AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(0.001, 1000, tolerances[0], tolerances[1]);
         integrator.setInitialStepSize(60.0);
         final NumericalPropagator perturbedPropagator = new NumericalPropagator(integrator);
-        perturbedPropagator.setOrbitType(OrbitType.CARTESIAN);
+        perturbedPropagator.setOrbitParamsType(OrbitParamsType.CARTESIAN);
         perturbedPropagator.removeForceModels();
         final NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(4, 0);
         final ForceModel holmesFeatherstone = new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true), provider);

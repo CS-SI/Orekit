@@ -148,7 +148,7 @@ class HaloOrbitTest {
         final SpacecraftState augmentedInitialState =
                         stm.setInitialPhi(initialState);
         NumericalPropagator propagator = new NumericalPropagator(integrator);
-        propagator.setOrbitType(null);
+        propagator.setOrbitParamsType(null);
         propagator.setIgnoreCentralAttraction(true);
         propagator.addForceModel(new CR3BPForceModel(syst));
         propagator.addAdditionalDerivativesProvider(stm);

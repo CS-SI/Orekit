@@ -22,7 +22,7 @@ import org.orekit.control.indirect.adjoint.cost.CartesianCost;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.propagation.integration.CombinedDerivatives;
@@ -84,7 +84,7 @@ public class CartesianAdjointDerivativesProvider implements AdditionalDerivative
     @Override
     public void init(final SpacecraftState initialState, final AbsoluteDate target) {
         AdditionalDerivativesProvider.super.init(initialState, target);
-        if (initialState.isOrbitDefined() && initialState.getOrbit().getType() != OrbitType.CARTESIAN) {
+        if (initialState.isOrbitDefined() && initialState.getOrbit().getType() != OrbitParamsType.CARTESIAN) {
             throw new OrekitException(OrekitMessages.WRONG_COORDINATES_FOR_ADJOINT_EQUATION);
         }
     }

@@ -162,16 +162,16 @@ public class OrbitHermiteInterpolator extends AbstractOrbitInterpolator {
         // Get information for interpolation
         final AbsoluteDate interpolationDate = interpolationData.getInterpolationDate();
         final Orbit        firstEntry        = sample.getFirst();
-        final OrbitType    orbitType         = firstEntry.getType();
+        final OrbitParamsType orbitParamsType = firstEntry.getType();
         final Frame        inputFrame        = firstEntry.getFrame();
         final Frame        outputFrame       = getOutputInertialFrame();
 
         final Orbit interpolated;
-        if (orbitType == OrbitType.CARTESIAN) {
+        if (orbitParamsType == OrbitParamsType.CARTESIAN) {
             interpolated = interpolateCartesian(interpolationDate, inputFrame, sample);
         }
         else {
-            interpolated = interpolateCommon(interpolationDate, inputFrame, sample, orbitType);
+            interpolated = interpolateCommon(interpolationDate, inputFrame, sample, orbitParamsType);
         }
 
         // Return interpolated if input and output frame are the same
@@ -226,14 +226,14 @@ public class OrbitHermiteInterpolator extends AbstractOrbitInterpolator {
      * @param interpolationDate interpolation date
      * @param inputFrame input frame
      * @param orbits orbits sample
-     * @param orbitType interpolation method to use
+     * @param orbitParamsType interpolation method to use
      *
      * @return interpolated orbit
      */
     private Orbit interpolateCommon(final AbsoluteDate interpolationDate,
                                     final Frame inputFrame,
                                     final List<Orbit> orbits,
-                                    final OrbitType orbitType) {
+                                    final OrbitParamsType orbitParamsType) {
 
         // First pass to check if derivatives are available throughout the sample
         boolean useDerivatives = true;
@@ -246,7 +246,7 @@ public class OrbitHermiteInterpolator extends AbstractOrbitInterpolator {
 
         // Interpolate and build a new instance
         final double[][] interpolated;
-        switch (orbitType) {
+        switch (orbitParamsType) {
             case CIRCULAR:
                 interpolated = interpolateCircular(interpolationDate, orbits, useDerivatives);
                 return new CircularOrbit(interpolated[0][0], interpolated[0][1], interpolated[0][2],
@@ -295,7 +295,7 @@ public class OrbitHermiteInterpolator extends AbstractOrbitInterpolator {
         double       previousRAAN   = Double.NaN;
         double       previousAlphaM = Double.NaN;
         for (final Orbit orbit : orbits) {
-            final CircularOrbit circ = (CircularOrbit) OrbitType.CIRCULAR.convertType(orbit);
+            final CircularOrbit circ = (CircularOrbit) OrbitParamsType.CIRCULAR.convertType(orbit);
             final double        continuousRAAN;
             final double        continuousAlphaM;
             if (previousDate == null) {
@@ -361,7 +361,7 @@ public class OrbitHermiteInterpolator extends AbstractOrbitInterpolator {
         double       previousRAAN = Double.NaN;
         double       previousM    = Double.NaN;
         for (final Orbit orbit : orbits) {
-            final KeplerianOrbit kep = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(orbit);
+            final KeplerianOrbit kep = (KeplerianOrbit) OrbitParamsType.KEPLERIAN.convertType(orbit);
             final double         continuousPA;
             final double         continuousRAAN;
             final double         continuousM;
@@ -429,7 +429,7 @@ public class OrbitHermiteInterpolator extends AbstractOrbitInterpolator {
         AbsoluteDate previousDate = null;
         double       previousLm   = Double.NaN;
         for (final Orbit orbit : orbits) {
-            final EquinoctialOrbit equi = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(orbit);
+            final EquinoctialOrbit equi = (EquinoctialOrbit) OrbitParamsType.EQUINOCTIAL.convertType(orbit);
             final double           continuousLm;
             if (previousDate == null) {
                 continuousLm = equi.getLM();

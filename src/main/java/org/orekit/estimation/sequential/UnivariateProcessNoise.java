@@ -20,6 +20,7 @@ import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.orekit.frames.LOFType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.covariance.StateCovariance;
@@ -31,7 +32,7 @@ import org.orekit.propagation.covariance.StateCovariance;
  * The method {@link #getProcessNoiseMatrix} then square the values so that they are consistent with a covariance matrix.
  * <p>
  * The orbital parameters evolutions are provided in LOF frame and Cartesian (PV);
- * then converted in inertial frame and current {@link org.orekit.orbits.OrbitType} and {@link PositionAngleType}
+ * then converted in inertial frame and current {@link OrbitParamsType} and {@link PositionAngleType}
  * when method {@link #getProcessNoiseMatrix} is called.
  * </p>
  * <p>

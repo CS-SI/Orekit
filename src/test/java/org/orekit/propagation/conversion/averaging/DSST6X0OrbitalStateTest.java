@@ -29,7 +29,7 @@ class DSST6X0OrbitalStateTest {
                 -1.), FramesFactory.getGCRF(), provider);
         // WHEN
         final Orbit orbit = averagedState.toOsculatingOrbit();
-        final EquinoctialOrbit equinoctialOrbit = (EquinoctialOrbit) averagedState.getOrbitType().convertType(orbit);
+        final EquinoctialOrbit equinoctialOrbit = (EquinoctialOrbit) averagedState.getOrbitParamsType().convertType(orbit);
         // THEN
         Assertions.assertEquals(averagedState.getDate(), equinoctialOrbit.getDate());
         compareOrbitalElements(averagedState.getAveragedElements(), equinoctialOrbit,

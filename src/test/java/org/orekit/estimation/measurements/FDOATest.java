@@ -38,7 +38,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.frames.ITRFVersion;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.orbits.CartesianOrbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -69,7 +69,7 @@ class FDOATest {
 
         // Create perfect measurements
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createNumerical(OrbitType.EQUINOCTIAL, PositionAngleType.TRUE, false,
+                        context.createNumerical(OrbitParamsType.EQUINOCTIAL, PositionAngleType.TRUE, false,
                                               1.0e-6, 60.0, 0.001);
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
@@ -117,7 +117,7 @@ class FDOATest {
 
         // create perfect measurements
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitParamsType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
@@ -141,7 +141,7 @@ class FDOATest {
                     Differentiation.differentiate(state1 -> measurement.
                         estimate(0, 0, new SpacecraftState[] { state1 }).
                         getEstimatedValue(), 1, propagator.getAttitudeProvider(),
-                                                  OrbitType.CARTESIAN, PositionAngleType.TRUE, 15.0, 3).
+                                                  OrbitParamsType.CARTESIAN, PositionAngleType.TRUE, 15.0, 3).
                         value(state);
 
             Assertions.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
@@ -172,7 +172,7 @@ class FDOATest {
 
         // create perfect measurements
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitParamsType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
         final FDOAMeasurementCreator creator = new FDOAMeasurementCreator(context, CENTRE_FREQUENCY);
         final GroundStation primary = context.TDOAstations.getKey();

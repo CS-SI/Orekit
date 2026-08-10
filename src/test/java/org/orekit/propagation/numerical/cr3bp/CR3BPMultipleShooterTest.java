@@ -134,7 +134,7 @@ class CR3BPMultipleShooterTest {
         // Propagator definition for CR3BP
         final List<NumericalPropagator> propagatorList = new ArrayList<>(narcs);
         final NumericalPropagator propagator = new NumericalPropagator(integrator);
-        propagator.setOrbitType(null);
+        propagator.setOrbitParamsType(null);
         propagator.setIgnoreCentralAttraction(true);
         propagator.addForceModel(new CR3BPForceModel(syst));
 
@@ -213,7 +213,7 @@ class CR3BPMultipleShooterTest {
         for (int i = 0; i < nArcs; i++) {
             final ODEIntegrator integ      = new DormandPrince853Integrator(1e-16, 1e16, 1e-14, 3e-14);
             final NumericalPropagator prop = new NumericalPropagator(integ);
-            prop.setOrbitType(null);
+            prop.setOrbitParamsType(null);
             prop.setIgnoreCentralAttraction(true);
             prop.addForceModel(new CR3BPForceModel(earthMoon));
             propagators.add(prop);
@@ -227,7 +227,7 @@ class CR3BPMultipleShooterTest {
 
         final ODEIntegrator integ            = new DormandPrince853Integrator(1e-16, 1e16, 1e-6, 3e-6);
         final NumericalPropagator propagator = new NumericalPropagator(integ);
-        propagator.setOrbitType(null);
+        propagator.setOrbitParamsType(null);
         propagator.setIgnoreCentralAttraction(true);
         propagator.addForceModel(new CR3BPForceModel(earthMoon));
         propagator.setInitialState(initialGuess.getFirst());
@@ -280,7 +280,7 @@ class CR3BPMultipleShooterTest {
         for (int i = 0; i < nArcs; i++) {
             final ODEIntegrator integ      = new DormandPrince853Integrator(1e-16, 1e16, 1e-14, 3e-14);
             final NumericalPropagator prop = new NumericalPropagator(integ);
-            prop.setOrbitType(null);
+            prop.setOrbitParamsType(null);
             prop.setIgnoreCentralAttraction(true);
             prop.addForceModel(new CR3BPForceModel(earthMoon));
             propagators.add(prop);
@@ -294,7 +294,7 @@ class CR3BPMultipleShooterTest {
 
         final ODEIntegrator integ            = new DormandPrince853Integrator(1e-16, 1e16, 1e-6, 3e-6);
         final NumericalPropagator propagator = new NumericalPropagator(integ);
-        propagator.setOrbitType(null);
+        propagator.setOrbitParamsType(null);
         propagator.setIgnoreCentralAttraction(true);
         propagator.addForceModel(new CR3BPForceModel(earthMoon));
         propagator.setInitialState(initialGuess.getFirst());

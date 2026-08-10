@@ -6,7 +6,7 @@ import org.mockito.Mockito;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.conversion.averaging.elements.AveragedOrbitalElements;
 import org.orekit.time.AbsoluteDate;
@@ -40,7 +40,7 @@ class AbstractHarmonicsBasedOrbitalStateTest {
         }
 
         @Override
-        public OrbitType getOrbitType() {
+        public OrbitParamsType getOrbitParamsType() {
             return null;
         }
 

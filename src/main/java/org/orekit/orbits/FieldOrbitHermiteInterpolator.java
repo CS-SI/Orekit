@@ -174,7 +174,7 @@ public class FieldOrbitHermiteInterpolator<KK extends CalculusFieldElement<KK>> 
         // Get information for interpolation
         final FieldAbsoluteDate<KK> interpolationDate = interpolationData.getInterpolationDate();
         final FieldOrbit<KK>        firstEntry        = sample.getFirst();
-        final OrbitType             orbitType         = firstEntry.getType();
+        final OrbitParamsType orbitParamsType = firstEntry.getType();
         final Frame                 inputFrame        = firstEntry.getFrame();
         final Frame                 outputFrame       = getOutputInertialFrame();
 
@@ -184,12 +184,12 @@ public class FieldOrbitHermiteInterpolator<KK extends CalculusFieldElement<KK>> 
         this.one   = field.getOne();
 
         final FieldOrbit<KK> interpolated;
-        if (orbitType == OrbitType.CARTESIAN) {
+        if (orbitParamsType == OrbitParamsType.CARTESIAN) {
             interpolated = interpolateCartesian(interpolationDate, inputFrame, sample);
         }
         else {
             // Interpolate in input frame
-            interpolated = interpolateCommon(interpolationDate, inputFrame, sample, orbitType);
+            interpolated = interpolateCommon(interpolationDate, inputFrame, sample, orbitParamsType);
         }
 
         // Return interpolated if input and output frame are the same
@@ -242,14 +242,14 @@ public class FieldOrbitHermiteInterpolator<KK extends CalculusFieldElement<KK>> 
      * @param interpolationDate interpolation date
      * @param inputFrame input frame
      * @param orbits orbits sample
-     * @param orbitType interpolation method to use
+     * @param orbitParamsType interpolation method to use
      *
      * @return interpolated orbit
      */
     private FieldOrbit<KK> interpolateCommon(final FieldAbsoluteDate<KK> interpolationDate,
                                              final Frame inputFrame,
                                              final List<FieldOrbit<KK>> orbits,
-                                             final OrbitType orbitType) {
+                                             final OrbitParamsType orbitParamsType) {
 
         // First pass to check if derivatives are available throughout the sample
         boolean useDerivatives = true;
@@ -262,7 +262,7 @@ public class FieldOrbitHermiteInterpolator<KK extends CalculusFieldElement<KK>> 
 
         // Interpolate and build a new instance
         final KK[][] interpolated;
-        switch (orbitType) {
+        switch (orbitParamsType) {
             case CIRCULAR:
                 interpolated = interpolateCircular(interpolationDate, orbits, useDerivatives);
                 return new FieldCircularOrbit<>(interpolated[0][0], interpolated[0][1], interpolated[0][2],
@@ -311,7 +311,7 @@ public class FieldOrbitHermiteInterpolator<KK extends CalculusFieldElement<KK>> 
         KK                    previousRAAN   = zero.add(Double.NaN);
         KK                    previousAlphaM = zero.add(Double.NaN);
         for (final FieldOrbit<KK> orbit : orbits) {
-            final FieldCircularOrbit<KK> circ = (FieldCircularOrbit<KK>) OrbitType.CIRCULAR.convertType(orbit);
+            final FieldCircularOrbit<KK> circ = (FieldCircularOrbit<KK>) OrbitParamsType.CIRCULAR.convertType(orbit);
             final KK                     continuousRAAN;
             final KK                     continuousAlphaM;
             if (previousDate == null) {
@@ -375,7 +375,7 @@ public class FieldOrbitHermiteInterpolator<KK extends CalculusFieldElement<KK>> 
         KK                    previousRAAN = zero.add(Double.NaN);
         KK                    previousM    = zero.add(Double.NaN);
         for (final FieldOrbit<KK> orbit : orbits) {
-            final FieldKeplerianOrbit<KK> kep = (FieldKeplerianOrbit<KK>) OrbitType.KEPLERIAN.convertType(orbit);
+            final FieldKeplerianOrbit<KK> kep = (FieldKeplerianOrbit<KK>) OrbitParamsType.KEPLERIAN.convertType(orbit);
             final KK                      continuousPA;
             final KK                      continuousRAAN;
             final KK                      continuousM;
@@ -441,7 +441,7 @@ public class FieldOrbitHermiteInterpolator<KK extends CalculusFieldElement<KK>> 
         FieldAbsoluteDate<KK> previousDate = null;
         KK                    previousLm   = zero.add(Double.NaN);
         for (final FieldOrbit<KK> orbit : orbits) {
-            final FieldEquinoctialOrbit<KK> equi = (FieldEquinoctialOrbit<KK>) OrbitType.EQUINOCTIAL.convertType(orbit);
+            final FieldEquinoctialOrbit<KK> equi = (FieldEquinoctialOrbit<KK>) OrbitParamsType.EQUINOCTIAL.convertType(orbit);
             final KK                        continuousLm;
             if (previousDate == null) {
                 continuousLm = equi.getLM();

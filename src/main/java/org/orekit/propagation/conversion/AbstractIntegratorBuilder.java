@@ -19,7 +19,7 @@ package org.orekit.propagation.conversion;
 import org.hipparchus.ode.AbstractIntegrator;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.utils.AbsolutePVCoordinates;
 
@@ -38,11 +38,11 @@ public abstract class AbstractIntegratorBuilder<T extends AbstractIntegrator> im
     }
 
     @Override
-    public abstract T buildIntegrator(Orbit orbit, OrbitType orbitType, PositionAngleType angleType);
+    public abstract T buildIntegrator(Orbit orbit, OrbitParamsType orbitParamsType, PositionAngleType angleType);
 
     @Override
-    public T buildIntegrator(final Orbit orbit, final OrbitType orbitType) {
-        return buildIntegrator(orbit, orbitType, PositionAngleType.MEAN);
+    public T buildIntegrator(final Orbit orbit, final OrbitParamsType orbitParamsType) {
+        return buildIntegrator(orbit, orbitParamsType, PositionAngleType.MEAN);
     }
 
     @Override
@@ -50,6 +50,6 @@ public abstract class AbstractIntegratorBuilder<T extends AbstractIntegrator> im
         final double arbitraryMu = 1.;
         final CartesianOrbit cartesianOrbit = new CartesianOrbit(absolutePVCoordinates.getPVCoordinates(),
                 absolutePVCoordinates.getFrame(), arbitraryMu);
-        return buildIntegrator(cartesianOrbit, OrbitType.CARTESIAN);
+        return buildIntegrator(cartesianOrbit, OrbitParamsType.CARTESIAN);
     }
 }

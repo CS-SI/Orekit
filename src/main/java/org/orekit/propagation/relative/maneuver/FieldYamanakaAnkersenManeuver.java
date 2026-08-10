@@ -20,7 +20,7 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.relative.yamanakaankersen.FieldYamanakaAnkersenProvider;
 
@@ -52,7 +52,7 @@ public class FieldYamanakaAnkersenManeuver<T extends CalculusFieldElement<T>>
     @Override
     public void resetTrueAnomalyAtManeuver(final FieldOrbit<T> orbit) {
         // Reset the TrueAnomaly of the spacecraft to the current true anomaly.
-        final FieldKeplerianOrbit<T> target = (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(orbit);
+        final FieldKeplerianOrbit<T> target = (FieldKeplerianOrbit<T>) OrbitParamsType.KEPLERIAN.convertType(orbit);
         getRelativeProvider().setTargetTrueAnomaly(target.getTrueAnomaly());
     }
 }

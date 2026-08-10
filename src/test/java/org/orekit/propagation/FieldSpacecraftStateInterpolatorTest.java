@@ -50,7 +50,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.FieldOrbitHermiteInterpolator;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.analytical.FieldEcksteinHechlerPropagator;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
@@ -345,7 +345,7 @@ class FieldSpacecraftStateInterpolatorTest {
         final FieldNumericalPropagator<Binary64> propagator = new FieldNumericalPropagator<>(integrator);
 
         // Configure propagator
-        propagator.setOrbitType(null);
+        propagator.setOrbitParamsType(null);
 
         // Add forces
         final Frame                                itrf      = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
@@ -375,7 +375,7 @@ class FieldSpacecraftStateInterpolatorTest {
         final Binary64   dP         = new Binary64(1);
         final double     minStep    = 0.001;
         final double     maxStep    = 100;
-        final double[][] tolerances = ToleranceProvider.getDefaultToleranceProvider(dP.getReal()).getTolerances(orbit, OrbitType.CARTESIAN);
+        final double[][] tolerances = ToleranceProvider.getDefaultToleranceProvider(dP.getReal()).getTolerances(orbit, OrbitParamsType.CARTESIAN);
 
         return new DormandPrince853FieldIntegrator<>(field, minStep, maxStep, tolerances[0], tolerances[1]);
     }

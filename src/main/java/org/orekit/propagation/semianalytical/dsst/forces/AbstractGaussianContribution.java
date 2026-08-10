@@ -36,7 +36,7 @@ import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
@@ -680,8 +680,8 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             // remove derivatives from state
             final T[] stateVector = MathArrays.buildArray(field, 6);
             final PositionAngleType positionAngleType = PositionAngleType.MEAN;
-            OrbitType.EQUINOCTIAL.mapOrbitToArray(state.getOrbit(), positionAngleType, stateVector, null);
-            final FieldOrbit<T> fixedOrbit = OrbitType.EQUINOCTIAL.mapArrayToOrbit(stateVector, null,
+            OrbitParamsType.EQUINOCTIAL.mapOrbitToArray(state.getOrbit(), positionAngleType, stateVector, null);
+            final FieldOrbit<T> fixedOrbit = OrbitParamsType.EQUINOCTIAL.mapArrayToOrbit(stateVector, null,
                     positionAngleType, state.getDate(), context.getMu(), state.getFrame());
             this.state = new FieldSpacecraftState<>(fixedOrbit, state.getAttitude()).withMass(state.getMass());
         }
@@ -964,8 +964,8 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             // remove derivatives from state
             final double[] stateVector = new double[6];
             final PositionAngleType positionAngleType = PositionAngleType.MEAN;
-            OrbitType.EQUINOCTIAL.mapOrbitToArray(state.getOrbit(), positionAngleType, stateVector, null);
-            final Orbit fixedOrbit = OrbitType.EQUINOCTIAL.mapArrayToOrbit(stateVector, null, positionAngleType,
+            OrbitParamsType.EQUINOCTIAL.mapOrbitToArray(state.getOrbit(), positionAngleType, stateVector, null);
+            final Orbit fixedOrbit = OrbitParamsType.EQUINOCTIAL.mapArrayToOrbit(stateVector, null, positionAngleType,
                     state.getDate(), context.getMu(), state.getFrame());
             this.state = new SpacecraftState(fixedOrbit, state.getAttitude()).withMass(state.getMass());
         }

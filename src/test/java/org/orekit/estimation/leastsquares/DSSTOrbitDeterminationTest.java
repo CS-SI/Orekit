@@ -48,7 +48,7 @@ import org.orekit.models.earth.atmosphere.Atmosphere;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.EquinoctialOrbitFactory;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.conversion.DSSTPropagatorBuilder;
@@ -95,7 +95,7 @@ public class DSSTOrbitDeterminationTest extends AbstractOrbitDetermination<DSSTP
     protected DSSTPropagatorBuilder createPropagatorBuilder(final Orbit referenceOrbit,
                                                             final ODEIntegratorBuilder builder,
                                                             final double positionScale) {
-        final EquinoctialOrbit equiOrbit = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(referenceOrbit);
+        final EquinoctialOrbit equiOrbit = (EquinoctialOrbit) OrbitParamsType.EQUINOCTIAL.convertType(referenceOrbit);
         return new DSSTPropagatorBuilder(new EquinoctialOrbitFactory(equiOrbit,
                                                                      positionScale,
                                                                      PositionAngleType.MEAN),

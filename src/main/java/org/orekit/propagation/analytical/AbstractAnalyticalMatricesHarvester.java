@@ -23,7 +23,7 @@ import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.orekit.orbits.FieldOrbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.AbstractMatricesHarvester;
 import org.orekit.propagation.AdditionalDataProvider;
@@ -64,7 +64,7 @@ public abstract class AbstractAnalyticalMatricesHarvester extends AbstractMatric
     /** Simple constructor.
      * <p>
      * The arguments for initial matrices <em>must</em> be compatible with the
-     * {@link org.orekit.orbits.OrbitType orbit type}
+     * {@link OrbitParamsType orbit type}
      * and {@link PositionAngleType position angle} that will be used by propagator
      * </p>
      * @param propagator propagator bound to this harvester
@@ -173,7 +173,7 @@ public abstract class AbstractAnalyticalMatricesHarvester extends AbstractMatric
         final Gradient[]                     parameters       = converter.getParameters(state, converter);
         final FieldOrbit<Gradient>           gOrbit           = gPropagator.propagateOrbit(start.shiftedBy(dt), parameters);
         final Gradient[]                     orbitDerivatives = new Gradient[6];
-        getOrbitType().mapOrbitToArray(gOrbit, getPositionAngleType(), orbitDerivatives, null);
+        getOrbitParamsType().mapOrbitToArray(gOrbit, getPositionAngleType(), orbitDerivatives, null);
 
         // Update Jacobian with respect to state
         for (int i = 0; i < orbitDerivatives.length; ++i) {
@@ -236,9 +236,9 @@ public abstract class AbstractAnalyticalMatricesHarvester extends AbstractMatric
 
     /** {@inheritDoc} */
     @Override
-    public OrbitType getOrbitType() {
+    public OrbitParamsType getOrbitParamsType() {
         // Set to CARTESIAN because analytical gradient converters uses Cartesian representation
-        return OrbitType.CARTESIAN;
+        return OrbitParamsType.CARTESIAN;
     }
 
     /** {@inheritDoc} */

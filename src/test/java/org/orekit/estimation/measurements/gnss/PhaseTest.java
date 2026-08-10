@@ -46,7 +46,7 @@ import org.orekit.models.earth.ionosphere.IonosphericModel;
 import org.orekit.models.earth.ionosphere.KlobucharIonoModel;
 import org.orekit.models.earth.troposphere.EstimatedModel;
 import org.orekit.models.earth.troposphere.NiellMappingFunctionModel;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -152,7 +152,7 @@ public class PhaseTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitParamsType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // Create perfect phase measurements
@@ -283,7 +283,7 @@ public class PhaseTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitParamsType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // Create perfect range measurements
@@ -339,7 +339,7 @@ public class PhaseTest {
                             state1
                         }).
                                getEstimatedValue(), measurement.getDimension(), propagator.getAttitudeProvider(),
-                        OrbitType.CARTESIAN, PositionAngleType.TRUE, 20.0, 3).value(state);
+                        OrbitParamsType.CARTESIAN, PositionAngleType.TRUE, 20.0, 3).value(state);
 
                     Assertions.assertEquals(jacobianRef.length, jacobian.length);
                     Assertions.assertEquals(jacobianRef[0].length, jacobian[0].length);
@@ -430,7 +430,7 @@ public class PhaseTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitParamsType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // Create perfect range measurements
@@ -585,7 +585,7 @@ public class PhaseTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitParamsType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // Create perfect range measurements
@@ -652,7 +652,7 @@ public class PhaseTest {
                             state1
                         }).
                                getEstimatedValue(), measurement.getDimension(), propagator.getAttitudeProvider(),
-                        OrbitType.CARTESIAN, PositionAngleType.TRUE, 20.0, 3).value(state);
+                        OrbitParamsType.CARTESIAN, PositionAngleType.TRUE, 20.0, 3).value(state);
 
                     Assertions.assertEquals(jacobianRef.length, jacobian.length);
                     Assertions.assertEquals(jacobianRef[0].length, jacobian[0].length);
@@ -750,7 +750,7 @@ public class PhaseTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitParamsType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // Create perfect range measurements
@@ -820,7 +820,7 @@ public class PhaseTest {
                             state1
                         }).
                                getEstimatedValue(), measurement.getDimension(), propagator.getAttitudeProvider(),
-                        OrbitType.CARTESIAN, PositionAngleType.TRUE, 20.0, 3).value(state);
+                        OrbitParamsType.CARTESIAN, PositionAngleType.TRUE, 20.0, 3).value(state);
 
                     Assertions.assertEquals(jacobianRef.length, jacobian.length);
                     Assertions.assertEquals(jacobianRef[0].length, jacobian[0].length);

@@ -40,7 +40,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.FieldOrbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.handlers.FieldCountAndContinue;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
@@ -208,7 +208,7 @@ class FieldEventsLoggerTest {
             new DormandPrince853FieldIntegrator<>(field, 0.001, 1000, absTolerance, relTolerance);
         integrator.setInitialStepSize(60);
         FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(integrator);
-        propagator.setOrbitType(OrbitType.EQUINOCTIAL);
+        propagator.setOrbitParamsType(OrbitParamsType.EQUINOCTIAL);
         propagator.setInitialState(initialState);
         count = 0;
         FieldEclipseDetector<T> umbraDetector = buildDetector(field, true);
@@ -251,7 +251,7 @@ class FieldEventsLoggerTest {
             new DormandPrince853FieldIntegrator<>(field, 0.001, 1000, absTolerance, relTolerance);
         integrator.setInitialStepSize(60);
         FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(integrator);
-        propagator.setOrbitType(OrbitType.EQUINOCTIAL);
+        propagator.setOrbitParamsType(OrbitParamsType.EQUINOCTIAL);
         propagator.setInitialState(initialState);
         count = 0;
         FieldEventDetector<T> umbraDetector = buildDetector(field, true);
@@ -287,7 +287,7 @@ class FieldEventsLoggerTest {
             new DormandPrince853FieldIntegrator<>(field, 0.001, 1000, absTolerance, relTolerance);
         integrator.setInitialStepSize(60);
         FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(integrator);
-        propagator.setOrbitType(OrbitType.EQUINOCTIAL);
+        propagator.setOrbitParamsType(OrbitParamsType.EQUINOCTIAL);
         propagator.setInitialState(initialState);
         count = 0;
         FieldEventDetector<T> umbraDetector = buildDetector(field, true);
@@ -331,7 +331,7 @@ class FieldEventsLoggerTest {
             new DormandPrince853FieldIntegrator<>(field, 0.001, 1000, absTolerance, relTolerance);
         integrator.setInitialStepSize(60);
         FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(integrator);
-        propagator.setOrbitType(OrbitType.EQUINOCTIAL);
+        propagator.setOrbitParamsType(OrbitParamsType.EQUINOCTIAL);
         propagator.setInitialState(initialState);
         count = 0;
         FieldEventDetector<T> umbraDetector = buildDetector(field, true);
@@ -387,7 +387,7 @@ class FieldEventsLoggerTest {
             new DormandPrince853FieldIntegrator<>(field, 0.001, 1000, absTolerance, relTolerance);
         integrator.setInitialStepSize(60);
         FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(integrator);
-        propagator.setOrbitType(OrbitType.EQUINOCTIAL);
+        propagator.setOrbitParamsType(OrbitParamsType.EQUINOCTIAL);
         propagator.setInitialState(initialState);
         count = 0;
         FieldEventDetector<T> umbraDetector = buildDetector(field, true);

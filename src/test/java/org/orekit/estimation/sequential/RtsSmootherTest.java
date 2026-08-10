@@ -9,7 +9,7 @@ import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.PVMeasurementCreator;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
@@ -24,14 +24,14 @@ public class RtsSmootherTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         // Create initial orbit and propagator builder
-        final OrbitType orbitType     = OrbitType.KEPLERIAN;
+        final OrbitParamsType orbitParamsType = OrbitParamsType.KEPLERIAN;
         final PositionAngleType positionAngleType = PositionAngleType.TRUE;
         final boolean       perfectStart  = true;
         final double        minStep       = 1.e-6;
         final double        maxStep       = 60.;
         final double        dP            = 1.;
         final NumericalPropagatorBuilder propagatorBuilder =
-                context.createNumerical(orbitType, positionAngleType, perfectStart,
+                context.createNumerical(orbitParamsType, positionAngleType, perfectStart,
                         minStep, maxStep, dP);
 
         // Create perfect PV measurements

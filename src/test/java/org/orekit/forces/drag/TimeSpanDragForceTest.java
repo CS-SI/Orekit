@@ -50,7 +50,7 @@ import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
@@ -457,7 +457,7 @@ class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
                                          0, PositionAngleType.MEAN, FramesFactory.getEME2000(), date,
                                          Constants.EIGEN5C_EARTH_MU);
-        OrbitType integrationType = OrbitType.CARTESIAN;
+        OrbitParamsType integrationType = OrbitParamsType.CARTESIAN;
         double[][] tolerances = ToleranceProvider.getDefaultToleranceProvider(0.01).getTolerances(orbit, integrationType);
 
 
@@ -483,7 +483,7 @@ class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         NumericalPropagator propagator =
                         new NumericalPropagator(new DormandPrince853Integrator(1.0e-3, 120,
                                                                                tolerances[0], tolerances[1]));
-        propagator.setOrbitType(integrationType);
+        propagator.setOrbitParamsType(integrationType);
         propagator.addForceModel(forceModel);
         SpacecraftState state0 = new SpacecraftState(orbit);
         // Set target date to 0.5*dt to be inside 1st drag model
@@ -494,7 +494,7 @@ class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         // Check state derivatives inside 2nd IsotropicDrag model
         propagator = new NumericalPropagator(new DormandPrince853Integrator(1.0e-3, 120,
                                                                             tolerances[0], tolerances[1]));
-        propagator.setOrbitType(integrationType);
+        propagator.setOrbitParamsType(integrationType);
         propagator.addForceModel(forceModel);
         // Set target date to 1.5*dt to be inside 2nd drag model
         // The further away we are from the initial date, the greater the checkTolerance parameter must be set
@@ -504,7 +504,7 @@ class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         // Check state derivatives inside 3rd IsotropicDrag model
         propagator = new NumericalPropagator(new DormandPrince853Integrator(1.0e-3, 120,
                                                                             tolerances[0], tolerances[1]));
-        propagator.setOrbitType(integrationType);
+        propagator.setOrbitParamsType(integrationType);
         propagator.addForceModel(forceModel);
         // Set target date to *1.5*dt to be inside 3rd drag model
         // The further away we are from the initial date, the greater the checkTolerance parameter must be set
@@ -1128,7 +1128,7 @@ class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
                                          0, PositionAngleType.MEAN, FramesFactory.getEME2000(), date,
                                          Constants.EIGEN5C_EARTH_MU);
-        OrbitType integrationType = OrbitType.CARTESIAN;
+        OrbitParamsType integrationType = OrbitParamsType.CARTESIAN;
         double[][] tolerances = ToleranceProvider.getDefaultToleranceProvider(0.01).getTolerances(orbit, integrationType);
         CelestialBody sun = CelestialBodyFactory.getSun();
 
@@ -1158,7 +1158,7 @@ class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         NumericalPropagator propagator =
                         new NumericalPropagator(new DormandPrince853Integrator(1.0e-3, 120,
                                                                                tolerances[0], tolerances[1]));
-        propagator.setOrbitType(integrationType);
+        propagator.setOrbitParamsType(integrationType);
         propagator.addForceModel(forceModel);
         SpacecraftState state0 = new SpacecraftState(orbit);
         // Set target date to 0.5*dt to be inside 1st drag model
@@ -1169,7 +1169,7 @@ class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         // Check state derivatives inside 2nd box model
         propagator = new NumericalPropagator(new DormandPrince853Integrator(1.0e-3, 120,
                                                                             tolerances[0], tolerances[1]));
-        propagator.setOrbitType(integrationType);
+        propagator.setOrbitParamsType(integrationType);
         propagator.addForceModel(forceModel);
         // Set target date to 1.5*dt to be inside 2nd drag model
         // The further away we are from the initial date, the greater the checkTolerance parameter must be set
@@ -1179,7 +1179,7 @@ class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         // Check state derivatives inside 3rd box model
         propagator = new NumericalPropagator(new DormandPrince853Integrator(1.0e-3, 120,
                                                                             tolerances[0], tolerances[1]));
-        propagator.setOrbitType(integrationType);
+        propagator.setOrbitParamsType(integrationType);
         propagator.addForceModel(forceModel);
         // Set target date to *1.5*dt to be inside 3rd drag model
         // The further away we are from the initial date, the greater the checkTolerance parameter must be set
@@ -1228,15 +1228,15 @@ class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
                         new ClassicalRungeKuttaFieldIntegrator<>(field, zero.add(6));
         ClassicalRungeKuttaIntegrator RIntegrator =
                         new ClassicalRungeKuttaIntegrator(6);
-        OrbitType type = OrbitType.EQUINOCTIAL;
+        OrbitParamsType type = OrbitParamsType.EQUINOCTIAL;
 
         // Field and classical numerical propagators
         FieldNumericalPropagator<DerivativeStructure> FNP = new FieldNumericalPropagator<>(integrator);
-        FNP.setOrbitType(type);
+        FNP.setOrbitParamsType(type);
         FNP.setInitialState(initialState);
 
         NumericalPropagator NP = new NumericalPropagator(RIntegrator);
-        NP.setOrbitType(type);
+        NP.setOrbitParamsType(type);
         NP.setInitialState(iSR);
 
 
@@ -1331,16 +1331,16 @@ class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
                         new ClassicalRungeKuttaFieldIntegrator<>(field, zero.add(6));
         ClassicalRungeKuttaIntegrator RIntegrator =
                         new ClassicalRungeKuttaIntegrator(6);
-        OrbitType type = OrbitType.EQUINOCTIAL;
+        OrbitParamsType type = OrbitParamsType.EQUINOCTIAL;
 
         // Field and classical numerical propagators
         FieldNumericalPropagator<Gradient> FNP = new FieldNumericalPropagator<>(integrator);
-        FNP.setOrbitType(type);
+        FNP.setOrbitParamsType(type);
         FNP.setInitialState(initialState);
         FNP.setPositionAngleType(PositionAngleType.TRUE);
 
         NumericalPropagator NP = new NumericalPropagator(RIntegrator);
-        NP.setOrbitType(FNP.getOrbitType());
+        NP.setOrbitParamsType(FNP.getOrbitParamsType());
         NP.setPositionAngleType(FNP.getPositionAngleType());
         NP.setInitialState(iSR);
 
@@ -1436,15 +1436,15 @@ class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
                         new ClassicalRungeKuttaFieldIntegrator<>(field, zero.add(6));
         ClassicalRungeKuttaIntegrator RIntegrator =
                         new ClassicalRungeKuttaIntegrator(6);
-        OrbitType type = OrbitType.EQUINOCTIAL;
+        OrbitParamsType type = OrbitParamsType.EQUINOCTIAL;
 
         // Field and classical numerical propagators
         FieldNumericalPropagator<DerivativeStructure> FNP = new FieldNumericalPropagator<>(integrator);
-        FNP.setOrbitType(type);
+        FNP.setOrbitParamsType(type);
         FNP.setInitialState(initialState);
 
         NumericalPropagator NP = new NumericalPropagator(RIntegrator);
-        NP.setOrbitType(type);
+        NP.setOrbitParamsType(type);
         NP.setInitialState(iSR);
 
 

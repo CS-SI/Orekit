@@ -21,7 +21,7 @@ import org.hipparchus.util.SinCos;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -203,7 +203,7 @@ public class J2DifferentialEffect
 
         // convert current orbital state to equinoctial elements
         final EquinoctialOrbit original =
-                (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(orbit1);
+                (EquinoctialOrbit) OrbitParamsType.EQUINOCTIAL.convertType(orbit1);
 
         // compute differential effect
         final AbsoluteDate date = original.getDate();

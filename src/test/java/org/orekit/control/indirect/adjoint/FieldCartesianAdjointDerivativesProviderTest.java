@@ -53,7 +53,7 @@ class FieldCartesianAdjointDerivativesProviderTest {
         final FieldSpacecraftState<Binary64> mockedState = Mockito.mock(FieldSpacecraftState.class);
         Mockito.when(mockedState.isOrbitDefined()).thenReturn(true);
         final FieldOrbit<Binary64> mockedOrbit = Mockito.mock(FieldOrbit.class);
-        Mockito.when(mockedOrbit.getType()).thenReturn(OrbitType.EQUINOCTIAL);
+        Mockito.when(mockedOrbit.getType()).thenReturn(OrbitParamsType.EQUINOCTIAL);
         Mockito.when(mockedState.getOrbit()).thenReturn(mockedOrbit);
         // WHEN
         Assertions.assertThrows(OrekitException.class, () -> derivativesProvider.init(mockedState, null));
@@ -73,7 +73,7 @@ class FieldCartesianAdjointDerivativesProviderTest {
         final Orbit orbit = new CartesianOrbit(new PVCoordinates(new Vector3D(7e6, 1e3, 0), new Vector3D(10., 7e3, -200)),
                 FramesFactory.getGCRF(), AbsoluteDate.ARBITRARY_EPOCH, mu);
         final FieldSpacecraftState<Binary64> initialState = new FieldSpacecraftState<>(field, new SpacecraftState(orbit));
-        propagator.setOrbitType(OrbitType.CARTESIAN);
+        propagator.setOrbitParamsType(OrbitParamsType.CARTESIAN);
         propagator.setInitialState(initialState.addAdditionalData(name, MathArrays.buildArray(field, 6)));
         propagator.addAdditionalDerivativesProvider(derivativesProvider);
         // WHEN

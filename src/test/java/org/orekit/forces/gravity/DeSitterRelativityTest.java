@@ -41,7 +41,7 @@ import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
@@ -143,10 +143,10 @@ public class DeSitterRelativityTest extends AbstractLegacyForceModelTest {
                                    FastMath.toRadians(40.), PositionAngleType.MEAN,
                                    frame, date, gm
                 );
-        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(0.1).getTolerances(orbit, OrbitType.KEPLERIAN);
+        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(0.1).getTolerances(orbit, OrbitParamsType.KEPLERIAN);
         AbstractIntegrator integrator = new DormandPrince853Integrator(1, 3600, tol[0], tol[1]);
         NumericalPropagator propagator = new NumericalPropagator(integrator);
-        propagator.setOrbitType(OrbitType.CARTESIAN);
+        propagator.setOrbitParamsType(OrbitParamsType.CARTESIAN);
         propagator.addForceModel(new DeSitterRelativity());
         propagator.setInitialState(new SpacecraftState(orbit));
 
@@ -179,13 +179,13 @@ public class DeSitterRelativityTest extends AbstractLegacyForceModelTest {
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
                                          0, PositionAngleType.MEAN, FramesFactory.getEME2000(), date,
                                          Constants.EIGEN5C_EARTH_MU);
-        OrbitType integrationType = OrbitType.CARTESIAN;
+        OrbitParamsType integrationType = OrbitParamsType.CARTESIAN;
         double[][] tolerances = ToleranceProvider.getDefaultToleranceProvider(0.01).getTolerances(orbit, integrationType);
 
         NumericalPropagator propagator =
                 new NumericalPropagator(new DormandPrince853Integrator(1.0e-3, 120,
                                                                        tolerances[0], tolerances[1]));
-        propagator.setOrbitType(integrationType);
+        propagator.setOrbitParamsType(integrationType);
         DeSitterRelativity relativity = new DeSitterRelativity();
         propagator.addForceModel(relativity);
         SpacecraftState state0 = new SpacecraftState(orbit);
@@ -240,7 +240,7 @@ public class DeSitterRelativityTest extends AbstractLegacyForceModelTest {
         FieldSpacecraftState<Gradient> initialState = new FieldSpacecraftState<>(FKO);
 
         SpacecraftState iSR = initialState.toSpacecraftState();
-        OrbitType type = OrbitType.KEPLERIAN;
+        OrbitParamsType type = OrbitParamsType.KEPLERIAN;
         double[][] tolerance = ToleranceProvider.getDefaultToleranceProvider(0.001).getTolerances(FKO.toOrbit(), type);
 
 
@@ -252,11 +252,11 @@ public class DeSitterRelativityTest extends AbstractLegacyForceModelTest {
         RIntegrator.setInitialStepSize(60);
 
         FieldNumericalPropagator<Gradient> FNP = new FieldNumericalPropagator<>(integrator);
-        FNP.setOrbitType(type);
+        FNP.setOrbitParamsType(type);
         FNP.setInitialState(initialState);
 
         NumericalPropagator NP = new NumericalPropagator(RIntegrator);
-        NP.setOrbitType(type);
+        NP.setOrbitParamsType(type);
         NP.setInitialState(iSR);
 
         DeSitterRelativity relativity = new DeSitterRelativity();

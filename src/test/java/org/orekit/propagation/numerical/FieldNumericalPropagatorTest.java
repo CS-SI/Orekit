@@ -361,10 +361,10 @@ class FieldNumericalPropagatorTest {
         Frame eci = FramesFactory.getGCRF();
         FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<>(zero.add(600e3 + Constants.WGS84_EARTH_EQUATORIAL_RADIUS), zero, zero, zero, zero, zero,
                                                                  PositionAngleType.TRUE, eci, initialDate, zero.add(mu));
-        OrbitType type = OrbitType.CARTESIAN;
+        OrbitParamsType type = OrbitParamsType.CARTESIAN;
         double[][] tol = ToleranceProvider.of(CartesianToleranceProvider.of(0.001)).getTolerances(orbit.toOrbit(), type);
         FieldNumericalPropagator<T> prop = new FieldNumericalPropagator<>(new DormandPrince853FieldIntegrator<>(field, 0.1, 500, tol[0], tol[1]));
-        prop.setOrbitType(type);
+        prop.setOrbitParamsType(type);
         prop.resetInitialState(new FieldSpacecraftState<>(new FieldCartesianOrbit<>(orbit)));
 
         //action
@@ -408,10 +408,10 @@ class FieldNumericalPropagatorTest {
         Frame eci = FramesFactory.getGCRF();
         FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<>(zero.add(600e3 + Constants.WGS84_EARTH_EQUATORIAL_RADIUS), zero, zero, zero, zero, zero,
                                                                  PositionAngleType.TRUE, eci, initialDate, zero.add(mu));
-        OrbitType type = OrbitType.CARTESIAN;
+        OrbitParamsType type = OrbitParamsType.CARTESIAN;
         double[][] tol = ToleranceProvider.of(CartesianToleranceProvider.of(0.001)).getTolerances(orbit.toOrbit(), type);
         FieldNumericalPropagator<T> prop = new FieldNumericalPropagator<>(new DormandPrince853FieldIntegrator<>(field, 0.1, 500, tol[0], tol[1]));
-        prop.setOrbitType(type);
+        prop.setOrbitParamsType(type);
         prop.resetInitialState(new FieldSpacecraftState<>(new FieldCartesianOrbit<>(orbit)));
 
         //action
@@ -454,13 +454,13 @@ class FieldNumericalPropagatorTest {
         final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position,  velocity),
                                                                 FramesFactory.getEME2000(), initDate, zero.add(mu));
         initialState = new FieldSpacecraftState<>(orbit);
-        OrbitType type = OrbitType.EQUINOCTIAL;
+        OrbitParamsType type = OrbitParamsType.EQUINOCTIAL;
         double[][] tolerance = ToleranceProvider.of(CartesianToleranceProvider.of(0.001)).getTolerances(orbit.toOrbit(), type);
         AdaptiveStepsizeFieldIntegrator<T>integrator =
                 new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(60);
         propagator = new FieldNumericalPropagator<>(integrator);
-        propagator.setOrbitType(type);
+        propagator.setOrbitParamsType(type);
         propagator.setInitialState(initialState);
 
 
@@ -504,13 +504,13 @@ class FieldNumericalPropagatorTest {
         final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position,  velocity),
                                                                 FramesFactory.getEME2000(), initDate, zero.add(mu));
         initialState = new FieldSpacecraftState<>(orbit);
-        OrbitType type = OrbitType.EQUINOCTIAL;
+        OrbitParamsType type = OrbitParamsType.EQUINOCTIAL;
         double[][] tolerance = ToleranceProvider.of(CartesianToleranceProvider.of(0.001)).getTolerances(orbit.toOrbit(), type);
         AdaptiveStepsizeFieldIntegrator<T>integrator =
                 new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(60);
         propagator = new FieldNumericalPropagator<>(integrator);
-        propagator.setOrbitType(type);
+        propagator.setOrbitParamsType(type);
         propagator.setInitialState(initialState);
 
         // Propagation of the initial at t + dt
@@ -548,18 +548,18 @@ class FieldNumericalPropagatorTest {
         final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position,  velocity),
                                                                 FramesFactory.getEME2000(), initDate, zero.add(mu));
         initialState = new FieldSpacecraftState<>(orbit);
-        OrbitType type = OrbitType.EQUINOCTIAL;
+        OrbitParamsType type = OrbitParamsType.EQUINOCTIAL;
         double[][] tolerance = ToleranceProvider.of(CartesianToleranceProvider.of(0.001)).getTolerances(orbit.toOrbit(), type);
         AdaptiveStepsizeFieldIntegrator<T>integrator =
                 new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(60);
         propagator = new FieldNumericalPropagator<>(integrator);
-        propagator.setOrbitType(type);
+        propagator.setOrbitParamsType(type);
         propagator.setInitialState(initialState);
 
         // Propagation of the initial at t + dt
         final T dt = zero.add(3200);
-        propagator.setOrbitType(OrbitType.CARTESIAN);
+        propagator.setOrbitParamsType(OrbitParamsType.CARTESIAN);
         final FieldPVCoordinates<T> finalState =
             propagator.propagate(initDate.shiftedBy(dt)).getPVCoordinates();
         final FieldVector3D<T> pFin = finalState.getPosition();
@@ -592,13 +592,13 @@ class FieldNumericalPropagatorTest {
         final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position,  velocity),
                                                                 FramesFactory.getEME2000(), initDate, zero.add(mu));
         initialState = new FieldSpacecraftState<>(orbit);
-        OrbitType type = OrbitType.EQUINOCTIAL;
+        OrbitParamsType type = OrbitParamsType.EQUINOCTIAL;
         double[][] tolerance = ToleranceProvider.of(CartesianToleranceProvider.of(0.001)).getTolerances(orbit.toOrbit(), type);
         AdaptiveStepsizeFieldIntegrator<T>integrator =
                 new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(60);
         propagator = new FieldNumericalPropagator<>(integrator);
-        propagator.setOrbitType(type);
+        propagator.setOrbitParamsType(type);
         propagator.setInitialState(initialState);
 
         ForceModel gravityField =
@@ -611,20 +611,20 @@ class FieldNumericalPropagatorTest {
         final T dP = zero.add(0.001);
         final T dV = pv.getPosition().getNorm2Sq().multiply(pv.getVelocity().getNorm()).reciprocal().multiply(dP.multiply(initialState.getOrbit().getMu()));
 
-        final FieldPVCoordinates<T> pvcM = propagateInType(initialState, dP, OrbitType.CARTESIAN,   PositionAngleType.MEAN, propagator);
-        final FieldPVCoordinates<T> pviM = propagateInType(initialState, dP, OrbitType.CIRCULAR,    PositionAngleType.MEAN, propagator);
-        final FieldPVCoordinates<T> pveM = propagateInType(initialState, dP, OrbitType.EQUINOCTIAL, PositionAngleType.MEAN, propagator);
-        final FieldPVCoordinates<T> pvkM = propagateInType(initialState, dP, OrbitType.KEPLERIAN,   PositionAngleType.MEAN, propagator);
+        final FieldPVCoordinates<T> pvcM = propagateInType(initialState, dP, OrbitParamsType.CARTESIAN,   PositionAngleType.MEAN, propagator);
+        final FieldPVCoordinates<T> pviM = propagateInType(initialState, dP, OrbitParamsType.CIRCULAR,    PositionAngleType.MEAN, propagator);
+        final FieldPVCoordinates<T> pveM = propagateInType(initialState, dP, OrbitParamsType.EQUINOCTIAL, PositionAngleType.MEAN, propagator);
+        final FieldPVCoordinates<T> pvkM = propagateInType(initialState, dP, OrbitParamsType.KEPLERIAN,   PositionAngleType.MEAN, propagator);
 
-        final FieldPVCoordinates<T> pvcE = propagateInType(initialState, dP, OrbitType.CARTESIAN,   PositionAngleType.ECCENTRIC, propagator);
-        final FieldPVCoordinates<T> pviE = propagateInType(initialState, dP, OrbitType.CIRCULAR,    PositionAngleType.ECCENTRIC, propagator);
-        final FieldPVCoordinates<T> pveE = propagateInType(initialState, dP, OrbitType.EQUINOCTIAL, PositionAngleType.ECCENTRIC, propagator);
-        final FieldPVCoordinates<T> pvkE = propagateInType(initialState, dP, OrbitType.KEPLERIAN,   PositionAngleType.ECCENTRIC, propagator);
+        final FieldPVCoordinates<T> pvcE = propagateInType(initialState, dP, OrbitParamsType.CARTESIAN,   PositionAngleType.ECCENTRIC, propagator);
+        final FieldPVCoordinates<T> pviE = propagateInType(initialState, dP, OrbitParamsType.CIRCULAR,    PositionAngleType.ECCENTRIC, propagator);
+        final FieldPVCoordinates<T> pveE = propagateInType(initialState, dP, OrbitParamsType.EQUINOCTIAL, PositionAngleType.ECCENTRIC, propagator);
+        final FieldPVCoordinates<T> pvkE = propagateInType(initialState, dP, OrbitParamsType.KEPLERIAN,   PositionAngleType.ECCENTRIC, propagator);
 
-        final FieldPVCoordinates<T> pvcT = propagateInType(initialState, dP, OrbitType.CARTESIAN,   PositionAngleType.TRUE, propagator);
-        final FieldPVCoordinates<T> pviT = propagateInType(initialState, dP, OrbitType.CIRCULAR,    PositionAngleType.TRUE, propagator);
-        final FieldPVCoordinates<T> pveT = propagateInType(initialState, dP, OrbitType.EQUINOCTIAL, PositionAngleType.TRUE, propagator);
-        final FieldPVCoordinates<T> pvkT = propagateInType(initialState, dP, OrbitType.KEPLERIAN,   PositionAngleType.TRUE, propagator);
+        final FieldPVCoordinates<T> pvcT = propagateInType(initialState, dP, OrbitParamsType.CARTESIAN,   PositionAngleType.TRUE, propagator);
+        final FieldPVCoordinates<T> pviT = propagateInType(initialState, dP, OrbitParamsType.CIRCULAR,    PositionAngleType.TRUE, propagator);
+        final FieldPVCoordinates<T> pveT = propagateInType(initialState, dP, OrbitParamsType.EQUINOCTIAL, PositionAngleType.TRUE, propagator);
+        final FieldPVCoordinates<T> pvkT = propagateInType(initialState, dP, OrbitParamsType.KEPLERIAN,   PositionAngleType.TRUE, propagator);
         Assertions.assertEquals(0, pvcM.getPosition().subtract(pveT.getPosition()).getNorm().getReal() / dP.getReal(), 3.1);
         Assertions.assertEquals(0, pvcM.getVelocity().subtract(pveT.getVelocity()).getNorm().getReal() / dV.getReal(), 2.0);
         Assertions.assertEquals(0, pviM.getPosition().subtract(pveT.getPosition()).getNorm().getReal() / dP.getReal(), 0.8);
@@ -670,13 +670,13 @@ class FieldNumericalPropagatorTest {
         final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position,  velocity),
                                                                 FramesFactory.getEME2000(), initDate, zero.add(mu));
         initialState = new FieldSpacecraftState<>(orbit);
-        OrbitType type = OrbitType.EQUINOCTIAL;
+        OrbitParamsType type = OrbitParamsType.EQUINOCTIAL;
         double[][] tolerance = ToleranceProvider.of(CartesianToleranceProvider.of(0.001)).getTolerances(orbit.toOrbit(), type);
         AdaptiveStepsizeFieldIntegrator<T>integrator =
                 new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(60);
         propagator = new FieldNumericalPropagator<>(integrator);
-        propagator.setOrbitType(type);
+        propagator.setOrbitParamsType(type);
         propagator.setInitialState(initialState);
 
         FieldSpacecraftState<T> state =
@@ -696,14 +696,14 @@ class FieldNumericalPropagatorTest {
         final T dV = dP.multiply(state.getOrbit().getMu()).divide(
                           pv.getPosition().getNorm2Sq().multiply(pv.getVelocity().getNorm()));
 
-        final FieldPVCoordinates<T> pvcM = propagateInType(state, dP, OrbitType.CARTESIAN, PositionAngleType.MEAN, propagator);
-        final FieldPVCoordinates<T> pvkM = propagateInType(state, dP, OrbitType.KEPLERIAN, PositionAngleType.MEAN, propagator);
+        final FieldPVCoordinates<T> pvcM = propagateInType(state, dP, OrbitParamsType.CARTESIAN, PositionAngleType.MEAN, propagator);
+        final FieldPVCoordinates<T> pvkM = propagateInType(state, dP, OrbitParamsType.KEPLERIAN, PositionAngleType.MEAN, propagator);
 
-        final FieldPVCoordinates<T> pvcE = propagateInType(state, dP, OrbitType.CARTESIAN, PositionAngleType.ECCENTRIC, propagator);
-        final FieldPVCoordinates<T> pvkE = propagateInType(state, dP, OrbitType.KEPLERIAN, PositionAngleType.ECCENTRIC, propagator);
+        final FieldPVCoordinates<T> pvcE = propagateInType(state, dP, OrbitParamsType.CARTESIAN, PositionAngleType.ECCENTRIC, propagator);
+        final FieldPVCoordinates<T> pvkE = propagateInType(state, dP, OrbitParamsType.KEPLERIAN, PositionAngleType.ECCENTRIC, propagator);
 
-        final FieldPVCoordinates<T> pvcT = propagateInType(state, dP, OrbitType.CARTESIAN, PositionAngleType.TRUE, propagator);
-        final FieldPVCoordinates<T> pvkT = propagateInType(state, dP, OrbitType.KEPLERIAN, PositionAngleType.TRUE, propagator);
+        final FieldPVCoordinates<T> pvcT = propagateInType(state, dP, OrbitParamsType.CARTESIAN, PositionAngleType.TRUE, propagator);
+        final FieldPVCoordinates<T> pvkT = propagateInType(state, dP, OrbitParamsType.KEPLERIAN, PositionAngleType.TRUE, propagator);
 
         Assertions.assertEquals(0, pvcM.getPosition().subtract(pvkT.getPosition()).getNorm().getReal() / dP.getReal(), 0.4);
         Assertions.assertEquals(0, pvcM.getVelocity().subtract(pvkT.getVelocity()).getNorm().getReal() / dV.getReal(), 0.6);
@@ -719,7 +719,7 @@ class FieldNumericalPropagatorTest {
     }
 
     private <T extends CalculusFieldElement<T>> FieldPVCoordinates<T> propagateInType(FieldSpacecraftState<T> state, T dP,
-                                                                                      OrbitType type , PositionAngleType angle, FieldNumericalPropagator<T> propagator)
+                                                                                      OrbitParamsType type , PositionAngleType angle, FieldNumericalPropagator<T> propagator)
         {
         T zero = dP.getField().getZero();
         final T dt = zero.add(3200);
@@ -729,7 +729,7 @@ class FieldNumericalPropagatorTest {
         AdaptiveStepsizeFieldIntegrator<T> integrator =
                 new DormandPrince853FieldIntegrator<>(zero.getField(), minStep, maxStep, tol[0], tol[1]);
         FieldNumericalPropagator<T> newPropagator = new FieldNumericalPropagator<>(integrator);
-        newPropagator.setOrbitType(type);
+        newPropagator.setOrbitParamsType(type);
         newPropagator.setPositionAngleType(angle);
         newPropagator.setInitialState(state);
         for (ForceModel force: propagator.getAllForceModels()) {
@@ -756,13 +756,13 @@ class FieldNumericalPropagatorTest {
         final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position,  velocity),
                                                                 FramesFactory.getEME2000(), initDate, zero.add(mu));
         initialState = new FieldSpacecraftState<>(orbit);
-        OrbitType type = OrbitType.EQUINOCTIAL;
+        OrbitParamsType type = OrbitParamsType.EQUINOCTIAL;
         double[][] tolerance = ToleranceProvider.of(CartesianToleranceProvider.of(0.001)).getTolerances(orbit.toOrbit(), type);
         AdaptiveStepsizeFieldIntegrator<T>integrator =
                 new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(60);
         propagator = new FieldNumericalPropagator<>(integrator);
-        propagator.setOrbitType(type);
+        propagator.setOrbitParamsType(type);
         propagator.setInitialState(initialState);
 
         propagator.setStepHandler(new FieldOrekitStepHandler<T>() {
@@ -794,13 +794,13 @@ class FieldNumericalPropagatorTest {
         final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position,  velocity),
                                                                 FramesFactory.getEME2000(), initDate, zero.add(mu));
         initialState = new FieldSpacecraftState<>(orbit);
-        OrbitType type = OrbitType.EQUINOCTIAL;
+        OrbitParamsType type = OrbitParamsType.EQUINOCTIAL;
         double[][] tolerance = ToleranceProvider.of(CartesianToleranceProvider.of(0.001)).getTolerances(orbit.toOrbit(), type);
         AdaptiveStepsizeFieldIntegrator<T>integrator =
                 new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(60);
         propagator = new FieldNumericalPropagator<>(integrator);
-        propagator.setOrbitType(type);
+        propagator.setOrbitParamsType(type);
         propagator.setInitialState(initialState);
 
         final FieldAbsoluteDate<T> stopDate = initDate.shiftedBy(1000);
@@ -834,13 +834,13 @@ class FieldNumericalPropagatorTest {
         final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position,  velocity),
                                                                 FramesFactory.getEME2000(), initDate, zero.add(mu));
         initialState = new FieldSpacecraftState<>(orbit);
-        OrbitType type = OrbitType.EQUINOCTIAL;
+        OrbitParamsType type = OrbitParamsType.EQUINOCTIAL;
         double[][] tolerance = ToleranceProvider.of(CartesianToleranceProvider.of(0.001)).getTolerances(orbit.toOrbit(), type);
         AdaptiveStepsizeFieldIntegrator<T>integrator =
                 new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(60);
         propagator = new FieldNumericalPropagator<>(integrator);
-        propagator.setOrbitType(type);
+        propagator.setOrbitParamsType(type);
         propagator.setInitialState(initialState);
         final FieldAbsoluteDate<T> resetDate = initDate.shiftedBy(1000);
         CheckingHandler<T> checking = new CheckingHandler<T>(Action.RESET_STATE) {
@@ -873,13 +873,13 @@ class FieldNumericalPropagatorTest {
         final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position,  velocity),
                                                                 FramesFactory.getEME2000(), initDate, zero.add(mu));
         initialState = new FieldSpacecraftState<>(orbit);
-        OrbitType type = OrbitType.EQUINOCTIAL;
+        OrbitParamsType type = OrbitParamsType.EQUINOCTIAL;
         double[][] tolerance = ToleranceProvider.of(CartesianToleranceProvider.of(0.001)).getTolerances(orbit.toOrbit(), type);
         AdaptiveStepsizeFieldIntegrator<T>integrator =
                 new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(60);
         propagator = new FieldNumericalPropagator<>(integrator);
-        propagator.setOrbitType(type);
+        propagator.setOrbitParamsType(type);
         propagator.setInitialState(initialState);
         final FieldAbsoluteDate<T> resetDate = initDate.shiftedBy(1000);
         CheckingHandler<T> checking = new CheckingHandler<>(Action.RESET_DERIVATIVES);
@@ -921,13 +921,13 @@ class FieldNumericalPropagatorTest {
         final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position,  velocity),
                                                                 FramesFactory.getEME2000(), initDate, zero.add(mu));
         initialState = new FieldSpacecraftState<>(orbit);
-        OrbitType type = OrbitType.EQUINOCTIAL;
+        OrbitParamsType type = OrbitParamsType.EQUINOCTIAL;
         double[][] tolerance = ToleranceProvider.of(CartesianToleranceProvider.of(0.001)).getTolerances(orbit.toOrbit(), type);
         AdaptiveStepsizeFieldIntegrator<T>integrator =
                 new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(60);
         propagator = new FieldNumericalPropagator<>(integrator);
-        propagator.setOrbitType(type);
+        propagator.setOrbitParamsType(type);
         propagator.setInitialState(initialState);
 
 
@@ -974,13 +974,13 @@ class FieldNumericalPropagatorTest {
         final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position,  velocity),
                                                                 FramesFactory.getEME2000(), initDate, zero.add(mu));
         initialState = new FieldSpacecraftState<>(orbit);
-        OrbitType type = OrbitType.EQUINOCTIAL;
+        OrbitParamsType type = OrbitParamsType.EQUINOCTIAL;
         double[][] tolerance = ToleranceProvider.of(CartesianToleranceProvider.of(0.001)).getTolerances(orbit.toOrbit(), type);
         AdaptiveStepsizeFieldIntegrator<T>integrator =
                 new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(60);
         propagator = new FieldNumericalPropagator<>(integrator);
-        propagator.setOrbitType(type);
+        propagator.setOrbitParamsType(type);
         propagator.setInitialState(initialState);
 
         propagator.addAdditionalDerivativesProvider(new FieldAdditionalDerivativesProvider<T>() {
@@ -1183,7 +1183,7 @@ class FieldNumericalPropagatorTest {
         final double minStep  = 0.001;
         final double maxStep  = 1000;
         final double initStep = 60;
-        final OrbitType type = OrbitType.EQUINOCTIAL;
+        final OrbitParamsType type = OrbitParamsType.EQUINOCTIAL;
         final double[] absTolerance = {
             0.001, 1.0e-9, 1.0e-9, 1.0e-6, 1.0e-6, 1.0e-6, 0.001};
         final double[] relTolerance = {
@@ -1195,11 +1195,11 @@ class FieldNumericalPropagatorTest {
 
         // Numerical propagator based on the integrator
         FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(integrator);
-        propagator.setOrbitType(type);
+        propagator.setOrbitParamsType(type);
         T mass = field.getZero().add(1000.0);
         FieldSpacecraftState<T> initialState = new FieldSpacecraftState<>(geo).withMass(mass);
         propagator.setInitialState(initialState);
-        propagator.setOrbitType(OrbitType.CARTESIAN);
+        propagator.setOrbitParamsType(OrbitParamsType.CARTESIAN);
 
 
         // Set the events Detectors
@@ -1229,7 +1229,7 @@ class FieldNumericalPropagatorTest {
         final double dt = 3200;
         final FieldAbsoluteDate<T> initDate = propagator.getInitialState().getDate();
 
-        propagator.setOrbitType(OrbitType.CARTESIAN);
+        propagator.setOrbitParamsType(OrbitParamsType.CARTESIAN);
         final FieldEphemerisGenerator<T> generator = propagator.getEphemerisGenerator();
         propagator.propagate(initDate.shiftedBy(dt));
         final FieldBoundedPropagator<T> ephemeris1 = generator.getGeneratedEphemeris();
@@ -1291,7 +1291,7 @@ class FieldNumericalPropagatorTest {
         });
         propagator.setInitialState(propagator.getInitialState().addAdditionalData("extra", field.getZero().add(1.5)));
 
-        propagator.setOrbitType(OrbitType.CARTESIAN);
+        propagator.setOrbitParamsType(OrbitParamsType.CARTESIAN);
         final FieldEphemerisGenerator<T> generator = propagator.getEphemerisGenerator();
         propagator.propagate(initDate.shiftedBy(dt));
         final FieldBoundedPropagator<T> ephemeris1 = generator.getGeneratedEphemeris();
@@ -1344,7 +1344,7 @@ class FieldNumericalPropagatorTest {
                                                             FramesFactory.getTOD(false),
                                                             new FieldAbsoluteDate<>(field, 2003, 5, 6, TimeScalesFactory.getUTC()),
                                                             field.getZero().add(Constants.EIGEN5C_EARTH_MU));
-            ToleranceProvider.of(CartesianToleranceProvider.of(1)).getTolerances(orbit, OrbitType.KEPLERIAN);
+            ToleranceProvider.of(CartesianToleranceProvider.of(1)).getTolerances(orbit, OrbitParamsType.KEPLERIAN);
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.SINGULAR_JACOBIAN_FOR_ORBIT_TYPE, oe.getSpecifier());
@@ -1357,7 +1357,7 @@ class FieldNumericalPropagatorTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShiftKeplerianEllipticTrueWithoutDerivatives(final Field<T> field) {
-        doTestShift(createEllipticOrbit(field), OrbitType.KEPLERIAN, PositionAngleType.TRUE, false,
+        doTestShift(createEllipticOrbit(field), OrbitParamsType.KEPLERIAN, PositionAngleType.TRUE, false,
                     18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
@@ -1367,7 +1367,7 @@ class FieldNumericalPropagatorTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShiftKeplerianEllipticTrueWithDerivatives(final Field<T> field) {
-        doTestShift(createEllipticOrbit(field), OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+        doTestShift(createEllipticOrbit(field), OrbitParamsType.KEPLERIAN, PositionAngleType.TRUE, true,
                     1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
@@ -1377,7 +1377,7 @@ class FieldNumericalPropagatorTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShiftKeplerianEllipticEccentricWithoutDerivatives(final Field<T> field) {
-        doTestShift(createEllipticOrbit(field), OrbitType.KEPLERIAN, PositionAngleType.ECCENTRIC, false,
+        doTestShift(createEllipticOrbit(field), OrbitParamsType.KEPLERIAN, PositionAngleType.ECCENTRIC, false,
                     18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
@@ -1387,7 +1387,7 @@ class FieldNumericalPropagatorTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShiftKeplerianEllipticEcentricWithDerivatives(final Field<T> field) {
-        doTestShift(createEllipticOrbit(field), OrbitType.KEPLERIAN, PositionAngleType.ECCENTRIC, true,
+        doTestShift(createEllipticOrbit(field), OrbitParamsType.KEPLERIAN, PositionAngleType.ECCENTRIC, true,
                     1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
@@ -1397,7 +1397,7 @@ class FieldNumericalPropagatorTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShiftKeplerianEllipticMeanWithoutDerivatives(final Field<T> field) {
-        doTestShift(createEllipticOrbit(field), OrbitType.KEPLERIAN, PositionAngleType.MEAN, false,
+        doTestShift(createEllipticOrbit(field), OrbitParamsType.KEPLERIAN, PositionAngleType.MEAN, false,
                     18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
@@ -1407,7 +1407,7 @@ class FieldNumericalPropagatorTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShiftKeplerianEllipticMeanWithDerivatives(final Field<T> field) {
-        doTestShift(createEllipticOrbit(field), OrbitType.KEPLERIAN, PositionAngleType.MEAN, true,
+        doTestShift(createEllipticOrbit(field), OrbitParamsType.KEPLERIAN, PositionAngleType.MEAN, true,
                     1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
@@ -1417,7 +1417,7 @@ class FieldNumericalPropagatorTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShiftKeplerianHyperbolicTrueWithoutDerivatives(final Field<T> field) {
-        doTestShift(createHyperbolicOrbit(field), OrbitType.KEPLERIAN, PositionAngleType.TRUE, false,
+        doTestShift(createHyperbolicOrbit(field), OrbitParamsType.KEPLERIAN, PositionAngleType.TRUE, false,
                     0.484, 1.94, 12.1, 48.3, 108.5);
     }
 
@@ -1427,7 +1427,7 @@ class FieldNumericalPropagatorTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShiftKeplerianHyperbolicTrueWithDerivatives(final Field<T> field) {
-        doTestShift(createHyperbolicOrbit(field), OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+        doTestShift(createHyperbolicOrbit(field), OrbitParamsType.KEPLERIAN, PositionAngleType.TRUE, true,
                     1.38e-4, 1.10e-3, 1.72e-2, 1.37e-1, 4.62e-1);
     }
 
@@ -1437,7 +1437,7 @@ class FieldNumericalPropagatorTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShiftKeplerianHyperbolicEccentricWithoutDerivatives(final Field<T> field) {
-        doTestShift(createHyperbolicOrbit(field), OrbitType.KEPLERIAN, PositionAngleType.ECCENTRIC, false,
+        doTestShift(createHyperbolicOrbit(field), OrbitParamsType.KEPLERIAN, PositionAngleType.ECCENTRIC, false,
                     0.484, 1.94, 12.1, 48.3, 108.5);
     }
 
@@ -1447,7 +1447,7 @@ class FieldNumericalPropagatorTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShiftKeplerianHyperbolicEcentricWithDerivatives(final Field<T> field) {
-        doTestShift(createHyperbolicOrbit(field), OrbitType.KEPLERIAN, PositionAngleType.ECCENTRIC, true,
+        doTestShift(createHyperbolicOrbit(field), OrbitParamsType.KEPLERIAN, PositionAngleType.ECCENTRIC, true,
                     1.38e-4, 1.10e-3, 1.72e-2, 1.37e-1, 4.62e-1);
     }
 
@@ -1457,7 +1457,7 @@ class FieldNumericalPropagatorTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShiftKeplerianHyperbolicMeanWithoutDerivatives(final Field<T> field) {
-        doTestShift(createHyperbolicOrbit(field), OrbitType.KEPLERIAN, PositionAngleType.MEAN, false,
+        doTestShift(createHyperbolicOrbit(field), OrbitParamsType.KEPLERIAN, PositionAngleType.MEAN, false,
                     0.484, 1.94, 12.1, 48.3, 108.5);
     }
 
@@ -1467,7 +1467,7 @@ class FieldNumericalPropagatorTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShiftKeplerianHyperbolicMeanWithDerivatives(final Field<T> field) {
-        doTestShift(createHyperbolicOrbit(field), OrbitType.KEPLERIAN, PositionAngleType.MEAN, true,
+        doTestShift(createHyperbolicOrbit(field), OrbitParamsType.KEPLERIAN, PositionAngleType.MEAN, true,
                     1.38e-4, 1.10e-3, 1.72e-2, 1.37e-1, 4.62e-1);
     }
 
@@ -1477,7 +1477,7 @@ class FieldNumericalPropagatorTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShiftCartesianEllipticTrueWithoutDerivatives(final Field<T> field) {
-        doTestShift(createEllipticOrbit(field), OrbitType.CARTESIAN, PositionAngleType.TRUE, false,
+        doTestShift(createEllipticOrbit(field), OrbitParamsType.CARTESIAN, PositionAngleType.TRUE, false,
                     18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
@@ -1487,7 +1487,7 @@ class FieldNumericalPropagatorTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShiftCartesianEllipticTrueWithDerivatives(final Field<T> field) {
-        doTestShift(createEllipticOrbit(field), OrbitType.CARTESIAN, PositionAngleType.TRUE, true,
+        doTestShift(createEllipticOrbit(field), OrbitParamsType.CARTESIAN, PositionAngleType.TRUE, true,
                     1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
@@ -1497,7 +1497,7 @@ class FieldNumericalPropagatorTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShiftCartesianEllipticEccentricWithoutDerivatives(final Field<T> field) {
-        doTestShift(createEllipticOrbit(field), OrbitType.CARTESIAN, PositionAngleType.ECCENTRIC, false,
+        doTestShift(createEllipticOrbit(field), OrbitParamsType.CARTESIAN, PositionAngleType.ECCENTRIC, false,
                     18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
@@ -1507,7 +1507,7 @@ class FieldNumericalPropagatorTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShiftCartesianEllipticEcentricWithDerivatives(final Field<T> field) {
-        doTestShift(createEllipticOrbit(field), OrbitType.CARTESIAN, PositionAngleType.ECCENTRIC, true,
+        doTestShift(createEllipticOrbit(field), OrbitParamsType.CARTESIAN, PositionAngleType.ECCENTRIC, true,
                     1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
@@ -1517,7 +1517,7 @@ class FieldNumericalPropagatorTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShiftCartesianEllipticMeanWithoutDerivatives(final Field<T> field) {
-        doTestShift(createEllipticOrbit(field), OrbitType.CARTESIAN, PositionAngleType.MEAN, false,
+        doTestShift(createEllipticOrbit(field), OrbitParamsType.CARTESIAN, PositionAngleType.MEAN, false,
                     18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
@@ -1527,7 +1527,7 @@ class FieldNumericalPropagatorTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShiftCartesianEllipticMeanWithDerivatives(final Field<T> field) {
-        doTestShift(createEllipticOrbit(field), OrbitType.CARTESIAN, PositionAngleType.MEAN, true,
+        doTestShift(createEllipticOrbit(field), OrbitParamsType.CARTESIAN, PositionAngleType.MEAN, true,
                     1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
@@ -1537,7 +1537,7 @@ class FieldNumericalPropagatorTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShiftCartesianHyperbolicTrueWithoutDerivatives(final Field<T> field) {
-        doTestShift(createHyperbolicOrbit(field), OrbitType.CARTESIAN, PositionAngleType.TRUE, false,
+        doTestShift(createHyperbolicOrbit(field), OrbitParamsType.CARTESIAN, PositionAngleType.TRUE, false,
                     0.48, 1.93, 12.1, 48.3, 108.5);
     }
 
@@ -1547,7 +1547,7 @@ class FieldNumericalPropagatorTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShiftCartesianHyperbolicTrueWithDerivatives(final Field<T> field) {
-        doTestShift(createHyperbolicOrbit(field), OrbitType.CARTESIAN, PositionAngleType.TRUE, true,
+        doTestShift(createHyperbolicOrbit(field), OrbitParamsType.CARTESIAN, PositionAngleType.TRUE, true,
                     1.38e-4, 1.10e-3, 1.72e-2, 1.37e-1, 4.62e-1);
     }
 
@@ -1557,7 +1557,7 @@ class FieldNumericalPropagatorTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShiftCartesianHyperbolicEccentricWithoutDerivatives(final Field<T> field) {
-        doTestShift(createHyperbolicOrbit(field), OrbitType.CARTESIAN, PositionAngleType.ECCENTRIC, false,
+        doTestShift(createHyperbolicOrbit(field), OrbitParamsType.CARTESIAN, PositionAngleType.ECCENTRIC, false,
                     0.48, 1.93, 12.1, 48.3, 108.5);
     }
 
@@ -1567,7 +1567,7 @@ class FieldNumericalPropagatorTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShiftCartesianHyperbolicEcentricWithDerivatives(final Field<T> field) {
-        doTestShift(createHyperbolicOrbit(field), OrbitType.CARTESIAN, PositionAngleType.ECCENTRIC, true,
+        doTestShift(createHyperbolicOrbit(field), OrbitParamsType.CARTESIAN, PositionAngleType.ECCENTRIC, true,
                     1.38e-4, 1.10e-3, 1.72e-2, 1.37e-1, 4.62e-1);
     }
 
@@ -1577,7 +1577,7 @@ class FieldNumericalPropagatorTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShiftCartesianHyperbolicMeanWithoutDerivatives(final Field<T> field) {
-        doTestShift(createHyperbolicOrbit(field), OrbitType.CARTESIAN, PositionAngleType.MEAN, false,
+        doTestShift(createHyperbolicOrbit(field), OrbitParamsType.CARTESIAN, PositionAngleType.MEAN, false,
                     0.48, 1.93, 12.1, 48.3, 108.5);
     }
 
@@ -1587,7 +1587,7 @@ class FieldNumericalPropagatorTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShiftCartesianHyperbolicMeanWithDerivatives(final Field<T> field) {
-        doTestShift(createHyperbolicOrbit(field), OrbitType.CARTESIAN, PositionAngleType.MEAN, true,
+        doTestShift(createHyperbolicOrbit(field), OrbitParamsType.CARTESIAN, PositionAngleType.MEAN, true,
                     1.38e-4, 1.10e-3, 1.72e-2, 1.37e-1, 4.62e-1);
     }
 
@@ -1597,7 +1597,7 @@ class FieldNumericalPropagatorTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShiftCircularTrueWithoutDerivatives(final Field<T> field) {
-        doTestShift(createEllipticOrbit(field), OrbitType.CIRCULAR, PositionAngleType.TRUE, false,
+        doTestShift(createEllipticOrbit(field), OrbitParamsType.CIRCULAR, PositionAngleType.TRUE, false,
                     18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
@@ -1607,7 +1607,7 @@ class FieldNumericalPropagatorTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShiftCircularTrueWithDerivatives(final Field<T> field) {
-        doTestShift(createEllipticOrbit(field), OrbitType.CIRCULAR, PositionAngleType.TRUE, true,
+        doTestShift(createEllipticOrbit(field), OrbitParamsType.CIRCULAR, PositionAngleType.TRUE, true,
                     1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
@@ -1617,7 +1617,7 @@ class FieldNumericalPropagatorTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShiftCircularEccentricWithoutDerivatives(final Field<T> field) {
-        doTestShift(createEllipticOrbit(field), OrbitType.CIRCULAR, PositionAngleType.ECCENTRIC, false,
+        doTestShift(createEllipticOrbit(field), OrbitParamsType.CIRCULAR, PositionAngleType.ECCENTRIC, false,
                     18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
@@ -1627,7 +1627,7 @@ class FieldNumericalPropagatorTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShiftCircularEcentricWithDerivatives(final Field<T> field) {
-        doTestShift(createEllipticOrbit(field), OrbitType.CIRCULAR, PositionAngleType.ECCENTRIC, true,
+        doTestShift(createEllipticOrbit(field), OrbitParamsType.CIRCULAR, PositionAngleType.ECCENTRIC, true,
                     1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
@@ -1637,7 +1637,7 @@ class FieldNumericalPropagatorTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShiftCircularMeanWithoutDerivatives(final Field<T> field) {
-        doTestShift(createEllipticOrbit(field), OrbitType.CIRCULAR, PositionAngleType.MEAN, false,
+        doTestShift(createEllipticOrbit(field), OrbitParamsType.CIRCULAR, PositionAngleType.MEAN, false,
                     18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
@@ -1647,7 +1647,7 @@ class FieldNumericalPropagatorTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShiftCircularMeanWithDerivatives(final Field<T> field) {
-        doTestShift(createEllipticOrbit(field), OrbitType.CIRCULAR, PositionAngleType.MEAN, true,
+        doTestShift(createEllipticOrbit(field), OrbitParamsType.CIRCULAR, PositionAngleType.MEAN, true,
                     1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
@@ -1657,7 +1657,7 @@ class FieldNumericalPropagatorTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShiftEquinoctialTrueWithoutDerivatives(final Field<T> field) {
-        doTestShift(createEllipticOrbit(field), OrbitType.EQUINOCTIAL, PositionAngleType.TRUE, false,
+        doTestShift(createEllipticOrbit(field), OrbitParamsType.EQUINOCTIAL, PositionAngleType.TRUE, false,
                     18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
@@ -1667,7 +1667,7 @@ class FieldNumericalPropagatorTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShiftEquinoctialTrueWithDerivatives(final Field<T> field) {
-        doTestShift(createEllipticOrbit(field), OrbitType.EQUINOCTIAL, PositionAngleType.TRUE, true,
+        doTestShift(createEllipticOrbit(field), OrbitParamsType.EQUINOCTIAL, PositionAngleType.TRUE, true,
                     1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
@@ -1677,7 +1677,7 @@ class FieldNumericalPropagatorTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShiftEquinoctialEccentricWithoutDerivatives(final Field<T> field) {
-        doTestShift(createEllipticOrbit(field), OrbitType.EQUINOCTIAL, PositionAngleType.ECCENTRIC, false,
+        doTestShift(createEllipticOrbit(field), OrbitParamsType.EQUINOCTIAL, PositionAngleType.ECCENTRIC, false,
                     18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
@@ -1687,7 +1687,7 @@ class FieldNumericalPropagatorTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTtestShiftEquinoctialEcentricWithDerivatives(final Field<T> field) {
-        doTestShift(createEllipticOrbit(field), OrbitType.EQUINOCTIAL, PositionAngleType.ECCENTRIC, true,
+        doTestShift(createEllipticOrbit(field), OrbitParamsType.EQUINOCTIAL, PositionAngleType.ECCENTRIC, true,
                     1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
@@ -1697,7 +1697,7 @@ class FieldNumericalPropagatorTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShiftEquinoctialMeanWithoutDerivatives(final Field<T> field) {
-        doTestShift(createEllipticOrbit(field), OrbitType.EQUINOCTIAL, PositionAngleType.MEAN, false,
+        doTestShift(createEllipticOrbit(field), OrbitParamsType.EQUINOCTIAL, PositionAngleType.MEAN, false,
                     18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
@@ -1707,7 +1707,7 @@ class FieldNumericalPropagatorTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShiftEquinoctialMeanWithDerivatives(final Field<T> field) {
-        doTestShift(createEllipticOrbit(field), OrbitType.EQUINOCTIAL, PositionAngleType.MEAN, true,
+        doTestShift(createEllipticOrbit(field), OrbitParamsType.EQUINOCTIAL, PositionAngleType.MEAN, true,
                     1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
@@ -1943,7 +1943,7 @@ class FieldNumericalPropagatorTest {
         };
     }
 
-    private static <T extends CalculusFieldElement<T>> void doTestShift(final FieldCartesianOrbit<T> orbit, final OrbitType orbitType,
+    private static <T extends CalculusFieldElement<T>> void doTestShift(final FieldCartesianOrbit<T> orbit, final OrbitParamsType orbitParamsType,
                                                                         final PositionAngleType angleType, final boolean withDerivatives,
                                                                         final double error60s, final double error120s,
                                                                         final double error300s, final double error600s,
@@ -1954,12 +1954,12 @@ class FieldNumericalPropagatorTest {
 
         Utils.setDataRoot("regular-data:atmosphere:potential/grgs-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
-        final FieldNumericalPropagator<T> np = createPropagator(new FieldSpacecraftState<>(orbit), orbitType, angleType);
+        final FieldNumericalPropagator<T> np = createPropagator(new FieldSpacecraftState<>(orbit), orbitParamsType, angleType);
 
         // the reference date for shifts is set at 60s, so the propagator can provide derivatives if needed
         // (derivatives are not available in the initial orbit)
         final FieldAbsoluteDate<T> reference = orbit.getDate().shiftedBy(60.0);
-        final ShiftChecker<T> checker   = new ShiftChecker<>(withDerivatives, orbitType, angleType,
+        final ShiftChecker<T> checker   = new ShiftChecker<>(withDerivatives, orbitParamsType, angleType,
                                                              error60s,
                                                              error120s, error300s,
                                                              error600s, error900s);
@@ -1981,7 +1981,7 @@ class FieldNumericalPropagatorTest {
     private static class ShiftChecker<T extends CalculusFieldElement<T>> implements FieldEventHandler<T> {
 
         private final boolean           withDerivatives;
-        private final OrbitType         orbitType;
+        private final OrbitParamsType orbitParamsType;
         private final PositionAngleType angleType;
         private final double            error60s;
         private final double            error120s;
@@ -1990,12 +1990,12 @@ class FieldNumericalPropagatorTest {
         private final double            error900s;
         private FieldSpacecraftState<T> referenceState;
 
-        ShiftChecker(final boolean withDerivatives, final OrbitType orbitType,
+        ShiftChecker(final boolean withDerivatives, final OrbitParamsType orbitParamsType,
                      final PositionAngleType angleType, final double error60s,
                      final double error120s, final double error300s,
                      final double error600s, final double error900s) {
             this.withDerivatives = withDerivatives;
-            this.orbitType       = orbitType;
+            this.orbitParamsType = orbitParamsType;
             this.angleType       = angleType;
             this.error60s        = error60s;
             this.error120s       = error120s;
@@ -2017,8 +2017,8 @@ class FieldNumericalPropagatorTest {
                     // remove derivatives, to check accuracy of the shiftedBy method decreases without them
                     final T[] stateVector = MathArrays.buildArray(s.getDate().getField(), 6);
                     final FieldOrbit<T> o = s.getOrbit();
-                    orbitType.mapOrbitToArray(o, angleType, stateVector, null);
-                    final FieldOrbit<T> fixedOrbit = orbitType.mapArrayToOrbit(stateVector, null, angleType,
+                    orbitParamsType.mapOrbitToArray(o, angleType, stateVector, null);
+                    final FieldOrbit<T> fixedOrbit = orbitParamsType.mapArrayToOrbit(stateVector, null, angleType,
                                                                                o.getDate(), o.getMu(), o.getFrame());
                     referenceState = new FieldSpacecraftState<>(fixedOrbit, s.getAttitude()).withMass(s.getMass());
                 }
@@ -2056,7 +2056,7 @@ class FieldNumericalPropagatorTest {
     }
 
     private static <T extends CalculusFieldElement<T>> FieldNumericalPropagator<T> createPropagator(FieldSpacecraftState<T> spacecraftState,
-                                                                                                OrbitType orbitType,
+                                                                                                OrbitParamsType orbitParamsType,
                                                                                                 PositionAngleType angleType)
         {
 
@@ -2073,10 +2073,10 @@ class FieldNumericalPropagatorTest {
 
         // propagator main configuration
         final double[][] tol           = ToleranceProvider.of(CartesianToleranceProvider.of(positionTolerance.getReal()))
-                .getTolerances(spacecraftState.getOrbit(), orbitType);
+                .getTolerances(spacecraftState.getOrbit(), orbitParamsType);
         final FieldODEIntegrator<T> integrator = new DormandPrince853FieldIntegrator<>(field, minStep, maxStep, tol[0], tol[1]);
         final FieldNumericalPropagator<T> np   = new FieldNumericalPropagator<>(integrator);
-        np.setOrbitType(orbitType);
+        np.setOrbitParamsType(orbitParamsType);
         np.setPositionAngleType(angleType);
         np.setInitialState(spacecraftState);
 
@@ -2174,14 +2174,14 @@ class FieldNumericalPropagatorTest {
         final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position,  velocity),
                                                                 FramesFactory.getEME2000(), initDate, zero.add(mu));
         FieldSpacecraftState<T> initialState = new FieldSpacecraftState<>(orbit);
-        OrbitType type = OrbitType.EQUINOCTIAL;
+        OrbitParamsType type = OrbitParamsType.EQUINOCTIAL;
         double[][] tolerance = ToleranceProvider.of(CartesianToleranceProvider.of(0.001)).getTolerances(orbit, type);
         AdaptiveStepsizeFieldIntegrator<T> integrator =
                 new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
 
         integrator.setInitialStepSize(60);
         FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(integrator);
-        propagator.setOrbitType(type);
+        propagator.setOrbitParamsType(type);
 
 
         propagator.setInitialState(initialState);

@@ -21,7 +21,7 @@ import org.hipparchus.Field;
 import org.hipparchus.ode.nonstiff.FieldExplicitRungeKuttaIntegrator;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.utils.FieldAbsolutePVCoordinates;
 
@@ -35,14 +35,14 @@ import org.orekit.utils.FieldAbsolutePVCoordinates;
 public interface FieldExplicitRungeKuttaIntegratorBuilder<T extends CalculusFieldElement<T>> extends FieldODEIntegratorBuilder<T> {
 
     /** {@inheritDoc} */
-    FieldExplicitRungeKuttaIntegrator<T> buildIntegrator(Field<T> field, Orbit orbit, OrbitType orbitType);
+    FieldExplicitRungeKuttaIntegrator<T> buildIntegrator(Field<T> field, Orbit orbit, OrbitParamsType orbitParamsType);
 
     /** {@inheritDoc} */
-    FieldExplicitRungeKuttaIntegrator<T> buildIntegrator(Field<T> field, Orbit orbit, OrbitType orbitType,
+    FieldExplicitRungeKuttaIntegrator<T> buildIntegrator(Field<T> field, Orbit orbit, OrbitParamsType orbitParamsType,
                                           PositionAngleType angleType);
 
     /** {@inheritDoc} */
-    FieldExplicitRungeKuttaIntegrator<T> buildIntegrator(FieldOrbit<T> orbit, OrbitType orbitType);
+    FieldExplicitRungeKuttaIntegrator<T> buildIntegrator(FieldOrbit<T> orbit, OrbitParamsType orbitParamsType);
 
     /** {@inheritDoc} */
     FieldExplicitRungeKuttaIntegrator<T> buildIntegrator(FieldAbsolutePVCoordinates<T> fieldAbsolutePVCoordinates);

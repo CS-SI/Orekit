@@ -35,7 +35,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 /** Enumerate for {@link Orbit} and {@link FieldOrbit} parameters types.
  */
-public enum OrbitType {
+public enum OrbitParamsType {
 
     /** Type for orbital representation in {@link CartesianOrbit} and {@link FieldCartesianOrbit} parameters. */
     CARTESIAN {
@@ -209,7 +209,7 @@ public enum OrbitType {
         public void mapOrbitToArray(final Orbit orbit, final PositionAngleType type,
                                     final double[] stateVector, final double[] stateVectorDot) {
 
-            final CircularOrbit circularOrbit = (CircularOrbit) OrbitType.CIRCULAR.convertType(orbit);
+            final CircularOrbit circularOrbit = (CircularOrbit) OrbitParamsType.CIRCULAR.convertType(orbit);
 
             stateVector[0] = circularOrbit.getA();
             stateVector[1] = circularOrbit.getCircularEx();
@@ -261,7 +261,7 @@ public enum OrbitType {
                                                                         final T[] stateVector,
                                                                         final T[] stateVectorDot) {
 
-            final FieldCircularOrbit<T> circularOrbit = (FieldCircularOrbit<T>) OrbitType.CIRCULAR.convertType(orbit);
+            final FieldCircularOrbit<T> circularOrbit = (FieldCircularOrbit<T>) OrbitParamsType.CIRCULAR.convertType(orbit);
 
             stateVector[0] = circularOrbit.getA();
             stateVector[1] = circularOrbit.getCircularEx();
@@ -428,7 +428,7 @@ public enum OrbitType {
                                     final double[] stateVector, final double[] stateVectorDot) {
 
             final EquinoctialOrbit equinoctialOrbit =
-                (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(orbit);
+                (EquinoctialOrbit) OrbitParamsType.EQUINOCTIAL.convertType(orbit);
 
             stateVector[0] = equinoctialOrbit.getA();
             stateVector[1] = equinoctialOrbit.getEquinoctialEx();
@@ -481,7 +481,7 @@ public enum OrbitType {
                                                                         final T[] stateVectorDot) {
 
             final FieldEquinoctialOrbit<T> equinoctialOrbit =
-                (FieldEquinoctialOrbit<T>) OrbitType.EQUINOCTIAL.convertType(orbit);
+                (FieldEquinoctialOrbit<T>) OrbitParamsType.EQUINOCTIAL.convertType(orbit);
 
             stateVector[0] = equinoctialOrbit.getA();
             stateVector[1] = equinoctialOrbit.getEquinoctialEx();
@@ -646,7 +646,7 @@ public enum OrbitType {
                                     final double[] stateVector, final double[] stateVectorDot) {
 
             final KeplerianOrbit keplerianOrbit =
-                (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(orbit);
+                (KeplerianOrbit) OrbitParamsType.KEPLERIAN.convertType(orbit);
 
             stateVector[0] = keplerianOrbit.getA();
             stateVector[1] = keplerianOrbit.getE();
@@ -698,7 +698,7 @@ public enum OrbitType {
                                                                         final T[] stateVector,
                                                                         final T[] stateVectorDot) {
             final FieldKeplerianOrbit<T> keplerianOrbit =
-                            (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(orbit);
+                            (FieldKeplerianOrbit<T>) OrbitParamsType.KEPLERIAN.convertType(orbit);
 
             stateVector[0] = keplerianOrbit.getA();
             stateVector[1] = keplerianOrbit.getE();
@@ -1056,7 +1056,7 @@ public enum OrbitType {
      * @param <T> CalculusFieldElement used
      * @param orbit orbit to normalize
      * @param reference reference orbit
-     * @return normalized orbit (the type is guaranteed to match {@link OrbitType})
+     * @return normalized orbit (the type is guaranteed to match {@link OrbitParamsType})
      * @since 11.1
      */
     public abstract <T extends CalculusFieldElement<T>> FieldOrbit<T> normalize(FieldOrbit<T> orbit,
@@ -1074,7 +1074,7 @@ public enum OrbitType {
      * </p>
      * @param orbit orbit to normalize
      * @param reference reference orbit
-     * @return normalized orbit (the type is guaranteed to match {@link OrbitType})
+     * @return normalized orbit (the type is guaranteed to match {@link OrbitParamsType})
      * @since 11.1
      */
     public abstract Orbit normalize(Orbit orbit, Orbit reference);

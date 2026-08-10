@@ -126,7 +126,7 @@ public class AbstractPropagatorBuilderTest {
         Assertions.assertEquals(expectedF.getMu(), actualF.getMu());
         Assertions.assertEquals(expected.getAttitudeProvider(), actual.getAttitudeProvider());
         if (expectedF instanceof AbstractOrbitFactory<?>) {
-            Assertions.assertEquals(expectedF.getOrbitType(), actualF.getOrbitType());
+            Assertions.assertEquals(expectedF.getOrbitParamsType(), actualF.getOrbitParamsType());
         }
         Assertions.assertEquals(expectedF.getPositionAngleType(), actualF.getPositionAngleType());
         Assertions.assertEquals(expectedF.getDate(), actualF.getDate());

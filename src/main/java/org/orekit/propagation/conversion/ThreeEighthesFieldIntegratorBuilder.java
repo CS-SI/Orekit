@@ -20,7 +20,7 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.ode.nonstiff.ThreeEighthesFieldIntegrator;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 
 /**
@@ -63,7 +63,7 @@ public class ThreeEighthesFieldIntegratorBuilder<T extends CalculusFieldElement<
     /** {@inheritDoc} */
     @Override
     public ThreeEighthesFieldIntegrator<T> buildIntegrator(final Field<T> field, final Orbit orbit,
-                                                           final OrbitType orbitType, final PositionAngleType angleType) {
+                                                           final OrbitParamsType orbitParamsType, final PositionAngleType angleType) {
         return new ThreeEighthesFieldIntegrator<>(field, getFieldStep(field));
     }
 

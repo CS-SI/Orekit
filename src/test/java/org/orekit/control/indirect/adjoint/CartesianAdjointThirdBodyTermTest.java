@@ -29,7 +29,7 @@ import org.orekit.forces.gravity.ThirdBodyAttraction;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -53,7 +53,7 @@ class CartesianAdjointThirdBodyTermTest {
         final CartesianOrbit orbit = new CartesianOrbit(new TimeStampedPVCoordinates(date, Vector3D.MINUS_J, Vector3D.MINUS_K),
                 frame, mu);
         final double[] state = new double[6];
-        OrbitType.CARTESIAN.mapOrbitToArray(orbit, PositionAngleType.ECCENTRIC, state, null);
+        OrbitParamsType.CARTESIAN.mapOrbitToArray(orbit, PositionAngleType.ECCENTRIC, state, null);
         // WHEN
         final Vector3D acceleration = thirdBodyTerm.getAcceleration(date, state, frame);
         // THEN

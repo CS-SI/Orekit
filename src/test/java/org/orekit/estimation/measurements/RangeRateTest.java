@@ -43,7 +43,7 @@ import org.orekit.models.earth.troposphere.EstimatedModel;
 import org.orekit.models.earth.troposphere.GlobalMappingFunctionModel;
 import org.orekit.models.earth.troposphere.ModifiedSaastamoinenModel;
 import org.orekit.orbits.CartesianOrbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -71,7 +71,7 @@ class RangeRateTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createNumerical(OrbitType.EQUINOCTIAL, PositionAngleType.TRUE, false,
+                        context.createNumerical(OrbitParamsType.EQUINOCTIAL, PositionAngleType.TRUE, false,
                                               1.0e-6, 60.0, 0.001);
 
         // Create perfect right-ascension/declination measurements
@@ -119,7 +119,7 @@ class RangeRateTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createNumerical(OrbitType.EQUINOCTIAL, PositionAngleType.TRUE, false,
+                        context.createNumerical(OrbitParamsType.EQUINOCTIAL, PositionAngleType.TRUE, false,
                                               1.0e-6, 60.0, 0.001);
 
         // Create perfect right-ascension/declination measurements
@@ -164,7 +164,7 @@ class RangeRateTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitParamsType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect range rate measurements
@@ -197,7 +197,7 @@ class RangeRateTest {
                                                           estimateWithoutDerivatives(new SpacecraftState[] { state1 }).
                                                           getEstimatedValue(),
                                                   1, propagator.getAttitudeProvider(),
-               OrbitType.CARTESIAN, PositionAngleType.TRUE, 15.0, 3).value(state);
+               OrbitParamsType.CARTESIAN, PositionAngleType.TRUE, 15.0, 3).value(state);
 
             Assertions.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
             Assertions.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
@@ -226,7 +226,7 @@ class RangeRateTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitParamsType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect range rate measurements
@@ -261,7 +261,7 @@ class RangeRateTest {
                                                           estimateWithoutDerivatives(new SpacecraftState[] { state1 }).
                                                           getEstimatedValue(),
                                                   1, propagator.getAttitudeProvider(),
-               OrbitType.CARTESIAN, PositionAngleType.TRUE, 15.0, 3).value(state);
+               OrbitParamsType.CARTESIAN, PositionAngleType.TRUE, 15.0, 3).value(state);
 
             Assertions.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
             Assertions.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
@@ -290,7 +290,7 @@ class RangeRateTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitParamsType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect range rate measurements
@@ -376,7 +376,7 @@ class RangeRateTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitParamsType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect range rate measurements
@@ -458,7 +458,7 @@ class RangeRateTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitParamsType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect range rate measurements
@@ -494,7 +494,7 @@ class RangeRateTest {
                     Differentiation.differentiate( state1 -> measurement.
                             estimate(0, 0, new SpacecraftState[] { state1 }).
                                                        getEstimatedValue(), 1, propagator.getAttitudeProvider(),
-                                                   OrbitType.CARTESIAN, PositionAngleType.TRUE, 15.0, 3).value(state);
+                                                   OrbitParamsType.CARTESIAN, PositionAngleType.TRUE, 15.0, 3).value(state);
 
             Assertions.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
             Assertions.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
@@ -523,7 +523,7 @@ class RangeRateTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitParamsType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect range rate measurements
@@ -563,7 +563,7 @@ class RangeRateTest {
                     Differentiation.differentiate(state1 -> measurement.
                                                       estimate(0, 0, new SpacecraftState[] { state1 }).
                                                       getEstimatedValue(), 1, propagator.getAttitudeProvider(),
-                        OrbitType.CARTESIAN, PositionAngleType.TRUE, 15.0, 3).value(state);
+                        OrbitParamsType.CARTESIAN, PositionAngleType.TRUE, 15.0, 3).value(state);
 
             Assertions.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
             Assertions.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
@@ -592,7 +592,7 @@ class RangeRateTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitParamsType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect range rate measurements
@@ -680,7 +680,7 @@ class RangeRateTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitParamsType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,

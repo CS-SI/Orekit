@@ -138,7 +138,7 @@ public class PolynomialAccelerationModelTest extends AbstractForceModelTest {
             new DormandPrince853Integrator(0.001, 100, tolerance[0], tolerance[1]);
         integrator0.setInitialStepSize(60);
         final NumericalPropagator propagator0 = new NumericalPropagator(integrator0);
-        propagator0.setOrbitType(OrbitType.EQUINOCTIAL);
+        propagator0.setOrbitParamsType(OrbitParamsType.EQUINOCTIAL);
         propagator0.setPositionAngleType(PositionAngleType.TRUE);
         propagator0.setInitialState(initialState);
         propagator0.setAttitudeProvider(maneuverLaw);
@@ -149,7 +149,7 @@ public class PolynomialAccelerationModelTest extends AbstractForceModelTest {
                         new DormandPrince853Integrator(0.001, 100, tolerance[0], tolerance[1]);
         integrator1.setInitialStepSize(60);
         final NumericalPropagator propagator1 = new NumericalPropagator(integrator1);
-        propagator1.setOrbitType(propagator0.getOrbitType());
+        propagator1.setOrbitParamsType(propagator0.getOrbitParamsType());
         propagator1.setPositionAngleType(propagator0.getPositionAngleType());
         propagator1.setInitialState(initialState);
         propagator1.setAttitudeProvider(accelerationLaw);
@@ -250,7 +250,7 @@ public class PolynomialAccelerationModelTest extends AbstractForceModelTest {
             new DormandPrince853FieldIntegrator<>(field, 0.001, 100, tolerance[0], tolerance[1]);
         integrator0.setInitialStepSize(60);
         final FieldNumericalPropagator<T> propagator0 = new FieldNumericalPropagator<>(integrator0);
-        propagator0.setOrbitType(OrbitType.EQUINOCTIAL);
+        propagator0.setOrbitParamsType(OrbitParamsType.EQUINOCTIAL);
         propagator0.setPositionAngleType(PositionAngleType.TRUE);
         propagator0.setInitialState(initialState);
         propagator0.setAttitudeProvider(maneuverLaw);
@@ -264,7 +264,7 @@ public class PolynomialAccelerationModelTest extends AbstractForceModelTest {
                         new DormandPrince853FieldIntegrator<>(field, 0.001, 100, tolerance[0], tolerance[1]);
         integrator1.setInitialStepSize(60);
         final FieldNumericalPropagator<T> propagator1 = new FieldNumericalPropagator<>(integrator1);
-        propagator1.setOrbitType(propagator0.getOrbitType());
+        propagator1.setOrbitParamsType(propagator0.getOrbitParamsType());
         propagator1.setPositionAngleType(propagator0.getPositionAngleType());
         propagator1.setInitialState(initialState);
         propagator1.setAttitudeProvider(accelerationLaw);

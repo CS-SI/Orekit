@@ -25,7 +25,7 @@ import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.EquinoctialOrbitFactory;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
@@ -174,7 +174,7 @@ public class DSSTPropagatorBuilder
         final SpacecraftState  state    = new SpacecraftState(orbit, attitude).withMass(getMass());
 
         final DSSTPropagator propagator = new DSSTPropagator(
-                getIntegratorBuilder().buildIntegrator(orbit, OrbitType.EQUINOCTIAL, PositionAngleType.MEAN),
+                getIntegratorBuilder().buildIntegrator(orbit, OrbitParamsType.EQUINOCTIAL, PositionAngleType.MEAN),
                 getPropagationType(), getAttitudeProvider());
 
         // Configure force models

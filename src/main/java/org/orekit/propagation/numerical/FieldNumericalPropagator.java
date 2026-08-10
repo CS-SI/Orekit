@@ -37,7 +37,7 @@ import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.FieldOrbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
@@ -69,8 +69,8 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  *   <li>the central attraction coefficient ({@link #setMu(CalculusFieldElement)})</li>
  *   <li>the various force models ({@link #addForceModel(ForceModel)},
  *   {@link #removeForceModels()})</li>
- *   <li>the {@link OrbitType type} of orbital parameters to be used for propagation
- *   ({@link #setOrbitType(OrbitType)}),
+ *   <li>the {@link OrbitParamsType type} of orbital parameters to be used for propagation
+ *   ({@link #setOrbitParamsType(OrbitParamsType)}),
  *   <li>the {@link PositionAngleType type} of position angle to be used in orbital parameters
  *   to be used for propagation where it is relevant ({@link
  *   #setPositionAngleType(PositionAngleType)}),
@@ -83,7 +83,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  *   <li>the binding logic with the rest of the application ({@link #getMultiplexer()})</li>
  * </ul>
  * <p>From these configuration parameters, only the initial state is mandatory. The default
- * propagation settings are in {@link OrbitType#EQUINOCTIAL equinoctial} parameters with
+ * propagation settings are in {@link OrbitParamsType#EQUINOCTIAL equinoctial} parameters with
  * {@link PositionAngleType#ECCENTRIC} longitude argument. If the central attraction coefficient
  * is not explicitly specified, the one used to define the initial orbit will be used.
  * However, specifying only the initial state and perhaps the central attraction coefficient
@@ -162,8 +162,8 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
      * unspecified default law and there are no perturbing forces at all.
      * This means that if {@link #addForceModel addForceModel} is not
      * called after creation, the integrated orbit will follow a Keplerian
-     * evolution only. The defaults are {@link OrbitType#EQUINOCTIAL}
-     * for {@link #setOrbitType(OrbitType) propagation
+     * evolution only. The defaults are {@link OrbitParamsType#EQUINOCTIAL}
+     * for {@link #setOrbitParamsType(OrbitParamsType) propagation
      * orbit type} and {@link PositionAngleType#ECCENTRIC} for {@link
      * #setPositionAngleType(PositionAngleType) position angle type}.
      *
@@ -183,8 +183,8 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
      * unspecified default law and there are no perturbing forces at all.
      * This means that if {@link #addForceModel addForceModel} is not
      * called after creation, the integrated orbit will follow a Keplerian
-     * evolution only. The defaults are {@link OrbitType#EQUINOCTIAL}
-     * for {@link #setOrbitType(OrbitType) propagation
+     * evolution only. The defaults are {@link OrbitParamsType#EQUINOCTIAL}
+     * for {@link #setOrbitParamsType(OrbitParamsType) propagation
      * orbit type} and {@link PositionAngleType#ECCENTRIC} for {@link
      * #setPositionAngleType(PositionAngleType) position angle type}.
      *
@@ -200,7 +200,7 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
         setAttitudeProvider(attitudeProvider);
         setMu(getField().getZero().add(Double.NaN));
         clearStepHandlers();
-        setOrbitType(NumericalPropagator.DEFAULT_ORBIT_TYPE);
+        setOrbitParamsType(NumericalPropagator.DEFAULT_ORBIT_TYPE);
         setPositionAngleType(NumericalPropagator.DEFAULT_POSITION_ANGLE_TYPE);
     }
 
@@ -325,34 +325,34 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
     }
 
     /** Set propagation orbit type.
-     * @param orbitType orbit type to use for propagation
+     * @param orbitParamsType orbit type to use for propagation
      */
     @Override
-    public void setOrbitType(final OrbitType orbitType) {
-        super.setOrbitType(orbitType);
+    public void setOrbitParamsType(final OrbitParamsType orbitParamsType) {
+        super.setOrbitParamsType(orbitParamsType);
     }
 
     /** Get propagation parameter type.
      * @return orbit type used for propagation
      */
     @Override
-    public OrbitType getOrbitType() {
+    public OrbitParamsType getOrbitParamsType() {
         return superGetOrbitType();
     }
 
     /** Get propagation parameter type.
      * @return orbit type used for propagation
      */
-    private OrbitType superGetOrbitType() {
-        return super.getOrbitType();
+    private OrbitParamsType superGetOrbitType() {
+        return super.getOrbitParamsType();
     }
 
     /** Set position angle type.
      * <p>
      * The position parameter type is meaningful only if {@link
-     * #getOrbitType() propagation orbit type}
+     * #getOrbitParamsType() propagation orbit type}
      * support it. As an example, it is not meaningful for propagation
-     * in {@link OrbitType#CARTESIAN Cartesian} parameters.
+     * in {@link OrbitParamsType#CARTESIAN Cartesian} parameters.
      * </p>
      * @param positionAngleType angle type to use for propagation
      */
@@ -395,9 +395,9 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
     /** {@inheritDoc} */
     @Override
     protected FieldStateMapper<T> createMapper(final FieldAbsoluteDate<T> referenceDate, final T mu,
-                                               final OrbitType orbitType, final PositionAngleType positionAngleType,
+                                               final OrbitParamsType orbitParamsType, final PositionAngleType positionAngleType,
                                                final AttitudeProvider attitudeProvider, final Frame frame) {
-        return new FieldOsculatingMapper(referenceDate, mu, orbitType, positionAngleType, attitudeProvider, frame);
+        return new FieldOsculatingMapper(referenceDate, mu, orbitParamsType, positionAngleType, attitudeProvider, frame);
     }
 
     /** Internal mapper using directly osculating parameters. */
@@ -406,21 +406,21 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
         /** Simple constructor.
          * <p>
          * The position parameter type is meaningful only if {@link
-         * #getOrbitType() propagation orbit type}
+         * #getOrbitParamsType() propagation orbit type}
          * support it. As an example, it is not meaningful for propagation
-         * in {@link OrbitType#CARTESIAN Cartesian} parameters.
+         * in {@link OrbitParamsType#CARTESIAN Cartesian} parameters.
          * </p>
          * @param referenceDate reference date
          * @param mu central attraction coefficient (m³/s²)
-         * @param orbitType orbit type to use for mapping
+         * @param orbitParamsType orbit type to use for mapping
          * @param positionAngleType angle type to use for propagation
          * @param attitudeProvider attitude provider
          * @param frame inertial frame
          */
         FieldOsculatingMapper(final FieldAbsoluteDate<T> referenceDate, final T mu,
-                              final OrbitType orbitType, final PositionAngleType positionAngleType,
+                              final OrbitParamsType orbitParamsType, final PositionAngleType positionAngleType,
                               final AttitudeProvider attitudeProvider, final Frame frame) {
-            super(referenceDate, mu, orbitType, positionAngleType, attitudeProvider, frame);
+            super(referenceDate, mu, orbitParamsType, positionAngleType, attitudeProvider, frame);
         }
 
         /** {@inheritDoc} */
@@ -532,8 +532,8 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
             forceModels.forEach(fm -> fm.init(initialState, target));
 
             final int numberOfForces = forceModels.size();
-            final OrbitType orbitType = superGetOrbitType();
-            if (orbitType != null && orbitType != OrbitType.CARTESIAN && numberOfForces > 0) {
+            final OrbitParamsType orbitParamsType = superGetOrbitType();
+            if (orbitParamsType != null && orbitParamsType != OrbitParamsType.CARTESIAN && numberOfForces > 0) {
                 if (numberOfForces > 1) {
                     recomputingJacobian = true;
                 } else {

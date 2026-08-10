@@ -34,7 +34,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.SpacecraftState;
@@ -81,37 +81,37 @@ public class EcksteinHechlerStateTransitionMatrixTest {
         EcksteinHechlerPropagator propagator = new EcksteinHechlerPropagator(initialOrbit, provider);
         final SpacecraftState initialState = propagator.getInitialState();
         final double[] stateVector = new double[6];
-        OrbitType.CARTESIAN.mapOrbitToArray(initialState.getOrbit(), PositionAngleType.MEAN, stateVector, null);
+        OrbitParamsType.CARTESIAN.mapOrbitToArray(initialState.getOrbit(), PositionAngleType.MEAN, stateVector, null);
         final AbsoluteDate target = initialState.getDate().shiftedBy(initialState.getOrbit().getKeplerianPeriod());
         MatricesHarvester harvester = propagator.setupMatricesComputation("stm", null, null);
         final SpacecraftState finalState = propagator.propagate(target);
         RealMatrix dYdY0 = harvester.getStateTransitionMatrix(finalState);
-        Assertions.assertEquals(OrbitType.CARTESIAN, harvester.getOrbitType());
+        Assertions.assertEquals(OrbitParamsType.CARTESIAN, harvester.getOrbitParamsType());
         Assertions.assertEquals(PositionAngleType.MEAN, harvester.getPositionAngleType());
         Assertions.assertNull(harvester.getStateJacobianVsBuilderParameters(initialState));
 
         // compute reference state Jacobian using finite differences
         double[][] dYdY0Ref = new double[6][6];
         EcksteinHechlerPropagator propagator2;
-        double[] steps = ToleranceProvider.getDefaultToleranceProvider(10.).getTolerances(initialState.getOrbit(), OrbitType.CARTESIAN)[0];
+        double[] steps = ToleranceProvider.getDefaultToleranceProvider(10.).getTolerances(initialState.getOrbit(), OrbitParamsType.CARTESIAN)[0];
         for (int i = 0; i < 6; ++i) {
-            propagator2 = new EcksteinHechlerPropagator(shiftState(initialState, OrbitType.CARTESIAN, -4 * steps[i], i).getOrbit(), provider);
+            propagator2 = new EcksteinHechlerPropagator(shiftState(initialState, OrbitParamsType.CARTESIAN, -4 * steps[i], i).getOrbit(), provider);
             SpacecraftState sM4h = propagator2.propagate(target);
-            propagator2 = new EcksteinHechlerPropagator(shiftState(initialState, OrbitType.CARTESIAN, -3 * steps[i], i).getOrbit(), provider);
+            propagator2 = new EcksteinHechlerPropagator(shiftState(initialState, OrbitParamsType.CARTESIAN, -3 * steps[i], i).getOrbit(), provider);
             SpacecraftState sM3h = propagator2.propagate(target);
-            propagator2 = new EcksteinHechlerPropagator(shiftState(initialState, OrbitType.CARTESIAN, -2 * steps[i], i).getOrbit(), provider);
+            propagator2 = new EcksteinHechlerPropagator(shiftState(initialState, OrbitParamsType.CARTESIAN, -2 * steps[i], i).getOrbit(), provider);
             SpacecraftState sM2h = propagator2.propagate(target);
-            propagator2 = new EcksteinHechlerPropagator(shiftState(initialState, OrbitType.CARTESIAN, -1 * steps[i], i).getOrbit(), provider);
+            propagator2 = new EcksteinHechlerPropagator(shiftState(initialState, OrbitParamsType.CARTESIAN, -1 * steps[i], i).getOrbit(), provider);
             SpacecraftState sM1h = propagator2.propagate(target);
-            propagator2 = new EcksteinHechlerPropagator(shiftState(initialState, OrbitType.CARTESIAN, +1 * steps[i], i).getOrbit(), provider);
+            propagator2 = new EcksteinHechlerPropagator(shiftState(initialState, OrbitParamsType.CARTESIAN, +1 * steps[i], i).getOrbit(), provider);
             SpacecraftState sP1h = propagator2.propagate(target);
-            propagator2 = new EcksteinHechlerPropagator(shiftState(initialState, OrbitType.CARTESIAN, +2 * steps[i], i).getOrbit(), provider);
+            propagator2 = new EcksteinHechlerPropagator(shiftState(initialState, OrbitParamsType.CARTESIAN, +2 * steps[i], i).getOrbit(), provider);
             SpacecraftState sP2h = propagator2.propagate(target);
-            propagator2 = new EcksteinHechlerPropagator(shiftState(initialState, OrbitType.CARTESIAN, +3 * steps[i], i).getOrbit(), provider);
+            propagator2 = new EcksteinHechlerPropagator(shiftState(initialState, OrbitParamsType.CARTESIAN, +3 * steps[i], i).getOrbit(), provider);
             SpacecraftState sP3h = propagator2.propagate(target);
-            propagator2 = new EcksteinHechlerPropagator(shiftState(initialState, OrbitType.CARTESIAN, +4 * steps[i], i).getOrbit(), provider);
+            propagator2 = new EcksteinHechlerPropagator(shiftState(initialState, OrbitParamsType.CARTESIAN, +4 * steps[i], i).getOrbit(), provider);
             SpacecraftState sP4h = propagator2.propagate(target);
-            fillJacobianColumn(dYdY0Ref, i, OrbitType.CARTESIAN, steps[i],
+            fillJacobianColumn(dYdY0Ref, i, OrbitParamsType.CARTESIAN, steps[i],
                                sM4h, sM3h, sM2h, sM1h, sP1h, sP2h, sP3h, sP4h);
         }
 
@@ -128,19 +128,19 @@ public class EcksteinHechlerStateTransitionMatrixTest {
     }
 
     private void fillJacobianColumn(double[][] jacobian, int column,
-                                    OrbitType orbitType, double h,
+                                    OrbitParamsType orbitParamsType, double h,
                                     SpacecraftState sM4h, SpacecraftState sM3h,
                                     SpacecraftState sM2h, SpacecraftState sM1h,
                                     SpacecraftState sP1h, SpacecraftState sP2h,
                                     SpacecraftState sP3h, SpacecraftState sP4h) {
-        double[] aM4h = stateToArray(sM4h, orbitType)[0];
-        double[] aM3h = stateToArray(sM3h, orbitType)[0];
-        double[] aM2h = stateToArray(sM2h, orbitType)[0];
-        double[] aM1h = stateToArray(sM1h, orbitType)[0];
-        double[] aP1h = stateToArray(sP1h, orbitType)[0];
-        double[] aP2h = stateToArray(sP2h, orbitType)[0];
-        double[] aP3h = stateToArray(sP3h, orbitType)[0];
-        double[] aP4h = stateToArray(sP4h, orbitType)[0];
+        double[] aM4h = stateToArray(sM4h, orbitParamsType)[0];
+        double[] aM3h = stateToArray(sM3h, orbitParamsType)[0];
+        double[] aM2h = stateToArray(sM2h, orbitParamsType)[0];
+        double[] aM1h = stateToArray(sM1h, orbitParamsType)[0];
+        double[] aP1h = stateToArray(sP1h, orbitParamsType)[0];
+        double[] aP2h = stateToArray(sP2h, orbitParamsType)[0];
+        double[] aP3h = stateToArray(sP3h, orbitParamsType)[0];
+        double[] aP4h = stateToArray(sP4h, orbitParamsType)[0];
         for (int i = 0; i < jacobian.length; ++i) {
             jacobian[i][column] = ( -3 * (aP4h[i] - aM4h[i]) +
                                     32 * (aP3h[i] - aM3h[i]) -
@@ -149,10 +149,10 @@ public class EcksteinHechlerStateTransitionMatrixTest {
         }
     }
 
-    private SpacecraftState shiftState(SpacecraftState state, OrbitType orbitType,
+    private SpacecraftState shiftState(SpacecraftState state, OrbitParamsType orbitParamsType,
                                        double delta, int column) {
 
-        double[][] array = stateToArray(state, orbitType);
+        double[][] array = stateToArray(state, orbitParamsType);
         array[0][column] += delta;
 
         return arrayToState(array, state.getFrame(), state.getDate(),
@@ -160,17 +160,17 @@ public class EcksteinHechlerStateTransitionMatrixTest {
 
     }
 
-    private double[][] stateToArray(SpacecraftState state, OrbitType orbitType) {
+    private double[][] stateToArray(SpacecraftState state, OrbitParamsType orbitParamsType) {
           double[][] array = new double[2][6];
 
-          orbitType.mapOrbitToArray(state.getOrbit(), PositionAngleType.MEAN, array[0], array[1]);
+          orbitParamsType.mapOrbitToArray(state.getOrbit(), PositionAngleType.MEAN, array[0], array[1]);
           return array;
     }
 
     private SpacecraftState arrayToState(double[][] array,
                                            Frame frame, AbsoluteDate date, double mu,
                                            Attitude attitude) {
-        CartesianOrbit orbit = (CartesianOrbit) OrbitType.CARTESIAN.mapArrayToOrbit(array[0], array[1], PositionAngleType.MEAN, date, mu, frame);
+        CartesianOrbit orbit = (CartesianOrbit) OrbitParamsType.CARTESIAN.mapArrayToOrbit(array[0], array[1], PositionAngleType.MEAN, date, mu, frame);
         return new SpacecraftState(orbit, attitude);
     }
 

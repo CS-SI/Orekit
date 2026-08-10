@@ -23,7 +23,7 @@ import org.orekit.forces.ForceModel;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
@@ -160,7 +160,7 @@ class RadiationPressureModelTest {
               fieldPropagator.propagate(new FieldAbsoluteDate<>(field, terminalDate));
         // THEN
         final NumericalPropagator propagator = createPropagator(radius);
-        propagator.setOrbitType(fieldPropagator.getOrbitType());
+        propagator.setOrbitParamsType(fieldPropagator.getOrbitParamsType());
         propagator.setPositionAngleType(fieldPropagator.getPositionAngleType());
         propagator.addForceModel(forceModel);
         final SpacecraftState comparableState = propagator.propagate(terminalDate);
@@ -177,7 +177,7 @@ class RadiationPressureModelTest {
         final FieldODEIntegratorBuilder<T> fieldIntegratoBuilder =
               new DormandPrince54FieldIntegratorBuilder<>(1e-3, 1e2, 1e-3);
 
-        final OrbitType propagationType = OrbitType.EQUINOCTIAL;
+        final OrbitParamsType propagationType = OrbitParamsType.EQUINOCTIAL;
         final FieldODEIntegrator<T> fieldIntegrator =
               fieldIntegratoBuilder.buildIntegrator(field, initialState.getOrbit(), propagationType);
 
@@ -185,7 +185,7 @@ class RadiationPressureModelTest {
               new FieldNumericalPropagator<>(fieldIntegrator);
 
         fieldPropagator.addForceModel(forceModel);
-        fieldPropagator.setOrbitType(propagationType);
+        fieldPropagator.setOrbitParamsType(propagationType);
         fieldPropagator.setInitialState(new FieldSpacecraftState<>(field, initialState));
 
         return fieldPropagator;
@@ -239,7 +239,7 @@ class RadiationPressureModelTest {
         final ODEIntegratorBuilder integratorBuilder = new DormandPrince54IntegratorBuilder(1e-3, 1e2, 1e-3);
         final ODEIntegrator integrator = integratorBuilder.buildIntegrator(initialOrbit, initialOrbit.getType());
         final NumericalPropagator propagator = new NumericalPropagator(integrator);
-        propagator.setOrbitType(initialOrbit.getType());
+        propagator.setOrbitParamsType(initialOrbit.getType());
         propagator.setInitialState(initialState);
         return propagator;
     }

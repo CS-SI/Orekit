@@ -18,7 +18,7 @@ package org.orekit.propagation.conversion;
 
 import org.hipparchus.ode.nonstiff.EulerIntegrator;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 
 /** Builder for EulerIntegrator.
@@ -37,7 +37,7 @@ public class EulerIntegratorBuilder extends AbstractFixedSingleStepIntegratorBui
 
     /** {@inheritDoc} */
     @Override
-    public EulerIntegrator buildIntegrator(final Orbit orbit, final OrbitType orbitType,
+    public EulerIntegrator buildIntegrator(final Orbit orbit, final OrbitParamsType orbitParamsType,
                                            final PositionAngleType angleType) {
         return new EulerIntegrator(getStep());
     }

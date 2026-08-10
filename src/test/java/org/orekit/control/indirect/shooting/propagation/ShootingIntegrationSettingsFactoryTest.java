@@ -34,7 +34,7 @@ import org.mockito.Mockito;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.CartesianOrbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.propagation.SimpleToleranceProvider;
 import org.orekit.propagation.conversion.ClassicalRungeKuttaFieldIntegratorBuilder;
 import org.orekit.propagation.conversion.ClassicalRungeKuttaIntegratorBuilder;
@@ -60,7 +60,7 @@ class ShootingIntegrationSettingsFactoryTest {
         final ODEIntegratorBuilder builder = integrationSettings.getIntegratorBuilder();
         // THEN
         Assertions.assertInstanceOf(MidpointIntegratorBuilder.class, builder);
-        final ODEIntegrator integrator = builder.buildIntegrator(buildOrbit(), OrbitType.CARTESIAN);
+        final ODEIntegrator integrator = builder.buildIntegrator(buildOrbit(), OrbitParamsType.CARTESIAN);
         Assertions.assertEquals(expectedStep, ((MidpointIntegrator) integrator).getDefaultStep());
     }
 
@@ -74,7 +74,7 @@ class ShootingIntegrationSettingsFactoryTest {
         final ODEIntegratorBuilder builder = integrationSettings.getIntegratorBuilder();
         // THEN
         Assertions.assertInstanceOf(ClassicalRungeKuttaIntegratorBuilder.class, builder);
-        final ODEIntegrator integrator = builder.buildIntegrator(buildOrbit(), OrbitType.CARTESIAN);
+        final ODEIntegrator integrator = builder.buildIntegrator(buildOrbit(), OrbitParamsType.CARTESIAN);
         Assertions.assertEquals(expectedStep, ((ClassicalRungeKuttaIntegrator) integrator).getDefaultStep());
     }
 
@@ -89,7 +89,7 @@ class ShootingIntegrationSettingsFactoryTest {
         // THEN
         Assertions.assertInstanceOf(ClassicalRungeKuttaFieldIntegratorBuilder.class, builder);
         final FieldOrbit<Complex> mockedFieldOrbit = mockFieldOrbit();
-        final FieldODEIntegrator<Complex> integrator = builder.buildIntegrator(mockedFieldOrbit, OrbitType.CARTESIAN);
+        final FieldODEIntegrator<Complex> integrator = builder.buildIntegrator(mockedFieldOrbit, OrbitParamsType.CARTESIAN);
         Assertions.assertEquals(expectedStep, ((ClassicalRungeKuttaFieldIntegrator<Complex>) integrator).getDefaultStep().getReal());
     }
 
@@ -103,7 +103,7 @@ class ShootingIntegrationSettingsFactoryTest {
         final ODEIntegratorBuilder builder = integrationSettings.getIntegratorBuilder();
         // THEN
         Assertions.assertInstanceOf(LutherIntegratorBuilder.class, builder);
-        final ODEIntegrator integrator = builder.buildIntegrator(buildOrbit(), OrbitType.CARTESIAN);
+        final ODEIntegrator integrator = builder.buildIntegrator(buildOrbit(), OrbitParamsType.CARTESIAN);
         Assertions.assertEquals(expectedStep, ((LutherIntegrator) integrator).getDefaultStep());
     }
 

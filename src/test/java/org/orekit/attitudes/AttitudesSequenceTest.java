@@ -532,7 +532,7 @@ class AttitudesSequenceTest {
                                                                                  initialPV.getDate(),
                                                                                  initialPV.getFrame())));
         propagator.setAttitudeProvider(attitudesSequence);
-        propagator.setOrbitType(null);
+        propagator.setOrbitParamsType(null);
         propagator.propagate(initialDate.shiftedBy(6000));
 
         // check that if we restart a backward propagation from an intermediate state

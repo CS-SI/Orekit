@@ -30,7 +30,7 @@ import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.orbits.EquinoctialOrbitFactory;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
@@ -78,7 +78,7 @@ public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, Uns
     private final PositionAngleType angleType;
 
     /** Orbit type used during orbit determination. */
-    private final OrbitType orbitType;
+    private final OrbitParamsType orbitParamsType;
 
     /** Current corrected estimate. */
     private ProcessEstimate correctedEstimate;
@@ -136,7 +136,7 @@ public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, Uns
         final EquinoctialOrbitFactory factory = propagatorBuilder.getOrbitalParameterFactory();
         this.builder                         = propagatorBuilder;
         this.angleType                       = factory.getPositionAngleType();
-        this.orbitType                       = factory.getOrbitType();
+        this.orbitParamsType = factory.getOrbitParamsType();
         this.estimatedMeasurementsParameters = estimatedMeasurementParameters;
         this.currentMeasurementNumber        = 0;
         this.currentDate                     = factory.getDate();
@@ -377,7 +377,7 @@ public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, Uns
             final RealVector osculating = computeOsculatingElements(predictedSigmaPoints[k],
                                                                     nominalMeanSpacecraftState,
                                                                     shortPeriodicTerms);
-            final Orbit osculatingOrbit = orbitType.mapArrayToOrbit(osculating.toArray(), null, angleType,
+            final Orbit osculatingOrbit = orbitParamsType.mapArrayToOrbit(osculating.toArray(), null, angleType,
                                                                     currentDate, factory.getMu(), factory.getFrame());
 
             // Then, estimate the measurement
@@ -403,7 +403,7 @@ public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, Uns
         // Predicted measurement
         final RealVector osculating = computeOsculatingElements(predictedFilterCorrection, nominalMeanSpacecraftState, shortPeriodicTerms);
         final EquinoctialOrbitFactory factory = builder.getOrbitalParameterFactory();
-        final Orbit osculatingOrbit = orbitType.mapArrayToOrbit(osculating.toArray(), null, angleType,
+        final Orbit osculatingOrbit = orbitParamsType.mapArrayToOrbit(osculating.toArray(), null, angleType,
                                                                 currentDate, factory.getMu(), factory.getFrame());
         predictedSpacecraftState = new SpacecraftState(osculatingOrbit);
         predictedMeasurement = estimateMeasurement(measurement.getObservedMeasurement(), currentMeasurementNumber,
@@ -435,7 +435,7 @@ public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, Uns
         // Calculate the corrected osculating elements
         final RealVector osculating = computeOsculatingElements(correctedFilterCorrection, nominalMeanSpacecraftState, shortPeriodicTerms);
         final EquinoctialOrbitFactory factory = builder.getOrbitalParameterFactory();
-        final Orbit osculatingOrbit = orbitType.mapArrayToOrbit(osculating.toArray(), null,
+        final Orbit osculatingOrbit = orbitParamsType.mapArrayToOrbit(osculating.toArray(), null,
                                                                 factory.getPositionAngleType(),
                                                                 currentDate, factory.getMu(), factory.getFrame());
 
@@ -673,7 +673,7 @@ public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, Uns
 
         // Convert orbit to array
         final double[] stateArray = new double[6];
-        orbitType.mapOrbitToArray(state.getOrbit(), angleType, stateArray, null);
+        orbitParamsType.mapOrbitToArray(state.getOrbit(), angleType, stateArray, null);
 
         // Return the RealVector
         return new ArrayRealVector(stateArray);

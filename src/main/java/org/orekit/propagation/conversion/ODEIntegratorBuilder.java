@@ -18,7 +18,7 @@ package org.orekit.propagation.conversion;
 
 import org.hipparchus.ode.ODEIntegrator;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.utils.AbsolutePVCoordinates;
 
@@ -30,19 +30,19 @@ public interface ODEIntegratorBuilder {
 
     /** Build a first order integrator.
      * @param orbit reference orbit
-     * @param orbitType orbit type to use
+     * @param orbitParamsType orbit type to use
      * @param angleType position angle type to use
      * @return a first order integrator ready to use
      * @since 13.0
      */
-    ODEIntegrator buildIntegrator(Orbit orbit, OrbitType orbitType, PositionAngleType angleType);
+    ODEIntegrator buildIntegrator(Orbit orbit, OrbitParamsType orbitParamsType, PositionAngleType angleType);
 
     /** Build a first order integrator.
      * @param orbit reference orbit
-     * @param orbitType orbit type to use
+     * @param orbitParamsType orbit type to use
      * @return a first order integrator ready to use
      */
-    ODEIntegrator buildIntegrator(Orbit orbit, OrbitType orbitType);
+    ODEIntegrator buildIntegrator(Orbit orbit, OrbitParamsType orbitParamsType);
 
     /**
      * Build a first order integrator. Non-orbit version.

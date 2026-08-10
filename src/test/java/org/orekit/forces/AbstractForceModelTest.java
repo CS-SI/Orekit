@@ -43,7 +43,7 @@ import org.orekit.attitudes.FieldAttitude;
 import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.MatricesHarvester;
@@ -244,7 +244,7 @@ public abstract class AbstractForceModelTest {
 
         double[][] finiteDifferencesJacobian =
                         Differentiation.differentiate(state -> forceModel.acceleration(state, forceModel.getParameters(state0.getDate())).toArray(),
-                                                      3, provider, OrbitType.CARTESIAN, PositionAngleType.MEAN,
+                                                      3, provider, OrbitParamsType.CARTESIAN, PositionAngleType.MEAN,
                                                       dP, 5).
                         value(state0);
 
@@ -341,7 +341,7 @@ public abstract class AbstractForceModelTest {
 
         double[][] finiteDifferencesJacobian =
                         Differentiation.differentiate(state -> forceModel.acceleration(state, forceModel.getParameters(state0.getDate())).toArray(),
-                                                      3, provider, OrbitType.CARTESIAN, PositionAngleType.MEAN,
+                                                      3, provider, OrbitParamsType.CARTESIAN, PositionAngleType.MEAN,
                                                       dP, 5).
                         value(state0);
 
@@ -861,18 +861,18 @@ public abstract class AbstractForceModelTest {
                                            final SpacecraftState state0,
                                            final AbsoluteDate targetDate,
                                            final int index, final double h) {
-        OrbitType orbitType = propagator.getOrbitType();
+        OrbitParamsType orbitParamsType = propagator.getOrbitParamsType();
         PositionAngleType angleType = propagator.getPositionAngleType();
         double[] a = new double[6];
         double[] aDot = new double[6];
-        orbitType.mapOrbitToArray(state0.getOrbit(), angleType, a, aDot);
+        orbitParamsType.mapOrbitToArray(state0.getOrbit(), angleType, a, aDot);
         a[index] += h;
-        SpacecraftState shiftedState = new SpacecraftState(orbitType.mapArrayToOrbit(a, aDot, angleType, state0.getDate(),
+        SpacecraftState shiftedState = new SpacecraftState(orbitParamsType.mapArrayToOrbit(a, aDot, angleType, state0.getDate(),
                                                                                      state0.getOrbit().getMu(), state0.getFrame()),
                                                            state0.getAttitude()).withMass(state0.getMass());
         propagator.setInitialState(shiftedState);
         SpacecraftState integratedState = propagator.propagate(targetDate);
-        orbitType.mapOrbitToArray(integratedState.getOrbit(), angleType, a, null);
+        orbitParamsType.mapOrbitToArray(integratedState.getOrbit(), angleType, a, null);
         return a;
     }
 

@@ -18,7 +18,7 @@ package org.orekit.propagation.conversion.averaging;
 
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeStamped;
@@ -61,7 +61,7 @@ public interface AveragedOrbitalState extends TimeStamped {
      * Getter for the averaged orbit type.
      * @return orbit type
      */
-    OrbitType getOrbitType();
+    OrbitParamsType getOrbitParamsType();
 
     /**
      * Getter for the averaged position angle.

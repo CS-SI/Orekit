@@ -25,7 +25,7 @@ import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.propagation.analytical.tle.FieldTLE;
 import org.orekit.propagation.analytical.tle.FieldTLEPropagator;
 import org.orekit.propagation.analytical.tle.TLE;
@@ -166,7 +166,7 @@ public class TLETheory implements MeanTheory {
     @Override
     public Orbit meanToOsculating(final Orbit mean) {
         // Build TLE from mean and template
-        final KeplerianOrbit meanKepl = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(mean);
+        final KeplerianOrbit meanKepl = (KeplerianOrbit) OrbitParamsType.KEPLERIAN.convertType(mean);
         final TLE meanTle = TleGenerationUtil.newTLE(meanKepl, tmpTle);
         final TLEPropagator propagator = TLEPropagator.selectExtrapolator(meanTle, teme);
         return propagator.getInitialState().getOrbit();
@@ -177,7 +177,7 @@ public class TLETheory implements MeanTheory {
      */
     @Override
     public Orbit postprocessing(final Orbit osculating, final Orbit mean) {
-        return OrbitType.KEPLERIAN.convertType(mean);
+        return OrbitParamsType.KEPLERIAN.convertType(mean);
     }
 
     /** Pre-treatment of the osculating orbit to be converted.
@@ -196,7 +196,7 @@ public class TLETheory implements MeanTheory {
         final Field<T> field = date.getField();
         final FieldTLE<T> fieldTmpTle = new FieldTLE<>(field, tmpTle.getLine1(), tmpTle.getLine2(), tmpTle.getUtc());
         // Build TLE from mean and template
-        final FieldKeplerianOrbit<T> meanKepl = (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(mean);
+        final FieldKeplerianOrbit<T> meanKepl = (FieldKeplerianOrbit<T>) OrbitParamsType.KEPLERIAN.convertType(mean);
         final FieldTLE<T> meanTle = TleGenerationUtil.newTLE(meanKepl, fieldTmpTle);
         final FieldTLEPropagator<T> propagator =
             FieldTLEPropagator.selectExtrapolator(meanTle, teme);
@@ -209,7 +209,7 @@ public class TLETheory implements MeanTheory {
     @Override
     public <T extends CalculusFieldElement<T>> FieldOrbit<T> postprocessing(final FieldOrbit<T> osculating,
                                                                             final FieldOrbit<T> mean) {
-        return OrbitType.KEPLERIAN.convertType(mean);
+        return OrbitParamsType.KEPLERIAN.convertType(mean);
     }
 
 }

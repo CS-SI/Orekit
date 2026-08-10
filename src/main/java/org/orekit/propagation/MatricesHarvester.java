@@ -19,7 +19,7 @@ package org.orekit.propagation;
 import java.util.List;
 
 import org.hipparchus.linear.RealMatrix;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 
 /** Interface for extracting State Transition Matrices and Jacobians matrices from {@link SpacecraftState spacecraft state}.
@@ -65,7 +65,7 @@ public interface MatricesHarvester {
      * @param state spacecraft state
      * @return state transition matrix, with semantics consistent with propagation,
      * or null if no state transition matrix is available
-     * {@link org.orekit.orbits.OrbitType orbit type}.
+     * {@link OrbitParamsType orbit type}.
      */
     RealMatrix getStateTransitionMatrix(SpacecraftState state);
 
@@ -82,7 +82,7 @@ public interface MatricesHarvester {
      * </p>
      * @param state state at which the Jacobian should be evaluated
      * @return jacobian matrix dY/dB where Y is the propagated state, using the representation
-     * given by {@link #getOrbitType()} and {@link #getPositionAngleType()}, and B is the set of
+     * given by {@link #getOrbitParamsType()} and {@link #getPositionAngleType()}, and B is the set of
      * propagator builder parameters representing this very same state, or null if Y and B have
      * the same type, in which case callers must consider the Jacobian is the identity matrix
      * @since 14.0
@@ -117,12 +117,12 @@ public interface MatricesHarvester {
      * Get the orbit type used for the matrix computation.
      * @return the orbit type used for the matrix computation
      */
-    OrbitType getOrbitType();
+    OrbitParamsType getOrbitParamsType();
 
     /**
      * Get the position angle used for the matrix computation.
      * <p>
-     * Irrelevant if {@link #getOrbitType()} returns {@link OrbitType#CARTESIAN}.
+     * Irrelevant if {@link #getOrbitParamsType()} returns {@link OrbitParamsType#CARTESIAN}.
      * </p>
      * @return the position angle used for the matrix computation
      */

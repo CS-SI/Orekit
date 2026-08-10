@@ -16,16 +16,16 @@
  */
 package org.orekit.files.sinex.orbex;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.function.Predicate;
+
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.sinex.ParseInfo;
 import org.orekit.utils.units.Prefix;
 import org.orekit.utils.units.Unit;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.function.Predicate;
 
 /** Predicates for file/description block.
  * @author Luc Maisonobe

@@ -29,7 +29,7 @@ import org.orekit.attitudes.FieldAttitude;
 import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
@@ -110,7 +110,7 @@ public class DSSTTheory implements MeanTheory {
             force.registerAttitudeProvider(attitudeProvider);
         }
         // Returns an equinoctial orbit
-        return OrbitType.EQUINOCTIAL.convertType(osculating);
+        return OrbitParamsType.EQUINOCTIAL.convertType(osculating);
     }
 
     /** {@inheritDoc} */
@@ -149,7 +149,7 @@ public class DSSTTheory implements MeanTheory {
 
         final double[] mean = new double[6];
         final double[] meanDot = new double[6];
-        OrbitType.EQUINOCTIAL.mapOrbitToArray(meanOrbit, PositionAngleType.MEAN, mean, meanDot);
+        OrbitParamsType.EQUINOCTIAL.mapOrbitToArray(meanOrbit, PositionAngleType.MEAN, mean, meanDot);
         final double[] y = mean.clone();
         for (final ShortPeriodTerms spt : shortPeriodTerms) {
             final double[] shortPeriodic = spt.value(meanOrbit);
@@ -157,7 +157,7 @@ public class DSSTTheory implements MeanTheory {
                 y[i] += shortPeriodic[i];
             }
         }
-        return OrbitType.EQUINOCTIAL.mapArrayToOrbit(y, meanDot, PositionAngleType.MEAN,
+        return OrbitParamsType.EQUINOCTIAL.mapArrayToOrbit(y, meanDot, PositionAngleType.MEAN,
                                                      meanOrbit.getDate(), meanOrbit.getMu(),
                                                      meanOrbit.getFrame());
     }
@@ -175,7 +175,7 @@ public class DSSTTheory implements MeanTheory {
             force.registerAttitudeProvider(attitudeProvider);
         }
         // Returns an equinoctial orbit
-        return OrbitType.EQUINOCTIAL.convertType(osculating);
+        return OrbitParamsType.EQUINOCTIAL.convertType(osculating);
     }
 
     /** {@inheritDoc} */
@@ -220,7 +220,7 @@ public class DSSTTheory implements MeanTheory {
 
         final T[] mean = MathArrays.buildArray(meanOrbit.getDate().getField(), 6);
         final T[] meanDot = MathArrays.buildArray(meanOrbit.getDate().getField(), 6);
-        OrbitType.EQUINOCTIAL.mapOrbitToArray(meanOrbit, PositionAngleType.MEAN, mean, meanDot);
+        OrbitParamsType.EQUINOCTIAL.mapOrbitToArray(meanOrbit, PositionAngleType.MEAN, mean, meanDot);
         final T[] y = mean.clone();
         for (final FieldShortPeriodTerms<T> spt : shortPeriodTerms) {
             final T[] shortPeriodic = spt.value(meanOrbit);
@@ -228,7 +228,7 @@ public class DSSTTheory implements MeanTheory {
                 y[i] = y[i].add(shortPeriodic[i]);
             }
         }
-        return OrbitType.EQUINOCTIAL.mapArrayToOrbit(y, meanDot,
+        return OrbitParamsType.EQUINOCTIAL.mapArrayToOrbit(y, meanDot,
                                                      PositionAngleType.MEAN,
                                                      meanOrbit.getDate(),
                                                      meanOrbit.getMu(),

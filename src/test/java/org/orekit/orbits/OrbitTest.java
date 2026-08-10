@@ -165,7 +165,7 @@ class OrbitTest {
         }
 
         @Override
-        public OrbitType getType() {
+        public OrbitParamsType getType() {
             return null;
         }
 

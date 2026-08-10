@@ -42,7 +42,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.EphemerisGenerator;
@@ -139,7 +139,7 @@ class StateCovarianceMatrixProviderTest {
         final ODEIntegrator integrator = new ClassicalRungeKuttaIntegrator(step);
 
         // Numerical propagator
-        final OrbitType           propType   = OrbitType.CARTESIAN;
+        final OrbitParamsType propType   = OrbitParamsType.CARTESIAN;
         final PositionAngleType angleType  = PositionAngleType.MEAN;
         final NumericalPropagator propagator = new NumericalPropagator(integrator);
         // Add a force model
@@ -149,7 +149,7 @@ class StateCovarianceMatrixProviderTest {
         propagator.addForceModel(holmesFeatherstone);
         
         // Finalize setting
-        propagator.setOrbitType(propType);
+        propagator.setOrbitParamsType(propType);
         propagator.setPositionAngleType(angleType);
         propagator.setInitialState(initialState);
 
@@ -166,8 +166,8 @@ class StateCovarianceMatrixProviderTest {
 
         // Verify
         compareCovariance(refCovAfter60s, propagatedCov, 4.0e-7);
-        Assertions.assertEquals(OrbitType.CARTESIAN, provider.getCovarianceOrbitType());
-        Assertions.assertEquals(OrbitType.CARTESIAN, propagatedStateCov.getOrbitType());
+        Assertions.assertEquals(OrbitParamsType.CARTESIAN, provider.getCovarianceOrbitType());
+        Assertions.assertEquals(OrbitParamsType.CARTESIAN, propagatedStateCov.getOrbitParamsType());
         Assertions.assertNull(propagatedStateCov.getLOF());
 
         ///////////
@@ -192,15 +192,15 @@ class StateCovarianceMatrixProviderTest {
         ///////////
 
         // Define a new output frame
-        final OrbitType     outOrbitType = OrbitType.KEPLERIAN;
+        final OrbitParamsType outOrbitParamsType = OrbitParamsType.KEPLERIAN;
         final PositionAngleType outAngleType = PositionAngleType.MEAN;
 
         // Transformation using getStateJacobian() method
-        RealMatrix transformedCovC = provider.getStateCovariance(propagated, outOrbitType, outAngleType).getMatrix();
+        RealMatrix transformedCovC = provider.getStateCovariance(propagated, outOrbitParamsType, outAngleType).getMatrix();
 
         // Second transformation
         RealMatrix transformedCovD =
-        		propagatedStateCov.changeCovarianceType(propagated.getOrbit(), outOrbitType, outAngleType).getMatrix();
+        		propagatedStateCov.changeCovarianceType(propagated.getOrbit(), outOrbitParamsType, outAngleType).getMatrix();
 
         // Verify
         compareCovariance(transformedCovC, transformedCovD, 1.0e-15);
@@ -237,7 +237,7 @@ class StateCovarianceMatrixProviderTest {
 
         // Verify
         compareCovariance(refCovAfter60s, propagatedCov, 3.0e-5);
-        Assertions.assertEquals(OrbitType.CARTESIAN, provider.getCovarianceOrbitType());
+        Assertions.assertEquals(OrbitParamsType.CARTESIAN, provider.getCovarianceOrbitType());
     }
 
     @ParameterizedTest
@@ -245,7 +245,7 @@ class StateCovarianceMatrixProviderTest {
     void testStmLof(final LOFType lofType) {
         final NumericalPropagator propagator = new NumericalPropagator(new ClassicalRungeKuttaIntegrator(100));
         propagator.resetInitialState(initialState);
-        propagator.setOrbitType(OrbitType.EQUINOCTIAL);
+        propagator.setOrbitParamsType(OrbitParamsType.EQUINOCTIAL);
         final MatricesHarvester harvester = propagator.setupMatricesComputation("stm", null, null);
         final StateCovariance initialCovariance = new StateCovariance(MatrixUtils.createRealIdentityMatrix(6).scalarMultiply(1e-2),
                 initialState.getDate(), lofType);
@@ -260,7 +260,7 @@ class StateCovarianceMatrixProviderTest {
         Assertions.assertEquals(initialCovariance.getDate(), actualCovariance.getDate());
         Assertions.assertEquals(initialCovariance.getLOF(), actualCovariance.getLOF());
         Assertions.assertEquals(initialCovariance.getFrame(), actualCovariance.getFrame());
-        Assertions.assertEquals(initialCovariance.getOrbitType(), actualCovariance.getOrbitType());
+        Assertions.assertEquals(initialCovariance.getOrbitParamsType(), actualCovariance.getOrbitParamsType());
     }
 
     /**
@@ -294,7 +294,7 @@ class StateCovarianceMatrixProviderTest {
 
         // Verify
         compareCovariance(refCovAfter60s, propagatedCov, 3.0e-5);
-        Assertions.assertEquals(OrbitType.CARTESIAN, provider.getCovarianceOrbitType());
+        Assertions.assertEquals(OrbitParamsType.CARTESIAN, provider.getCovarianceOrbitType());
 
         ///////////
         // Test the frame transformation
@@ -318,15 +318,15 @@ class StateCovarianceMatrixProviderTest {
         ///////////
 
         // Define a new output frame
-        final OrbitType     outOrbitType = OrbitType.KEPLERIAN;
+        final OrbitParamsType outOrbitParamsType = OrbitParamsType.KEPLERIAN;
         final PositionAngleType outAngleType = PositionAngleType.MEAN;
 
         // Transformation using getStateJacobian() method
-        RealMatrix transformedCovC = provider.getStateCovariance(propagated, outOrbitType, outAngleType).getMatrix();
+        RealMatrix transformedCovC = provider.getStateCovariance(propagated, outOrbitParamsType, outAngleType).getMatrix();
 
         // Second transformation
         RealMatrix transformedCovD =
-        		propagatedStateCov.changeCovarianceType(propagated.getOrbit(), outOrbitType, outAngleType).getMatrix();
+        		propagatedStateCov.changeCovarianceType(propagated.getOrbit(), outOrbitParamsType, outAngleType).getMatrix();
 
         // Verify
         compareCovariance(transformedCovC, transformedCovD, 1.0e-15);
@@ -359,8 +359,8 @@ class StateCovarianceMatrixProviderTest {
 
         // Create additional state
         final String     additionalName = "cartCov";
-        final StateCovariance initialStateCovariance = new StateCovariance(initCov, initialState.getDate(), initialState.getFrame(), OrbitType.CARTESIAN, PositionAngleType.MEAN);
-        final StateCovariance initialStateCovarianceInKep = initialStateCovariance.changeCovarianceType(initialState.getOrbit(), OrbitType.KEPLERIAN, PositionAngleType.MEAN);
+        final StateCovariance initialStateCovariance = new StateCovariance(initCov, initialState.getDate(), initialState.getFrame(), OrbitParamsType.CARTESIAN, PositionAngleType.MEAN);
+        final StateCovariance initialStateCovarianceInKep = initialStateCovariance.changeCovarianceType(initialState.getOrbit(), OrbitParamsType.KEPLERIAN, PositionAngleType.MEAN);
         final StateCovarianceMatrixProvider provider =
                 new StateCovarianceMatrixProvider(additionalName, stmName, harvester, initialStateCovarianceInKep);
         propagator.setInitialState(initialState);
@@ -371,13 +371,13 @@ class StateCovarianceMatrixProviderTest {
 
         // Get the propagated covariance
         final StateCovariance propagatedStateCov = provider.getStateCovariance(propagated);
-        final StateCovariance propagatedStateCovInCart = propagatedStateCov.changeCovarianceType(propagated.getOrbit(), OrbitType.CARTESIAN, PositionAngleType.MEAN);
+        final StateCovariance propagatedStateCovInCart = propagatedStateCov.changeCovarianceType(propagated.getOrbit(), OrbitParamsType.CARTESIAN, PositionAngleType.MEAN);
         final RealMatrix propagatedCovInCart = propagatedStateCovInCart.getMatrix();
 
         // Verify
         compareCovariance(refCovAfter60s, propagatedCovInCart, 3.0e-5);
-        Assertions.assertEquals(OrbitType.KEPLERIAN, provider.getCovarianceOrbitType());
-        Assertions.assertEquals(OrbitType.KEPLERIAN, propagatedStateCov.getOrbitType());
+        Assertions.assertEquals(OrbitParamsType.KEPLERIAN, provider.getCovarianceOrbitType());
+        Assertions.assertEquals(OrbitParamsType.KEPLERIAN, propagatedStateCov.getOrbitParamsType());
 
     }
 
@@ -402,7 +402,7 @@ class StateCovarianceMatrixProviderTest {
 
         // Verify
         compareCovariance(refCovAfter60s, propagatedCov, 5.0e-4);
-        Assertions.assertEquals(OrbitType.CARTESIAN, provider.getCovarianceOrbitType());
+        Assertions.assertEquals(OrbitParamsType.CARTESIAN, provider.getCovarianceOrbitType());
 
         ///////////
         // Test the frame transformation
@@ -426,15 +426,15 @@ class StateCovarianceMatrixProviderTest {
         ///////////
 
         // Define a new output frame
-        final OrbitType     outOrbitType = OrbitType.KEPLERIAN;
+        final OrbitParamsType outOrbitParamsType = OrbitParamsType.KEPLERIAN;
         final PositionAngleType outAngleType = PositionAngleType.MEAN;
 
         // Transformation using getStateJacobian() method
-        RealMatrix transformedCovC = provider.getStateCovariance(propagated, outOrbitType, outAngleType).getMatrix();
+        RealMatrix transformedCovC = provider.getStateCovariance(propagated, outOrbitParamsType, outAngleType).getMatrix();
 
         // Second transformation
         RealMatrix transformedCovD =
-        		propagatedStateCov.changeCovarianceType(propagated.getOrbit(), outOrbitType, outAngleType).getMatrix();
+        		propagatedStateCov.changeCovarianceType(propagated.getOrbit(), outOrbitParamsType, outAngleType).getMatrix();
 
         // Verify
         compareCovariance(transformedCovC, transformedCovD, 1.0e-15);
@@ -464,7 +464,7 @@ class StateCovarianceMatrixProviderTest {
 
         // Create additional state
         final String     additionalName = "cartCov";
-        final StateCovariance initialStateCovariance = new StateCovariance(initCov, initialState.getDate(), initialState.getFrame(), OrbitType.CARTESIAN, PositionAngleType.MEAN);
+        final StateCovariance initialStateCovariance = new StateCovariance(initCov, initialState.getDate(), initialState.getFrame(), OrbitParamsType.CARTESIAN, PositionAngleType.MEAN);
         final StateCovarianceMatrixProvider provider =
                 new StateCovarianceMatrixProvider(additionalName, stmName, harvester, initialStateCovariance);
         propagator.setInitialState(initialState);
@@ -479,7 +479,7 @@ class StateCovarianceMatrixProviderTest {
 
         // Verify (3% error with respect to reference)
         compareCovariance(refCovAfter60s, propagatedCov, 0.03);
-        Assertions.assertEquals(OrbitType.CARTESIAN, provider.getCovarianceOrbitType());
+        Assertions.assertEquals(OrbitParamsType.CARTESIAN, provider.getCovarianceOrbitType());
     }
 
     /**
@@ -503,14 +503,14 @@ class StateCovarianceMatrixProviderTest {
         final RealMatrix propagatedCov = propagatedStateCov.getMatrix();
 
         // Use of shiftedBy
-        final StateCovariance initialStateCovariance = new StateCovariance(initCov, initialState.getDate(), initialState.getFrame(), OrbitType.CARTESIAN, PositionAngleType.MEAN);
+        final StateCovariance initialStateCovariance = new StateCovariance(initCov, initialState.getDate(), initialState.getFrame(), OrbitParamsType.CARTESIAN, PositionAngleType.MEAN);
         final StateCovariance shiftedStateCov = initialStateCovariance.shiftedBy(initialState.getOrbit(), dt);
         final RealMatrix shiftedCov = shiftedStateCov.getMatrix();
 
         // Verify
         compareCovariance(propagatedCov, shiftedCov, 4.0e-12);
         Assertions.assertEquals(propagatedStateCov.getDate(), shiftedStateCov.getDate());
-        Assertions.assertEquals(propagatedStateCov.getOrbitType(), shiftedStateCov.getOrbitType());
+        Assertions.assertEquals(propagatedStateCov.getOrbitParamsType(), shiftedStateCov.getOrbitParamsType());
         Assertions.assertEquals(propagatedStateCov.getPositionAngleType(), shiftedStateCov.getPositionAngleType());
     }
 
@@ -533,10 +533,10 @@ class StateCovarianceMatrixProviderTest {
         final AbsoluteDate propDate = initialState.getDate().shiftedBy(dt);
 
         // Numerical propagator
-        final OrbitType           propType   = OrbitType.CARTESIAN;
+        final OrbitParamsType propType   = OrbitParamsType.CARTESIAN;
         final PositionAngleType angleType  = PositionAngleType.MEAN;
         NumericalPropagator propagator = new NumericalPropagator(new ClassicalRungeKuttaIntegrator(60.));
-        propagator.setOrbitType(propType);
+        propagator.setOrbitParamsType(propType);
         propagator.setPositionAngleType(angleType);
         propagator.setInitialState(initialState);
         StateCovarianceMatrixProvider provider = setUpCovariancePropagation(propagator);
@@ -553,7 +553,7 @@ class StateCovarianceMatrixProviderTest {
         
         // 2. Ephemeris on [t0, t0 + dt]
         propagator = new NumericalPropagator(new ClassicalRungeKuttaIntegrator(60.));
-        propagator.setOrbitType(propType);
+        propagator.setOrbitParamsType(propType);
         propagator.setPositionAngleType(angleType);
         propagator.setInitialState(initialState);
         provider = setUpCovariancePropagation(propagator);
@@ -574,7 +574,7 @@ class StateCovarianceMatrixProviderTest {
 
         // Verify that both covariances are equal
         Assertions.assertEquals(refPropagatedStateCov.getDate(), propagatedStateCov.getDate());
-        Assertions.assertEquals(refPropagatedStateCov.getOrbitType(), propagatedStateCov.getOrbitType());
+        Assertions.assertEquals(refPropagatedStateCov.getOrbitParamsType(), propagatedStateCov.getOrbitParamsType());
         Assertions.assertEquals(refPropagatedStateCov.getPositionAngleType(), propagatedStateCov.getPositionAngleType());
         compareCovariance(refPropagatedCov, propagatedCov, 0.);
     }
@@ -628,7 +628,7 @@ class StateCovarianceMatrixProviderTest {
 
         // Verify that both covariances are equal
         Assertions.assertEquals(refPropagatedStateCov.getDate(), propagatedStateCov.getDate());
-        Assertions.assertEquals(refPropagatedStateCov.getOrbitType(), propagatedStateCov.getOrbitType());
+        Assertions.assertEquals(refPropagatedStateCov.getOrbitParamsType(), propagatedStateCov.getOrbitParamsType());
         Assertions.assertEquals(refPropagatedStateCov.getPositionAngleType(), propagatedStateCov.getPositionAngleType());
         compareCovariance(refPropagatedCov, propagatedCov, 1e-10);
     }
@@ -647,7 +647,7 @@ class StateCovarianceMatrixProviderTest {
         final MatricesHarvester harvester = propagator.setupMatricesComputation(stmName, null, null);
 
         // Create additional state
-        final StateCovariance initialStateCovariance = new StateCovariance(initCov, initialState.getDate(), initialState.getFrame(), OrbitType.CARTESIAN, PositionAngleType.MEAN);
+        final StateCovariance initialStateCovariance = new StateCovariance(initCov, initialState.getDate(), initialState.getFrame(), OrbitParamsType.CARTESIAN, PositionAngleType.MEAN);
         final StateCovarianceMatrixProvider provider =
                 new StateCovarianceMatrixProvider(additionalName, stmName, harvester, initialStateCovariance);
         propagator.addAdditionalDataProvider(provider);
@@ -659,7 +659,7 @@ class StateCovarianceMatrixProviderTest {
     void testIssue1933() {
         // Numerical propagator with EQUINOCTIAL ELEMENTS
         NumericalPropagator propagator = new NumericalPropagator(new ClassicalRungeKuttaIntegrator(60.));
-        propagator.setOrbitType(OrbitType.EQUINOCTIAL);
+        propagator.setOrbitParamsType(OrbitParamsType.EQUINOCTIAL);
         propagator.setInitialState(initialState);
 
         // Create covariance matrix provider with initial covariance in CARTESIAN elements
@@ -678,7 +678,7 @@ class StateCovarianceMatrixProviderTest {
 
         // Verify that both covariances are equal
         Assertions.assertEquals(initialDate, propagatedStateCov.getDate());
-        Assertions.assertEquals(provider.getCovarianceOrbitType(), propagatedStateCov.getOrbitType());
+        Assertions.assertEquals(provider.getCovarianceOrbitType(), propagatedStateCov.getOrbitParamsType());
         Assertions.assertEquals(0., initCov.subtract(propagatedStateCov.getMatrix()).getNorm1(), 1e-6);
     }
 }

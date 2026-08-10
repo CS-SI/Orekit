@@ -42,7 +42,7 @@ import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
@@ -267,33 +267,33 @@ public class SsrVtecIonosphericModelTest {
 
         // Finite differences for reference values
         final double[][] refDeriv = new double[1][6];
-        final OrbitType orbitType = OrbitType.KEPLERIAN;
+        final OrbitParamsType orbitParamsType = OrbitParamsType.KEPLERIAN;
         final PositionAngleType angleType = PositionAngleType.MEAN;
         double dP = 0.001;
-        double[] steps = ToleranceProvider.getDefaultToleranceProvider(1000000 * dP).getTolerances(orbit, orbitType)[0];
+        double[] steps = ToleranceProvider.getDefaultToleranceProvider(1000000 * dP).getTolerances(orbit, orbitParamsType)[0];
         for (int i = 0; i < 6; i++) {
-            SpacecraftState stateM4 = shiftState(state, orbitType, angleType, -4 * steps[i], i);
+            SpacecraftState stateM4 = shiftState(state, orbitParamsType, angleType, -4 * steps[i], i);
             double  delayM4 = model.pathDelay(stateM4, baseFrame, frequency, model.getParameters());
             
-            SpacecraftState stateM3 = shiftState(state, orbitType, angleType, -3 * steps[i], i);
+            SpacecraftState stateM3 = shiftState(state, orbitParamsType, angleType, -3 * steps[i], i);
             double  delayM3 = model.pathDelay(stateM3, baseFrame, frequency, model.getParameters());
             
-            SpacecraftState stateM2 = shiftState(state, orbitType, angleType, -2 * steps[i], i);
+            SpacecraftState stateM2 = shiftState(state, orbitParamsType, angleType, -2 * steps[i], i);
             double  delayM2 = model.pathDelay(stateM2, baseFrame, frequency, model.getParameters());
  
-            SpacecraftState stateM1 = shiftState(state, orbitType, angleType, -1 * steps[i], i);
+            SpacecraftState stateM1 = shiftState(state, orbitParamsType, angleType, -1 * steps[i], i);
             double  delayM1 = model.pathDelay(stateM1, baseFrame, frequency, model.getParameters());
            
-            SpacecraftState stateP1 = shiftState(state, orbitType, angleType, 1 * steps[i], i);
+            SpacecraftState stateP1 = shiftState(state, orbitParamsType, angleType, 1 * steps[i], i);
             double  delayP1 = model.pathDelay(stateP1, baseFrame, frequency, model.getParameters());
             
-            SpacecraftState stateP2 = shiftState(state, orbitType, angleType, 2 * steps[i], i);
+            SpacecraftState stateP2 = shiftState(state, orbitParamsType, angleType, 2 * steps[i], i);
             double  delayP2 = model.pathDelay(stateP2, baseFrame, frequency, model.getParameters());
             
-            SpacecraftState stateP3 = shiftState(state, orbitType, angleType, 3 * steps[i], i);
+            SpacecraftState stateP3 = shiftState(state, orbitParamsType, angleType, 3 * steps[i], i);
             double  delayP3 = model.pathDelay(stateP3, baseFrame, frequency, model.getParameters());
             
-            SpacecraftState stateP4 = shiftState(state, orbitType, angleType, 4 * steps[i], i);
+            SpacecraftState stateP4 = shiftState(state, orbitParamsType, angleType, 4 * steps[i], i);
             double  delayP4 = model.pathDelay(stateP4, baseFrame, frequency, model.getParameters());
             
             fillJacobianColumn(refDeriv, i, steps[i],
@@ -374,31 +374,31 @@ public class SsrVtecIonosphericModelTest {
 
     }
 
-    private SpacecraftState shiftState(SpacecraftState state, OrbitType orbitType, PositionAngleType angleType,
+    private SpacecraftState shiftState(SpacecraftState state, OrbitParamsType orbitParamsType, PositionAngleType angleType,
                                        double delta, int column) {
 
-        double[][] array = stateToArray(state, orbitType, angleType, true);
+        double[][] array = stateToArray(state, orbitParamsType, angleType, true);
         array[0][column] += delta;
 
-        return arrayToState(array, orbitType, angleType, state.getFrame(), state.getDate(),
+        return arrayToState(array, orbitParamsType, angleType, state.getFrame(), state.getDate(),
                             state.getOrbit().getMu(), state.getAttitude());
 
     }
 
-    private double[][] stateToArray(SpacecraftState state, OrbitType orbitType, PositionAngleType angleType,
+    private double[][] stateToArray(SpacecraftState state, OrbitParamsType orbitParamsType, PositionAngleType angleType,
                                     boolean withMass) {
         double[][] array = new double[2][withMass ? 7 : 6];
-        orbitType.mapOrbitToArray(state.getOrbit(), angleType, array[0], array[1]);
+        orbitParamsType.mapOrbitToArray(state.getOrbit(), angleType, array[0], array[1]);
         if (withMass) {
           array[0][6] = state.getMass();
         }
         return array;
     }
 
-    private SpacecraftState arrayToState(double[][] array, OrbitType orbitType, PositionAngleType angleType,
-                                           Frame frame, AbsoluteDate date, double mu,
-                                           Attitude attitude) {
-        Orbit orbit = orbitType.mapArrayToOrbit(array[0], array[1], angleType, date, mu, frame);
+    private SpacecraftState arrayToState(double[][] array, OrbitParamsType orbitParamsType, PositionAngleType angleType,
+                                         Frame frame, AbsoluteDate date, double mu,
+                                         Attitude attitude) {
+        Orbit orbit = orbitParamsType.mapArrayToOrbit(array[0], array[1], angleType, date, mu, frame);
         return (array.length > 6) ?
                 new SpacecraftState(orbit, attitude) :
                 new SpacecraftState(orbit, attitude).withMass(array[0][6]);

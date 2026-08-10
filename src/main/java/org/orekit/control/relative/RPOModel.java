@@ -33,7 +33,7 @@ import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
@@ -470,7 +470,7 @@ public enum RPOModel implements RPO {
             final List<RelativeManeuver> maneuvers = new ArrayList<>();
             Vector3D velocityBeforeManeuver = initialVelocity;
 
-            KeplerianOrbit orbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(targetOrbit);
+            KeplerianOrbit orbit = (KeplerianOrbit) OrbitParamsType.KEPLERIAN.convertType(targetOrbit);
             yaProvider.setTargetOrbit(orbit);
 
             final KeplerianPropagator targetPropagator = new KeplerianPropagator(targetOrbit);
@@ -511,7 +511,7 @@ public enum RPOModel implements RPO {
                 // Propagate the waypoint.
                 final SpacecraftState propagated = targetPropagator.propagate(nextWaypoint.getDate());
                 // Update the target orbit and the velocity before the next maneuver.
-                final double trueAnomaly = ((KeplerianOrbit) OrbitType.KEPLERIAN.convertType(
+                final double trueAnomaly = ((KeplerianOrbit) OrbitParamsType.KEPLERIAN.convertType(
                                 propagated.getOrbit())).getTrueAnomaly();
                 orbit = new KeplerianOrbit(orbit.getA(), orbit.getE(), orbit.getI(), orbit.getPeriapsisArgument(),
                                            orbit.getRightAscensionOfAscendingNode(), trueAnomaly,
@@ -543,7 +543,7 @@ public enum RPOModel implements RPO {
             final List<FieldRelativeManeuver<T>> maneuvers = new ArrayList<>();
             FieldVector3D<T> velocityBeforeManeuver = initialVelocity;
 
-            FieldKeplerianOrbit<T> orbit = (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(targetOrbit);
+            FieldKeplerianOrbit<T> orbit = (FieldKeplerianOrbit<T>) OrbitParamsType.KEPLERIAN.convertType(targetOrbit);
             yaProvider.setTargetOrbit(orbit);
             final FieldKeplerianPropagator<T> targetPropagator = new FieldKeplerianPropagator<>(targetOrbit);
 
@@ -589,7 +589,7 @@ public enum RPOModel implements RPO {
                 final FieldSpacecraftState<T> propagated = targetPropagator.propagate(nextWaypoint.getDate());
 
                 // Update the target orbit and the velocity before the next maneuver.
-                final T trueAnomaly = ((FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(
+                final T trueAnomaly = ((FieldKeplerianOrbit<T>) OrbitParamsType.KEPLERIAN.convertType(
                                 propagated.getOrbit())).getTrueAnomaly();
                 orbit = new FieldKeplerianOrbit<>(orbit.getA(), orbit.getE(), orbit.getI(),
                                                   orbit.getPeriapsisArgument(),

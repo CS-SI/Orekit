@@ -29,7 +29,7 @@ import org.orekit.estimation.measurements.AngularAzEl;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.Range;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
@@ -100,7 +100,7 @@ class GeneratorTest {
     void setUp() {
         context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
-        propagatorBuilder = context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+        propagatorBuilder = context.createNumerical(OrbitParamsType.KEPLERIAN, PositionAngleType.TRUE, true,
                                                   1.0e-6, 300.0, 0.001, Force.POTENTIAL,
                                                   Force.THIRD_BODY_SUN, Force.THIRD_BODY_MOON);
     }

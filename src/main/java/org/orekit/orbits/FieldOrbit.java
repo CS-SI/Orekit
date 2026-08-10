@@ -282,7 +282,7 @@ public abstract class FieldOrbit<T extends CalculusFieldElement<T>>
     /** Get the orbit type.
      * @return orbit type
      */
-    public abstract OrbitType getType();
+    public abstract OrbitParamsType getType();
 
     /** Ensure the defining frame is a pseudo-inertial frame.
      * @param frame frame to check

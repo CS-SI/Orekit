@@ -259,7 +259,7 @@ class OrbitHermiteInterpolatorTest {
         // set up a 5 points sample
         List<Orbit> sample = new ArrayList<>();
         for (double dt = 0; dt < 300.0; dt += 60.0) {
-            Orbit orbit = OrbitType.CIRCULAR.convertType(propagator.propagate(date.shiftedBy(dt)).getOrbit());
+            Orbit orbit = OrbitParamsType.CIRCULAR.convertType(propagator.propagate(date.shiftedBy(dt)).getOrbit());
             if (!useDerivatives) {
                 // remove derivatives
                 double[] stateVector = new double[6];
@@ -345,7 +345,7 @@ class OrbitHermiteInterpolatorTest {
         // set up a 5 points sample
         List<Orbit> sample = new ArrayList<>();
         for (double dt = 0; dt < 300.0; dt += 60.0) {
-            Orbit orbit = OrbitType.EQUINOCTIAL.convertType(propagator.propagate(date.shiftedBy(dt)).getOrbit());
+            Orbit orbit = OrbitParamsType.EQUINOCTIAL.convertType(propagator.propagate(date.shiftedBy(dt)).getOrbit());
             if (!useDerivatives) {
                 // remove derivatives
                 double[] stateVector = new double[6];
@@ -436,7 +436,7 @@ class OrbitHermiteInterpolatorTest {
         // set up a 5 points sample
         List<Orbit> sample = new ArrayList<>();
         for (double dt = 0; dt < 300.0; dt += 60.0) {
-            Orbit orbit = OrbitType.KEPLERIAN.convertType(propagator.propagate(date.shiftedBy(dt)).getOrbit());
+            Orbit orbit = OrbitParamsType.KEPLERIAN.convertType(propagator.propagate(date.shiftedBy(dt)).getOrbit());
             if (!useDerivatives) {
                 // remove derivatives
                 double[] stateVector = new double[6];

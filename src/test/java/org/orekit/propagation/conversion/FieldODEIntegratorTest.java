@@ -44,7 +44,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldOrbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
@@ -126,60 +126,60 @@ public class FieldODEIntegratorTest {
 
         // When
         final FieldODEIntegrator<Binary64> builtIntegrator01 =
-                integratorBuilder01.buildIntegrator(orbit, OrbitType.CARTESIAN);
+                integratorBuilder01.buildIntegrator(orbit, OrbitParamsType.CARTESIAN);
 
         final FieldODEIntegrator<Binary64> builtIntegrator02 =
-                integratorBuilder02.buildIntegrator(orbit, OrbitType.CARTESIAN);
+                integratorBuilder02.buildIntegrator(orbit, OrbitParamsType.CARTESIAN);
 
         final FieldODEIntegrator<Binary64> builtIntegrator03 =
-                integratorBuilder03.buildIntegrator(orbit, OrbitType.CARTESIAN);
+                integratorBuilder03.buildIntegrator(orbit, OrbitParamsType.CARTESIAN);
 
         final FieldODEIntegrator<Binary64> builtIntegrator03Bis =
-                integratorBuilder03Bis.buildIntegrator(orbit, OrbitType.CARTESIAN);
+                integratorBuilder03Bis.buildIntegrator(orbit, OrbitParamsType.CARTESIAN);
 
         final FieldODEIntegrator<Binary64> builtIntegrator04 =
-                integratorBuilder04.buildIntegrator(orbit, OrbitType.CARTESIAN);
+                integratorBuilder04.buildIntegrator(orbit, OrbitParamsType.CARTESIAN);
 
         final FieldODEIntegrator<Binary64> builtIntegrator05 =
-                integratorBuilder05.buildIntegrator(orbit, OrbitType.CARTESIAN);
+                integratorBuilder05.buildIntegrator(orbit, OrbitParamsType.CARTESIAN);
 
         final FieldODEIntegrator<Binary64> builtIntegrator06 =
-                integratorBuilder06.buildIntegrator(orbit, OrbitType.CARTESIAN);
+                integratorBuilder06.buildIntegrator(orbit, OrbitParamsType.CARTESIAN);
 
         final FieldODEIntegrator<Binary64> builtIntegrator06Bis =
-                integratorBuilder06Bis.buildIntegrator(orbit, OrbitType.CARTESIAN);
+                integratorBuilder06Bis.buildIntegrator(orbit, OrbitParamsType.CARTESIAN);
 
         final FieldODEIntegrator<Binary64> builtIntegrator07 =
-                integratorBuilder07.buildIntegrator(orbit, OrbitType.CARTESIAN);
+                integratorBuilder07.buildIntegrator(orbit, OrbitParamsType.CARTESIAN);
 
         final FieldODEIntegrator<Binary64> builtIntegrator07Bis =
-                integratorBuilder07Bis.buildIntegrator(orbit, OrbitType.CARTESIAN);
+                integratorBuilder07Bis.buildIntegrator(orbit, OrbitParamsType.CARTESIAN);
 
         final FieldODEIntegrator<Binary64> builtIntegrator08 =
-                integratorBuilder08.buildIntegrator(orbit, OrbitType.CARTESIAN);
+                integratorBuilder08.buildIntegrator(orbit, OrbitParamsType.CARTESIAN);
 
         final FieldODEIntegrator<Binary64> builtIntegrator09 =
-                integratorBuilder09.buildIntegrator(orbit, OrbitType.CARTESIAN);
+                integratorBuilder09.buildIntegrator(orbit, OrbitParamsType.CARTESIAN);
 
         final FieldODEIntegrator<Binary64> builtIntegrator09Bis =
-                integratorBuilder09Bis.buildIntegrator(orbit, OrbitType.CARTESIAN);
+                integratorBuilder09Bis.buildIntegrator(orbit, OrbitParamsType.CARTESIAN);
 
         final FieldODEIntegrator<Binary64> builtIntegrator10 =
-                integratorBuilder10.buildIntegrator(orbit, OrbitType.CARTESIAN);
+                integratorBuilder10.buildIntegrator(orbit, OrbitParamsType.CARTESIAN);
 
         final FieldODEIntegrator<Binary64> builtIntegrator10Bis =
-                integratorBuilder10Bis.buildIntegrator(orbit, OrbitType.CARTESIAN);
+                integratorBuilder10Bis.buildIntegrator(orbit, OrbitParamsType.CARTESIAN);
 
         final FieldODEIntegrator<Binary64> builtIntegrator11 =
-                integratorBuilder11.buildIntegrator(orbit, OrbitType.CARTESIAN);
+                integratorBuilder11.buildIntegrator(orbit, OrbitParamsType.CARTESIAN);
 
         final FieldODEIntegrator<Binary64> builtIntegrator11Bis =
-                integratorBuilder11Bis.buildIntegrator(orbit, OrbitType.CARTESIAN);
+                integratorBuilder11Bis.buildIntegrator(orbit, OrbitParamsType.CARTESIAN);
 
         // Then
 
         // Creating reference integrators
-        final double[][] tolerances = ToleranceProvider.getDefaultToleranceProvider(dP).getTolerances(orbit.toOrbit(), OrbitType.CARTESIAN);
+        final double[][] tolerances = ToleranceProvider.getDefaultToleranceProvider(dP).getTolerances(orbit.toOrbit(), OrbitParamsType.CARTESIAN);
 
         final FieldODEIntegrator<Binary64> referenceIntegrator01 =
                 new AdamsBashforthFieldIntegrator<>(field, nSteps, minStep, maxStep, tolerances[0], tolerances[1]);

@@ -31,7 +31,7 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 
-class OrbitTypeTest {
+class OrbitParamsTypeTest {
 
     @BeforeAll
     public static void setUp() {
@@ -41,9 +41,9 @@ class OrbitTypeTest {
     @Test
     void testCartesianIsPositionAngleBased() {
         // GIVEN
-        final OrbitType orbitType = OrbitType.CARTESIAN;
+        final OrbitParamsType orbitParamsType = OrbitParamsType.CARTESIAN;
         // WHEN
-        final boolean actualIsPositionAngleBased = orbitType.isPositionAngleBased();
+        final boolean actualIsPositionAngleBased = orbitParamsType.isPositionAngleBased();
         // THEN
         Assertions.assertFalse(actualIsPositionAngleBased);
     }
@@ -51,9 +51,9 @@ class OrbitTypeTest {
     @Test
     void testEquinoctialIsPositionAngleBased() {
         // GIVEN
-        final OrbitType orbitType = OrbitType.EQUINOCTIAL;
+        final OrbitParamsType orbitParamsType = OrbitParamsType.EQUINOCTIAL;
         // WHEN
-        final boolean actualIsPositionAngleBased = orbitType.isPositionAngleBased();
+        final boolean actualIsPositionAngleBased = orbitParamsType.isPositionAngleBased();
         // THEN
         Assertions.assertTrue(actualIsPositionAngleBased);
     }
@@ -61,9 +61,9 @@ class OrbitTypeTest {
     @Test
     void testKeplerianIsPositionAngleBased() {
         // GIVEN
-        final OrbitType orbitType = OrbitType.KEPLERIAN;
+        final OrbitParamsType orbitParamsType = OrbitParamsType.KEPLERIAN;
         // WHEN
-        final boolean actualIsPositionAngleBased = orbitType.isPositionAngleBased();
+        final boolean actualIsPositionAngleBased = orbitParamsType.isPositionAngleBased();
         // THEN
         Assertions.assertTrue(actualIsPositionAngleBased);
     }
@@ -71,9 +71,9 @@ class OrbitTypeTest {
     @Test
     void testCircularIsPositionAngleBased() {
         // GIVEN
-        final OrbitType orbitType = OrbitType.CIRCULAR;
+        final OrbitParamsType orbitParamsType = OrbitParamsType.CIRCULAR;
         // WHEN
-        final boolean actualIsPositionAngleBased = orbitType.isPositionAngleBased();
+        final boolean actualIsPositionAngleBased = orbitParamsType.isPositionAngleBased();
         // THEN
         Assertions.assertTrue(actualIsPositionAngleBased);
     }
@@ -84,7 +84,7 @@ class OrbitTypeTest {
         final ComplexField field = ComplexField.getInstance();
         final CartesianOrbit cartesianOrbit = createCartesianOrbit();
         // WHEN
-        final FieldCartesianOrbit<Complex> actualFieldOrbit = (FieldCartesianOrbit<Complex>) OrbitType.CARTESIAN
+        final FieldCartesianOrbit<Complex> actualFieldOrbit = (FieldCartesianOrbit<Complex>) OrbitParamsType.CARTESIAN
                 .convertToFieldOrbit(field, cartesianOrbit);
         // THEN
         final FieldCartesianOrbit<Complex> expectedFieldOrbit = new FieldCartesianOrbit<>(field, cartesianOrbit);
@@ -93,27 +93,27 @@ class OrbitTypeTest {
 
     @Test
     void testConvertToFieldOrbitAndConvertTypeEquinoctial() {
-        templateTestConvertToFieldOrbitAndConvertType(OrbitType.EQUINOCTIAL);
+        templateTestConvertToFieldOrbitAndConvertType(OrbitParamsType.EQUINOCTIAL);
     }
 
     @Test
     void testConvertToFieldOrbitAndConvertTypeCircular() {
-        templateTestConvertToFieldOrbitAndConvertType(OrbitType.CIRCULAR);
+        templateTestConvertToFieldOrbitAndConvertType(OrbitParamsType.CIRCULAR);
     }
 
     @Test
     void testConvertToFieldOrbitAndConvertTypeKeplerian() {
-        templateTestConvertToFieldOrbitAndConvertType(OrbitType.KEPLERIAN);
+        templateTestConvertToFieldOrbitAndConvertType(OrbitParamsType.KEPLERIAN);
     }
 
-    void templateTestConvertToFieldOrbitAndConvertType(final OrbitType orbitType) {
+    void templateTestConvertToFieldOrbitAndConvertType(final OrbitParamsType orbitParamsType) {
         // GIVEN
         final ComplexField field = ComplexField.getInstance();
         final CartesianOrbit cartesianOrbit = createCartesianOrbit();
         // WHEN
-        final Orbit orbit = orbitType.convertType(cartesianOrbit);
-        final FieldOrbit<Complex> fieldOrbit = orbitType.convertToFieldOrbit(field, orbit);
-        final FieldCartesianOrbit<Complex> actualFieldOrbit = (FieldCartesianOrbit<Complex>) OrbitType.CARTESIAN
+        final Orbit orbit = orbitParamsType.convertType(cartesianOrbit);
+        final FieldOrbit<Complex> fieldOrbit = orbitParamsType.convertToFieldOrbit(field, orbit);
+        final FieldCartesianOrbit<Complex> actualFieldOrbit = (FieldCartesianOrbit<Complex>) OrbitParamsType.CARTESIAN
                 .convertType(fieldOrbit);
         // THEN
         final FieldCartesianOrbit<Complex> expectedFieldOrbit = new FieldCartesianOrbit<>(field, orbit);

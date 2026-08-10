@@ -22,7 +22,7 @@ import org.hipparchus.ode.nonstiff.EulerFieldIntegrator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 
 class AbstractFixedStepFieldIntegratorBuilderTest {
@@ -44,7 +44,7 @@ class AbstractFixedStepFieldIntegratorBuilderTest {
         }
 
         @Override
-        public EulerFieldIntegrator<Complex> buildIntegrator(Field field, Orbit orbit, OrbitType orbitType, final PositionAngleType angleType) {
+        public EulerFieldIntegrator<Complex> buildIntegrator(Field field, Orbit orbit, OrbitParamsType orbitParamsType, final PositionAngleType angleType) {
             return null;
         }
 

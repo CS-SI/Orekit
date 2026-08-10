@@ -19,12 +19,12 @@ package org.orekit.propagation.events;
 
 import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 
 public class CloseEventsNumericalRK4Test extends AbstractCloseEventsNumericalTest {
 
     @Override
-    ODEIntegrator getIntegrator(final double stepSize, final OrbitType orbitType) {
+    ODEIntegrator getIntegrator(final double stepSize, final OrbitParamsType orbitParamsType) {
         return new ClassicalRungeKuttaIntegrator(stepSize);
     }
 

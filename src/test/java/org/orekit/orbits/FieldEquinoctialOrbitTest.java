@@ -104,7 +104,7 @@ class FieldEquinoctialOrbitTest {
                 Vector3D.MINUS_K.scalarMultiply(0.1), Vector3D.MINUS_I);
         final CartesianOrbit cartesianOrbit = new CartesianOrbit(pvCoordinates, FramesFactory.getEME2000(),
                 AbsoluteDate.ARBITRARY_EPOCH, 1.);
-        final EquinoctialOrbit equinoctialOrbit = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(cartesianOrbit);
+        final EquinoctialOrbit equinoctialOrbit = (EquinoctialOrbit) OrbitParamsType.EQUINOCTIAL.convertType(cartesianOrbit);
         final Binary64Field field = Binary64Field.getInstance();
         final FieldCartesianOrbit<Binary64> fieldCartesianOrbit = new FieldCartesianOrbit<>(field, cartesianOrbit);
         final FieldEquinoctialOrbit<Binary64> fieldEquinoctialOrbit = new FieldEquinoctialOrbit<>(field, equinoctialOrbit);
@@ -1394,10 +1394,10 @@ class FieldEquinoctialOrbitTest {
                                                                      position);
         Assertions.assertEquals(0.0101, FieldVector3D.distance(keplerianAcceleration, acceleration).getReal(), 1.0e-4);
 
-        for (OrbitType type : OrbitType.values()) {
+        for (OrbitParamsType type : OrbitParamsType.values()) {
             FieldOrbit<T> converted = type.convertType(orbit);
             Assertions.assertTrue(converted.hasNonKeplerianAcceleration());
-            FieldEquinoctialOrbit<T> rebuilt = (FieldEquinoctialOrbit<T>) OrbitType.EQUINOCTIAL.convertType(converted);
+            FieldEquinoctialOrbit<T> rebuilt = (FieldEquinoctialOrbit<T>) OrbitParamsType.EQUINOCTIAL.convertType(converted);
             Assertions.assertTrue(rebuilt.hasNonKeplerianAcceleration());
             Assertions.assertEquals(orbit.getADot().getReal(),             rebuilt.getADot().getReal(),             3.0e-13);
             Assertions.assertEquals(orbit.getEquinoctialExDot().getReal(), rebuilt.getEquinoctialExDot().getReal(), 1.0e-15);
@@ -1473,7 +1473,7 @@ class FieldEquinoctialOrbitTest {
                                                     FramesFactory.getEME2000(), FieldAbsoluteDate.getJ2000Epoch(field),
                                                     zero.newInstance(mu));
 
-        FieldEquinoctialOrbit<T> normalized1 = (FieldEquinoctialOrbit<T>) OrbitType.EQUINOCTIAL.normalize(withoutDerivatives, ref);
+        FieldEquinoctialOrbit<T> normalized1 = (FieldEquinoctialOrbit<T>) OrbitParamsType.EQUINOCTIAL.normalize(withoutDerivatives, ref);
         Assertions.assertFalse(normalized1.hasNonKeplerianAcceleration());
         Assertions.assertEquals(0.0, normalized1.getA().subtract(withoutDerivatives.getA()).getReal(),          1.0e-6);
         Assertions.assertEquals(0.0, normalized1.getEquinoctialEx().subtract(withoutDerivatives.getEquinoctialEx()).getReal(), 1.0e-10);
@@ -1487,13 +1487,13 @@ class FieldEquinoctialOrbitTest {
         for (int i = 0; i < pDot.length; ++i) {
             pDot[i] = zero.newInstance(i);
         }
-        OrbitType.EQUINOCTIAL.mapOrbitToArray(withoutDerivatives, PositionAngleType.TRUE, p, null);
-        FieldEquinoctialOrbit<T> withDerivatives = (FieldEquinoctialOrbit<T>) OrbitType.EQUINOCTIAL.mapArrayToOrbit(p, pDot,
+        OrbitParamsType.EQUINOCTIAL.mapOrbitToArray(withoutDerivatives, PositionAngleType.TRUE, p, null);
+        FieldEquinoctialOrbit<T> withDerivatives = (FieldEquinoctialOrbit<T>) OrbitParamsType.EQUINOCTIAL.mapArrayToOrbit(p, pDot,
                                                                                                                     PositionAngleType.TRUE,
                                                                                                                     withoutDerivatives.getDate(),
                                                                                                                     withoutDerivatives.getMu(),
                                                                                                                     withoutDerivatives.getFrame());
-        FieldEquinoctialOrbit<T> normalized2 = (FieldEquinoctialOrbit<T>) OrbitType.EQUINOCTIAL.normalize(withDerivatives, ref);
+        FieldEquinoctialOrbit<T> normalized2 = (FieldEquinoctialOrbit<T>) OrbitParamsType.EQUINOCTIAL.normalize(withDerivatives, ref);
         Assertions.assertTrue(normalized2.hasNonKeplerianAcceleration());
         Assertions.assertEquals(0.0, normalized2.getA().subtract(withDerivatives.getA()).getReal(),          1.0e-6);
         Assertions.assertEquals(0.0, normalized2.getEquinoctialEx().subtract(withDerivatives.getEquinoctialEx()).getReal(), 1.0e-10);

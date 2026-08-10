@@ -38,7 +38,7 @@ import org.orekit.models.earth.atmosphere.JB2008;
 import org.orekit.models.earth.atmosphere.JB2008InputParameters;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
@@ -231,7 +231,7 @@ public class DtcDataLoaderTest {
         propagator.addForceModel(new DragForce(atmosphere, satellite));
 
         propagator.setInitialState(ic);
-        propagator.setOrbitType(OrbitType.CARTESIAN);
+        propagator.setOrbitParamsType(OrbitParamsType.CARTESIAN);
 
         return propagator;
     }

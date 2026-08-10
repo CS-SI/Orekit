@@ -37,7 +37,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.frames.ITRFVersion;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.orbits.CartesianOrbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -67,7 +67,7 @@ class AngularAzElTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createNumerical(OrbitType.EQUINOCTIAL, PositionAngleType.TRUE, false,
+                        context.createNumerical(OrbitParamsType.EQUINOCTIAL, PositionAngleType.TRUE, false,
                                               1.0e-6, 60.0, 0.001);
 
         // Create perfect right-ascension/declination measurements
@@ -120,7 +120,7 @@ class AngularAzElTest {
         Context context = EstimationTestUtils.geoStationnaryContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createNumerical(OrbitType.EQUINOCTIAL, PositionAngleType.TRUE, false,
+                        context.createNumerical(OrbitParamsType.EQUINOCTIAL, PositionAngleType.TRUE, false,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect azimuth-elevation measurements
@@ -176,7 +176,7 @@ class AngularAzElTest {
                                                       getEstimatedValue(),
                                               measurement.getDimension(),
                                               propagator.getAttitudeProvider(),
-                                              OrbitType.CARTESIAN,
+                                              OrbitParamsType.CARTESIAN,
                                               PositionAngleType.TRUE, 250.0, 4).
                     value(state);
 
@@ -229,7 +229,7 @@ class AngularAzElTest {
         Context context = EstimationTestUtils.geoStationnaryContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createNumerical(OrbitType.EQUINOCTIAL, PositionAngleType.TRUE, false,
+                        context.createNumerical(OrbitParamsType.EQUINOCTIAL, PositionAngleType.TRUE, false,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect azimuth-elevation measurements

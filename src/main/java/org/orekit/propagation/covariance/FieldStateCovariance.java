@@ -31,7 +31,7 @@ import org.orekit.frames.FieldKinematicTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.LOF;
 import org.orekit.orbits.FieldOrbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -47,7 +47,7 @@ import org.orekit.time.FieldTimeStamped;
  * <i>Covariance Transformations for Satellite Flight Dynamics Operations</i> by David A. SVallado.
  * <p>
  * Finally, covariance orbit type can be changed using the
- * {@link #changeCovarianceType(FieldOrbit, OrbitType, PositionAngleType) changeCovarianceType(FieldOrbit, OrbitType,
+ * {@link #changeCovarianceType(FieldOrbit, OrbitParamsType, PositionAngleType) changeCovarianceType(FieldOrbit, OrbitType,
  * PositionAngle)} method.
  * </p>
  *
@@ -77,7 +77,7 @@ public class FieldStateCovariance<T extends CalculusFieldElement<T>> implements 
     private final FieldAbsoluteDate<T> epoch;
 
     /** Covariance orbit type. */
-    private final OrbitType orbitType;
+    private final OrbitParamsType orbitParamsType;
 
     /** Covariance position angle type (not used if orbitType is CARTESIAN). */
     private final PositionAngleType angleType;
@@ -91,7 +91,7 @@ public class FieldStateCovariance<T extends CalculusFieldElement<T>> implements 
      */
     public FieldStateCovariance(final FieldMatrix<T> orbitalCovariance, final FieldAbsoluteDate<T> epoch,
                                 final LOF lof) {
-        this(orbitalCovariance, epoch, null, lof, OrbitType.CARTESIAN, DEFAULT_POSITION_ANGLE);
+        this(orbitalCovariance, epoch, null, lof, OrbitParamsType.CARTESIAN, DEFAULT_POSITION_ANGLE);
     }
 
     /**
@@ -100,13 +100,13 @@ public class FieldStateCovariance<T extends CalculusFieldElement<T>> implements 
      * @param orbitalCovariance 6x6 orbital parameters covariance
      * @param epoch epoch of the covariance
      * @param covarianceFrame covariance frame (inertial or Earth fixed)
-     * @param orbitType orbit type of the covariance (CARTESIAN if covarianceFrame is not pseudo-inertial)
+     * @param orbitParamsType orbit type of the covariance (CARTESIAN if covarianceFrame is not pseudo-inertial)
      * @param angleType position angle type of the covariance (not used if orbitType is CARTESIAN)
      */
     public FieldStateCovariance(final FieldMatrix<T> orbitalCovariance, final FieldAbsoluteDate<T> epoch,
                                 final Frame covarianceFrame,
-                                final OrbitType orbitType, final PositionAngleType angleType) {
-        this(orbitalCovariance, epoch, covarianceFrame, null, orbitType, angleType);
+                                final OrbitParamsType orbitParamsType, final PositionAngleType angleType) {
+        this(orbitalCovariance, epoch, covarianceFrame, null, orbitParamsType, angleType);
     }
 
     /**
@@ -116,20 +116,20 @@ public class FieldStateCovariance<T extends CalculusFieldElement<T>> implements 
      * @param epoch epoch of the covariance
      * @param covarianceFrame covariance frame (inertial or Earth fixed)
      * @param lof covariance LOF type
-     * @param orbitType orbit type of the covariance
+     * @param orbitParamsType orbit type of the covariance
      * @param angleType position angle type of the covariance (not used if orbitType is CARTESIAN)
      */
     private FieldStateCovariance(final FieldMatrix<T> orbitalCovariance, final FieldAbsoluteDate<T> epoch,
                                  final Frame covarianceFrame, final LOF lof,
-                                 final OrbitType orbitType, final PositionAngleType angleType) {
+                                 final OrbitParamsType orbitParamsType, final PositionAngleType angleType) {
 
-        StateCovariance.checkFrameAndOrbitTypeConsistency(covarianceFrame, orbitType);
+        StateCovariance.checkFrameAndOrbitTypeConsistency(covarianceFrame, orbitParamsType);
 
         this.orbitalCovariance = orbitalCovariance;
         this.epoch             = epoch;
         this.frame             = covarianceFrame;
         this.lof               = lof;
-        this.orbitType         = orbitType;
+        this.orbitParamsType = orbitParamsType;
         this.angleType         = angleType;
 
     }
@@ -154,8 +154,8 @@ public class FieldStateCovariance<T extends CalculusFieldElement<T>> implements 
      *
      * @return the covariance orbit type
      */
-    public OrbitType getOrbitType() {
-        return orbitType;
+    public OrbitParamsType getOrbitParamsType() {
+        return orbitParamsType;
     }
 
     /**
@@ -204,20 +204,20 @@ public class FieldStateCovariance<T extends CalculusFieldElement<T>> implements 
      * dynamics operations."
      *
      * @param orbit orbit to which the covariance matrix should correspond
-     * @param outOrbitType target orbit type of the state covariance matrix
+     * @param outOrbitParamsType target orbit type of the state covariance matrix
      * @param outAngleType target position angle type of the state covariance matrix
      *
      * @return a new covariance state, expressed in the target orbit type with the target position angle
      *
      * @see #changeCovarianceFrame(FieldOrbit, Frame)
      */
-    public FieldStateCovariance<T> changeCovarianceType(final FieldOrbit<T> orbit, final OrbitType outOrbitType,
+    public FieldStateCovariance<T> changeCovarianceType(final FieldOrbit<T> orbit, final OrbitParamsType outOrbitParamsType,
                                                         final PositionAngleType outAngleType) {
 
         // Handle case where the covariance is already expressed in the output type
-        if (outOrbitType == orbitType && (outOrbitType == OrbitType.CARTESIAN || outAngleType == angleType)) {
+        if (outOrbitParamsType == orbitParamsType && (outOrbitParamsType == OrbitParamsType.CARTESIAN || outAngleType == angleType)) {
             if (lof == null) {
-                return new FieldStateCovariance<>(orbitalCovariance, epoch, frame, orbitType, angleType);
+                return new FieldStateCovariance<>(orbitalCovariance, epoch, frame, orbitParamsType, angleType);
             }
             else {
                 return new FieldStateCovariance<>(orbitalCovariance, epoch, lof);
@@ -229,7 +229,7 @@ public class FieldStateCovariance<T extends CalculusFieldElement<T>> implements 
 
             // Check if the covariance is defined in an inertial frame
             if (frame.isPseudoInertial()) {
-                return changeTypeAndCreate(orbit, epoch, frame, orbitType, angleType, outOrbitType, outAngleType,
+                return changeTypeAndCreate(orbit, epoch, frame, orbitParamsType, angleType, outOrbitParamsType, outAngleType,
                                            orbitalCovariance);
             }
 
@@ -273,7 +273,7 @@ public class FieldStateCovariance<T extends CalculusFieldElement<T>> implements 
         } else {
 
             // Covariance is expressed in celestial body frame
-            return changeFrameAndCreate(orbit, epoch, frame, lofOut, orbitalCovariance, orbitType, angleType);
+            return changeFrameAndCreate(orbit, epoch, frame, lofOut, orbitalCovariance, orbitParamsType, angleType);
 
         }
 
@@ -305,11 +305,11 @@ public class FieldStateCovariance<T extends CalculusFieldElement<T>> implements 
 
             // Check specific case where output covariance will be the same
             if (frame == frameOut) {
-                return new FieldStateCovariance<>(orbitalCovariance, epoch, frame, orbitType, angleType);
+                return new FieldStateCovariance<>(orbitalCovariance, epoch, frame, orbitParamsType, angleType);
             }
 
             // Change covariance frame
-            return changeFrameAndCreate(orbit, epoch, frame, frameOut, orbitalCovariance, orbitType, angleType);
+            return changeFrameAndCreate(orbit, epoch, frame, frameOut, orbitalCovariance, orbitParamsType, angleType);
 
         }
 
@@ -346,7 +346,7 @@ public class FieldStateCovariance<T extends CalculusFieldElement<T>> implements 
 
                 // Shift covariance by applying the STM
                 final FieldMatrix<T> shiftedCov = stm.multiply(getMatrix().multiplyTransposed(stm));
-                return new FieldStateCovariance<>(shiftedCov, getDate().shiftedBy(dt), frame, orbitType,
+                return new FieldStateCovariance<>(shiftedCov, getDate().shiftedBy(dt), frame, orbitParamsType,
                         getPositionAngleType());
 
             }
@@ -405,7 +405,7 @@ public class FieldStateCovariance<T extends CalculusFieldElement<T>> implements 
             return new StateCovariance(realMatrix, realDate, lof);
         }
         else {
-            return new StateCovariance(realMatrix, realDate, frame, orbitType, angleType);
+            return new StateCovariance(realMatrix, realDate, frame, orbitParamsType, angleType);
         }
     }
 
@@ -422,9 +422,9 @@ public class FieldStateCovariance<T extends CalculusFieldElement<T>> implements 
      * @param orbit orbit to which the covariance matrix should correspond
      * @param date covariance epoch
      * @param covFrame covariance frame
-     * @param inOrbitType initial orbit type of the state covariance matrix
+     * @param inOrbitParamsType initial orbit type of the state covariance matrix
      * @param inAngleType initial position angle type of the state covariance matrix
-     * @param outOrbitType target orbit type of the state covariance matrix
+     * @param outOrbitParamsType target orbit type of the state covariance matrix
      * @param outAngleType target position angle type of the state covariance matrix
      * @param inputCov input covariance
      *
@@ -433,16 +433,16 @@ public class FieldStateCovariance<T extends CalculusFieldElement<T>> implements 
     private FieldStateCovariance<T> changeTypeAndCreate(final FieldOrbit<T> orbit,
                                                         final FieldAbsoluteDate<T> date,
                                                         final Frame covFrame,
-                                                        final OrbitType inOrbitType,
+                                                        final OrbitParamsType inOrbitParamsType,
                                                         final PositionAngleType inAngleType,
-                                                        final OrbitType outOrbitType,
+                                                        final OrbitParamsType outOrbitParamsType,
                                                         final PositionAngleType outAngleType,
                                                         final FieldMatrix<T> inputCov) {
 
         // Check if type change is really necessary, if not then return input covariance
-        if (StateCovariance.inputAndOutputOrbitTypesAreCartesian(inOrbitType, outOrbitType) ||
-            StateCovariance.inputAndOutputAreIdentical(inOrbitType, inAngleType, outOrbitType, outAngleType)) {
-            return new FieldStateCovariance<>(inputCov, date, covFrame, inOrbitType, inAngleType);
+        if (StateCovariance.inputAndOutputOrbitTypesAreCartesian(inOrbitParamsType, outOrbitParamsType) ||
+            StateCovariance.inputAndOutputAreIdentical(inOrbitParamsType, inAngleType, outOrbitParamsType, outAngleType)) {
+            return new FieldStateCovariance<>(inputCov, date, covFrame, inOrbitParamsType, inAngleType);
         }
 
         // Notations:
@@ -455,13 +455,13 @@ public class FieldStateCovariance<T extends CalculusFieldElement<T>> implements 
 
         // Compute dOutputdCartesian
         final T[][]         aOC               = MathArrays.buildArray(field, STATE_DIMENSION, STATE_DIMENSION);
-        final FieldOrbit<T> orbitInOutputType = outOrbitType.convertType(orbit);
+        final FieldOrbit<T> orbitInOutputType = outOrbitParamsType.convertType(orbit);
         orbitInOutputType.getJacobianWrtCartesian(outAngleType, aOC);
         final FieldMatrix<T> dOdC = new Array2DRowFieldMatrix<>(aOC, false);
 
         // Compute dCartesiandInput
         final T[][]         aCI              = MathArrays.buildArray(field, STATE_DIMENSION, STATE_DIMENSION);
-        final FieldOrbit<T> orbitInInputType = inOrbitType.convertType(orbit);
+        final FieldOrbit<T> orbitInInputType = inOrbitParamsType.convertType(orbit);
         orbitInInputType.getJacobianWrtParameters(inAngleType, aCI);
         final FieldMatrix<T> dCdI = new Array2DRowFieldMatrix<>(aCI, false);
 
@@ -472,7 +472,7 @@ public class FieldStateCovariance<T extends CalculusFieldElement<T>> implements 
         final FieldMatrix<T> outputCov = dOdI.multiply(inputCov.multiplyTransposed(dOdI));
 
         // Return the converted covariance
-        return new FieldStateCovariance<>(outputCov, date, covFrame, outOrbitType, outAngleType);
+        return new FieldStateCovariance<>(outputCov, date, covFrame, outOrbitParamsType, outAngleType);
 
     }
 
@@ -533,7 +533,7 @@ public class FieldStateCovariance<T extends CalculusFieldElement<T>> implements 
      * pseudo-inertial, the input covariance matrix is expected to be expressed in <b>Cartesian elements</b>.
      * @param lofOut the target local orbital frame
      * @param inputCov input covariance
-     * @param covOrbitType orbit type of the covariance matrix (used if frameIn is pseudo-inertial)
+     * @param covOrbitParamsType orbit type of the covariance matrix (used if frameIn is pseudo-inertial)
      * @param covAngleType position angle type of the covariance matrix (used if frameIn is pseudo-inertial) (not used
      * if covOrbitType equals {@code CARTESIAN})
      * @return the covariance matrix expressed in the target local orbital frame in Cartesian elements
@@ -545,7 +545,7 @@ public class FieldStateCovariance<T extends CalculusFieldElement<T>> implements 
                                                          final Frame frameIn,
                                                          final LOF lofOut,
                                                          final FieldMatrix<T> inputCov,
-                                                         final OrbitType covOrbitType,
+                                                         final OrbitParamsType covOrbitParamsType,
                                                          final PositionAngleType covAngleType) {
 
         // Input frame is inertial
@@ -553,8 +553,8 @@ public class FieldStateCovariance<T extends CalculusFieldElement<T>> implements 
 
             // Convert input matrix to Cartesian parameters in input frame
             final FieldMatrix<T> cartesianCovarianceIn =
-                    changeTypeAndCreate(orbit, date, frameIn, covOrbitType, covAngleType,
-                                        OrbitType.CARTESIAN, PositionAngleType.MEAN,
+                    changeTypeAndCreate(orbit, date, frameIn, covOrbitParamsType, covAngleType,
+                                        OrbitParamsType.CARTESIAN, PositionAngleType.MEAN,
                                         inputCov).getMatrix();
 
             // Builds the matrix to perform covariance transformation
@@ -580,11 +580,11 @@ public class FieldStateCovariance<T extends CalculusFieldElement<T>> implements 
             // Compute rotation matrix from frameIn to orbit inertial frame
             final FieldMatrix<T> cartesianCovarianceInOrbitFrame =
                     changeFrameAndCreate(orbit, date, frameIn, orbitInertialFrame, inputCov,
-                                         OrbitType.CARTESIAN, PositionAngleType.MEAN).getMatrix();
+                                         OrbitParamsType.CARTESIAN, PositionAngleType.MEAN).getMatrix();
 
             // Convert from orbit inertial frame to lofOut
             return changeFrameAndCreate(orbit, date, orbitInertialFrame, lofOut, cartesianCovarianceInOrbitFrame,
-                                        OrbitType.CARTESIAN, PositionAngleType.MEAN);
+                                        OrbitParamsType.CARTESIAN, PositionAngleType.MEAN);
 
         }
 
@@ -629,7 +629,7 @@ public class FieldStateCovariance<T extends CalculusFieldElement<T>> implements 
                             inputCartesianCov.multiplyTransposed(jacobianFromLofInToFrameOut));
 
             // Get the Cartesian covariance matrix converted to frameOut
-            return new FieldStateCovariance<>(transformedCovariance, date, frameOut, OrbitType.CARTESIAN,
+            return new FieldStateCovariance<>(transformedCovariance, date, frameOut, OrbitParamsType.CARTESIAN,
                                               DEFAULT_POSITION_ANGLE);
 
         }
@@ -647,7 +647,7 @@ public class FieldStateCovariance<T extends CalculusFieldElement<T>> implements 
 
             // Get the Cartesian covariance matrix converted to frameOut
             return changeFrameAndCreate(orbit, date, orbit.getFrame(), frameOut, cartesianCovarianceInOrbitFrame,
-                                        OrbitType.CARTESIAN, PositionAngleType.MEAN);
+                                        OrbitParamsType.CARTESIAN, PositionAngleType.MEAN);
         }
 
     }
@@ -675,7 +675,7 @@ public class FieldStateCovariance<T extends CalculusFieldElement<T>> implements 
      * @param frameIn the frame in which the input covariance matrix is expressed
      * @param frameOut the target frame
      * @param inputCov input covariance
-     * @param covOrbitType orbit type of the covariance matrix (used if frameIn is pseudo-inertial)
+     * @param covOrbitParamsType orbit type of the covariance matrix (used if frameIn is pseudo-inertial)
      * @param covAngleType position angle type of the covariance matrix (used if frameIn is pseudo-inertial) (<b>not</b>
      * used if covOrbitType equals {@code CARTESIAN})
      * @return the covariance matrix expressed in the target frame
@@ -688,7 +688,7 @@ public class FieldStateCovariance<T extends CalculusFieldElement<T>> implements 
                                                          final Frame frameIn,
                                                          final Frame frameOut,
                                                          final FieldMatrix<T> inputCov,
-                                                         final OrbitType covOrbitType,
+                                                         final OrbitParamsType covOrbitParamsType,
                                                          final PositionAngleType covAngleType) {
 
         // Get the transform from the covariance frame to the output frame
@@ -702,8 +702,8 @@ public class FieldStateCovariance<T extends CalculusFieldElement<T>> implements 
 
             // Convert input matrix to Cartesian parameters in input frame
             final FieldMatrix<T> cartesianCovarianceIn =
-                    changeTypeAndCreate(orbit, date, frameIn, covOrbitType, covAngleType,
-                                        OrbitType.CARTESIAN, PositionAngleType.MEAN,
+                    changeTypeAndCreate(orbit, date, frameIn, covOrbitParamsType, covAngleType,
+                                        OrbitParamsType.CARTESIAN, PositionAngleType.MEAN,
                                         inputCov).getMatrix();
 
             // Get the Cartesian covariance matrix converted to frameOut
@@ -713,8 +713,8 @@ public class FieldStateCovariance<T extends CalculusFieldElement<T>> implements 
             if (frameOut.isPseudoInertial()) {
 
                 // Convert output Cartesian matrix to initial orbit type and position angle
-                return changeTypeAndCreate(orbit, date, frameOut, OrbitType.CARTESIAN, PositionAngleType.MEAN,
-                                           covOrbitType, covAngleType, cartesianCovarianceOut);
+                return changeTypeAndCreate(orbit, date, frameOut, OrbitParamsType.CARTESIAN, PositionAngleType.MEAN,
+                        covOrbitParamsType, covAngleType, cartesianCovarianceOut);
 
             }
 
@@ -722,7 +722,7 @@ public class FieldStateCovariance<T extends CalculusFieldElement<T>> implements 
             else {
 
                 // Output Cartesian matrix
-                return new FieldStateCovariance<>(cartesianCovarianceOut, date, frameOut, OrbitType.CARTESIAN,
+                return new FieldStateCovariance<>(cartesianCovarianceOut, date, frameOut, OrbitParamsType.CARTESIAN,
                                                   DEFAULT_POSITION_ANGLE);
 
             }
@@ -737,7 +737,7 @@ public class FieldStateCovariance<T extends CalculusFieldElement<T>> implements 
             final FieldMatrix<T> covInFrameOut = j.multiply(inputCov.multiplyTransposed(j));
 
             // Output the Cartesian covariance matrix converted to frameOut
-            return new FieldStateCovariance<>(covInFrameOut, date, frameOut, OrbitType.CARTESIAN, DEFAULT_POSITION_ANGLE);
+            return new FieldStateCovariance<>(covInFrameOut, date, frameOut, OrbitParamsType.CARTESIAN, DEFAULT_POSITION_ANGLE);
 
         }
 
@@ -770,7 +770,7 @@ public class FieldStateCovariance<T extends CalculusFieldElement<T>> implements 
         // compute derivatives of Keplerian motion
         final FieldGradientField<T> gradientField = FieldGradientField.getField(initialOrbit.getDate().getField(), STATE_DIMENSION);
         final T[] stateVector = MathArrays.buildArray(field, STATE_DIMENSION);
-        orbitType.mapOrbitToArray(initialOrbit, getPositionAngleType(), stateVector, null);
+        orbitParamsType.mapOrbitToArray(initialOrbit, getPositionAngleType(), stateVector, null);
         final FieldGradient<T>[] fieldGradientStateVector = MathArrays.buildArray(gradientField, STATE_DIMENSION);
         for (int i = 0; i < STATE_DIMENSION; i++) {
             fieldGradientStateVector[i] = FieldGradient.variable(STATE_DIMENSION, i, stateVector[i]);
@@ -778,11 +778,11 @@ public class FieldStateCovariance<T extends CalculusFieldElement<T>> implements 
         final AbsoluteDate absoluteDate = getDate().toAbsoluteDate();
         final FieldAbsoluteDate<FieldGradient<T>> fieldGradientDate = new FieldAbsoluteDate<>(gradientField, absoluteDate)
                 .shiftedBy(FieldGradient.constant(STATE_DIMENSION, getDate().durationFrom(absoluteDate)));
-        final FieldOrbit<FieldGradient<T>> fieldOrbit = orbitType.mapArrayToOrbit(fieldGradientStateVector, null, getPositionAngleType(),
+        final FieldOrbit<FieldGradient<T>> fieldOrbit = orbitParamsType.mapArrayToOrbit(fieldGradientStateVector, null, getPositionAngleType(),
                 fieldGradientDate, gradientField.getOne().newInstance(initialOrbit.getMu()), initialOrbit.getFrame());
         final FieldOrbit<FieldGradient<T>> shiftedOrbit = fieldOrbit.shiftedBy(gradientField.getZero().newInstance(dt));  // automatic differentiation
         final FieldGradient<T>[] gradient = MathArrays.buildArray(gradientField, STATE_DIMENSION);
-        orbitType.mapOrbitToArray(shiftedOrbit, getPositionAngleType(), gradient, null);
+        orbitParamsType.mapOrbitToArray(shiftedOrbit, getPositionAngleType(), gradient, null);
 
         // Return state transition matrix
         final FieldMatrix<T> stm = MatrixUtils.createFieldIdentityMatrix(field, STATE_DIMENSION);

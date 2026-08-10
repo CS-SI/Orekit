@@ -57,7 +57,7 @@ import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
@@ -318,7 +318,7 @@ public class BrouwerLyddanePropagatorTest {
         final double minStep = 0.001;
         final double maxstep = 1000.0;
         final double positionTolerance = 10.0;
-        final OrbitType propagationType = OrbitType.KEPLERIAN;
+        final OrbitParamsType propagationType = OrbitParamsType.KEPLERIAN;
         final double[][] tolerances =
                 ToleranceProvider.getDefaultToleranceProvider(positionTolerance).getTolerances(initialOrbit, propagationType);
         final AdaptiveStepsizeIntegrator integrator =
@@ -326,7 +326,7 @@ public class BrouwerLyddanePropagatorTest {
 
         // Numerical Propagator
         final NumericalPropagator NumPropagator = new NumericalPropagator(integrator);
-        NumPropagator.setOrbitType(propagationType);
+        NumPropagator.setOrbitParamsType(propagationType);
 
         final ForceModel holmesFeatherstone =
                 new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true), provider);
@@ -337,7 +337,7 @@ public class BrouwerLyddanePropagatorTest {
 
         // Extrapolate from the initial to the final date
         final SpacecraftState NumFinalState = NumPropagator.propagate(initDate.shiftedBy(timeshift));
-        final KeplerianOrbit NumOrbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(NumFinalState.getOrbit());
+        final KeplerianOrbit NumOrbit = (KeplerianOrbit) OrbitParamsType.KEPLERIAN.convertType(NumFinalState.getOrbit());
 
         //_______________________________________________________________________________________________
         // SET UP A BROUWER LYDDANE PROPAGATION
@@ -347,7 +347,7 @@ public class BrouwerLyddanePropagatorTest {
                 new BrouwerLyddanePropagator(initialOrbit, GravityFieldFactory.getUnnormalizedProvider(provider), BrouwerLyddanePropagator.M2);
 
         SpacecraftState BLFinalState = BLextrapolator.propagate(initDate.shiftedBy(timeshift));
-        final KeplerianOrbit BLOrbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(BLFinalState.getOrbit());
+        final KeplerianOrbit BLOrbit = (KeplerianOrbit) OrbitParamsType.KEPLERIAN.convertType(BLFinalState.getOrbit());
 
         Assertions.assertEquals(NumOrbit.getA(), BLOrbit.getA(), 0.175);
         Assertions.assertEquals(NumOrbit.getE(), BLOrbit.getE(), 3.2e-6);
@@ -388,7 +388,7 @@ public class BrouwerLyddanePropagatorTest {
         final double minStep = 0.001;
         final double maxstep = 1000.0;
         final double positionTolerance = 10.0;
-        final OrbitType propagationType = OrbitType.KEPLERIAN;
+        final OrbitParamsType propagationType = OrbitParamsType.KEPLERIAN;
         final double[][] tolerances =
                 ToleranceProvider.getDefaultToleranceProvider(positionTolerance).getTolerances(initialOrbit, propagationType);
         final AdaptiveStepsizeIntegrator integrator =
@@ -396,7 +396,7 @@ public class BrouwerLyddanePropagatorTest {
 
         // Numerical Propagator
         final NumericalPropagator NumPropagator = new NumericalPropagator(integrator);
-        NumPropagator.setOrbitType(propagationType);
+        NumPropagator.setOrbitParamsType(propagationType);
 
         // Atmosphere
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.WGS84_EARTH_FLATTENING,
@@ -418,7 +418,7 @@ public class BrouwerLyddanePropagatorTest {
 
         // Extrapolate from the initial to the final date
         final SpacecraftState NumFinalState = NumPropagator.propagate(initDate.shiftedBy(timeshift));
-        final KeplerianOrbit NumOrbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(NumFinalState.getOrbit());
+        final KeplerianOrbit NumOrbit = (KeplerianOrbit) OrbitParamsType.KEPLERIAN.convertType(NumFinalState.getOrbit());
 
         //_______________________________________________________________________________________________
         // SET UP A BROUWER LYDDANE PROPAGATION WITHOUT DRAG
@@ -428,7 +428,7 @@ public class BrouwerLyddanePropagatorTest {
                         new BrouwerLyddanePropagator(initialOrbit, GravityFieldFactory.getUnnormalizedProvider(provider), BrouwerLyddanePropagator.M2);
 
         SpacecraftState BLFinalState = BLextrapolator.propagate(initDate.shiftedBy(timeshift));
-        KeplerianOrbit BLOrbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(BLFinalState.getOrbit());
+        KeplerianOrbit BLOrbit = (KeplerianOrbit) OrbitParamsType.KEPLERIAN.convertType(BLFinalState.getOrbit());
 
         // Verify a and e differences without the drag effect on Brouwer-Lyddane
         final double deltaSmaBefore = 15.81;
@@ -443,7 +443,7 @@ public class BrouwerLyddanePropagatorTest {
         double M2 = 1.0e-14;
         BLextrapolator = new BrouwerLyddanePropagator(initialOrbit, GravityFieldFactory.getUnnormalizedProvider(provider), M2);
         BLFinalState = BLextrapolator.propagate(initDate.shiftedBy(timeshift));
-        BLOrbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(BLFinalState.getOrbit());
+        BLOrbit = (KeplerianOrbit) OrbitParamsType.KEPLERIAN.convertType(BLFinalState.getOrbit());
 
         // Verify a and e differences without the drag effect on Brouwer-Lyddane
         final double deltaSmaAfter = 11.04;
@@ -477,10 +477,10 @@ public class BrouwerLyddanePropagatorTest {
                 new BrouwerLyddanePropagator(initialOrbit, GravityFieldFactory.getUnnormalizedProvider(provider),
                                              PropagationType.MEAN, BrouwerLyddanePropagator.M2);
         SpacecraftState initialOsculatingState = BLextrapolator.propagate(initDate);
-        final KeplerianOrbit InitOrbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(initialOsculatingState.getOrbit());
+        final KeplerianOrbit InitOrbit = (KeplerianOrbit) OrbitParamsType.KEPLERIAN.convertType(initialOsculatingState.getOrbit());
 
         SpacecraftState BLFinalState = BLextrapolator.propagate(initDate.shiftedBy(timeshift));
-        final KeplerianOrbit BLOrbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(BLFinalState.getOrbit());
+        final KeplerianOrbit BLOrbit = (KeplerianOrbit) OrbitParamsType.KEPLERIAN.convertType(BLFinalState.getOrbit());
 
         //_______________________________________________________________________________________________
         // SET UP A REFERENCE NUMERICAL PROPAGATION
@@ -490,7 +490,7 @@ public class BrouwerLyddanePropagatorTest {
         final double minStep = 0.001;
         final double maxstep = 1000.0;
         final double positionTolerance = 10.0;
-        final OrbitType propagationType = OrbitType.KEPLERIAN;
+        final OrbitParamsType propagationType = OrbitParamsType.KEPLERIAN;
         final double[][] tolerances =
                 ToleranceProvider.getDefaultToleranceProvider(positionTolerance).getTolerances(InitOrbit, propagationType);
         final AdaptiveStepsizeIntegrator integrator =
@@ -498,7 +498,7 @@ public class BrouwerLyddanePropagatorTest {
 
         // Numerical Propagator
         final NumericalPropagator NumPropagator = new NumericalPropagator(integrator);
-        NumPropagator.setOrbitType(propagationType);
+        NumPropagator.setOrbitParamsType(propagationType);
 
         final ForceModel holmesFeatherstone =
                 new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true), provider);
@@ -509,7 +509,7 @@ public class BrouwerLyddanePropagatorTest {
 
         // Extrapolate from the initial to the final date
         final SpacecraftState NumFinalState = NumPropagator.propagate(initDate.shiftedBy(timeshift));
-        final KeplerianOrbit NumOrbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(NumFinalState.getOrbit());
+        final KeplerianOrbit NumOrbit = (KeplerianOrbit) OrbitParamsType.KEPLERIAN.convertType(NumFinalState.getOrbit());
 
         // Asserts
         Assertions.assertEquals(NumOrbit.getA(), BLOrbit.getA(), 0.174);
@@ -560,10 +560,10 @@ public class BrouwerLyddanePropagatorTest {
         BLextrapolator2.resetInitialState(initialState);
 
         SpacecraftState BLFinalState1 = BLextrapolator1.propagate(initDate.shiftedBy(timeshift));
-        final KeplerianOrbit BLOrbit1 = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(BLFinalState1.getOrbit());
+        final KeplerianOrbit BLOrbit1 = (KeplerianOrbit) OrbitParamsType.KEPLERIAN.convertType(BLFinalState1.getOrbit());
         SpacecraftState BLFinalState2 = BLextrapolator2.propagate(initDate.shiftedBy(timeshift));
         BLextrapolator2.resetIntermediateState(BLFinalState1, true);
-        final KeplerianOrbit BLOrbit2 = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(BLFinalState2.getOrbit());
+        final KeplerianOrbit BLOrbit2 = (KeplerianOrbit) OrbitParamsType.KEPLERIAN.convertType(BLFinalState2.getOrbit());
 
         // Asserts
         Assertions.assertEquals(BLOrbit1.getA(), BLOrbit2.getA(), 0.0);
@@ -602,11 +602,11 @@ public class BrouwerLyddanePropagatorTest {
                 provider.getAe(), provider.getMu(), -1.08263e-3, 2.54e-6, 1.62e-6, 2.3e-7, BrouwerLyddanePropagator.M2);
 
         SpacecraftState BLFinalState1 = BLPropagator1.propagate(initDate.shiftedBy(timeshift));
-        final KeplerianOrbit BLOrbit1 = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(BLFinalState1.getOrbit());
+        final KeplerianOrbit BLOrbit1 = (KeplerianOrbit) OrbitParamsType.KEPLERIAN.convertType(BLFinalState1.getOrbit());
         SpacecraftState BLFinalState2 = BLPropagator2.propagate(initDate.shiftedBy(timeshift));
-        final KeplerianOrbit BLOrbit2 = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(BLFinalState2.getOrbit());
+        final KeplerianOrbit BLOrbit2 = (KeplerianOrbit) OrbitParamsType.KEPLERIAN.convertType(BLFinalState2.getOrbit());
         SpacecraftState BLFinalState3 = BLPropagator3.propagate(initDate.shiftedBy(timeshift));
-        final KeplerianOrbit BLOrbit3 = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(BLFinalState3.getOrbit());
+        final KeplerianOrbit BLOrbit3 = (KeplerianOrbit) OrbitParamsType.KEPLERIAN.convertType(BLFinalState3.getOrbit());
 
         // Asserts
         Assertions.assertEquals(BLOrbit1.getA(), BLOrbit2.getA(), 0.0);
@@ -759,14 +759,14 @@ public class BrouwerLyddanePropagatorTest {
 
         // set up a reference numerical propagator starting for the specified start orbit
         // using the same force models (i.e. the first few zonal terms)
-        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(0.1).getTolerances(initialOsculating, OrbitType.KEPLERIAN);
+        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(0.1).getTolerances(initialOsculating, OrbitParamsType.KEPLERIAN);
         AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(0.001, 1000, tol[0], tol[1]);
         integrator.setInitialStepSize(60);
         NumericalPropagator num = new NumericalPropagator(integrator);
         Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         num.addForceModel(new HolmesFeatherstoneAttractionModel(itrf, provider));
         num.setInitialState(new SpacecraftState(initialOsculating));
-        num.setOrbitType(OrbitType.KEPLERIAN);
+        num.setOrbitParamsType(OrbitParamsType.KEPLERIAN);
         num.setPositionAngleType(initialOsculating.getCachedPositionAngleType());
         final StorelessUnivariateStatistic oscMin  = new Min();
         final StorelessUnivariateStatistic oscMax  = new Max();
@@ -815,7 +815,7 @@ public class BrouwerLyddanePropagatorTest {
 
         // propagate
         final SpacecraftState state = bl.propagate(date.shiftedBy(Constants.JULIAN_DAY));
-        final KeplerianOrbit orbOsc = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(state.getOrbit());
+        final KeplerianOrbit orbOsc = (KeplerianOrbit) OrbitParamsType.KEPLERIAN.convertType(state.getOrbit());
 
         // Check all elements are defined, i.e. no singularity
         Assertions.assertTrue(Double.isFinite(orbOsc.getA()));
@@ -831,7 +831,7 @@ public class BrouwerLyddanePropagatorTest {
 
         // propagate
         final SpacecraftState state2 = bl2.propagate(date.shiftedBy(Constants.JULIAN_DAY));
-        final KeplerianOrbit orbOsc2 = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(state2.getOrbit());
+        final KeplerianOrbit orbOsc2 = (KeplerianOrbit) OrbitParamsType.KEPLERIAN.convertType(state2.getOrbit());
 
         // Check all elements are defined, i.e. no singularity
         Assertions.assertTrue(Double.isFinite(orbOsc2.getA()));

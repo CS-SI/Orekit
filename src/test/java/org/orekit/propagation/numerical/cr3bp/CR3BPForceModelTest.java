@@ -108,7 +108,7 @@ public class CR3BPForceModelTest {
                                            vecRelativeTolerances);
 
         NumericalPropagator propagator = new NumericalPropagator(integrator);
-        propagator.setOrbitType(null);
+        propagator.setOrbitParamsType(null);
         propagator.setIgnoreCentralAttraction(true);
         propagator.addForceModel(new CR3BPForceModel(syst));
         propagator.setInitialState(initialState);
@@ -158,12 +158,12 @@ public class CR3BPForceModelTest {
         ClassicalRungeKuttaIntegrator RIntegrator = new ClassicalRungeKuttaIntegrator(1.0);
 
         FieldNumericalPropagator<DerivativeStructure> FNP = new FieldNumericalPropagator<>(integrator);
-        FNP.setOrbitType(null);
+        FNP.setOrbitParamsType(null);
         FNP.setIgnoreCentralAttraction(true);
         FNP.setInitialState(initialState);
 
         NumericalPropagator NP = new NumericalPropagator(RIntegrator);
-        NP.setOrbitType(null);
+        NP.setOrbitParamsType(null);
         NP.setIgnoreCentralAttraction(true);
         NP.setInitialState(iSR);
 
@@ -222,7 +222,7 @@ public class CR3BPForceModelTest {
 
             shift_NP.setInitialState(shift_iSR);
 
-            shift_NP.setOrbitType(null);
+            shift_NP.setOrbitParamsType(null);
             shift_NP.setIgnoreCentralAttraction(true);
             shift_NP.addForceModel(forceModel);
 

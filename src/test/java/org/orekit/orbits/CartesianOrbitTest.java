@@ -298,10 +298,10 @@ public class CartesianOrbitTest {
         Vector3D keplerianAcceleration = new Vector3D(-orbit.getMu() / (r2 * r), position);
         Assertions.assertEquals(0.0101, Vector3D.distance(keplerianAcceleration, acceleration), 1.0e-4);
 
-        for (OrbitType type : OrbitType.values()) {
+        for (OrbitParamsType type : OrbitParamsType.values()) {
             Orbit converted = type.convertType(orbit);
             Assertions.assertTrue(converted.hasNonKeplerianAcceleration());
-            CartesianOrbit rebuilt = (CartesianOrbit) OrbitType.CARTESIAN.convertType(converted);
+            CartesianOrbit rebuilt = (CartesianOrbit) OrbitParamsType.CARTESIAN.convertType(converted);
             Assertions.assertTrue(rebuilt.hasNonKeplerianAcceleration());
             Assertions.assertEquals(0, Vector3D.distance(rebuilt.getPosition(),     position),     2.0e-9);
             Assertions.assertEquals(0, Vector3D.distance(rebuilt.getVelocity(),     velocity),     2.5e-12);
@@ -325,10 +325,10 @@ public class CartesianOrbitTest {
         Vector3D keplerianAcceleration = new Vector3D(-orbit.getMu() / (r2 * r), position);
         Assertions.assertEquals(4.78e-4, Vector3D.distance(keplerianAcceleration, acceleration), 1.0e-6);
 
-        OrbitType type = OrbitType.KEPLERIAN;
+        OrbitParamsType type = OrbitParamsType.KEPLERIAN;
         Orbit converted = type.convertType(orbit);
         Assertions.assertTrue(converted.hasNonKeplerianAcceleration());
-        CartesianOrbit rebuilt = (CartesianOrbit) OrbitType.CARTESIAN.convertType(converted);
+        CartesianOrbit rebuilt = (CartesianOrbit) OrbitParamsType.CARTESIAN.convertType(converted);
         Assertions.assertTrue(rebuilt.hasNonKeplerianAcceleration());
         Assertions.assertEquals(0, Vector3D.distance(rebuilt.getPosition(),     position),     1.0e-15);
         Assertions.assertEquals(0, Vector3D.distance(rebuilt.getVelocity(),     velocity),     1.0e-15);

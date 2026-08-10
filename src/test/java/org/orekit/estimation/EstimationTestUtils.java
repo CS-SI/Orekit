@@ -181,7 +181,7 @@ public class EstimationTestUtils {
                                          FramesFactory.getEME2000(),
                                          new AbsoluteDate(2000, 2, 24, 11, 35, 47.0, context.utc),
                                          context.unnormalizedProvider.getMu());
-        context.initialOrbit = OrbitType.EQUINOCTIAL.convertType(orbit);
+        context.initialOrbit = OrbitParamsType.EQUINOCTIAL.convertType(orbit);
         return context;
     }
 

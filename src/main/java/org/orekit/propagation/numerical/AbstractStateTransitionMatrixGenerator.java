@@ -28,7 +28,7 @@ import org.orekit.attitudes.AttitudeProviderModifier;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.ForceModel;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
@@ -157,12 +157,12 @@ abstract class AbstractStateTransitionMatrixGenerator implements AdditionalDeriv
      * @param state initial state
      * @param dYdY0 initial State Transition Matrix ∂Y/∂Y₀,
      * if null (which is the most frequent case), assumed to be 6x6 identity
-     * @param orbitType orbit type used for states Y and Y₀ in {@code dYdY0}
+     * @param orbitParamsType orbit type used for states Y and Y₀ in {@code dYdY0}
      * @param positionAngleType position angle used states Y and Y₀ in {@code dYdY0}
      * @return state with initial STM (converted to Cartesian ∂C/∂Y₀) added
      */
     SpacecraftState setInitialStateTransitionMatrix(final SpacecraftState state, final RealMatrix dYdY0,
-                                                    final OrbitType orbitType,
+                                                    final OrbitParamsType orbitParamsType,
                                                     final PositionAngleType positionAngleType) {
 
         final RealMatrix nonNullDYdY0;
@@ -182,7 +182,7 @@ abstract class AbstractStateTransitionMatrixGenerator implements AdditionalDeriv
         final RealMatrix dCdY0;
         if (state.isOrbitDefined()) {
             final RealMatrix dYdC = MatrixUtils.createRealIdentityMatrix(getStateDimension());
-            final Orbit orbit = orbitType.convertType(state.getOrbit());
+            final Orbit orbit = orbitParamsType.convertType(state.getOrbit());
             final double[][] jacobian = new double[6][6];
             orbit.getJacobianWrtCartesian(positionAngleType, jacobian);
             dYdC.setSubMatrix(jacobian, 0, 0);

@@ -41,7 +41,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitHermiteInterpolator;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.OrbitBlender;
 import org.orekit.propagation.SpacecraftState;
@@ -100,7 +100,7 @@ class StateCovarianceBlenderTest {
 
         final TimeInterpolator<TimeStampedPair<Orbit, StateCovariance>> covarianceInterpolator =
                         new StateCovarianceBlender(blendingFunction, orbitInterpolator,
-                                                   sergeiFrame, OrbitType.CARTESIAN,
+                                                   sergeiFrame, OrbitParamsType.CARTESIAN,
                                                    PositionAngleType.MEAN);
 
         // Create state interpolator
@@ -387,7 +387,7 @@ class StateCovarianceBlenderTest {
         // Assert getters as well
         Assertions.assertNull(covarianceInterpolator.getOutFrame());
         Assertions.assertEquals(DEFAULT_LOFTYPE, covarianceInterpolator.getOutLOF());
-        Assertions.assertEquals(OrbitType.CARTESIAN, covarianceInterpolator.getOutOrbitType());
+        Assertions.assertEquals(OrbitParamsType.CARTESIAN, covarianceInterpolator.getOutOrbitType());
         Assertions.assertEquals(PositionAngleType.MEAN, covarianceInterpolator.getOutPositionAngleType());
         Assertions.assertEquals(orbitInterpolator, covarianceInterpolator.getOrbitInterpolator());
 

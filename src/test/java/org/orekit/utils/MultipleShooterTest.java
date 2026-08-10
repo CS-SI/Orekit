@@ -265,7 +265,7 @@ public class MultipleShooterTest {
         for (int i = 0; i < nArcs; i++) {
             final ODEIntegrator integrator = new DormandPrince853Integrator(1e-16, 1e16, 1e-14, 3e-14);
             final NumericalPropagator propagator1 = new NumericalPropagator(integrator);
-            propagator1.setOrbitType(null);
+            propagator1.setOrbitParamsType(null);
             propagator1.setMu(mu);
             propagator1.addForceModel(new ThirdBodyAttractionEpoch(moon));
             propagator1.addForceModel(new ThirdBodyAttractionEpoch(sun));

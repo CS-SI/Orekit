@@ -21,7 +21,7 @@ import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
@@ -119,8 +119,8 @@ public class SGP4OrbitalState extends AbstractAveragedOrbitalState {
 
     /** {@inheritDoc} */
     @Override
-    public OrbitType getOrbitType() {
-        return OrbitType.KEPLERIAN;
+    public OrbitParamsType getOrbitParamsType() {
+        return OrbitParamsType.KEPLERIAN;
     }
 
     /** {@inheritDoc} */

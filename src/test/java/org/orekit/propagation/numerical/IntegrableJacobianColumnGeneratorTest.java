@@ -46,7 +46,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.models.earth.atmosphere.HarrisPriester;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.ToleranceProvider;
@@ -73,7 +73,7 @@ public class IntegrableJacobianColumnGeneratorTest {
 
     @Test
     void testDragParametersDerivatives() throws ParseException, IOException {
-        doTestParametersDerivatives(DragSensitive.DRAG_COEFFICIENT, 2.4e-3, OrbitType.values());
+        doTestParametersDerivatives(DragSensitive.DRAG_COEFFICIENT, 2.4e-3, OrbitParamsType.values());
     }
 
     @Test
@@ -82,11 +82,11 @@ public class IntegrableJacobianColumnGeneratorTest {
         // coefficient currently (June 2016) do not work in non-Cartesian orbits
         // we don't even know if the test is badly written or if the library code is wrong ...
         doTestParametersDerivatives(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT, 5e-7,
-                                    OrbitType.CARTESIAN);
+                                    OrbitParamsType.CARTESIAN);
     }
 
     private void doTestParametersDerivatives(String parameterName, double tolerance,
-                                             OrbitType... orbitTypes) {
+                                             OrbitParamsType... orbitParamsTypes) {
 
         OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                       Constants.WGS84_EARTH_FLATTENING,
@@ -104,12 +104,12 @@ public class IntegrableJacobianColumnGeneratorTest {
 
         double dt = 900;
         double dP = 1.0;
-        for (OrbitType orbitType : orbitTypes) {
-            final Orbit initialOrbit = orbitType.convertType(baseOrbit);
+        for (OrbitParamsType orbitParamsType : orbitParamsTypes) {
+            final Orbit initialOrbit = orbitParamsType.convertType(baseOrbit);
             for (PositionAngleType angleType : PositionAngleType.values()) {
 
                 NumericalPropagator propagator =
-                                setUpPropagator(initialOrbit, dP, orbitType, angleType, drag, gravityField);
+                                setUpPropagator(initialOrbit, dP, orbitParamsType, angleType, drag, gravityField);
                 propagator.setMu(provider.getMu());
                 ParameterDriver selected = null;
                 for (final ForceModel forceModel : propagator.getAllForceModels()) {
@@ -133,7 +133,7 @@ public class IntegrableJacobianColumnGeneratorTest {
 
                 // compute reference Jacobian using finite differences
                 double[][] dYdPRef = new double[6][1];
-                NumericalPropagator propagator2 = setUpPropagator(initialOrbit, dP, orbitType, angleType,
+                NumericalPropagator propagator2 = setUpPropagator(initialOrbit, dP, orbitParamsType, angleType,
                                                                   drag, gravityField);
                 propagator2.setMu(provider.getMu());
                 ParameterDriversList bound = new ParameterDriversList();
@@ -151,62 +151,62 @@ public class IntegrableJacobianColumnGeneratorTest {
                 double p0 = selected2.getReferenceValue();
                 double h  = selected2.getScale();
                 selected2.setValue(p0 - 4 * h);
-                propagator2.resetInitialState(arrayToState(stateToArray(initialState, orbitType, angleType, true),
-                                                           orbitType, angleType,
+                propagator2.resetInitialState(arrayToState(stateToArray(initialState, orbitParamsType, angleType, true),
+                        orbitParamsType, angleType,
                                                            initialState.getFrame(), initialState.getDate(),
                                                            propagator2.getMu(), // the mu may have been reset above
                                                            initialState.getAttitude()));
                 SpacecraftState sM4h = propagator2.propagate(initialOrbit.getDate().shiftedBy(dt));
                 selected2.setValue(p0 - 3 * h);
-                propagator2.resetInitialState(arrayToState(stateToArray(initialState, orbitType, angleType, true),
-                                                           orbitType, angleType,
+                propagator2.resetInitialState(arrayToState(stateToArray(initialState, orbitParamsType, angleType, true),
+                        orbitParamsType, angleType,
                                                            initialState.getFrame(), initialState.getDate(),
                                                            propagator2.getMu(), // the mu may have been reset above
                                                            initialState.getAttitude()));
                 SpacecraftState sM3h = propagator2.propagate(initialOrbit.getDate().shiftedBy(dt));
                 selected2.setValue(p0 - 2 * h);
-                propagator2.resetInitialState(arrayToState(stateToArray(initialState, orbitType, angleType, true),
-                                                           orbitType, angleType,
+                propagator2.resetInitialState(arrayToState(stateToArray(initialState, orbitParamsType, angleType, true),
+                        orbitParamsType, angleType,
                                                            initialState.getFrame(), initialState.getDate(),
                                                            propagator2.getMu(), // the mu may have been reset above
                                                            initialState.getAttitude()));
                 SpacecraftState sM2h = propagator2.propagate(initialOrbit.getDate().shiftedBy(dt));
                 selected2.setValue(p0 - 1 * h);
-                propagator2.resetInitialState(arrayToState(stateToArray(initialState, orbitType, angleType, true),
-                                                           orbitType, angleType,
+                propagator2.resetInitialState(arrayToState(stateToArray(initialState, orbitParamsType, angleType, true),
+                        orbitParamsType, angleType,
                                                            initialState.getFrame(), initialState.getDate(),
                                                            propagator2.getMu(), // the mu may have been reset above
                                                            initialState.getAttitude()));
                 SpacecraftState sM1h = propagator2.propagate(initialOrbit.getDate().shiftedBy(dt));
                 selected2.setValue(p0 + 1 * h);
-                propagator2.resetInitialState(arrayToState(stateToArray(initialState, orbitType, angleType, true),
-                                                           orbitType, angleType,
+                propagator2.resetInitialState(arrayToState(stateToArray(initialState, orbitParamsType, angleType, true),
+                        orbitParamsType, angleType,
                                                            initialState.getFrame(), initialState.getDate(),
                                                            propagator2.getMu(), // the mu may have been reset above
                                                            initialState.getAttitude()));
                 SpacecraftState sP1h = propagator2.propagate(initialOrbit.getDate().shiftedBy(dt));
                 selected2.setValue(p0 + 2 * h);
-                propagator2.resetInitialState(arrayToState(stateToArray(initialState, orbitType, angleType, true),
-                                                           orbitType, angleType,
+                propagator2.resetInitialState(arrayToState(stateToArray(initialState, orbitParamsType, angleType, true),
+                        orbitParamsType, angleType,
                                                            initialState.getFrame(), initialState.getDate(),
                                                            propagator2.getMu(), // the mu may have been reset above
                                                            initialState.getAttitude()));
                 SpacecraftState sP2h = propagator2.propagate(initialOrbit.getDate().shiftedBy(dt));
                 selected2.setValue(p0 + 3 * h);
-                propagator2.resetInitialState(arrayToState(stateToArray(initialState, orbitType, angleType, true),
-                                                           orbitType, angleType,
+                propagator2.resetInitialState(arrayToState(stateToArray(initialState, orbitParamsType, angleType, true),
+                        orbitParamsType, angleType,
                                                            initialState.getFrame(), initialState.getDate(),
                                                            propagator2.getMu(), // the mu may have been reset above
                                                            initialState.getAttitude()));
                 SpacecraftState sP3h = propagator2.propagate(initialOrbit.getDate().shiftedBy(dt));
                 selected2.setValue(p0 + 4 * h);
-                propagator2.resetInitialState(arrayToState(stateToArray(initialState, orbitType, angleType, true),
-                                                           orbitType, angleType,
+                propagator2.resetInitialState(arrayToState(stateToArray(initialState, orbitParamsType, angleType, true),
+                        orbitParamsType, angleType,
                                                            initialState.getFrame(), initialState.getDate(),
                                                            propagator2.getMu(), // the mu may have been reset above
                                                            initialState.getAttitude()));
                 SpacecraftState sP4h = propagator2.propagate(initialOrbit.getDate().shiftedBy(dt));
-                fillJacobianColumn(dYdPRef, 0, orbitType, angleType, h,
+                fillJacobianColumn(dYdPRef, 0, orbitParamsType, angleType, h,
                                    sM4h, sM3h, sM2h, sM1h, sP1h, sP2h, sP3h, sP4h);
 
                 for (int i = 0; i < 6; ++i) {
@@ -271,9 +271,9 @@ public class IntegrableJacobianColumnGeneratorTest {
         ParameterDriver selected = maneuver.getParameterDriver("thrust");
         selected.setSelected(true);
 
-        final OrbitType orbitType = OrbitType.CARTESIAN;
+        final OrbitParamsType orbitParamsType = OrbitParamsType.CARTESIAN;
         final PositionAngleType angleType = PositionAngleType.TRUE;
-        propagator.setOrbitType(orbitType);
+        propagator.setOrbitParamsType(orbitParamsType);
         StateTransitionMatrixGenerator stmGenerator =
                         new StateTransitionMatrixGenerator("stm",
                                                            propagator.getAllForceModels(),
@@ -282,7 +282,7 @@ public class IntegrableJacobianColumnGeneratorTest {
         propagator.addAdditionalDerivativesProvider(columnGenerator);
         propagator.addAdditionalDerivativesProvider(stmGenerator);
 
-        initialState = stmGenerator.setInitialStateTransitionMatrix(initialState, null, orbitType, angleType);
+        initialState = stmGenerator.setInitialStateTransitionMatrix(initialState, null, orbitParamsType, angleType);
         initialState = initialState.addAdditionalData(columnGenerator.getName(), new double[6]);
         propagator.setInitialState(initialState);
 
@@ -293,20 +293,20 @@ public class IntegrableJacobianColumnGeneratorTest {
     }
 
     private void fillJacobianColumn(double[][] jacobian, int column,
-                                    OrbitType orbitType, PositionAngleType angleType, double h,
+                                    OrbitParamsType orbitParamsType, PositionAngleType angleType, double h,
                                     SpacecraftState sM4h, SpacecraftState sM3h,
                                     SpacecraftState sM2h, SpacecraftState sM1h,
                                     SpacecraftState sP1h, SpacecraftState sP2h,
                                     SpacecraftState sP3h, SpacecraftState sP4h) {
         boolean withMass = jacobian.length > 6;
-        double[] aM4h = stateToArray(sM4h, orbitType, angleType, withMass)[0];
-        double[] aM3h = stateToArray(sM3h, orbitType, angleType, withMass)[0];
-        double[] aM2h = stateToArray(sM2h, orbitType, angleType, withMass)[0];
-        double[] aM1h = stateToArray(sM1h, orbitType, angleType, withMass)[0];
-        double[] aP1h = stateToArray(sP1h, orbitType, angleType, withMass)[0];
-        double[] aP2h = stateToArray(sP2h, orbitType, angleType, withMass)[0];
-        double[] aP3h = stateToArray(sP3h, orbitType, angleType, withMass)[0];
-        double[] aP4h = stateToArray(sP4h, orbitType, angleType, withMass)[0];
+        double[] aM4h = stateToArray(sM4h, orbitParamsType, angleType, withMass)[0];
+        double[] aM3h = stateToArray(sM3h, orbitParamsType, angleType, withMass)[0];
+        double[] aM2h = stateToArray(sM2h, orbitParamsType, angleType, withMass)[0];
+        double[] aM1h = stateToArray(sM1h, orbitParamsType, angleType, withMass)[0];
+        double[] aP1h = stateToArray(sP1h, orbitParamsType, angleType, withMass)[0];
+        double[] aP2h = stateToArray(sP2h, orbitParamsType, angleType, withMass)[0];
+        double[] aP3h = stateToArray(sP3h, orbitParamsType, angleType, withMass)[0];
+        double[] aP4h = stateToArray(sP4h, orbitParamsType, angleType, withMass)[0];
         for (int i = 0; i < jacobian.length; ++i) {
             jacobian[i][column] = ( -3 * (aP4h[i] - aM4h[i]) +
                                     32 * (aP3h[i] - aM3h[i]) -
@@ -315,37 +315,37 @@ public class IntegrableJacobianColumnGeneratorTest {
         }
     }
 
-    private double[][] stateToArray(SpacecraftState state, OrbitType orbitType, PositionAngleType angleType,
-                                  boolean withMass) {
+    private double[][] stateToArray(SpacecraftState state, OrbitParamsType orbitParamsType, PositionAngleType angleType,
+                                    boolean withMass) {
         double[][] array = new double[2][withMass ? 7 : 6];
-        orbitType.mapOrbitToArray(state.getOrbit(), angleType, array[0], array[1]);
+        orbitParamsType.mapOrbitToArray(state.getOrbit(), angleType, array[0], array[1]);
         if (withMass) {
             array[0][6] = state.getMass();
         }
         return array;
     }
 
-    private SpacecraftState arrayToState(double[][] array, OrbitType orbitType, PositionAngleType angleType,
+    private SpacecraftState arrayToState(double[][] array, OrbitParamsType orbitParamsType, PositionAngleType angleType,
                                          Frame frame, AbsoluteDate date, double mu,
                                          Attitude attitude) {
-        Orbit orbit = orbitType.mapArrayToOrbit(array[0], array[1], angleType, date, mu, frame);
+        Orbit orbit = orbitParamsType.mapArrayToOrbit(array[0], array[1], angleType, date, mu, frame);
         return (array.length > 6) ?
                new SpacecraftState(orbit, attitude) :
                new SpacecraftState(orbit, attitude).withMass(array[0][6]);
     }
 
     private NumericalPropagator setUpPropagator(Orbit orbit, double dP,
-                                                OrbitType orbitType, PositionAngleType angleType,
+                                                OrbitParamsType orbitParamsType, PositionAngleType angleType,
                                                 ForceModel... models)
         {
 
         final double minStep = 0.001;
         final double maxStep = 1000;
 
-        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(dP).getTolerances(orbit, orbitType);
+        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(dP).getTolerances(orbit, orbitParamsType);
         NumericalPropagator propagator =
             new NumericalPropagator(new DormandPrince853Integrator(minStep, maxStep, tol[0], tol[1]));
-        propagator.setOrbitType(orbitType);
+        propagator.setOrbitParamsType(orbitParamsType);
         propagator.setPositionAngleType(angleType);
         for (ForceModel model : models) {
             propagator.addForceModel(model);

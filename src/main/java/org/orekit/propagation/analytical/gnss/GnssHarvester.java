@@ -17,6 +17,7 @@
 package org.orekit.propagation.analytical.gnss;
 
 import org.hipparchus.linear.RealMatrix;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.AbstractAnalyticalGradientConverter;
@@ -41,7 +42,7 @@ class GnssHarvester<O extends GNSSOrbitalElements<O>> extends AbstractAnalytical
     /** Simple constructor.
      * <p>
      * The arguments for initial matrices <em>must</em> be compatible with the
-     * {@link org.orekit.orbits.OrbitType orbit type}
+     * {@link OrbitParamsType orbit type}
      * and {@link PositionAngleType position angle} that will be used by propagator
      * </p>
      * @param propagator propagator bound to this harvester

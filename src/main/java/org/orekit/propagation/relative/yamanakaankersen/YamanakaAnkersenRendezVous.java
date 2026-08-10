@@ -27,7 +27,7 @@ import org.orekit.frames.LOFType;
 import org.orekit.frames.LocalOrbitalFrame;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.relative.TwoImpulseTransfer;
@@ -83,10 +83,10 @@ public class YamanakaAnkersenRendezVous {
         // Compute duration of the transfer from the initial and final states dates
         final double deltaT = chaserPVTFinalLof.getDate().durationFrom(chaserPVTInitialLof.getDate());
 
-        final KeplerianOrbit initialTargetOrbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(targetOrbit);
+        final KeplerianOrbit initialTargetOrbit = (KeplerianOrbit) OrbitParamsType.KEPLERIAN.convertType(targetOrbit);
         final double initialTrueAnomaly = initialTargetOrbit.getTrueAnomaly();
         final SpacecraftState propagated = propagator.propagate(chaserPVTFinal.getDate());
-        final KeplerianOrbit finalTargetOrbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(propagated.getOrbit());
+        final KeplerianOrbit finalTargetOrbit = (KeplerianOrbit) OrbitParamsType.KEPLERIAN.convertType(propagated.getOrbit());
         final double finalTrueAnomaly = finalTargetOrbit.getTrueAnomaly();
         final double e = finalTargetOrbit.getE();
 

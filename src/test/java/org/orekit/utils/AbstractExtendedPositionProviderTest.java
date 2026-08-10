@@ -32,7 +32,7 @@ import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
@@ -49,7 +49,7 @@ class AbstractExtendedPositionProviderTest {
     void testGetPosition() {
         // GIVEN
         final Orbit orbit = TestUtils.getDefaultOrbit(AbsoluteDate.ARBITRARY_EPOCH);
-        final TestPositionProvider positionProvider = new TestPositionProvider(OrbitType.EQUINOCTIAL.convertType(orbit));
+        final TestPositionProvider positionProvider = new TestPositionProvider(OrbitParamsType.EQUINOCTIAL.convertType(orbit));
         final AbsoluteDate date = orbit.getDate().shiftedBy(1e4);
         final Frame frame = FramesFactory.getGTOD(false);
         // WHEN
@@ -62,7 +62,7 @@ class AbstractExtendedPositionProviderTest {
     void testGetVelocity() {
         // GIVEN
         final Orbit orbit = TestUtils.getDefaultOrbit(AbsoluteDate.ARBITRARY_EPOCH);
-        final TestPositionProvider positionProvider = new TestPositionProvider(OrbitType.EQUINOCTIAL.convertType(orbit));
+        final TestPositionProvider positionProvider = new TestPositionProvider(OrbitParamsType.EQUINOCTIAL.convertType(orbit));
         final AbsoluteDate date = orbit.getDate().shiftedBy(1e4);
         final Frame frame = FramesFactory.getGTOD(false);
         // WHEN
@@ -91,7 +91,7 @@ class AbstractExtendedPositionProviderTest {
     void testFieldGetPosition() {
         // GIVEN
         final Orbit orbit = TestUtils.getDefaultOrbit(AbsoluteDate.ARBITRARY_EPOCH);
-        final EquinoctialOrbit equinoctialOrbit = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(orbit);
+        final EquinoctialOrbit equinoctialOrbit = (EquinoctialOrbit) OrbitParamsType.EQUINOCTIAL.convertType(orbit);
         final TestPositionProvider positionProvider = new TestPositionProvider(equinoctialOrbit);
         final AbsoluteDate date = orbit.getDate().shiftedBy(1e4);
         final FieldAbsoluteDate<Binary64> fieldDate = new FieldAbsoluteDate<>(Binary64Field.getInstance(), date);
@@ -109,7 +109,7 @@ class AbstractExtendedPositionProviderTest {
     void testFieldGetVelocity() {
         // GIVEN
         final Orbit orbit = TestUtils.getDefaultOrbit(AbsoluteDate.ARBITRARY_EPOCH);
-        final EquinoctialOrbit equinoctialOrbit = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(orbit);
+        final EquinoctialOrbit equinoctialOrbit = (EquinoctialOrbit) OrbitParamsType.EQUINOCTIAL.convertType(orbit);
         final TestPositionProvider positionProvider = new TestPositionProvider(equinoctialOrbit);
         final AbsoluteDate date = orbit.getDate().shiftedBy(1e4);
         final FieldAbsoluteDate<Binary64> fieldDate = new FieldAbsoluteDate<>(Binary64Field.getInstance(), date);

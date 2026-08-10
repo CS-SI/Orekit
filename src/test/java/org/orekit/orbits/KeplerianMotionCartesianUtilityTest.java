@@ -112,7 +112,7 @@ class KeplerianMotionCartesianUtilityTest {
             final PVCoordinates expectedPV = KeplerianMotionCartesianUtility.predictPositionVelocity(dt, position,
                     velocity, mu);
             comparePV(expectedPV, actualPV.toPVCoordinates());
-            final FieldOrbit<Gradient> fieldEquinoctialOrbit = OrbitType.EQUINOCTIAL.convertType(fieldOrbit);
+            final FieldOrbit<Gradient> fieldEquinoctialOrbit = OrbitParamsType.EQUINOCTIAL.convertType(fieldOrbit);
             final FieldOrbit<Gradient> shiftedOrbit = fieldEquinoctialOrbit.shiftedBy(fieldDt);
             compareDerivatives(shiftedOrbit.getPVCoordinates(), actualPV, 1e-6, 1e-7);
         }

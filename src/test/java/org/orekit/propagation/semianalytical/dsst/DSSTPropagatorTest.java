@@ -85,7 +85,7 @@ import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.EphemerisGenerator;
@@ -175,7 +175,7 @@ class DSSTPropagatorTest {
         final EquinoctialOrbit equinoctial = new EquinoctialOrbit(orbit);
 
         // create propagator
-        final double[][] tol = ToleranceProvider.getDefaultToleranceProvider(1.e-3).getTolerances(equinoctial, OrbitType.EQUINOCTIAL);
+        final double[][] tol = ToleranceProvider.getDefaultToleranceProvider(1.e-3).getTolerances(equinoctial, OrbitParamsType.EQUINOCTIAL);
         final AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(3600.0, 86400.0, tol[0], tol[1]);
         final DSSTPropagator propagator = new DSSTPropagator(integrator, PropagationType.OSCULATING);
 
@@ -287,7 +287,7 @@ class DSSTPropagatorTest {
         KeplerianOrbit orbit = new KeplerianOrbit(
                                                   600e3 + Constants.WGS84_EARTH_EQUATORIAL_RADIUS, 0, 0, 0, 0, 0,
                                                   PositionAngleType.TRUE, eci, initialDate, Constants.EIGEN5C_EARTH_MU);
-        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(1).getTolerances(orbit, OrbitType.EQUINOCTIAL);
+        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(1).getTolerances(orbit, OrbitParamsType.EQUINOCTIAL);
         Propagator prop = new DSSTPropagator(
                                              new DormandPrince853Integrator(0.1, 500, tol[0], tol[1]));
         prop.resetInitialState(new SpacecraftState(new CartesianOrbit(orbit)));
@@ -711,7 +711,7 @@ class DSSTPropagatorTest {
                                          new AbsoluteDate(2003, 5, 6, TimeScalesFactory.getUTC()),
                                          nshp.getMu());
         double period = orbit.getKeplerianPeriod();
-        double[][] tolerance = ToleranceProvider.getDefaultToleranceProvider(1.).getTolerances(orbit, OrbitType.EQUINOCTIAL);
+        double[][] tolerance = ToleranceProvider.getDefaultToleranceProvider(1.).getTolerances(orbit, OrbitParamsType.EQUINOCTIAL);
         AdaptiveStepsizeIntegrator integrator =
                         new DormandPrince853Integrator(period / 100, period * 100, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(10 * period);
@@ -764,7 +764,7 @@ class DSSTPropagatorTest {
                                          new AbsoluteDate(2003, 5, 6, TimeScalesFactory.getUTC()),
                                          nshp.getMu());
         double period = orbit.getKeplerianPeriod();
-        double[][] tolerance = ToleranceProvider.getDefaultToleranceProvider(1.).getTolerances(orbit, OrbitType.EQUINOCTIAL);
+        double[][] tolerance = ToleranceProvider.getDefaultToleranceProvider(1.).getTolerances(orbit, OrbitParamsType.EQUINOCTIAL);
         AdaptiveStepsizeIntegrator integrator =
                         new DormandPrince853Integrator(period / 100, period * 100, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(10 * period);
@@ -826,7 +826,7 @@ class DSSTPropagatorTest {
         // build integrator
         final double minStep = initialState.getOrbit().getKeplerianPeriod() * 0.1;
         final double maxStep = initialState.getOrbit().getKeplerianPeriod() * 10.0;
-        final double[][] tol = ToleranceProvider.getDefaultToleranceProvider(1.e-1).getTolerances(initialState.getOrbit(), OrbitType.CARTESIAN);
+        final double[][] tol = ToleranceProvider.getDefaultToleranceProvider(1.e-1).getTolerances(initialState.getOrbit(), OrbitParamsType.CARTESIAN);
         AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(minStep, maxStep, tol[0], tol[1]);
 
         // build the propagator for the propagation of the mean elements
@@ -911,7 +911,7 @@ class DSSTPropagatorTest {
                                          new AbsoluteDate(2003, 5, 6, TimeScalesFactory.getUTC()),
                                          nshp.getMu());
         double period = orbit.getKeplerianPeriod();
-        double[][] tolerance = ToleranceProvider.getDefaultToleranceProvider(1.).getTolerances(orbit, OrbitType.EQUINOCTIAL);
+        double[][] tolerance = ToleranceProvider.getDefaultToleranceProvider(1.).getTolerances(orbit, OrbitParamsType.EQUINOCTIAL);
         AdaptiveStepsizeIntegrator integrator =
                         new DormandPrince853Integrator(period / 100, period * 100, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(10 * period);
@@ -1082,7 +1082,7 @@ class DSSTPropagatorTest {
         forceModels.add(new DSSTTesseral(itrf, Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider));
 
         // Set up DSST propagator
-        final double[][] tol = ToleranceProvider.getDefaultToleranceProvider(10.).getTolerances(state.getOrbit(), OrbitType.EQUINOCTIAL);
+        final double[][] tol = ToleranceProvider.getDefaultToleranceProvider(10.).getTolerances(state.getOrbit(), OrbitParamsType.EQUINOCTIAL);
         final ODEIntegrator integrator = new DormandPrince54Integrator(60.0, 3600.0, tol[0], tol[1]);
         final DSSTPropagator propagator = new DSSTPropagator(integrator, PropagationType.OSCULATING);
         for (DSSTForceModel force : forceModels) {
@@ -1129,7 +1129,7 @@ class DSSTPropagatorTest {
         forceModels.add(new DSSTThirdBody(CelestialBodyFactory.getSun(), provider.getMu()));
 
         // Set up DSST propagator
-        final double[][] tol = ToleranceProvider.getDefaultToleranceProvider(10.).getTolerances(state.getOrbit(), OrbitType.EQUINOCTIAL);
+        final double[][] tol = ToleranceProvider.getDefaultToleranceProvider(10.).getTolerances(state.getOrbit(), OrbitParamsType.EQUINOCTIAL);
         final ODEIntegrator integrator = new DormandPrince54Integrator(60.0, 3600.0, tol[0], tol[1]);
         final DSSTPropagator propagator = new DSSTPropagator(integrator, PropagationType.OSCULATING);
         for (DSSTForceModel force : forceModels) {
@@ -1226,7 +1226,7 @@ class DSSTPropagatorTest {
         final SpacecraftState initialState = new SpacecraftState(orbit);
         final double minStep = initialState.getOrbit().getKeplerianPeriod();
         final double maxStep = 100. * minStep;
-        final double[][] tol = ToleranceProvider.getDefaultToleranceProvider(1.).getTolerances(initialState.getOrbit(), OrbitType.EQUINOCTIAL);
+        final double[][] tol = ToleranceProvider.getDefaultToleranceProvider(1.).getTolerances(initialState.getOrbit(), OrbitParamsType.EQUINOCTIAL);
         AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(minStep, maxStep, tol[0], tol[1]);
         final DSSTPropagator propagator = new DSSTPropagator(integrator, PropagationType.OSCULATING);
         propagator.setInitialState(initialState, PropagationType.MEAN);
@@ -1327,7 +1327,7 @@ class DSSTPropagatorTest {
                 a, e, 1, 0, 0, 0,
                 PositionAngleType.MEAN, eci, epoch, mu));
         final SpacecraftState initialState = new SpacecraftState(orbit);
-        final double[][] tols = ToleranceProvider.getDefaultToleranceProvider(1.).getTolerances(orbit, OrbitType.EQUINOCTIAL);
+        final double[][] tols = ToleranceProvider.getDefaultToleranceProvider(1.).getTolerances(orbit, OrbitParamsType.EQUINOCTIAL);
         ODEIntegrator integrator = new DormandPrince853Integrator(
                 100 * 60,
                 Constants.JULIAN_DAY,
@@ -1371,7 +1371,7 @@ class DSSTPropagatorTest {
         RealMatrix stmParameters = harvester.getParametersJacobian(state);
 
         // verify - mean no selected parameter
-        MatcherAssert.assertThat(harvester.getOrbitType(), is(OrbitType.EQUINOCTIAL));
+        MatcherAssert.assertThat(harvester.getOrbitParamsType(), is(OrbitParamsType.EQUINOCTIAL));
         MatcherAssert.assertThat(
                 harvester.getPositionAngleType(),
                 is(PositionAngleType.MEAN));
@@ -1394,7 +1394,7 @@ class DSSTPropagatorTest {
         stmParameters = harvester.getParametersJacobian(state);
 
         // verify - mean with parameter
-        MatcherAssert.assertThat(harvester.getOrbitType(), is(OrbitType.EQUINOCTIAL));
+        MatcherAssert.assertThat(harvester.getOrbitParamsType(), is(OrbitParamsType.EQUINOCTIAL));
         MatcherAssert.assertThat(
                 harvester.getPositionAngleType(),
                 is(PositionAngleType.MEAN));
@@ -1422,7 +1422,7 @@ class DSSTPropagatorTest {
         stmParameters = harvester.getParametersJacobian(state);
 
         // verify - mean with two parameters
-        MatcherAssert.assertThat(harvester.getOrbitType(), is(OrbitType.EQUINOCTIAL));
+        MatcherAssert.assertThat(harvester.getOrbitParamsType(), is(OrbitParamsType.EQUINOCTIAL));
         MatcherAssert.assertThat(
                 harvester.getPositionAngleType(),
                 is(PositionAngleType.MEAN));
@@ -1452,7 +1452,7 @@ class DSSTPropagatorTest {
         stmParameters = harvester.getParametersJacobian(state);
 
         // verify - osculating no selected parameter
-        MatcherAssert.assertThat(harvester.getOrbitType(), is(OrbitType.EQUINOCTIAL));
+        MatcherAssert.assertThat(harvester.getOrbitParamsType(), is(OrbitParamsType.EQUINOCTIAL));
         MatcherAssert.assertThat(harvester.getPositionAngleType(), is(PositionAngleType.MEAN));
         MatcherAssert.assertThat(stmParameters, nullValue());
         MatcherAssert.assertThat(stm,
@@ -1477,7 +1477,7 @@ class DSSTPropagatorTest {
         stmParameters = harvester.getParametersJacobian(state);
 
         // verify - osculating with parameter
-        MatcherAssert.assertThat(harvester.getOrbitType(), is(OrbitType.EQUINOCTIAL));
+        MatcherAssert.assertThat(harvester.getOrbitParamsType(), is(OrbitParamsType.EQUINOCTIAL));
         MatcherAssert.assertThat(harvester.getPositionAngleType(), is(PositionAngleType.MEAN));
         MatcherAssert.assertThat(stm,
                 OrekitMatchers.matrixCloseTo(expectedStm, osculatingAbsTol));
@@ -1507,7 +1507,7 @@ class DSSTPropagatorTest {
         stmParameters = harvester.getParametersJacobian(state);
 
         // verify - osculating with two parameters
-        MatcherAssert.assertThat(harvester.getOrbitType(), is(OrbitType.EQUINOCTIAL));
+        MatcherAssert.assertThat(harvester.getOrbitParamsType(), is(OrbitParamsType.EQUINOCTIAL));
         MatcherAssert.assertThat(
                 harvester.getPositionAngleType(),
                 is(PositionAngleType.MEAN));
@@ -1632,7 +1632,7 @@ class DSSTPropagatorTest {
         initialState.getDate();
         final double minStep = initialState.getOrbit().getKeplerianPeriod();
         final double maxStep = 100. * minStep;
-        final double[][] tol = ToleranceProvider.getDefaultToleranceProvider(1.).getTolerances(initialState.getOrbit(), OrbitType.EQUINOCTIAL);
+        final double[][] tol = ToleranceProvider.getDefaultToleranceProvider(1.).getTolerances(initialState.getOrbit(), OrbitParamsType.EQUINOCTIAL);
         AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(minStep, maxStep, tol[0], tol[1]);
         dsstProp = new DSSTPropagator(integrator);
         dsstProp.setInitialState(initialState, PropagationType.MEAN);
@@ -1774,11 +1774,11 @@ class DSSTPropagatorTest {
         double minStep = 0.001;
         double maxstep = 1000.0;
         double positionTolerance = 10.0;
-        OrbitType propagationType = OrbitType.EQUINOCTIAL;
+        OrbitParamsType propagationType = OrbitParamsType.EQUINOCTIAL;
         double[][] tolerances = ToleranceProvider.getDefaultToleranceProvider(positionTolerance).getTolerances(osculatingOrbit, propagationType);
         AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(minStep, maxstep, tolerances[0], tolerances[1]);
         NumericalPropagator propagator = new NumericalPropagator(integrator);
-        propagator.setOrbitType(propagationType);
+        propagator.setOrbitParamsType(propagationType);
 
         NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(5, 5);
         ForceModel holmesFeatherstone = new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true), provider);

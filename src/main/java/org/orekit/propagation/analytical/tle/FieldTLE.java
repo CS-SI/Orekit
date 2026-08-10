@@ -33,7 +33,7 @@ import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbitalParameters;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.analytical.tle.generation.TleGenerationUtil;
 import org.orekit.propagation.conversion.osc2mean.OsculatingToMeanConverter;
@@ -749,7 +749,7 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldOrbital
                                                                              final OsculatingToMeanConverter converter,
                                                                              final DataContext dataContext) {
         converter.setMeanTheory(new TLETheory(templateTLE.toTLE(), dataContext));
-        final FieldKeplerianOrbit<T> mean = (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(converter.convertToMean(state.getOrbit()));
+        final FieldKeplerianOrbit<T> mean = (FieldKeplerianOrbit<T>) OrbitParamsType.KEPLERIAN.convertType(converter.convertToMean(state.getOrbit()));
         return TleGenerationUtil.newTLE(mean, templateTLE);
     }
 

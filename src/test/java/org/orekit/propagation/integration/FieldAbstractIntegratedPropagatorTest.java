@@ -36,7 +36,7 @@ import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
@@ -169,7 +169,7 @@ class FieldAbstractIntegratedPropagatorTest {
 
         @Override
         protected FieldStateMapper<Complex> createMapper(FieldAbsoluteDate<Complex> referenceDate, Complex mu,
-                                                         OrbitType orbitType, PositionAngleType positionAngleType,
+                                                         OrbitParamsType orbitParamsType, PositionAngleType positionAngleType,
                                                          AttitudeProvider attitudeProvider, Frame frame) {
             return null;
         }

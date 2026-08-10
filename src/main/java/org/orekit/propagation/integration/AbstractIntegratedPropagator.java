@@ -51,7 +51,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.AbstractPropagator;
 import org.orekit.propagation.BoundedPropagator;
@@ -201,18 +201,18 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         super.setAttitudeProvider(attitudeProvider);
         frozenAttitudeProvider = AttitudeProviderModifier.getFrozenAttitudeProvider(attitudeProvider);
         stateMapper = createMapper(stateMapper.getReferenceDate(), stateMapper.getMu(),
-                                   stateMapper.getOrbitType(), stateMapper.getPositionAngleType(),
+                                   stateMapper.getOrbitParamsType(), stateMapper.getPositionAngleType(),
                                    attitudeProvider, stateMapper.getFrame());
     }
 
     /** Set propagation orbit type.
-     * @param orbitType orbit type to use for propagation, null for
+     * @param orbitParamsType orbit type to use for propagation, null for
      * propagating using {@link org.orekit.utils.AbsolutePVCoordinates AbsolutePVCoordinates}
      * rather than {@link org.orekit.orbits Orbit}
      */
-    protected void setOrbitType(final OrbitType orbitType) {
+    protected void setOrbitParamsType(final OrbitParamsType orbitParamsType) {
         stateMapper = createMapper(stateMapper.getReferenceDate(), stateMapper.getMu(),
-                                   orbitType, stateMapper.getPositionAngleType(),
+                orbitParamsType, stateMapper.getPositionAngleType(),
                                    stateMapper.getAttitudeProvider(), stateMapper.getFrame());
     }
 
@@ -221,8 +221,8 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
      * propagating using {@link org.orekit.utils.AbsolutePVCoordinates AbsolutePVCoordinates}
      * rather than {@link org.orekit.orbits Orbit}
      */
-    protected OrbitType getOrbitType() {
-        return stateMapper.getOrbitType();
+    protected OrbitParamsType getOrbitParamsType() {
+        return stateMapper.getOrbitParamsType();
     }
 
     /** Get the propagation type.
@@ -236,15 +236,15 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     /** Set position angle type.
      * <p>
      * The position parameter type is meaningful only if {@link
-     * #getOrbitType() propagation orbit type}
+     * #getOrbitParamsType() propagation orbit type}
      * support it. As an example, it is not meaningful for propagation
-     * in {@link OrbitType#CARTESIAN Cartesian} parameters.
+     * in {@link OrbitParamsType#CARTESIAN Cartesian} parameters.
      * </p>
      * @param positionAngleType angle type to use for propagation
      */
     protected void setPositionAngleType(final PositionAngleType positionAngleType) {
         stateMapper = createMapper(stateMapper.getReferenceDate(), stateMapper.getMu(),
-                                   stateMapper.getOrbitType(), positionAngleType,
+                                   stateMapper.getOrbitParamsType(), positionAngleType,
                                    stateMapper.getAttitudeProvider(), stateMapper.getFrame());
     }
 
@@ -260,7 +260,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
      */
     public void setMu(final double mu) {
         stateMapper = createMapper(stateMapper.getReferenceDate(), mu,
-                                   stateMapper.getOrbitType(), stateMapper.getPositionAngleType(),
+                                   stateMapper.getOrbitParamsType(), stateMapper.getPositionAngleType(),
                                    stateMapper.getAttitudeProvider(), stateMapper.getFrame());
     }
 
@@ -401,20 +401,20 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     /** Simple constructor.
      * <p>
      * The position parameter type is meaningful only if {@link
-     * #getOrbitType() propagation orbit type}
+     * #getOrbitParamsType() propagation orbit type}
      * support it. As an example, it is not meaningful for propagation
-     * in {@link OrbitType#CARTESIAN Cartesian} parameters.
+     * in {@link OrbitParamsType#CARTESIAN Cartesian} parameters.
      * </p>
      * @param referenceDate reference date
      * @param mu central attraction coefficient (m³/s²)
-     * @param orbitType orbit type to use for mapping
+     * @param orbitParamsType orbit type to use for mapping
      * @param positionAngleType angle type to use for propagation
      * @param attitudeProvider attitude provider
      * @param frame inertial frame
      * @return new mapper
      */
     protected abstract StateMapper createMapper(AbsoluteDate referenceDate, double mu,
-                                                OrbitType orbitType, PositionAngleType positionAngleType,
+                                                OrbitParamsType orbitParamsType, PositionAngleType positionAngleType,
                                                 AttitudeProvider attitudeProvider, Frame frame);
 
     /** Get the differential equations to integrate (for main state only).
@@ -526,7 +526,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
             // space dynamics view
             stateMapper = createMapper(getInitialState().getDate(), stateMapper.getMu(),
-                                       stateMapper.getOrbitType(), stateMapper.getPositionAngleType(),
+                                       stateMapper.getOrbitParamsType(), stateMapper.getPositionAngleType(),
                                        stateMapper.getAttitudeProvider(), getInitialState().getFrame());
             attitudeProviderForDerivatives = initializeAttitudeProviderForDerivatives();
 

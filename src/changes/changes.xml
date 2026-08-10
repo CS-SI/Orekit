@@ -2264,7 +2264,7 @@
         Increased performance of orbit determination when using solar radiation pressure.
       </action>
       <action dev="bryan" type="add" issue="950">
-        Added getOrbitType() and getPositionAngle in MatricesHarvester.
+        Added getOrbitParamsType() and getPositionAngle in MatricesHarvester.
       </action>
       <action dev="bryan" type="add" issue="1118">
         Verified that MSAFE data can be loaded from a DataSource.

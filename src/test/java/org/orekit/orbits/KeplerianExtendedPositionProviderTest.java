@@ -44,7 +44,7 @@ class KeplerianExtendedPositionProviderTest {
     void testGetPosition() {
         // GIVEN
         final Orbit orbit = TestUtils.getDefaultOrbit(AbsoluteDate.ARBITRARY_EPOCH);
-        final KeplerianExtendedPositionProvider positionProvider = new KeplerianExtendedPositionProvider(OrbitType.EQUINOCTIAL.convertType(orbit));
+        final KeplerianExtendedPositionProvider positionProvider = new KeplerianExtendedPositionProvider(OrbitParamsType.EQUINOCTIAL.convertType(orbit));
         final AbsoluteDate date = orbit.getDate().shiftedBy(1e4);
         final Frame frame = FramesFactory.getGTOD(false);
         // WHEN
@@ -57,7 +57,7 @@ class KeplerianExtendedPositionProviderTest {
     void testGetVelocity() {
         // GIVEN
         final Orbit orbit = TestUtils.getDefaultOrbit(AbsoluteDate.ARBITRARY_EPOCH);
-        final KeplerianExtendedPositionProvider positionProvider = new KeplerianExtendedPositionProvider(OrbitType.EQUINOCTIAL.convertType(orbit));
+        final KeplerianExtendedPositionProvider positionProvider = new KeplerianExtendedPositionProvider(OrbitParamsType.EQUINOCTIAL.convertType(orbit));
         final AbsoluteDate date = orbit.getDate().shiftedBy(1e4);
         final Frame frame = FramesFactory.getGTOD(false);
         // WHEN
@@ -86,7 +86,7 @@ class KeplerianExtendedPositionProviderTest {
     void testFieldGetPosition() {
         // GIVEN
         final Orbit orbit = TestUtils.getDefaultOrbit(AbsoluteDate.ARBITRARY_EPOCH);
-        final EquinoctialOrbit equinoctialOrbit = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(orbit);
+        final EquinoctialOrbit equinoctialOrbit = (EquinoctialOrbit) OrbitParamsType.EQUINOCTIAL.convertType(orbit);
         final KeplerianExtendedPositionProvider positionProvider = new KeplerianExtendedPositionProvider(equinoctialOrbit);
         final AbsoluteDate date = orbit.getDate().shiftedBy(1e4);
         final FieldAbsoluteDate<Binary64> fieldDate = new FieldAbsoluteDate<>(Binary64Field.getInstance(), date);
@@ -104,7 +104,7 @@ class KeplerianExtendedPositionProviderTest {
     void testFieldGetVelocity() {
         // GIVEN
         final Orbit orbit = TestUtils.getDefaultOrbit(AbsoluteDate.ARBITRARY_EPOCH);
-        final EquinoctialOrbit equinoctialOrbit = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(orbit);
+        final EquinoctialOrbit equinoctialOrbit = (EquinoctialOrbit) OrbitParamsType.EQUINOCTIAL.convertType(orbit);
         final KeplerianExtendedPositionProvider positionProvider = new KeplerianExtendedPositionProvider(equinoctialOrbit);
         final AbsoluteDate date = orbit.getDate().shiftedBy(1e4);
         final FieldAbsoluteDate<Binary64> fieldDate = new FieldAbsoluteDate<>(Binary64Field.getInstance(), date);

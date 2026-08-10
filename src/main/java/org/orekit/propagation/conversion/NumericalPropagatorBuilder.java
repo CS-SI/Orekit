@@ -170,10 +170,10 @@ public class NumericalPropagatorBuilder
 
         final ODEIntegrator integrator = getIntegratorBuilder().
                                          buildIntegrator(orbit,
-                                                         factory.getOrbitType(),
+                                                         factory.getOrbitParamsType(),
                                                          factory.getPositionAngleType());
         final NumericalPropagator propagator = new NumericalPropagator(integrator, getAttitudeProvider());
-        propagator.setOrbitType(factory.getOrbitType());
+        propagator.setOrbitParamsType(factory.getOrbitParamsType());
         propagator.setPositionAngleType(factory.getPositionAngleType());
 
         // Configure force models

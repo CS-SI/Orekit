@@ -1410,10 +1410,10 @@ class FieldCircularOrbitTest {
                                                                      position);
         Assertions.assertEquals(0.0101, FieldVector3D.distance(keplerianAcceleration, acceleration).getReal(), 1.0e-4);
 
-        for (OrbitType type : OrbitType.values()) {
+        for (OrbitParamsType type : OrbitParamsType.values()) {
             FieldOrbit<T> converted = type.convertType(orbit);
             Assertions.assertTrue(converted.hasNonKeplerianAcceleration());
-            FieldCircularOrbit<T> rebuilt = (FieldCircularOrbit<T>) OrbitType.CIRCULAR.convertType(converted);
+            FieldCircularOrbit<T> rebuilt = (FieldCircularOrbit<T>) OrbitParamsType.CIRCULAR.convertType(converted);
             Assertions.assertTrue(rebuilt.hasNonKeplerianAcceleration());
             Assertions.assertEquals(orbit.getADot().getReal(),                             rebuilt.getADot().getReal(),                             3.0e-13);
             Assertions.assertEquals(orbit.getCircularExDot().getReal(),                    rebuilt.getCircularExDot().getReal(),                    1.0e-15);
@@ -1491,7 +1491,7 @@ class FieldCircularOrbitTest {
                                                  FramesFactory.getEME2000(), FieldAbsoluteDate.getJ2000Epoch(field),
                                                  zero.newInstance(mu));
 
-        FieldCircularOrbit<T> normalized1 = (FieldCircularOrbit<T>) OrbitType.CIRCULAR.normalize(withoutDerivatives, ref);
+        FieldCircularOrbit<T> normalized1 = (FieldCircularOrbit<T>) OrbitParamsType.CIRCULAR.normalize(withoutDerivatives, ref);
         Assertions.assertFalse(normalized1.hasNonKeplerianAcceleration());
         Assertions.assertEquals(0.0, normalized1.getA().subtract(withoutDerivatives.getA()).getReal(),          1.0e-6);
         Assertions.assertEquals(0.0, normalized1.getCircularEx().subtract(withoutDerivatives.getCircularEx()).getReal(), 1.0e-10);
@@ -1505,13 +1505,13 @@ class FieldCircularOrbitTest {
         for (int i = 0; i < pDot.length; ++i) {
             pDot[i] = zero.newInstance(i);
         }
-        OrbitType.CIRCULAR.mapOrbitToArray(withoutDerivatives, PositionAngleType.TRUE, p, null);
-        FieldCircularOrbit<T> withDerivatives = (FieldCircularOrbit<T>) OrbitType.CIRCULAR.mapArrayToOrbit(p, pDot,
+        OrbitParamsType.CIRCULAR.mapOrbitToArray(withoutDerivatives, PositionAngleType.TRUE, p, null);
+        FieldCircularOrbit<T> withDerivatives = (FieldCircularOrbit<T>) OrbitParamsType.CIRCULAR.mapArrayToOrbit(p, pDot,
                                                                                                            PositionAngleType.TRUE,
                                                                                                            withoutDerivatives.getDate(),
                                                                                                            withoutDerivatives.getMu(),
                                                                                                            withoutDerivatives.getFrame());
-        FieldCircularOrbit<T> normalized2 = (FieldCircularOrbit<T>) OrbitType.CIRCULAR.normalize(withDerivatives, ref);
+        FieldCircularOrbit<T> normalized2 = (FieldCircularOrbit<T>) OrbitParamsType.CIRCULAR.normalize(withDerivatives, ref);
         Assertions.assertTrue(normalized2.hasNonKeplerianAcceleration());
         Assertions.assertEquals(0.0, normalized2.getA().subtract(withDerivatives.getA()).getReal(),          1.0e-6);
         Assertions.assertEquals(0.0, normalized2.getCircularEx().subtract(withDerivatives.getCircularEx()).getReal(), 1.0e-10);

@@ -22,7 +22,7 @@ import org.orekit.forces.gravity.potential.TideSystem;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.propagation.analytical.FieldEcksteinHechlerPropagator;
@@ -108,7 +108,7 @@ public class EcksteinHechlerTheory implements MeanTheory {
      */
     @Override
     public Orbit postprocessing(final Orbit osculating, final Orbit mean) {
-        return OrbitType.CIRCULAR.convertType(mean);
+        return OrbitParamsType.CIRCULAR.convertType(mean);
     }
 
     /** Post-treatment of the converted mean orbit.
@@ -121,6 +121,6 @@ public class EcksteinHechlerTheory implements MeanTheory {
     @Override
     public <T extends CalculusFieldElement<T>> FieldOrbit<T> postprocessing(final FieldOrbit<T> osculating,
                                                                             final FieldOrbit<T> mean) {
-        return OrbitType.CIRCULAR.convertType(mean);
+        return OrbitParamsType.CIRCULAR.convertType(mean);
     }
 }

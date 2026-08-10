@@ -440,8 +440,8 @@ public class CircularOrbit extends Orbit implements PositionAngleBased<CircularO
 
     /** {@inheritDoc} */
     @Override
-    public OrbitType getType() {
-        return OrbitType.CIRCULAR;
+    public OrbitParamsType getType() {
+        return OrbitParamsType.CIRCULAR;
     }
 
     /** {@inheritDoc} */

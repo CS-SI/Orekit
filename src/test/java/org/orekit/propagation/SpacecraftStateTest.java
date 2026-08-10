@@ -623,7 +623,7 @@ class SpacecraftStateTest {
         AbsolutePVCoordinates absPV_f = new AbsolutePVCoordinates(FramesFactory.getEME2000(), date, pva_f);
 
         NumericalPropagator prop = new NumericalPropagator(new DormandPrince853Integrator(0.1, 500, 0.001, 0.001));
-        prop.setOrbitType(null);
+        prop.setOrbitParamsType(null);
 
         final SpacecraftState initialState = new SpacecraftState(absPV_f);
 
@@ -704,7 +704,7 @@ class SpacecraftStateTest {
         AbsolutePVCoordinates absPV_f = new AbsolutePVCoordinates(FramesFactory.getEME2000(), date, pva_f);
 
         NumericalPropagator prop = new NumericalPropagator(new DormandPrince853Integrator(0.1, 500, 0.001, 0.001));
-        prop.setOrbitType(null);
+        prop.setOrbitParamsType(null);
 
         final SpacecraftState initialState = new SpacecraftState(absPV_f);
 

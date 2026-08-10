@@ -19,7 +19,7 @@ package org.orekit.propagation.integration;
 import org.hipparchus.CalculusFieldElement;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.frames.Frame;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
@@ -35,7 +35,7 @@ public abstract class FieldStateMapper<T extends CalculusFieldElement<T>> {
     private final FieldAbsoluteDate<T> referenceDate;
 
     /** Propagation orbit type. */
-    private final OrbitType orbitType;
+    private final OrbitParamsType orbitParamsType;
 
     /** Position angle type. */
     private final PositionAngleType angleType;
@@ -52,23 +52,23 @@ public abstract class FieldStateMapper<T extends CalculusFieldElement<T>> {
     /** Simple constructor.
      * <p>
      * The position parameter type is meaningful only if {@link
-     * #getOrbitType() propagation orbit type}
+     * #getOrbitParamsType() propagation orbit type}
      * support it. As an example, it is not meaningful for propagation
-     * in {@link  OrbitType#CARTESIAN Cartesian} parameters.
+     * in {@link  OrbitParamsType#CARTESIAN Cartesian} parameters.
      * </p>
      * @param referenceDate reference date
      * @param mu central attraction coefficient (m³/s²)
-     * @param orbitType orbit type to use for mapping
+     * @param orbitParamsType orbit type to use for mapping
      * @param positionAngleType angle type to use for propagation
      * @param attitudeProvider attitude provider
      * @param frame inertial frame
      */
     protected FieldStateMapper(final FieldAbsoluteDate<T> referenceDate, final T mu,
-                          final OrbitType orbitType, final PositionAngleType positionAngleType,
-                          final AttitudeProvider attitudeProvider, final Frame frame) {
+                               final OrbitParamsType orbitParamsType, final PositionAngleType positionAngleType,
+                               final AttitudeProvider attitudeProvider, final Frame frame) {
         this.referenceDate    = referenceDate;
         this.mu               = mu;
-        this.orbitType        = orbitType;
+        this.orbitParamsType = orbitParamsType;
         this.angleType        = positionAngleType;
         this.attitudeProvider = attitudeProvider;
         this.frame            = frame;
@@ -84,8 +84,8 @@ public abstract class FieldStateMapper<T extends CalculusFieldElement<T>> {
     /** Get propagation parameter type.
      * @return orbit type used for propagation
      */
-    public  OrbitType getOrbitType() {
-        return orbitType;
+    public OrbitParamsType getOrbitParamsType() {
+        return orbitParamsType;
     }
 
     /** Set position angle type.

@@ -53,7 +53,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldAbstractPropagator;
 import org.orekit.propagation.FieldAdditionalDataProvider;
@@ -209,24 +209,24 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
         super.setAttitudeProvider(attitudeProvider);
         frozenAttitudeProvider = AttitudeProviderModifier.getFrozenAttitudeProvider(attitudeProvider);
         stateMapper = createMapper(stateMapper.getReferenceDate(), stateMapper.getMu(),
-                                   stateMapper.getOrbitType(), stateMapper.getPositionAngleType(),
+                                   stateMapper.getOrbitParamsType(), stateMapper.getPositionAngleType(),
                                    attitudeProvider, stateMapper.getFrame());
     }
 
     /** Set propagation orbit type.
-     * @param orbitType orbit type to use for propagation
+     * @param orbitParamsType orbit type to use for propagation
      */
-    protected void setOrbitType(final OrbitType orbitType) {
+    protected void setOrbitParamsType(final OrbitParamsType orbitParamsType) {
         stateMapper = createMapper(stateMapper.getReferenceDate(), stateMapper.getMu(),
-                                   orbitType, stateMapper.getPositionAngleType(),
+                orbitParamsType, stateMapper.getPositionAngleType(),
                                    stateMapper.getAttitudeProvider(), stateMapper.getFrame());
     }
 
     /** Get propagation parameter type.
      * @return orbit type used for propagation
      */
-    protected OrbitType getOrbitType() {
-        return stateMapper.getOrbitType();
+    protected OrbitParamsType getOrbitParamsType() {
+        return stateMapper.getOrbitParamsType();
     }
 
     /** Check if only the mean elements should be used in a semi-analytical propagation.
@@ -248,15 +248,15 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
     /** Set position angle type.
      * <p>
      * The position parameter type is meaningful only if {@link
-     * #getOrbitType() propagation orbit type}
+     * #getOrbitParamsType() propagation orbit type}
      * support it. As an example, it is not meaningful for propagation
-     * in {@link OrbitType#CARTESIAN Cartesian} parameters.
+     * in {@link OrbitParamsType#CARTESIAN Cartesian} parameters.
      * </p>
      * @param positionAngleType angle type to use for propagation
      */
     protected void setPositionAngleType(final PositionAngleType positionAngleType) {
         stateMapper = createMapper(stateMapper.getReferenceDate(), stateMapper.getMu(),
-                                   stateMapper.getOrbitType(), positionAngleType,
+                                   stateMapper.getOrbitParamsType(), positionAngleType,
                                    stateMapper.getAttitudeProvider(), stateMapper.getFrame());
     }
 
@@ -272,7 +272,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
      */
     public void setMu(final T mu) {
         stateMapper = createMapper(stateMapper.getReferenceDate(), mu,
-                                   stateMapper.getOrbitType(), stateMapper.getPositionAngleType(),
+                                   stateMapper.getOrbitParamsType(), stateMapper.getPositionAngleType(),
                                    stateMapper.getAttitudeProvider(), stateMapper.getFrame());
     }
 
@@ -403,20 +403,20 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
     /** Simple constructor.
      * <p>
      * The position parameter type is meaningful only if {@link
-     * #getOrbitType() propagation orbit type}
+     * #getOrbitParamsType() propagation orbit type}
      * support it. As an example, it is not meaningful for propagation
-     * in {@link OrbitType#CARTESIAN Cartesian} parameters.
+     * in {@link OrbitParamsType#CARTESIAN Cartesian} parameters.
      * </p>
      * @param referenceDate reference date
      * @param mu central attraction coefficient (m³/s²)
-     * @param orbitType orbit type to use for mapping
+     * @param orbitParamsType orbit type to use for mapping
      * @param positionAngleType angle type to use for propagation
      * @param attitudeProvider attitude provider
      * @param frame inertial frame
      * @return new mapper
      */
     protected abstract FieldStateMapper<T> createMapper(FieldAbsoluteDate<T> referenceDate, T mu,
-                                                        OrbitType orbitType, PositionAngleType positionAngleType,
+                                                        OrbitParamsType orbitParamsType, PositionAngleType positionAngleType,
                                                         AttitudeProvider attitudeProvider, Frame frame);
 
     /** Get the differential equations to integrate (for main state only).
@@ -510,7 +510,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
             }
             // space dynamics view
             stateMapper = createMapper(getInitialState().getDate(), stateMapper.getMu(),
-                                       stateMapper.getOrbitType(), stateMapper.getPositionAngleType(),
+                                       stateMapper.getOrbitParamsType(), stateMapper.getPositionAngleType(),
                                        stateMapper.getAttitudeProvider(), getInitialState().getFrame());
 
             // set propagation orbit type

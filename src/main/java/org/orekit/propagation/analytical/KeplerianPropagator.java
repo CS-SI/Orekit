@@ -21,7 +21,7 @@ import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.AbstractMatricesHarvester;
 import org.orekit.propagation.SpacecraftState;
@@ -128,7 +128,7 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator {
     private SpacecraftState fixState(final Orbit orbit, final Attitude attitude, final double mass, final double mu,
                                      final DataDictionary additionalStates,
                                      final DoubleArrayDictionary additionalStatesDerivatives) {
-        final OrbitType type = orbit.getType();
+        final OrbitParamsType type = orbit.getType();
         final double[] stateVector = new double[6];
         final PositionAngleType positionAngleType = PositionAngleType.MEAN;
         type.mapOrbitToArray(orbit, positionAngleType, stateVector, null);

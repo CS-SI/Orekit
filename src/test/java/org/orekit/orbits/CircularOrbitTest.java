@@ -86,7 +86,7 @@ class CircularOrbitTest {
                 Vector3D.MINUS_K.scalarMultiply(0.1), new Vector3D(0, 1));
         final CartesianOrbit cartesianOrbit = new CartesianOrbit(pvCoordinates, FramesFactory.getEME2000(),
                 AbsoluteDate.ARBITRARY_EPOCH, 1.);
-        final CircularOrbit circularOrbit = (CircularOrbit) OrbitType.CIRCULAR.convertType(cartesianOrbit);
+        final CircularOrbit circularOrbit = (CircularOrbit) OrbitParamsType.CIRCULAR.convertType(cartesianOrbit);
         // WHEN
         final Vector3D nonKeplerianAcceleration = circularOrbit.nonKeplerianAcceleration();
         // THEN
@@ -997,10 +997,10 @@ class CircularOrbitTest {
         Vector3D keplerianAcceleration = new Vector3D(-orbit.getMu() / (r2 * r), position);
         Assertions.assertEquals(0.0101, Vector3D.distance(keplerianAcceleration, acceleration), 1.0e-4);
 
-        for (OrbitType type : OrbitType.values()) {
+        for (OrbitParamsType type : OrbitParamsType.values()) {
             Orbit converted = type.convertType(orbit);
             Assertions.assertTrue(converted.hasNonKeplerianAcceleration());
-            CircularOrbit rebuilt = (CircularOrbit) OrbitType.CIRCULAR.convertType(converted);
+            CircularOrbit rebuilt = (CircularOrbit) OrbitParamsType.CIRCULAR.convertType(converted);
             Assertions.assertTrue(rebuilt.hasNonKeplerianAcceleration());
             Assertions.assertEquals(orbit.getADot(),                             rebuilt.getADot(),                             3.0e-13);
             Assertions.assertEquals(orbit.getCircularExDot(),                    rebuilt.getCircularExDot(),                    1.0e-15);
@@ -1092,7 +1092,7 @@ class CircularOrbitTest {
                         -6.28, 6.28, PositionAngleType.MEAN,
                         FramesFactory.getEME2000(), date, mu);
 
-        CircularOrbit normalized1 = (CircularOrbit) OrbitType.CIRCULAR.normalize(withoutDerivatives, ref);
+        CircularOrbit normalized1 = (CircularOrbit) OrbitParamsType.CIRCULAR.normalize(withoutDerivatives, ref);
         Assertions.assertFalse(normalized1.hasNonKeplerianAcceleration());
         Assertions.assertEquals(0.0, normalized1.getA()          - withoutDerivatives.getA(),          1.0e-6);
         Assertions.assertEquals(0.0, normalized1.getCircularEx() - withoutDerivatives.getCircularEx(), 1.0e-10);
@@ -1108,14 +1108,14 @@ class CircularOrbitTest {
         Assertions.assertEquals(withoutDerivatives.getAlphaVDot(), normalized1.getAlphaVDot());
 
         double[] p = new double[6];
-        OrbitType.CIRCULAR.mapOrbitToArray(withoutDerivatives, PositionAngleType.TRUE, p, null);
-        CircularOrbit withDerivatives = (CircularOrbit) OrbitType.CIRCULAR.mapArrayToOrbit(p,
+        OrbitParamsType.CIRCULAR.mapOrbitToArray(withoutDerivatives, PositionAngleType.TRUE, p, null);
+        CircularOrbit withDerivatives = (CircularOrbit) OrbitParamsType.CIRCULAR.mapArrayToOrbit(p,
                 new double[] { 1.0, 2.0, 3.0, 4.0, 5.0, 6.0 },
                 PositionAngleType.TRUE,
                 withoutDerivatives.getDate(),
                 withoutDerivatives.getMu(),
                 withoutDerivatives.getFrame());
-        CircularOrbit normalized2 = (CircularOrbit) OrbitType.CIRCULAR.normalize(withDerivatives, ref);
+        CircularOrbit normalized2 = (CircularOrbit) OrbitParamsType.CIRCULAR.normalize(withDerivatives, ref);
         Assertions.assertTrue(normalized2.hasNonKeplerianAcceleration());
         Assertions.assertEquals(0.0, normalized2.getA()          - withDerivatives.getA(),          1.0e-6);
         Assertions.assertEquals(0.0, normalized2.getCircularEx() - withDerivatives.getCircularEx(), 1.0e-10);

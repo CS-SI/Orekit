@@ -33,7 +33,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.CombinedDerivatives;
 import org.orekit.propagation.numerical.NumericalPropagator;
@@ -54,7 +54,7 @@ class CartesianAdjointDerivativesProviderTest {
         final SpacecraftState mockedState = Mockito.mock(SpacecraftState.class);
         Mockito.when(mockedState.isOrbitDefined()).thenReturn(true);
         final Orbit mockedOrbit = Mockito.mock(Orbit.class);
-        Mockito.when(mockedOrbit.getType()).thenReturn(OrbitType.EQUINOCTIAL);
+        Mockito.when(mockedOrbit.getType()).thenReturn(OrbitParamsType.EQUINOCTIAL);
         Mockito.when(mockedState.getOrbit()).thenReturn(mockedOrbit);
         // WHEN
         final Exception exception = Assertions.assertThrows(OrekitException.class,
@@ -73,7 +73,7 @@ class CartesianAdjointDerivativesProviderTest {
         final NumericalPropagator propagator = new NumericalPropagator(new ClassicalRungeKuttaIntegrator(100.));
         final Orbit orbit = new CartesianOrbit(new PVCoordinates(new Vector3D(7e6, 1e3, 0), new Vector3D(10., 7e3, -200)),
                 FramesFactory.getGCRF(), AbsoluteDate.ARBITRARY_EPOCH, mu);
-        propagator.setOrbitType(OrbitType.CARTESIAN);
+        propagator.setOrbitParamsType(OrbitParamsType.CARTESIAN);
         propagator.setInitialState(new SpacecraftState(orbit).addAdditionalData(name, new double[6]));
         propagator.addAdditionalDerivativesProvider(derivativesProvider);
         // WHEN
@@ -108,7 +108,7 @@ class CartesianAdjointDerivativesProviderTest {
         final SpacecraftState state = getState(cost.getAdjointName(), withMassAdjoint);
         final CartesianAdjointEquationTerm mockedTerm = Mockito.mock(CartesianAdjointEquationTerm.class);
         final double[] cartesian = new double[6];
-        OrbitType.CARTESIAN.mapOrbitToArray(state.getOrbit(), null, cartesian, null);
+        OrbitParamsType.CARTESIAN.mapOrbitToArray(state.getOrbit(), null, cartesian, null);
         Mockito.when(mockedTerm.getHamiltonianContribution(state.getDate(), cartesian,
                         state.getAdditionalState(cost.getAdjointName()), state.getFrame())).thenReturn(0.);
         final CartesianAdjointDerivativesProvider derivativesProvider = new CartesianAdjointDerivativesProvider(cost,

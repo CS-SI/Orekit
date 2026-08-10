@@ -26,7 +26,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
 import org.orekit.orbits.CartesianOrbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.PositionAngleBased;
 import org.orekit.orbits.PositionAngleType;
@@ -216,7 +216,7 @@ public abstract class AbstractGradientConverter {
         final GradientField field = GradientField.getField(freeStateParameters);
 
         if (state.isOrbitDefined()) {
-            final CartesianOrbit cartesianOrbit = (CartesianOrbit) OrbitType.CARTESIAN.convertType(state.getOrbit());
+            final CartesianOrbit cartesianOrbit = (CartesianOrbit) OrbitParamsType.CARTESIAN.convertType(state.getOrbit());
             final SpacecraftState cartesianState = new SpacecraftState(cartesianOrbit, state.getAttitude()).withMass(state.getMass());
             return DerivativeStateUtils.buildSpacecraftStateGradient(field, cartesianState, provider);
         } else {

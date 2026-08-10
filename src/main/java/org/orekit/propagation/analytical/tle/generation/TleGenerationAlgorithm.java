@@ -28,7 +28,7 @@ import org.orekit.orbits.AbstractOrbitalParameterFactory;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
@@ -170,11 +170,11 @@ public abstract class TleGenerationAlgorithm extends AbstractOrbitalParameterFac
         // fix both frame and type
         final Orbit mean               = converter.convertToMean(orbit);
         final Orbit partiallyConverted = orbit.getFrame() == getFrame() ? mean : mean.inFrame(getFrame());
-        final Orbit fullyConverted     = OrbitType.KEPLERIAN.convertType(partiallyConverted);
+        final Orbit fullyConverted     = OrbitParamsType.KEPLERIAN.convertType(partiallyConverted);
 
         // retrieve orbital parameters
         final double[] stateVector = new double[6];
-        OrbitType.KEPLERIAN.mapOrbitToArray(fullyConverted, PositionAngleType.MEAN, stateVector, null);
+        OrbitParamsType.KEPLERIAN.mapOrbitToArray(fullyConverted, PositionAngleType.MEAN, stateVector, null);
 
         // TLE uses mean motion as first parameter, not semi major axis as Keplerian orbit
         stateVector[0] = fullyConverted.getKeplerianMeanMotion();
@@ -306,7 +306,7 @@ public abstract class TleGenerationAlgorithm extends AbstractOrbitalParameterFac
      */
     public TLE generate(final SpacecraftState state, final TLE newTemplateTLE) {
         final KeplerianOrbit mean =
-            (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(converter.convertToMean(state.getOrbit()));
+            (KeplerianOrbit) OrbitParamsType.KEPLERIAN.convertType(converter.convertToMean(state.getOrbit()));
         return TleGenerationUtil.newTLE(mean, newTemplateTLE);
     }
 
@@ -326,7 +326,7 @@ public abstract class TleGenerationAlgorithm extends AbstractOrbitalParameterFac
     public <T extends CalculusFieldElement<T>> FieldTLE<T> generate(final FieldSpacecraftState<T> state,
                                                                     final FieldTLE<T> newTemplateTLE) {
         final FieldKeplerianOrbit<T> mean =
-            (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(converter.convertToMean(state.getOrbit()));
+            (FieldKeplerianOrbit<T>) OrbitParamsType.KEPLERIAN.convertType(converter.convertToMean(state.getOrbit()));
         return TleGenerationUtil.newTLE(mean, newTemplateTLE);
     }
 

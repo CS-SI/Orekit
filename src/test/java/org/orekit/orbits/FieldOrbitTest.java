@@ -263,7 +263,7 @@ class FieldOrbitTest {
         }
 
         @Override
-        public OrbitType getType() {
+        public OrbitParamsType getType() {
             return null;
         }
 

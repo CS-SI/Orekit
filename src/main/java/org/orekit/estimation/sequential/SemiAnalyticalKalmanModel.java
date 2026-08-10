@@ -32,7 +32,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.OrbitalParameterFactory;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
@@ -390,7 +390,7 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
 
         // Calculate the predicted osculating elements
         final double[] osculating = computeOsculatingElements(predictedFilterCorrection);
-        final Orbit osculatingOrbit = OrbitType.EQUINOCTIAL.mapArrayToOrbit(osculating, null,
+        final Orbit osculatingOrbit = OrbitParamsType.EQUINOCTIAL.mapArrayToOrbit(osculating, null,
                                                                             builder.
                                                                                 getOrbitalParameterFactory().
                                                                                 getPositionAngleType(),
@@ -462,7 +462,7 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
         previousNominalMeanSpacecraftState = nominalMeanSpacecraftState;
         // Calculate the corrected osculating elements
         final double[] osculating = computeOsculatingElements(correctedFilterCorrection);
-        final Orbit osculatingOrbit = OrbitType.EQUINOCTIAL.mapArrayToOrbit(osculating, null,
+        final Orbit osculatingOrbit = OrbitParamsType.EQUINOCTIAL.mapArrayToOrbit(osculating, null,
                                                                             builder.
                                                                                 getOrbitalParameterFactory().
                                                                                 getPositionAngleType(),
@@ -926,7 +926,7 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
 
         // Nominal mean elements
         final double[] nominalMeanElements = new double[nbOrb];
-        OrbitType.EQUINOCTIAL.mapOrbitToArray(nominalMeanSpacecraftState.getOrbit(),
+        OrbitParamsType.EQUINOCTIAL.mapOrbitToArray(nominalMeanSpacecraftState.getOrbit(),
                                               builder.getOrbitalParameterFactory().getPositionAngleType(),
                                               nominalMeanElements, null);
 

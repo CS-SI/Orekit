@@ -46,7 +46,7 @@
         +Propagator buildPropagator()
         +AttitudeProvider getAttitudeProvider()
         +Frame getFrame()
-        +OrbitType getOrbitType()
+        +OrbitType getOrbitParamsType()
         +PositionAngleType getPositionAngleType()
         +ParameterDriversList getOrbitalParametersDrivers()
         +ParameterDriversList getPropagationParametersDrivers()

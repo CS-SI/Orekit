@@ -39,7 +39,7 @@ import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.Force;
 import org.orekit.frames.LOFType;
 import org.orekit.frames.Transform;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -122,7 +122,7 @@ public class UnivariateprocessMeasurementNoiseTest {
         final boolean print = false;
 
         // Initial orbit type and position angle
-        final OrbitType     orbitType     = OrbitType.CARTESIAN;
+        final OrbitParamsType orbitParamsType = OrbitParamsType.CARTESIAN;
         final PositionAngleType positionAngleType = PositionAngleType.TRUE; // Not used here
 
         // LOF type
@@ -136,7 +136,7 @@ public class UnivariateprocessMeasurementNoiseTest {
         final double relativeTolerance = 1.05e-2;
 
         // Do the test
-        doTestProcessNoise(context, orbitType, positionAngleType, lofType, hasMeasurementParameter,
+        doTestProcessNoise(context, orbitParamsType, positionAngleType, lofType, hasMeasurementParameter,
                            print, sampleNumber, relativeTolerance);
     }
 
@@ -151,7 +151,7 @@ public class UnivariateprocessMeasurementNoiseTest {
         final boolean print = false;
 
         // Initial orbit type and position angle
-        final OrbitType     orbitType     = OrbitType.KEPLERIAN;
+        final OrbitParamsType orbitParamsType = OrbitParamsType.KEPLERIAN;
         final PositionAngleType positionAngleType = PositionAngleType.TRUE;
 
         // LOF type
@@ -165,7 +165,7 @@ public class UnivariateprocessMeasurementNoiseTest {
         final double relativeTolerance = 1.16e-2;
 
         // Do the test
-        doTestProcessNoise(context, orbitType, positionAngleType, lofType, hasMeasurementParameter,
+        doTestProcessNoise(context, orbitParamsType, positionAngleType, lofType, hasMeasurementParameter,
                            print, sampleNumber, relativeTolerance);
     }
 
@@ -180,7 +180,7 @@ public class UnivariateprocessMeasurementNoiseTest {
         final boolean print = false;
 
         // Initial orbit type and position angle
-        final OrbitType     orbitType     = OrbitType.CIRCULAR;
+        final OrbitParamsType orbitParamsType = OrbitParamsType.CIRCULAR;
         final PositionAngleType positionAngleType = PositionAngleType.ECCENTRIC;
 
         // LOF type
@@ -194,7 +194,7 @@ public class UnivariateprocessMeasurementNoiseTest {
         final double relativeTolerance = 1.65e-2;
 
         // Do the test
-        doTestProcessNoise(context, orbitType, positionAngleType, lofType, hasMeasurementParameter,
+        doTestProcessNoise(context, orbitParamsType, positionAngleType, lofType, hasMeasurementParameter,
                            print, sampleNumber, relativeTolerance);
     }
 
@@ -209,7 +209,7 @@ public class UnivariateprocessMeasurementNoiseTest {
         final boolean print = false;
 
         // Initial orbit type and position angle
-        final OrbitType     orbitType     = OrbitType.EQUINOCTIAL;
+        final OrbitParamsType orbitParamsType = OrbitParamsType.EQUINOCTIAL;
         final PositionAngleType positionAngleType = PositionAngleType.MEAN;
 
         // LOF type
@@ -223,7 +223,7 @@ public class UnivariateprocessMeasurementNoiseTest {
         final double relativeTolerance = 0.80e-2;
 
         // Do the test
-        doTestProcessNoise(context, orbitType, positionAngleType, lofType, hasMeasurementParameter,
+        doTestProcessNoise(context, orbitParamsType, positionAngleType, lofType, hasMeasurementParameter,
                            print, sampleNumber, relativeTolerance);
     }
 
@@ -232,7 +232,7 @@ public class UnivariateprocessMeasurementNoiseTest {
      * - Check that the inertial process noise covariance matrix is consistent with the inputs
      * 
      * @param context context
-     * @param orbitType orbit type
+     * @param orbitParamsType orbit type
      * @param positionAngleType position angle
      * @param lofType LOF type
      * @param hasMeasurementParameter add also a measurement parameter (this tests the 2nd constructor)
@@ -241,7 +241,7 @@ public class UnivariateprocessMeasurementNoiseTest {
      * @param relativeTolerance relative tolerance for errors (< 1.5% for 10000 samples)
      */
     private void doTestProcessNoise(final Context context,
-                                    final OrbitType orbitType,
+                                    final OrbitParamsType orbitParamsType,
                                     final PositionAngleType positionAngleType,
                                     final LOFType lofType,
                                     final boolean hasMeasurementParameter,
@@ -254,7 +254,7 @@ public class UnivariateprocessMeasurementNoiseTest {
         final double        minStep       = 1.e-6;
         final double        maxStep       = 60.;
         final double        dP            = 1.;
-        final NumericalPropagatorBuilder propagatorBuilder = context.createNumerical(orbitType, positionAngleType, perfectStart,
+        final NumericalPropagatorBuilder propagatorBuilder = context.createNumerical(orbitParamsType, positionAngleType, perfectStart,
                                                                                    minStep, maxStep, dP,
                                                                                    Force.POTENTIAL, Force.THIRD_BODY_MOON,
                                                                                    Force.THIRD_BODY_SUN,
@@ -324,7 +324,7 @@ public class UnivariateprocessMeasurementNoiseTest {
                                                             .shiftedBy(2*context.initialOrbit.getKeplerianPeriod()));
 
         if (print) {
-            System.out.println("Orbit Type    : " + orbitType);
+            System.out.println("Orbit Type    : " + orbitParamsType);
             System.out.println("Position Angle: " + positionAngleType);
             System.out.println("LOF Type      : " + lofType + "\n");
         }
@@ -582,7 +582,7 @@ public class UnivariateprocessMeasurementNoiseTest {
         final boolean print = false;
 
         // Initial orbit type and position angle
-        final OrbitType     orbitType     = OrbitType.CARTESIAN;
+        final OrbitParamsType orbitParamsType = OrbitParamsType.CARTESIAN;
         final PositionAngleType positionAngleType = PositionAngleType.TRUE; // Not used here
 
         // LOF type
@@ -592,7 +592,7 @@ public class UnivariateprocessMeasurementNoiseTest {
         final double relativeTolerance = 2.93e-11;
 
         // Do the test
-        doTestLofCartesianOrbitalCovarianceFormal(context, orbitType, positionAngleType, lofType,
+        doTestLofCartesianOrbitalCovarianceFormal(context, orbitParamsType, positionAngleType, lofType,
                            print, relativeTolerance);
     }
     
@@ -607,7 +607,7 @@ public class UnivariateprocessMeasurementNoiseTest {
         final boolean print = false;
 
         // Initial orbit type and position angle
-        final OrbitType     orbitType     = OrbitType.KEPLERIAN;
+        final OrbitParamsType orbitParamsType = OrbitParamsType.KEPLERIAN;
         final PositionAngleType positionAngleType = PositionAngleType.MEAN;
 
         // LOF type
@@ -617,7 +617,7 @@ public class UnivariateprocessMeasurementNoiseTest {
         final double relativeTolerance = 1.13e-6;
 
         // Do the test
-        doTestLofCartesianOrbitalCovarianceFormal(context, orbitType, positionAngleType, lofType,
+        doTestLofCartesianOrbitalCovarianceFormal(context, orbitParamsType, positionAngleType, lofType,
                            print, relativeTolerance);
     }
     
@@ -632,7 +632,7 @@ public class UnivariateprocessMeasurementNoiseTest {
         final boolean print = false;
 
         // Initial orbit type and position angle
-        final OrbitType     orbitType     = OrbitType.CIRCULAR;
+        final OrbitParamsType orbitParamsType = OrbitParamsType.CIRCULAR;
         final PositionAngleType positionAngleType = PositionAngleType.TRUE;
 
         // LOF type
@@ -642,7 +642,7 @@ public class UnivariateprocessMeasurementNoiseTest {
         final double relativeTolerance = 6.61e-9;
 
         // Do the test
-        doTestLofCartesianOrbitalCovarianceFormal(context, orbitType, positionAngleType, lofType,
+        doTestLofCartesianOrbitalCovarianceFormal(context, orbitParamsType, positionAngleType, lofType,
                            print, relativeTolerance);
     }
     
@@ -657,7 +657,7 @@ public class UnivariateprocessMeasurementNoiseTest {
         final boolean print = false;
 
         // Initial orbit type and position angle
-        final OrbitType     orbitType     = OrbitType.EQUINOCTIAL;
+        final OrbitParamsType orbitParamsType = OrbitParamsType.EQUINOCTIAL;
         final PositionAngleType positionAngleType = PositionAngleType.ECCENTRIC;
 
         // LOF type
@@ -667,7 +667,7 @@ public class UnivariateprocessMeasurementNoiseTest {
         final double relativeTolerance = 1.43e-10;
 
         // Do the test
-        doTestLofCartesianOrbitalCovarianceFormal(context, orbitType, positionAngleType, lofType,
+        doTestLofCartesianOrbitalCovarianceFormal(context, orbitParamsType, positionAngleType, lofType,
                            print, relativeTolerance);
     }
 
@@ -678,14 +678,14 @@ public class UnivariateprocessMeasurementNoiseTest {
      * 4. Compare values of 3 with reference values from 1
      *
      * @param context context
-     * @param orbitType orbit type
+     * @param orbitParamsType orbit type
      * @param positionAngleType position angle
      * @param lofType LOF type
      * @param print print results on console ?
      * @param relativeTolerance relative tolerance
      */
     private void doTestLofCartesianOrbitalCovarianceFormal(final Context context,
-                                                        final OrbitType orbitType,
+                                                        final OrbitParamsType orbitParamsType,
                                                         final PositionAngleType positionAngleType,
                                                         final LOFType lofType,
                                                         final boolean print,
@@ -696,7 +696,7 @@ public class UnivariateprocessMeasurementNoiseTest {
         final double        minStep       = 1.e-6;
         final double        maxStep       = 60.;
         final double        dP            = 1.;
-        final NumericalPropagatorBuilder propagatorBuilder = context.createNumerical(orbitType, positionAngleType, perfectStart,
+        final NumericalPropagatorBuilder propagatorBuilder = context.createNumerical(orbitParamsType, positionAngleType, perfectStart,
                                                                                    minStep, maxStep, dP,
                                                                                    Force.POTENTIAL, Force.THIRD_BODY_MOON,
                                                                                    Force.THIRD_BODY_SUN,
@@ -744,7 +744,7 @@ public class UnivariateprocessMeasurementNoiseTest {
                                                             shiftedBy(2. * context.initialOrbit.getKeplerianPeriod()));
 
         if (print) {
-            System.out.println("Orbit Type    : " + orbitType);
+            System.out.println("Orbit Type    : " + orbitParamsType);
             System.out.println("Position Angle: " + positionAngleType);
             System.out.println("LOF Type      : " + lofType.toString() + "\n");
         }

@@ -30,7 +30,7 @@ import org.orekit.frames.LOFType;
 import org.orekit.frames.LocalOrbitalFrame;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.propagation.FieldPropagator;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
@@ -88,11 +88,11 @@ public class FieldYamanakaAnkersenRendezVous<T extends CalculusFieldElement<T>> 
         final T deltaT = chaserPVTFinalLof.getDate().durationFrom(chaserPVTInitialLof.getDate());
 
         final FieldKeplerianOrbit<T> initialTargetOrbit =
-                        (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(targetOrbit);
+                        (FieldKeplerianOrbit<T>) OrbitParamsType.KEPLERIAN.convertType(targetOrbit);
         final T initialTrueAnomaly = initialTargetOrbit.getTrueAnomaly();
         final FieldSpacecraftState<T> propagated = propagator.propagate(chaserPVTFinal.getDate());
         final FieldKeplerianOrbit<T> finalTargetOrbit =
-                        (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(propagated.getOrbit());
+                        (FieldKeplerianOrbit<T>) OrbitParamsType.KEPLERIAN.convertType(propagated.getOrbit());
         final T finalTrueAnomaly = finalTargetOrbit.getTrueAnomaly();
 
         final T e = finalTargetOrbit.getE();

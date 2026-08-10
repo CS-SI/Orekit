@@ -18,7 +18,7 @@ package org.orekit.propagation.analytical.gnss;
 
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.orbits.FieldKeplerianOrbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.analytical.AbstractAnalyticalGradientConverter;
 import org.orekit.propagation.analytical.gnss.data.FieldGnssOrbitalElements;
@@ -56,8 +56,8 @@ class GnssGradientConverter<O extends GNSSOrbitalElements<O>>
      * of the initial state, extended with one slot per selected non-Keplerian driver. The
      * state transition matrix built from this propagator is therefore a genuine dY/dY₀, with
      * the same representation for its rows and its columns, consistent with
-     * {@link org.orekit.propagation.analytical.AbstractAnalyticalMatricesHarvester#getOrbitType()}
-     * returning {@link OrbitType#CARTESIAN}. The change of representation towards the
+     * {@link org.orekit.propagation.analytical.AbstractAnalyticalMatricesHarvester#getOrbitParamsType()}
+     * returning {@link OrbitParamsType#CARTESIAN}. The change of representation towards the
      * propagator builder parameters is a separate quantity, provided by
      * {@link org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElementsFactory#jacobianWrtParameters}.
      * </p>
@@ -72,7 +72,7 @@ class GnssGradientConverter<O extends GNSSOrbitalElements<O>>
         // Keplerian view of that very state; the conversion carries the derivatives along,
         // so the free variables remain the Cartesian coordinates
         final FieldKeplerianOrbit<Gradient> gOrbit =
-            (FieldKeplerianOrbit<Gradient>) OrbitType.KEPLERIAN.convertType(gState.getOrbit());
+            (FieldKeplerianOrbit<Gradient>) OrbitParamsType.KEPLERIAN.convertType(gState.getOrbit());
 
         // prepare non-Keplerian elements with proper derivatives
         final Gradient[] parameters = propagator.getDriversFactory().toGradients(nbParams);

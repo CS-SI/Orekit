@@ -349,7 +349,7 @@ class ImpulseManeuverTest {
         double[][] tolerances = ToleranceProvider.getDefaultToleranceProvider(10.).getTolerances(initialOrbit, initialOrbit.getType());
         DormandPrince853Integrator integrator = new DormandPrince853Integrator(1.0e-3, 60, tolerances[0], tolerances[1]);
         NumericalPropagator propagator = new NumericalPropagator(integrator);
-        propagator.setOrbitType(initialOrbit.getType());
+        propagator.setOrbitParamsType(initialOrbit.getType());
         MatricesHarvester harvester = propagator.setupMatricesComputation("derivatives", null, null);
         propagator.resetInitialState(new SpacecraftState(initialOrbit, initialAttitude));
         DateDetector dateDetector = new DateDetector(epoch.shiftedBy(0.5 * totalPropagationTime));

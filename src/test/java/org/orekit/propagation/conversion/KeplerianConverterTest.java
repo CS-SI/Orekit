@@ -25,7 +25,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -76,7 +76,7 @@ class KeplerianConverterTest {
         }
 
         PropagatorBuilder builder =
-            new KeplerianPropagatorBuilder(OrbitType.KEPLERIAN.convertType(orbit).
+            new KeplerianPropagatorBuilder(OrbitParamsType.KEPLERIAN.convertType(orbit).
                                            factory(PositionAngleType.MEAN, 1.0));
 
         FiniteDifferencePropagatorConverter fitter = new FiniteDifferencePropagatorConverter(builder, threshold, 1000);

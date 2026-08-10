@@ -29,7 +29,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.Propagator;
@@ -52,25 +52,25 @@ public class EphemerisEventsTest {
 
     @Test
     public void testEphemKeplerian() throws IllegalArgumentException, OrekitException {
-        checkEphem(OrbitType.KEPLERIAN);
+        checkEphem(OrbitParamsType.KEPLERIAN);
     }
 
     @Test
     public void testEphemCircular() throws IllegalArgumentException, OrekitException {
-        checkEphem(OrbitType.CIRCULAR);
+        checkEphem(OrbitParamsType.CIRCULAR);
     }
 
     @Test
     public void testEphemEquinoctial() throws IllegalArgumentException, OrekitException {
-        checkEphem(OrbitType.EQUINOCTIAL);
+        checkEphem(OrbitParamsType.EQUINOCTIAL);
     }
 
     @Test
     public void testEphemCartesian() throws IllegalArgumentException, OrekitException {
-        checkEphem(OrbitType.CARTESIAN);
+        checkEphem(OrbitParamsType.CARTESIAN);
     }
 
-    private Ephemeris buildEphem(OrbitType type)
+    private Ephemeris buildEphem(OrbitParamsType type)
         throws IllegalArgumentException, OrekitException {
 
         double mass = 2500;
@@ -110,7 +110,7 @@ public class EphemerisEventsTest {
         return new Ephemeris(tab, interpolator);
     }
 
-    private EclipseDetector buildEclipseDetector(final OrbitType type) {
+    private EclipseDetector buildEclipseDetector(final OrbitParamsType type) {
 
         double sunRadius = 696000000.;
         double earthRadius = 6400000.;
@@ -137,7 +137,7 @@ public class EphemerisEventsTest {
         return ecl;
     }
 
-    private void checkEphem(OrbitType type)
+    private void checkEphem(OrbitParamsType type)
         throws IllegalArgumentException, OrekitException {
 
         initDate = new AbsoluteDate(new DateComponents(2004, 01, 01),

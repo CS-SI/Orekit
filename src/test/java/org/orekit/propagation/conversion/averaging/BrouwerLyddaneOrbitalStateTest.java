@@ -29,7 +29,7 @@ class BrouwerLyddaneOrbitalStateTest {
                 -1.), FramesFactory.getGCRF(), provider);
         // WHEN
         final Orbit orbit = averagedState.toOsculatingOrbit();
-        final KeplerianOrbit keplerianOrbit = (KeplerianOrbit) averagedState.getOrbitType()
+        final KeplerianOrbit keplerianOrbit = (KeplerianOrbit) averagedState.getOrbitParamsType()
                 .convertType(orbit);
         // THEN
         Assertions.assertEquals(averagedState.getDate(), keplerianOrbit.getDate());

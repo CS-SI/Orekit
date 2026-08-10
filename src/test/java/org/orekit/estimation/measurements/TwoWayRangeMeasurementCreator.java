@@ -16,7 +16,6 @@
  */
 package org.orekit.estimation.measurements;
 
-import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
 import org.hipparchus.analysis.solvers.UnivariateSolver;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -27,7 +26,6 @@ import org.orekit.frames.Transform;
 import org.orekit.gnss.antenna.PhaseCenterVariationFunction;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
 
 public class TwoWayRangeMeasurementCreator extends MeasurementCreator {

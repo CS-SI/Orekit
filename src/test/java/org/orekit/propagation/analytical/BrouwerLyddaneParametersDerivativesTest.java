@@ -28,7 +28,7 @@ import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvide
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -62,7 +62,7 @@ public class BrouwerLyddaneParametersDerivativesTest {
         final BrouwerLyddanePropagator propagator = new BrouwerLyddanePropagator(initialOrbit, provider, 1.0e-14);
         final SpacecraftState initialState = propagator.getInitialState();
         final double[] stateVector = new double[6];
-        OrbitType.CARTESIAN.mapOrbitToArray(initialState.getOrbit(), PositionAngleType.MEAN, stateVector, null);
+        OrbitParamsType.CARTESIAN.mapOrbitToArray(initialState.getOrbit(), PositionAngleType.MEAN, stateVector, null);
         BrouwerLyddaneHarvester harvester = (BrouwerLyddaneHarvester) propagator.setupMatricesComputation("stm", null, null);
         harvester.freezeColumnsNames();
         Assertions.assertNull(harvester.getParametersJacobian(initialState));
@@ -94,7 +94,7 @@ public class BrouwerLyddaneParametersDerivativesTest {
         // Compute parameter Jacobian using Harvester
         final SpacecraftState initialState = propagator.getInitialState();
         final double[] stateVector = new double[6];
-        OrbitType.CARTESIAN.mapOrbitToArray(initialState.getOrbit(), PositionAngleType.MEAN, stateVector, null);
+        OrbitParamsType.CARTESIAN.mapOrbitToArray(initialState.getOrbit(), PositionAngleType.MEAN, stateVector, null);
         final AbsoluteDate target = initialState.getDate().shiftedBy(initialState.getOrbit().getKeplerianPeriod());
         BrouwerLyddaneHarvester harvester = (BrouwerLyddaneHarvester) propagator.setupMatricesComputation("stm", null, null);
         harvester.freezeColumnsNames();
@@ -102,7 +102,7 @@ public class BrouwerLyddaneParametersDerivativesTest {
         RealMatrix dYdP = harvester.getParametersJacobian(finalState);
 
         // compute reference Jacobian using finite differences
-        OrbitType orbitType = OrbitType.CARTESIAN;
+        OrbitParamsType orbitParamsType = OrbitParamsType.CARTESIAN;
         BrouwerLyddanePropagator propagator2;
         double[][] dYdPRef = new double[6][1];
 
@@ -133,7 +133,7 @@ public class BrouwerLyddaneParametersDerivativesTest {
         selected.setValue(p0 + 4 * h);
         propagator2 = new BrouwerLyddanePropagator(initialOrbit, provider, selected.getValue());
         SpacecraftState sP4h = propagator2.propagate(target);
-        fillJacobianColumn(dYdPRef, 0, orbitType, h,
+        fillJacobianColumn(dYdPRef, 0, orbitParamsType, h,
                            sM4h, sM3h, sM2h, sM1h, sP1h, sP2h, sP3h, sP4h);
 
         // Verify
@@ -145,19 +145,19 @@ public class BrouwerLyddaneParametersDerivativesTest {
     }
 
     private void fillJacobianColumn(double[][] jacobian, int column,
-                                    OrbitType orbitType, double h,
+                                    OrbitParamsType orbitParamsType, double h,
                                     SpacecraftState sM4h, SpacecraftState sM3h,
                                     SpacecraftState sM2h, SpacecraftState sM1h,
                                     SpacecraftState sP1h, SpacecraftState sP2h,
                                     SpacecraftState sP3h, SpacecraftState sP4h) {
-        double[] aM4h = stateToArray(sM4h, orbitType)[0];
-        double[] aM3h = stateToArray(sM3h, orbitType)[0];
-        double[] aM2h = stateToArray(sM2h, orbitType)[0];
-        double[] aM1h = stateToArray(sM1h, orbitType)[0];
-        double[] aP1h = stateToArray(sP1h, orbitType)[0];
-        double[] aP2h = stateToArray(sP2h, orbitType)[0];
-        double[] aP3h = stateToArray(sP3h, orbitType)[0];
-        double[] aP4h = stateToArray(sP4h, orbitType)[0];
+        double[] aM4h = stateToArray(sM4h, orbitParamsType)[0];
+        double[] aM3h = stateToArray(sM3h, orbitParamsType)[0];
+        double[] aM2h = stateToArray(sM2h, orbitParamsType)[0];
+        double[] aM1h = stateToArray(sM1h, orbitParamsType)[0];
+        double[] aP1h = stateToArray(sP1h, orbitParamsType)[0];
+        double[] aP2h = stateToArray(sP2h, orbitParamsType)[0];
+        double[] aP3h = stateToArray(sP3h, orbitParamsType)[0];
+        double[] aP4h = stateToArray(sP4h, orbitParamsType)[0];
         for (int i = 0; i < jacobian.length; ++i) {
             jacobian[i][column] = ( -3 * (aP4h[i] - aM4h[i]) +
                                     32 * (aP3h[i] - aM3h[i]) -
@@ -166,10 +166,10 @@ public class BrouwerLyddaneParametersDerivativesTest {
         }
     }
 
-    private double[][] stateToArray(SpacecraftState state, OrbitType orbitType) {
+    private double[][] stateToArray(SpacecraftState state, OrbitParamsType orbitParamsType) {
           double[][] array = new double[2][6];
 
-          orbitType.mapOrbitToArray(state.getOrbit(), PositionAngleType.MEAN, array[0], array[1]);
+          orbitParamsType.mapOrbitToArray(state.getOrbit(), PositionAngleType.MEAN, array[0], array[1]);
           return array;
       }
 

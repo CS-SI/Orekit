@@ -36,7 +36,7 @@ import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvide
 import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldCircularOrbit;
 import org.orekit.orbits.FieldOrbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
@@ -698,7 +698,7 @@ public class FieldEcksteinHechlerPropagator<T extends CalculusFieldElement<T>> e
         // Set EH as the mean theory for converting
         final MeanTheory theory = new EcksteinHechlerTheory(referenceRadius, mu, c20, c30, c40, c50, c60);
         converter.setMeanTheory(theory);
-        return (FieldCircularOrbit<T>) OrbitType.CIRCULAR.convertType(converter.convertToMean(osculating));
+        return (FieldCircularOrbit<T>) OrbitParamsType.CIRCULAR.convertType(converter.convertToMean(osculating));
     }
 
     /** {@inheritDoc}
@@ -749,12 +749,12 @@ public class FieldEcksteinHechlerPropagator<T extends CalculusFieldElement<T>> e
                                   final PropagationType stateType,
                                   final OsculatingToMeanConverter converter) {
         super.resetInitialState(state);
-        FieldCircularOrbit<T> circular = (FieldCircularOrbit<T>) OrbitType.CIRCULAR.convertType(state.getOrbit());
+        FieldCircularOrbit<T> circular = (FieldCircularOrbit<T>) OrbitParamsType.CIRCULAR.convertType(state.getOrbit());
         if (stateType == PropagationType.OSCULATING) {
             final MeanTheory theory = new EcksteinHechlerTheory(referenceRadius, mu.getReal(),
                                                                 ck0[2], ck0[3], ck0[4], ck0[5], ck0[6]);
             converter.setMeanTheory(theory);
-            circular = (FieldCircularOrbit<T>) OrbitType.CIRCULAR.convertType(converter.convertToMean(circular));
+            circular = (FieldCircularOrbit<T>) OrbitParamsType.CIRCULAR.convertType(converter.convertToMean(circular));
         }
         this.initialModel = new FieldEHModel<>(circular, state.getMass(), referenceRadius, mu, ck0);
         this.models = new FieldTimeSpanMap<>(initialModel, state.getMass().getField());
@@ -796,7 +796,7 @@ public class FieldEcksteinHechlerPropagator<T extends CalculusFieldElement<T>> e
         final MeanTheory theory = new EcksteinHechlerTheory(referenceRadius, mu.getReal(),
                                                             ck0[2], ck0[3], ck0[4], ck0[5], ck0[6]);
         converter.setMeanTheory(theory);
-        final FieldCircularOrbit<T> mean = (FieldCircularOrbit<T>) OrbitType.CIRCULAR.convertType(converter.convertToMean(state.getOrbit()));
+        final FieldCircularOrbit<T> mean = (FieldCircularOrbit<T>) OrbitParamsType.CIRCULAR.convertType(converter.convertToMean(state.getOrbit()));
         final FieldEHModel<T> newModel = new FieldEHModel<>(mean, state.getMass(), referenceRadius, mu, ck0);
         if (forward) {
             models.addValidAfter(newModel, state.getDate(), false);

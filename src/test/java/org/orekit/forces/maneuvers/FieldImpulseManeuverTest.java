@@ -59,7 +59,7 @@ import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.AbstractPropagator;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -115,7 +115,7 @@ class FieldImpulseManeuverTest {
     private final double isp = 500.;
     private final Vector3D deltaV = new Vector3D(0.1, -0.5, 0.2);
     private final double timeOfFlight = 10000.;
-    private final OrbitType orbitType = OrbitType.EQUINOCTIAL;
+    private final OrbitParamsType orbitParamsType = OrbitParamsType.EQUINOCTIAL;
     private final PositionAngleType positionAngleType = PositionAngleType.ECCENTRIC;
     private final LofOffset attitudeOverride = new LofOffset(inertialFrame, LOFType.QSW);
     private final GradientField gradientField = GradientField.getField(2);
@@ -401,7 +401,7 @@ class FieldImpulseManeuverTest {
         final NumericalPropagator propagator = createUnperturbedPropagator(initialOrbit, initialMass);
         final FieldNumericalPropagator<T> fieldPropagator = createUnperturbedFieldPropagator(field,
                 initialOrbit, propagator.getInitialState().getMass());
-        fieldPropagator.setOrbitType(propagator.getOrbitType());
+        fieldPropagator.setOrbitParamsType(propagator.getOrbitParamsType());
         final AbsoluteDate endOfPropagationDate = propagator.getInitialState().getDate().shiftedBy(timeOfFlight);
         final ImpulseManeuver impulseManeuver = new ImpulseManeuver(
                 buildEventDetector(detectorType, propagator).withHandler(new StopOnEvent()),
@@ -450,7 +450,7 @@ class FieldImpulseManeuverTest {
         final ClassicalRungeKuttaIntegrator integrator = new ClassicalRungeKuttaIntegrator(stepSize);
         final NumericalPropagator propagator = new NumericalPropagator(integrator);
         propagator.setInitialState(new SpacecraftState(initialOrbit).withMass(initialMass));
-        propagator.setOrbitType(orbitType);
+        propagator.setOrbitParamsType(orbitParamsType);
         propagator.setPositionAngleType(positionAngleType);
         return propagator;
     }
@@ -464,7 +464,7 @@ class FieldImpulseManeuverTest {
         final FieldOrbit<T> fieldInitialOrbit = createConstantFieldOrbit(field, initialOrbit);
         final T fieldInitialMass = field.getZero().add(initialMass);
         fieldPropagator.setInitialState(new FieldSpacecraftState<>(fieldInitialOrbit).withMass(fieldInitialMass));
-        fieldPropagator.setOrbitType(orbitType);
+        fieldPropagator.setOrbitParamsType(orbitParamsType);
         fieldPropagator.setPositionAngleType(positionAngleType);
         return fieldPropagator;
     }
@@ -475,7 +475,7 @@ class FieldImpulseManeuverTest {
         final FieldOrbit<T> fieldOrbit = fieldState.getOrbit();
         final double[] orbitAsArray = new double[6];
         final PositionAngleType positionAngle = PositionAngleType.TRUE;
-        final OrbitType type = OrbitType.CARTESIAN;
+        final OrbitParamsType type = OrbitParamsType.CARTESIAN;
         type.mapOrbitToArray(orbit, positionAngle, orbitAsArray, orbitAsArray.clone());
         final double[] fieldRealOrbitAsArray = orbitAsArray.clone();
         type.mapOrbitToArray(fieldOrbit.toOrbit(), positionAngle, fieldRealOrbitAsArray, fieldRealOrbitAsArray.clone());
@@ -588,12 +588,12 @@ class FieldImpulseManeuverTest {
         final NumericalPropagator propagator = createUnperturbedPropagator(initialOrbit, initialMass);
         final FieldNumericalPropagator<Gradient> fieldPropagator = createUnperturbedFieldPropagator(field,
                 initialOrbit, initialMass);
-        fieldPropagator.setOrbitType(propagator.getOrbitType());
+        fieldPropagator.setOrbitParamsType(propagator.getOrbitParamsType());
         final AbsoluteDate endOfPropagationDate = propagator.getInitialState().getDate().shiftedBy(timeOfFlight);
         final DateDetector dateDetector = (DateDetector) buildEventDetector(DetectorType.DATE_DETECTOR, propagator);
         final AttitudeProvider attitudeProvider = new FrameAlignedProvider(propagator.getFrame());
         propagator.addEventDetector(dateDetector);
-        propagator.setOrbitType(OrbitType.CARTESIAN);
+        propagator.setOrbitParamsType(OrbitParamsType.CARTESIAN);
         final Gradient zero = field.getZero();
         final FieldDateDetector<Gradient> fieldDateDetector =
                         new FieldDateDetector<>(field, new FieldAbsoluteDate<>(field, dateDetector.getDate()));

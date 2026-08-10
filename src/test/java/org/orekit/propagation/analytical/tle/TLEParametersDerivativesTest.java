@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.generation.TleGenerationAlgorithm;
@@ -56,7 +56,7 @@ public class TLEParametersDerivativesTest {
         TLEPropagator propagator = TLEPropagator.selectExtrapolator(tleSPOT);
         final SpacecraftState initialState = propagator.getInitialState();
         final double[] stateVector = new double[6];
-        OrbitType.CARTESIAN.mapOrbitToArray(initialState.getOrbit(), PositionAngleType.MEAN, stateVector, null);
+        OrbitParamsType.CARTESIAN.mapOrbitToArray(initialState.getOrbit(), PositionAngleType.MEAN, stateVector, null);
         TLEHarvester harvester = (TLEHarvester) propagator.setupMatricesComputation("stm", null, null);
         harvester.freezeColumnsNames();
         RealMatrix dYdP = harvester.getParametersJacobian(initialState);
@@ -81,7 +81,7 @@ public class TLEParametersDerivativesTest {
         // compute state Jacobian using PartialDerivatives
         final SpacecraftState initialState = propagator.getInitialState();
         final double[] stateVector = new double[6];
-        OrbitType.CARTESIAN.mapOrbitToArray(initialState.getOrbit(), PositionAngleType.MEAN, stateVector, null);
+        OrbitParamsType.CARTESIAN.mapOrbitToArray(initialState.getOrbit(), PositionAngleType.MEAN, stateVector, null);
         final AbsoluteDate target = initialState.getDate().shiftedBy(initialState.getOrbit().getKeplerianPeriod());
         TLEHarvester harvester = (TLEHarvester) propagator.setupMatricesComputation("stm", null, null);
         harvester.freezeColumnsNames();
@@ -95,7 +95,7 @@ public class TLEParametersDerivativesTest {
         dYdP = harvester.getParametersJacobian(finalState);
 
         // compute reference Jacobian using finite differences
-        OrbitType orbitType = OrbitType.CARTESIAN;
+        OrbitParamsType orbitParamsType = OrbitParamsType.CARTESIAN;
         TLEPropagator propagator2;
         double[][] dYdPRef = new double[6][1];
 
@@ -126,7 +126,7 @@ public class TLEParametersDerivativesTest {
         selected.setValue(p0 + 4 * h);
         propagator2 = TLEPropagator.selectExtrapolator(newTLE(tle, selected.getValue()));
         SpacecraftState sP4h = propagator2.propagate(target);
-        fillJacobianColumn(dYdPRef, 0, orbitType, h,
+        fillJacobianColumn(dYdPRef, 0, orbitParamsType, h,
                            sM4h, sM3h, sM2h, sM1h, sP1h, sP2h, sP3h, sP4h);
 
         for (int i = 0; i < 6; ++i) {
@@ -136,19 +136,19 @@ public class TLEParametersDerivativesTest {
     }
 
     private void fillJacobianColumn(double[][] jacobian, int column,
-                                    OrbitType orbitType, double h,
+                                    OrbitParamsType orbitParamsType, double h,
                                     SpacecraftState sM4h, SpacecraftState sM3h,
                                     SpacecraftState sM2h, SpacecraftState sM1h,
                                     SpacecraftState sP1h, SpacecraftState sP2h,
                                     SpacecraftState sP3h, SpacecraftState sP4h) {
-        double[] aM4h = stateToArray(sM4h, orbitType)[0];
-        double[] aM3h = stateToArray(sM3h, orbitType)[0];
-        double[] aM2h = stateToArray(sM2h, orbitType)[0];
-        double[] aM1h = stateToArray(sM1h, orbitType)[0];
-        double[] aP1h = stateToArray(sP1h, orbitType)[0];
-        double[] aP2h = stateToArray(sP2h, orbitType)[0];
-        double[] aP3h = stateToArray(sP3h, orbitType)[0];
-        double[] aP4h = stateToArray(sP4h, orbitType)[0];
+        double[] aM4h = stateToArray(sM4h, orbitParamsType)[0];
+        double[] aM3h = stateToArray(sM3h, orbitParamsType)[0];
+        double[] aM2h = stateToArray(sM2h, orbitParamsType)[0];
+        double[] aM1h = stateToArray(sM1h, orbitParamsType)[0];
+        double[] aP1h = stateToArray(sP1h, orbitParamsType)[0];
+        double[] aP2h = stateToArray(sP2h, orbitParamsType)[0];
+        double[] aP3h = stateToArray(sP3h, orbitParamsType)[0];
+        double[] aP4h = stateToArray(sP4h, orbitParamsType)[0];
         for (int i = 0; i < jacobian.length; ++i) {
             jacobian[i][column] = ( -3 * (aP4h[i] - aM4h[i]) +
                                     32 * (aP3h[i] - aM3h[i]) -
@@ -157,10 +157,10 @@ public class TLEParametersDerivativesTest {
         }
     }
 
-    private double[][] stateToArray(SpacecraftState state, OrbitType orbitType) {
+    private double[][] stateToArray(SpacecraftState state, OrbitParamsType orbitParamsType) {
           double[][] array = new double[2][6];
 
-          orbitType.mapOrbitToArray(state.getOrbit(), PositionAngleType.MEAN, array[0], array[1]);
+          orbitParamsType.mapOrbitToArray(state.getOrbit(), PositionAngleType.MEAN, array[0], array[1]);
           return array;
       }
 

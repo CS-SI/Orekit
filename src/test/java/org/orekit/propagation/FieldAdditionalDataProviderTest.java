@@ -35,7 +35,7 @@ import org.orekit.forces.gravity.potential.SHMFormatReader;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.FieldOrbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.propagation.analytical.BrouwerLyddanePropagator;
 import org.orekit.propagation.analytical.FieldBrouwerLyddanePropagator;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
@@ -68,7 +68,7 @@ public class FieldAdditionalDataProviderTest {
     }
 
     private <T extends CalculusFieldElement<T>> AdaptiveStepsizeFieldIntegrator<T> createIntegrator(final Field<T> field, final FieldSpacecraftState<T> state) {
-        double[][] tolerance = ToleranceProvider.getDefaultToleranceProvider(0.001).getTolerances(state.getOrbit(), OrbitType.EQUINOCTIAL);
+        double[][] tolerance = ToleranceProvider.getDefaultToleranceProvider(0.001).getTolerances(state.getOrbit(), OrbitParamsType.EQUINOCTIAL);
         AdaptiveStepsizeFieldIntegrator<T> integrator = new DormandPrince54FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(60);
         return integrator;

@@ -61,7 +61,7 @@ import org.orekit.orbits.FieldCircularOrbit;
 import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
@@ -690,7 +690,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         FieldVector3D<T> referenceV    = interpolated.getVelocity();
         FieldVector3D<T> computedA     = sample.get(1).getAcceleration();
         FieldVector3D<T> referenceA    = interpolated.getAcceleration();
-        final FieldCircularOrbit<T> propagated = (FieldCircularOrbit<T>) OrbitType.CIRCULAR.convertType(propagator.propagateOrbit(target, null));
+        final FieldCircularOrbit<T> propagated = (FieldCircularOrbit<T>) OrbitParamsType.CIRCULAR.convertType(propagator.propagateOrbit(target, null));
         final FieldCircularOrbit<T> keplerian =
                 new FieldCircularOrbit<>(propagated.getA(),
                                          propagated.getCircularEx(),
@@ -998,14 +998,14 @@ public class FieldEcksteinHechlerPropagatorTest {
 
         // set up a reference numerical propagator starting for the specified start orbit
         // using the same force models (i.e. the first few zonal terms)
-        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(0.1).getTolerances(initialOsculating, OrbitType.CIRCULAR);
+        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(0.1).getTolerances(initialOsculating, OrbitParamsType.CIRCULAR);
         AdaptiveStepsizeFieldIntegrator<T> integrator = new DormandPrince853FieldIntegrator<>(field, 0.001, 1000, tol[0], tol[1]);
         integrator.setInitialStepSize(60);
         FieldNumericalPropagator<T> num = new FieldNumericalPropagator<>(integrator);
         Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         num.addForceModel(new HolmesFeatherstoneAttractionModel(itrf, GravityFieldFactory.getNormalizedProvider(provider)));
         num.setInitialState(new FieldSpacecraftState<>(initialOsculating));
-        num.setOrbitType(OrbitType.CIRCULAR);
+        num.setOrbitParamsType(OrbitParamsType.CIRCULAR);
         num.setPositionAngleType(initialOsculating.getCachedPositionAngleType());
         final StorelessUnivariateStatistic oscMin  = new Min();
         final StorelessUnivariateStatistic oscMax  = new Max();

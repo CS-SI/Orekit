@@ -27,7 +27,7 @@ import org.orekit.frames.FactoryManagedFrame;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -120,7 +120,7 @@ public class OrekitStepHandlerTest {
                 6378137 + 500e3, 1e-3, 0, 0, 0, 0,
                 PositionAngleType.TRUE, eci, date, Constants.EIGEN5C_EARTH_MU));
         propagator.setInitialState(ic);
-        propagator.setOrbitType(OrbitType.CARTESIAN);
+        propagator.setOrbitParamsType(OrbitParamsType.CARTESIAN);
         // detector triggers half way through second step
         DateDetector detector =
                 new DateDetector(date.shiftedBy(90)).withHandler(new ContinueOnEvent());

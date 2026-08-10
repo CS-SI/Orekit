@@ -85,7 +85,7 @@ import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.AdditionalDataProvider;
 import org.orekit.propagation.BoundedPropagator;
@@ -270,7 +270,7 @@ class NumericalPropagatorTest {
         };
 
         // action
-        propagator.setOrbitType(OrbitType.CARTESIAN);
+        propagator.setOrbitParamsType(OrbitParamsType.CARTESIAN);
         propagator.addForceModel(force);
         AbsoluteDate target = initDate.shiftedBy(dt);
         propagator.propagate(initDate.shiftedBy(1.0), target);
@@ -294,7 +294,7 @@ class NumericalPropagatorTest {
         };
 
         // action
-        propagator.setOrbitType(OrbitType.CARTESIAN);
+        propagator.setOrbitParamsType(OrbitParamsType.CARTESIAN);
         propagator.addForceModel(force);
         AbsoluteDate target = initDate.shiftedBy(60);
         propagator.propagate(target);
@@ -423,11 +423,11 @@ class NumericalPropagatorTest {
         KeplerianOrbit orbit = new KeplerianOrbit(
                 600e3 + Constants.WGS84_EARTH_EQUATORIAL_RADIUS, 0, 0, 0, 0, 0,
                 PositionAngleType.TRUE, eci, initialDate, mu);
-        OrbitType type = OrbitType.CARTESIAN;
+        OrbitParamsType type = OrbitParamsType.CARTESIAN;
         double[][] tol = ToleranceProvider.of(CartesianToleranceProvider.of(1e-3)).getTolerances(orbit, type, NumericalPropagator.DEFAULT_POSITION_ANGLE_TYPE);
         NumericalPropagator prop = new NumericalPropagator(
                 new DormandPrince853Integrator(0.1, 500, tol[0], tol[1]));
-        prop.setOrbitType(type);
+        prop.setOrbitParamsType(type);
         prop.resetInitialState(new SpacecraftState(new CartesianOrbit(orbit)));
 
         //action
@@ -462,11 +462,11 @@ class NumericalPropagatorTest {
         KeplerianOrbit orbit = new KeplerianOrbit(
             600e3 + Constants.WGS84_EARTH_EQUATORIAL_RADIUS, 0, 0, 0, 0, 0,
             PositionAngleType.TRUE, eci, initialDate, mu);
-        OrbitType type = OrbitType.CARTESIAN;
+        OrbitParamsType type = OrbitParamsType.CARTESIAN;
         double[][] tol = ToleranceProvider.of(CartesianToleranceProvider.of(1e-3)).getTolerances(orbit, type);
         NumericalPropagator prop = new NumericalPropagator(
                 new DormandPrince853Integrator(0.1, 500, tol[0], tol[1]));
-        prop.setOrbitType(type);
+        prop.setOrbitParamsType(type);
         prop.resetInitialState(new SpacecraftState(new CartesianOrbit(orbit)));
 
         //action
@@ -557,7 +557,7 @@ class NumericalPropagatorTest {
 
         // Propagation of the initial at t + dt
         final double dt = 3200;
-        propagator.setOrbitType(OrbitType.CARTESIAN);
+        propagator.setOrbitParamsType(OrbitParamsType.CARTESIAN);
         final PVCoordinates finalState =
             propagator.propagate(initDate.shiftedBy(dt)).getPVCoordinates();
         final Vector3D pFin = finalState.getPosition();
@@ -584,13 +584,13 @@ class NumericalPropagatorTest {
         final Orbit orbit = new EquinoctialOrbit(new PVCoordinates(position, velocity),
                                                  FramesFactory.getEME2000(), initDate, mu);
         initialState = new SpacecraftState(orbit);
-        OrbitType type = OrbitType.EQUINOCTIAL;
+        OrbitParamsType type = OrbitParamsType.EQUINOCTIAL;
         double[][] tolerance = ToleranceProvider.of(CartesianToleranceProvider.of(0.001)).getTolerances(orbit, type);
         AdaptiveStepsizeIntegrator integrator =
                 new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(60);
         propagator = new NumericalPropagator(integrator);
-        propagator.setOrbitType(type);
+        propagator.setOrbitParamsType(type);
         propagator.setInitialState(initialState);
 
         ForceModel gravityField =
@@ -604,20 +604,20 @@ class NumericalPropagatorTest {
         final double dV = initialState.getOrbit().getMu() * dP /
                           (pv.getPosition().getNorm2Sq() * pv.getVelocity().getNorm());
 
-        final PVCoordinates pvcM = propagateInType(initialState, dP, OrbitType.CARTESIAN,   PositionAngleType.MEAN);
-        final PVCoordinates pviM = propagateInType(initialState, dP, OrbitType.CIRCULAR,    PositionAngleType.MEAN);
-        final PVCoordinates pveM = propagateInType(initialState, dP, OrbitType.EQUINOCTIAL, PositionAngleType.MEAN);
-        final PVCoordinates pvkM = propagateInType(initialState, dP, OrbitType.KEPLERIAN,   PositionAngleType.MEAN);
+        final PVCoordinates pvcM = propagateInType(initialState, dP, OrbitParamsType.CARTESIAN,   PositionAngleType.MEAN);
+        final PVCoordinates pviM = propagateInType(initialState, dP, OrbitParamsType.CIRCULAR,    PositionAngleType.MEAN);
+        final PVCoordinates pveM = propagateInType(initialState, dP, OrbitParamsType.EQUINOCTIAL, PositionAngleType.MEAN);
+        final PVCoordinates pvkM = propagateInType(initialState, dP, OrbitParamsType.KEPLERIAN,   PositionAngleType.MEAN);
 
-        final PVCoordinates pvcE = propagateInType(initialState, dP, OrbitType.CARTESIAN,   PositionAngleType.ECCENTRIC);
-        final PVCoordinates pviE = propagateInType(initialState, dP, OrbitType.CIRCULAR,    PositionAngleType.ECCENTRIC);
-        final PVCoordinates pveE = propagateInType(initialState, dP, OrbitType.EQUINOCTIAL, PositionAngleType.ECCENTRIC);
-        final PVCoordinates pvkE = propagateInType(initialState, dP, OrbitType.KEPLERIAN,   PositionAngleType.ECCENTRIC);
+        final PVCoordinates pvcE = propagateInType(initialState, dP, OrbitParamsType.CARTESIAN,   PositionAngleType.ECCENTRIC);
+        final PVCoordinates pviE = propagateInType(initialState, dP, OrbitParamsType.CIRCULAR,    PositionAngleType.ECCENTRIC);
+        final PVCoordinates pveE = propagateInType(initialState, dP, OrbitParamsType.EQUINOCTIAL, PositionAngleType.ECCENTRIC);
+        final PVCoordinates pvkE = propagateInType(initialState, dP, OrbitParamsType.KEPLERIAN,   PositionAngleType.ECCENTRIC);
 
-        final PVCoordinates pvcT = propagateInType(initialState, dP, OrbitType.CARTESIAN,   PositionAngleType.TRUE);
-        final PVCoordinates pviT = propagateInType(initialState, dP, OrbitType.CIRCULAR,    PositionAngleType.TRUE);
-        final PVCoordinates pveT = propagateInType(initialState, dP, OrbitType.EQUINOCTIAL, PositionAngleType.TRUE);
-        final PVCoordinates pvkT = propagateInType(initialState, dP, OrbitType.KEPLERIAN,   PositionAngleType.TRUE);
+        final PVCoordinates pvcT = propagateInType(initialState, dP, OrbitParamsType.CARTESIAN,   PositionAngleType.TRUE);
+        final PVCoordinates pviT = propagateInType(initialState, dP, OrbitParamsType.CIRCULAR,    PositionAngleType.TRUE);
+        final PVCoordinates pveT = propagateInType(initialState, dP, OrbitParamsType.EQUINOCTIAL, PositionAngleType.TRUE);
+        final PVCoordinates pvkT = propagateInType(initialState, dP, OrbitParamsType.KEPLERIAN,   PositionAngleType.TRUE);
 
         Assertions.assertEquals(0, pvcM.getPosition().subtract(pveT.getPosition()).getNorm() / dP, 3.1);
         Assertions.assertEquals(0, pvcM.getVelocity().subtract(pveT.getVelocity()).getNorm() / dV, 2.1);
@@ -666,14 +666,14 @@ class NumericalPropagatorTest {
         final double dV = state.getOrbit().getMu() * dP /
                           (pv.getPosition().getNorm2Sq() * pv.getVelocity().getNorm());
 
-        final PVCoordinates pvcM = propagateInType(state, dP, OrbitType.CARTESIAN, PositionAngleType.MEAN);
-        final PVCoordinates pvkM = propagateInType(state, dP, OrbitType.KEPLERIAN, PositionAngleType.MEAN);
+        final PVCoordinates pvcM = propagateInType(state, dP, OrbitParamsType.CARTESIAN, PositionAngleType.MEAN);
+        final PVCoordinates pvkM = propagateInType(state, dP, OrbitParamsType.KEPLERIAN, PositionAngleType.MEAN);
 
-        final PVCoordinates pvcE = propagateInType(state, dP, OrbitType.CARTESIAN, PositionAngleType.ECCENTRIC);
-        final PVCoordinates pvkE = propagateInType(state, dP, OrbitType.KEPLERIAN, PositionAngleType.ECCENTRIC);
+        final PVCoordinates pvcE = propagateInType(state, dP, OrbitParamsType.CARTESIAN, PositionAngleType.ECCENTRIC);
+        final PVCoordinates pvkE = propagateInType(state, dP, OrbitParamsType.KEPLERIAN, PositionAngleType.ECCENTRIC);
 
-        final PVCoordinates pvcT = propagateInType(state, dP, OrbitType.CARTESIAN, PositionAngleType.TRUE);
-        final PVCoordinates pvkT = propagateInType(state, dP, OrbitType.KEPLERIAN, PositionAngleType.TRUE);
+        final PVCoordinates pvcT = propagateInType(state, dP, OrbitParamsType.CARTESIAN, PositionAngleType.TRUE);
+        final PVCoordinates pvkT = propagateInType(state, dP, OrbitParamsType.KEPLERIAN, PositionAngleType.TRUE);
 
         Assertions.assertEquals(0, pvcM.getPosition().subtract(pvkT.getPosition()).getNorm() / dP, 0.4);
         Assertions.assertEquals(0, pvcM.getVelocity().subtract(pvkT.getVelocity()).getNorm() / dV, 0.6);
@@ -691,7 +691,7 @@ class NumericalPropagatorTest {
     }
 
     private PVCoordinates propagateInType(SpacecraftState state, double dP,
-                                          OrbitType type, PositionAngleType angle)
+                                          OrbitParamsType type, PositionAngleType angle)
         {
 
         final double dt = 3200;
@@ -703,7 +703,7 @@ class NumericalPropagatorTest {
         AdaptiveStepsizeIntegrator integrator =
                 new DormandPrince853Integrator(minStep, maxStep, tol[0], tol[1]);
         NumericalPropagator newPropagator = new NumericalPropagator(integrator);
-        newPropagator.setOrbitType(type);
+        newPropagator.setOrbitParamsType(type);
         newPropagator.setPositionAngleType(angle);
         newPropagator.setInitialState(state);
         for (ForceModel force: propagator.getAllForceModels()) {
@@ -1018,7 +1018,7 @@ class NumericalPropagatorTest {
         double mass = 1000.;
         SpacecraftState initialState = new SpacecraftState(geo).withMass(mass);
         propagator.setInitialState(initialState);
-        propagator.setOrbitType(OrbitType.CARTESIAN);
+        propagator.setOrbitParamsType(OrbitParamsType.CARTESIAN);
 
 
         // Set the events Detectors
@@ -1042,7 +1042,7 @@ class NumericalPropagatorTest {
         final double dt = 3200;
         propagator.getInitialState();
 
-        propagator.setOrbitType(OrbitType.CARTESIAN);
+        propagator.setOrbitParamsType(OrbitParamsType.CARTESIAN);
         final EphemerisGenerator generator = propagator.getEphemerisGenerator();
         propagator.propagate(initDate.shiftedBy(dt));
         final BoundedPropagator ephemeris1 = generator.getGeneratedEphemeris();
@@ -1094,7 +1094,7 @@ class NumericalPropagatorTest {
         });
         propagator.setInitialState(propagator.getInitialState().addAdditionalData("extra", 1.5));
 
-        propagator.setOrbitType(OrbitType.CARTESIAN);
+        propagator.setOrbitParamsType(OrbitParamsType.CARTESIAN);
         final EphemerisGenerator generator = propagator.getEphemerisGenerator();
         propagator.propagate(initDate.shiftedBy(dt));
         final BoundedPropagator ephemeris1 = generator.getGeneratedEphemeris();
@@ -1137,7 +1137,7 @@ class NumericalPropagatorTest {
                                              FramesFactory.getTOD(false),
                                              new AbsoluteDate(2003, 5, 6, TimeScalesFactory.getUTC()),
                                              Constants.EIGEN5C_EARTH_MU);
-            ToleranceProvider.of(CartesianToleranceProvider.of(1)).getTolerances(orbit, OrbitType.KEPLERIAN);
+            ToleranceProvider.of(CartesianToleranceProvider.of(1)).getTolerances(orbit, OrbitParamsType.KEPLERIAN);
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException pe) {
             Assertions.assertEquals(OrekitMessages.SINGULAR_JACOBIAN_FOR_ORBIT_TYPE, pe.getSpecifier());
@@ -1222,7 +1222,7 @@ class NumericalPropagatorTest {
 
         // initialize the testing points
         final List<SpacecraftState> states = new ArrayList<>();
-        final NumericalPropagator propagator = createPropagator(initialState, OrbitType.CARTESIAN, PositionAngleType.TRUE);
+        final NumericalPropagator propagator = createPropagator(initialState, OrbitParamsType.CARTESIAN, PositionAngleType.TRUE);
         final double samplingStep = 10000.0;
         propagator.setStepHandler(samplingStep, states::add);
         propagator.propagate(initialDate.shiftedBy(5 * samplingStep));
@@ -1257,221 +1257,221 @@ class NumericalPropagatorTest {
 
     @Test
     void testShiftKeplerianEllipticTrueWithoutDerivatives() {
-        doTestShift(createEllipticOrbit(), OrbitType.KEPLERIAN, PositionAngleType.TRUE, false,
+        doTestShift(createEllipticOrbit(), OrbitParamsType.KEPLERIAN, PositionAngleType.TRUE, false,
                     18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
     @Test
     void testShiftKeplerianEllipticTrueWithDerivatives() {
-        doTestShift(createEllipticOrbit(), OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+        doTestShift(createEllipticOrbit(), OrbitParamsType.KEPLERIAN, PositionAngleType.TRUE, true,
                     1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
     @Test
     void testShiftKeplerianEllipticEccentricWithoutDerivatives() {
-        doTestShift(createEllipticOrbit(), OrbitType.KEPLERIAN, PositionAngleType.ECCENTRIC, false,
+        doTestShift(createEllipticOrbit(), OrbitParamsType.KEPLERIAN, PositionAngleType.ECCENTRIC, false,
                     18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
     @Test
     void testShiftKeplerianEllipticEcentricWithDerivatives() {
-        doTestShift(createEllipticOrbit(), OrbitType.KEPLERIAN, PositionAngleType.ECCENTRIC, true,
+        doTestShift(createEllipticOrbit(), OrbitParamsType.KEPLERIAN, PositionAngleType.ECCENTRIC, true,
                     1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
     @Test
     void testShiftKeplerianEllipticMeanWithoutDerivatives() {
-        doTestShift(createEllipticOrbit(), OrbitType.KEPLERIAN, PositionAngleType.MEAN, false,
+        doTestShift(createEllipticOrbit(), OrbitParamsType.KEPLERIAN, PositionAngleType.MEAN, false,
                     18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
     @Test
     void testShiftKeplerianEllipticMeanWithDerivatives() {
-        doTestShift(createEllipticOrbit(), OrbitType.KEPLERIAN, PositionAngleType.MEAN, true,
+        doTestShift(createEllipticOrbit(), OrbitParamsType.KEPLERIAN, PositionAngleType.MEAN, true,
                     1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
     @Test
     void testShiftKeplerianHyperbolicTrueWithoutDerivatives() {
-        doTestShift(createHyperbolicOrbit(), OrbitType.KEPLERIAN, PositionAngleType.TRUE, false,
+        doTestShift(createHyperbolicOrbit(), OrbitParamsType.KEPLERIAN, PositionAngleType.TRUE, false,
                     0.484, 1.94, 12.1, 48.3, 108.5);
     }
 
     @Test
     void testShiftKeplerianHyperbolicTrueWithDerivatives() {
-        doTestShift(createHyperbolicOrbit(), OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+        doTestShift(createHyperbolicOrbit(), OrbitParamsType.KEPLERIAN, PositionAngleType.TRUE, true,
                     1.38e-4, 1.10e-3, 1.72e-2, 1.37e-1, 4.62e-1);
     }
 
     @Test
     void testShiftKeplerianHyperbolicEccentricWithoutDerivatives() {
-        doTestShift(createHyperbolicOrbit(), OrbitType.KEPLERIAN, PositionAngleType.ECCENTRIC, false,
+        doTestShift(createHyperbolicOrbit(), OrbitParamsType.KEPLERIAN, PositionAngleType.ECCENTRIC, false,
                     0.484, 1.94, 12.1, 48.3, 108.5);
     }
 
     @Test
     void testShiftKeplerianHyperbolicEcentricWithDerivatives() {
-        doTestShift(createHyperbolicOrbit(), OrbitType.KEPLERIAN, PositionAngleType.ECCENTRIC, true,
+        doTestShift(createHyperbolicOrbit(), OrbitParamsType.KEPLERIAN, PositionAngleType.ECCENTRIC, true,
                     1.38e-4, 1.10e-3, 1.72e-2, 1.37e-1, 4.62e-1);
     }
 
     @Test
     void testShiftKeplerianHyperbolicMeanWithoutDerivatives() {
-        doTestShift(createHyperbolicOrbit(), OrbitType.KEPLERIAN, PositionAngleType.MEAN, false,
+        doTestShift(createHyperbolicOrbit(), OrbitParamsType.KEPLERIAN, PositionAngleType.MEAN, false,
                     0.484, 1.94, 12.1, 48.3, 108.5);
     }
 
     @Test
     void testShiftKeplerianHyperbolicMeanWithDerivatives() {
-        doTestShift(createHyperbolicOrbit(), OrbitType.KEPLERIAN, PositionAngleType.MEAN, true,
+        doTestShift(createHyperbolicOrbit(), OrbitParamsType.KEPLERIAN, PositionAngleType.MEAN, true,
                     1.38e-4, 1.10e-3, 1.72e-2, 1.37e-1, 4.62e-1);
     }
 
     @Test
     void testShiftCartesianEllipticTrueWithoutDerivatives() {
-        doTestShift(createEllipticOrbit(), OrbitType.CARTESIAN, PositionAngleType.TRUE, false,
+        doTestShift(createEllipticOrbit(), OrbitParamsType.CARTESIAN, PositionAngleType.TRUE, false,
                     18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
     @Test
     void testShiftCartesianEllipticTrueWithDerivatives() {
-        doTestShift(createEllipticOrbit(), OrbitType.CARTESIAN, PositionAngleType.TRUE, true,
+        doTestShift(createEllipticOrbit(), OrbitParamsType.CARTESIAN, PositionAngleType.TRUE, true,
                     1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
     @Test
     void testShiftCartesianEllipticEccentricWithoutDerivatives() {
-        doTestShift(createEllipticOrbit(), OrbitType.CARTESIAN, PositionAngleType.ECCENTRIC, false,
+        doTestShift(createEllipticOrbit(), OrbitParamsType.CARTESIAN, PositionAngleType.ECCENTRIC, false,
                     18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
     @Test
     void testShiftCartesianEllipticEcentricWithDerivatives() {
-        doTestShift(createEllipticOrbit(), OrbitType.CARTESIAN, PositionAngleType.ECCENTRIC, true,
+        doTestShift(createEllipticOrbit(), OrbitParamsType.CARTESIAN, PositionAngleType.ECCENTRIC, true,
                     1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
     @Test
     void testShiftCartesianEllipticMeanWithoutDerivatives() {
-        doTestShift(createEllipticOrbit(), OrbitType.CARTESIAN, PositionAngleType.MEAN, false,
+        doTestShift(createEllipticOrbit(), OrbitParamsType.CARTESIAN, PositionAngleType.MEAN, false,
                     18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
     @Test
     void testShiftCartesianEllipticMeanWithDerivatives() {
-        doTestShift(createEllipticOrbit(), OrbitType.CARTESIAN, PositionAngleType.MEAN, true,
+        doTestShift(createEllipticOrbit(), OrbitParamsType.CARTESIAN, PositionAngleType.MEAN, true,
                     1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
     @Test
     void testShiftCartesianHyperbolicTrueWithoutDerivatives() {
-        doTestShift(createHyperbolicOrbit(), OrbitType.CARTESIAN, PositionAngleType.TRUE, false,
+        doTestShift(createHyperbolicOrbit(), OrbitParamsType.CARTESIAN, PositionAngleType.TRUE, false,
                     0.48, 1.93, 12.1, 48.3, 108.5);
     }
 
     @Test
     void testShiftCartesianHyperbolicTrueWithDerivatives() {
-        doTestShift(createHyperbolicOrbit(), OrbitType.CARTESIAN, PositionAngleType.TRUE, true,
+        doTestShift(createHyperbolicOrbit(), OrbitParamsType.CARTESIAN, PositionAngleType.TRUE, true,
                     1.38e-4, 1.10e-3, 1.72e-2, 1.37e-1, 4.62e-1);
     }
 
     @Test
     void testShiftCartesianHyperbolicEccentricWithoutDerivatives() {
-        doTestShift(createHyperbolicOrbit(), OrbitType.CARTESIAN, PositionAngleType.ECCENTRIC, false,
+        doTestShift(createHyperbolicOrbit(), OrbitParamsType.CARTESIAN, PositionAngleType.ECCENTRIC, false,
                     0.48, 1.93, 12.1, 48.3, 108.5);
     }
 
     @Test
     void testShiftCartesianHyperbolicEcentricWithDerivatives() {
-        doTestShift(createHyperbolicOrbit(), OrbitType.CARTESIAN, PositionAngleType.ECCENTRIC, true,
+        doTestShift(createHyperbolicOrbit(), OrbitParamsType.CARTESIAN, PositionAngleType.ECCENTRIC, true,
                     1.38e-4, 1.10e-3, 1.72e-2, 1.37e-1, 4.62e-1);
     }
 
     @Test
     void testShiftCartesianHyperbolicMeanWithoutDerivatives() {
-        doTestShift(createHyperbolicOrbit(), OrbitType.CARTESIAN, PositionAngleType.MEAN, false,
+        doTestShift(createHyperbolicOrbit(), OrbitParamsType.CARTESIAN, PositionAngleType.MEAN, false,
                     0.48, 1.93, 12.1, 48.3, 108.5);
     }
 
     @Test
     void testShiftCartesianHyperbolicMeanWithDerivatives() {
-        doTestShift(createHyperbolicOrbit(), OrbitType.CARTESIAN, PositionAngleType.MEAN, true,
+        doTestShift(createHyperbolicOrbit(), OrbitParamsType.CARTESIAN, PositionAngleType.MEAN, true,
                     1.38e-4, 1.10e-3, 1.72e-2, 1.37e-1, 4.62e-1);
     }
 
     @Test
     void testShiftCircularTrueWithoutDerivatives() {
-        doTestShift(createEllipticOrbit(), OrbitType.CIRCULAR, PositionAngleType.TRUE, false,
+        doTestShift(createEllipticOrbit(), OrbitParamsType.CIRCULAR, PositionAngleType.TRUE, false,
                     18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
     @Test
     void testShiftCircularTrueWithDerivatives() {
-        doTestShift(createEllipticOrbit(), OrbitType.CIRCULAR, PositionAngleType.TRUE, true,
+        doTestShift(createEllipticOrbit(), OrbitParamsType.CIRCULAR, PositionAngleType.TRUE, true,
                     1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
     @Test
     void testShiftCircularEccentricWithoutDerivatives() {
-        doTestShift(createEllipticOrbit(), OrbitType.CIRCULAR, PositionAngleType.ECCENTRIC, false,
+        doTestShift(createEllipticOrbit(), OrbitParamsType.CIRCULAR, PositionAngleType.ECCENTRIC, false,
                     18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
     @Test
     void testShiftCircularEcentricWithDerivatives() {
-        doTestShift(createEllipticOrbit(), OrbitType.CIRCULAR, PositionAngleType.ECCENTRIC, true,
+        doTestShift(createEllipticOrbit(), OrbitParamsType.CIRCULAR, PositionAngleType.ECCENTRIC, true,
                     1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
     @Test
     void testShiftCircularMeanWithoutDerivatives() {
-        doTestShift(createEllipticOrbit(), OrbitType.CIRCULAR, PositionAngleType.MEAN, false,
+        doTestShift(createEllipticOrbit(), OrbitParamsType.CIRCULAR, PositionAngleType.MEAN, false,
                     18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
     @Test
     void testShiftCircularMeanWithDerivatives() {
-        doTestShift(createEllipticOrbit(), OrbitType.CIRCULAR, PositionAngleType.MEAN, true,
+        doTestShift(createEllipticOrbit(), OrbitParamsType.CIRCULAR, PositionAngleType.MEAN, true,
                     1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
     @Test
     void testShiftEquinoctialTrueWithoutDerivatives() {
-        doTestShift(createEllipticOrbit(), OrbitType.EQUINOCTIAL, PositionAngleType.TRUE, false,
+        doTestShift(createEllipticOrbit(), OrbitParamsType.EQUINOCTIAL, PositionAngleType.TRUE, false,
                     18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
     @Test
     void testShiftEquinoctialTrueWithDerivatives() {
-        doTestShift(createEllipticOrbit(), OrbitType.EQUINOCTIAL, PositionAngleType.TRUE, true,
+        doTestShift(createEllipticOrbit(), OrbitParamsType.EQUINOCTIAL, PositionAngleType.TRUE, true,
                     1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
     @Test
     void testShiftEquinoctialEccentricWithoutDerivatives() {
-        doTestShift(createEllipticOrbit(), OrbitType.EQUINOCTIAL, PositionAngleType.ECCENTRIC, false,
+        doTestShift(createEllipticOrbit(), OrbitParamsType.EQUINOCTIAL, PositionAngleType.ECCENTRIC, false,
                     18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
     @Test
     void testShiftEquinoctialEcentricWithDerivatives() {
-        doTestShift(createEllipticOrbit(), OrbitType.EQUINOCTIAL, PositionAngleType.ECCENTRIC, true,
+        doTestShift(createEllipticOrbit(), OrbitParamsType.EQUINOCTIAL, PositionAngleType.ECCENTRIC, true,
                     1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
     @Test
     void testShiftEquinoctialMeanWithoutDerivatives() {
-        doTestShift(createEllipticOrbit(), OrbitType.EQUINOCTIAL, PositionAngleType.MEAN, false,
+        doTestShift(createEllipticOrbit(), OrbitParamsType.EQUINOCTIAL, PositionAngleType.MEAN, false,
                     18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
     @Test
     void testShiftEquinoctialMeanWithDerivatives() {
-        doTestShift(createEllipticOrbit(), OrbitType.EQUINOCTIAL, PositionAngleType.MEAN, true,
+        doTestShift(createEllipticOrbit(), OrbitParamsType.EQUINOCTIAL, PositionAngleType.MEAN, true,
                     1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
-    private static void doTestShift(final CartesianOrbit orbit, final OrbitType orbitType,
+    private static void doTestShift(final CartesianOrbit orbit, final OrbitParamsType orbitParamsType,
                                     final PositionAngleType angleType, final boolean withDerivatives,
                                     final double error60s, final double error120s,
                                     final double error300s, final double error600s,
@@ -1480,12 +1480,12 @@ class NumericalPropagatorTest {
 
         Utils.setDataRoot("regular-data:atmosphere:potential/grgs-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
-        final NumericalPropagator np = createPropagator(new SpacecraftState(orbit), orbitType, angleType);
+        final NumericalPropagator np = createPropagator(new SpacecraftState(orbit), orbitParamsType, angleType);
 
         // the reference date for shifts is set at 60s, so the propagator can provide derivatives if needed
         // (derivatives are not available in the initial orbit)
         final AbsoluteDate reference = orbit.getDate().shiftedBy(60.0);
-        final ShiftChecker checker   = new ShiftChecker(withDerivatives, orbitType, angleType,
+        final ShiftChecker checker   = new ShiftChecker(withDerivatives, orbitParamsType, angleType,
                                                         error60s,
                                                         error120s, error300s,
                                                         error600s, error900s);
@@ -1504,7 +1504,7 @@ class NumericalPropagatorTest {
     private static class ShiftChecker implements EventHandler {
 
         private final boolean       withDerivatives;
-        private final OrbitType     orbitType;
+        private final OrbitParamsType orbitParamsType;
         private final PositionAngleType angleType;
         private final double        error60s;
         private final double        error120s;
@@ -1513,12 +1513,12 @@ class NumericalPropagatorTest {
         private final double        error900s;
         private SpacecraftState     referenceState;
 
-        ShiftChecker(final boolean withDerivatives, final OrbitType orbitType,
+        ShiftChecker(final boolean withDerivatives, final OrbitParamsType orbitParamsType,
                      final PositionAngleType angleType, final double error60s,
                      final double error120s, final double error300s,
                      final double error600s, final double error900s) {
             this.withDerivatives = withDerivatives;
-            this.orbitType       = orbitType;
+            this.orbitParamsType = orbitParamsType;
             this.angleType       = angleType;
             this.error60s        = error60s;
             this.error120s       = error120s;
@@ -1539,8 +1539,8 @@ class NumericalPropagatorTest {
                     // remove derivatives, to check accuracy of the shiftedBy method decreases without them
                     final double[] stateVector = new double[6];
                     final Orbit o = s.getOrbit();
-                    orbitType.mapOrbitToArray(o, angleType, stateVector, null);
-                    final Orbit fixedOrbit = orbitType.mapArrayToOrbit(stateVector, null, angleType,
+                    orbitParamsType.mapOrbitToArray(o, angleType, stateVector, null);
+                    final Orbit fixedOrbit = orbitParamsType.mapArrayToOrbit(stateVector, null, angleType,
                                                                        o.getDate(), o.getMu(), o.getFrame());
                     referenceState = new SpacecraftState(fixedOrbit, s.getAttitude()).withMass(s.getMass());
                 }
@@ -1757,7 +1757,7 @@ class NumericalPropagatorTest {
         Utils.setDataRoot("regular-data:atmosphere:potential/grgs-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
 
-        final NumericalPropagator propag = createPropagator(initialState, OrbitType.KEPLERIAN, PositionAngleType.TRUE);
+        final NumericalPropagator propag = createPropagator(initialState, OrbitParamsType.KEPLERIAN, PositionAngleType.TRUE);
 
         // Stop condition
         final double convergenceThreshold = 1e-9;
@@ -1886,7 +1886,7 @@ class NumericalPropagatorTest {
     private static double[] recomputeFollowing(final int startIndex, List<SpacecraftState> allPoints)
         {
         SpacecraftState startState = allPoints.get(startIndex);
-        NumericalPropagator innerPropagator = createPropagator(startState, OrbitType.CARTESIAN, PositionAngleType.TRUE);
+        NumericalPropagator innerPropagator = createPropagator(startState, OrbitParamsType.CARTESIAN, PositionAngleType.TRUE);
         double[] errors = new double[allPoints.size() - startIndex - 1];
         for (int endIndex = startIndex + 1; endIndex < allPoints.size(); ++endIndex) {
             final TimeStampedPVCoordinates reference  = allPoints.get(endIndex).getPVCoordinates();
@@ -1897,7 +1897,7 @@ class NumericalPropagatorTest {
     }
 
     private synchronized static NumericalPropagator createPropagator(SpacecraftState spacecraftState,
-                                                                     OrbitType orbitType, PositionAngleType angleType)
+                                                                     OrbitParamsType orbitParamsType, PositionAngleType angleType)
         {
 
         final double minStep                         = 0.001;
@@ -1911,10 +1911,10 @@ class NumericalPropagatorTest {
 
         // propagator main configuration
         final double[][] tol           = ToleranceProvider.of(CartesianToleranceProvider.of(positionTolerance))
-                .getTolerances(spacecraftState.getOrbit(), orbitType);
+                .getTolerances(spacecraftState.getOrbit(), orbitParamsType);
         final ODEIntegrator integrator = new DormandPrince853Integrator(minStep, maxStep, tol[0], tol[1]);
         final NumericalPropagator np   = new NumericalPropagator(integrator);
-        np.setOrbitType(orbitType);
+        np.setOrbitParamsType(orbitParamsType);
         np.setPositionAngleType(angleType);
         np.setInitialState(spacecraftState);
 
@@ -2069,7 +2069,7 @@ class NumericalPropagatorTest {
                                                  FramesFactory.getEME2000(), initDate, mu);
         initialState = new SpacecraftState(orbit);
         double[][] tolerance = ToleranceProvider.of(CartesianToleranceProvider.of(0.001)).getTolerances(orbit,
-                OrbitType.EQUINOCTIAL, PositionAngleType.TRUE);
+                OrbitParamsType.EQUINOCTIAL, PositionAngleType.TRUE);
         AdaptiveStepsizeIntegrator integrator =
                 new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(60);

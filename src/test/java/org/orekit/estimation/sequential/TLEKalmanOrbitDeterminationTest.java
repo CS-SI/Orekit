@@ -63,7 +63,7 @@ import org.orekit.models.earth.atmosphere.Atmosphere;
 import org.orekit.models.earth.atmosphere.HarrisPriester;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.analytical.tle.TLE;
@@ -220,7 +220,7 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
         templateTLE = new TLE(line1, line2);
 
         // Default for test is Cartesian
-        final OrbitType orbitType = OrbitType.CARTESIAN;
+        final OrbitParamsType orbitParamsType = OrbitParamsType.CARTESIAN;
 
         // Cartesian covariance matrix initialization
         final double posVar = FastMath.pow(1e3, 2);
@@ -244,7 +244,7 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
         final RealMatrix measurementQ = MatrixUtils.createRealMatrix(4, 4);
 
         // Kalman orbit determination run.
-        ResultKalman kalmanLageos2 = runKalman(input, orbitType, print,
+        ResultKalman kalmanLageos2 = runKalman(input, orbitParamsType, print,
                                                cartesianOrbitalP, cartesianOrbitalQ,
                                                null, null,
                                                measurementP, measurementQ, false);
@@ -338,7 +338,7 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
         templateTLE = new TLE(line1, line2);
 
         // Default for test is Cartesian
-        final OrbitType orbitType = OrbitType.CARTESIAN;
+        final OrbitParamsType orbitParamsType = OrbitParamsType.CARTESIAN;
 
         // Cartesian covariance matrix initialization
         final double posVar = FastMath.pow(1e3, 2);
@@ -366,7 +366,7 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
         });
 
         // Kalman orbit determination run.
-        ResultKalman kalmanGNSS = runKalman(input, orbitType, print,
+        ResultKalman kalmanGNSS = runKalman(input, orbitParamsType, print,
                                             cartesianOrbitalP, cartesianOrbitalQ,
                                             null, null,
                                             measurementP, measurementQ, false);
@@ -425,7 +425,7 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
         final SpacecraftState initState = new SpacecraftState(initOrbit);
 
         // Numerical propagator initialization
-        double[][] tolerance = ToleranceProvider.getDefaultToleranceProvider(0.001).getTolerances(initOrbit, OrbitType.CARTESIAN);
+        double[][] tolerance = ToleranceProvider.getDefaultToleranceProvider(0.001).getTolerances(initOrbit, OrbitParamsType.CARTESIAN);
         AdaptiveStepsizeIntegrator integrator =
                 new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(60);

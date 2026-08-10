@@ -30,7 +30,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.TLE;
@@ -95,7 +95,7 @@ public class DateDetectorTest {
             double restrictedDt = restrictedCurr.getDate().durationFrom(restrictedPrev.getDate());
             Assertions.assertEquals(dt * 0.5, restrictedDt, 1.0e-10);
         });
-        propagator.setOrbitType(OrbitType.EQUINOCTIAL);
+        propagator.setOrbitParamsType(OrbitParamsType.EQUINOCTIAL);
         propagator.addEventDetector(dateDetector);
         final SpacecraftState finalState = propagator.propagate(iniDate.shiftedBy(100.*dt));
 

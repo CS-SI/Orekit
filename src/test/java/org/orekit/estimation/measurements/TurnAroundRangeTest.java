@@ -32,7 +32,7 @@ import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.modifiers.TurnAroundRangeTroposphericDelayModifier;
 import org.orekit.models.earth.troposphere.ModifiedSaastamoinenModel;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -174,7 +174,7 @@ public class TurnAroundRangeTest {
         //Context context = EstimationTestUtils.geoStationnaryContext();
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitParamsType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect range measurements
@@ -272,7 +272,7 @@ public class TurnAroundRangeTest {
         //Context context = EstimationTestUtils.geoStationnaryContext();
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitParamsType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect range2 measurements
@@ -334,7 +334,7 @@ public class TurnAroundRangeTest {
                                                                 estimateWithoutDerivatives(new SpacecraftState[] { state1 }).
                                                                 getEstimatedValue(),
                                                         measurement.getDimension(), propagator.getAttitudeProvider(),
-                                                        OrbitType.CARTESIAN, PositionAngleType.TRUE, 2.0, 3).value(state);
+                                                        OrbitParamsType.CARTESIAN, PositionAngleType.TRUE, 2.0, 3).value(state);
 
             Assertions.assertEquals(jacobianRef.length, jacobian.length);
             Assertions.assertEquals(jacobianRef[0].length, jacobian[0].length);
@@ -404,7 +404,7 @@ public class TurnAroundRangeTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitParamsType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // Create perfect TAR measurements

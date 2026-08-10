@@ -44,7 +44,7 @@ import org.orekit.models.earth.ReferenceEllipsoid;
 import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.FieldOrbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.analytical.FieldKeplerianPropagator;
 import org.orekit.propagation.events.handlers.EventHandler;
@@ -197,7 +197,7 @@ class FieldEclipseDetectorTest {
             new DormandPrince853FieldIntegrator<>(field, 0.001, 1000, absTolerance, relTolerance);
         integrator.setInitialStepSize(60.);
         FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(integrator);
-        propagator.setOrbitType(OrbitType.EQUINOCTIAL);
+        propagator.setOrbitParamsType(OrbitParamsType.EQUINOCTIAL);
         propagator.setInitialState(initialState);
 
         FieldEclipseDetector<T> e = new FieldEclipseDetector<>(field, sun, sunRadius, earth).
@@ -228,7 +228,7 @@ class FieldEclipseDetectorTest {
             new DormandPrince853FieldIntegrator<>(field, 0.001, 1000, absTolerance, relTolerance);
         integrator.setInitialStepSize(60);
         FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(integrator);
-        propagator.setOrbitType(OrbitType.EQUINOCTIAL);
+        propagator.setOrbitParamsType(OrbitParamsType.EQUINOCTIAL);
         propagator.setInitialState(initialState);
 
         FieldEclipseDetector<T> e = new FieldEclipseDetector<>(field, sun, sunRadius, earth).
@@ -264,7 +264,7 @@ class FieldEclipseDetectorTest {
             new DormandPrince853FieldIntegrator<>(field, 0.001, 1000, absTolerance, relTolerance);
         integrator.setInitialStepSize(60);
         FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(integrator);
-        propagator.setOrbitType(OrbitType.EQUINOCTIAL);
+        propagator.setOrbitParamsType(OrbitParamsType.EQUINOCTIAL);
         propagator.setInitialState(initialState);
 
         FieldEclipseDetector<T> e = new FieldEclipseDetector<>(field, sun, sunRadius, earth).
@@ -306,7 +306,7 @@ class FieldEclipseDetectorTest {
             new DormandPrince853FieldIntegrator<>(field, 0.001, 1000, absTolerance, relTolerance);
         integrator.setInitialStepSize(60);
         FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(integrator);
-        propagator.setOrbitType(OrbitType.EQUINOCTIAL);
+        propagator.setOrbitParamsType(OrbitParamsType.EQUINOCTIAL);
         propagator.setInitialState(initialState);
 
         FieldEclipseDetector<T> e = new FieldEclipseDetector<>(field, sun, sunRadius, earth).
@@ -344,7 +344,7 @@ class FieldEclipseDetectorTest {
             new DormandPrince853FieldIntegrator<>(field, 0.001, 1000, absTolerance, relTolerance);
         integrator.setInitialStepSize(60);
         FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(integrator);
-        propagator.setOrbitType(OrbitType.EQUINOCTIAL);
+        propagator.setOrbitParamsType(OrbitParamsType.EQUINOCTIAL);
         propagator.setInitialState(initialState);
 
         int n = 5;

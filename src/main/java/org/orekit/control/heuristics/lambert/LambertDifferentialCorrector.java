@@ -28,7 +28,7 @@ import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.propagation.AbstractPropagator;
 import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.SpacecraftState;
@@ -329,9 +329,9 @@ public class LambertDifferentialCorrector {
     protected RealMatrix getCartesianStm(final SpacecraftState initialState,
                                          final SpacecraftState terminalState) {
         final RealMatrix stm = matricesHarvester.getStateTransitionMatrix(terminalState).getSubMatrix(0, 5, 0, 5);
-        final OrbitType orbitType = matricesHarvester.getOrbitType();
-        if (orbitType != null && orbitType != OrbitType.CARTESIAN) {
-            final Orbit initialOrbit = orbitType.convertType(initialState.getOrbit());
+        final OrbitParamsType orbitParamsType = matricesHarvester.getOrbitParamsType();
+        if (orbitParamsType != null && orbitParamsType != OrbitParamsType.CARTESIAN) {
+            final Orbit initialOrbit = orbitParamsType.convertType(initialState.getOrbit());
             final RealMatrix initialJacobianCartesian = computeJacobianWrtCartesian(initialOrbit);
             final RealMatrix terminalJacobianOrbital = computeJacobianWrtOrbitalParameters(
                     terminalState.getOrbit());

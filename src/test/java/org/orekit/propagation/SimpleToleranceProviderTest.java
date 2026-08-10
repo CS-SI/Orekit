@@ -22,7 +22,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.Mockito;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -48,14 +48,14 @@ class SimpleToleranceProviderTest {
     }
 
     @ParameterizedTest
-    @EnumSource(OrbitType.class)
-    void testOfConstantsOrbit(final OrbitType orbitType) {
+    @EnumSource(OrbitParamsType.class)
+    void testOfConstantsOrbit(final OrbitParamsType orbitParamsType) {
         // GIVEN
         final double expectedAbsolute = 1.;
         final double expectedRelative = 2.;
         // WHEN
         final ToleranceProvider toleranceProvider = new SimpleToleranceProvider(expectedAbsolute, expectedRelative);
-        final double[][] actualTolerances = toleranceProvider.getTolerances(Mockito.mock(Orbit.class), orbitType,
+        final double[][] actualTolerances = toleranceProvider.getTolerances(Mockito.mock(Orbit.class), orbitParamsType,
                 PositionAngleType.MEAN);
         // THEN
         assertEquals(2, actualTolerances.length);
@@ -75,7 +75,7 @@ class SimpleToleranceProviderTest {
         final double expectedRelative = 2.;
         // WHEN
         final ToleranceProvider toleranceProvider = new SimpleToleranceProvider(expectedAbsolute, expectedRelative);
-        final double[][] actualTolerances = toleranceProvider.getTolerances(Mockito.mock(Orbit.class), OrbitType.EQUINOCTIAL,
+        final double[][] actualTolerances = toleranceProvider.getTolerances(Mockito.mock(Orbit.class), OrbitParamsType.EQUINOCTIAL,
                 positionAngleType);
         // THEN
         assertEquals(2, actualTolerances.length);

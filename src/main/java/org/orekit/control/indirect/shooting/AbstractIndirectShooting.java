@@ -98,12 +98,12 @@ public abstract class AbstractIndirectShooting {
         propagator.setIgnoreCentralAttraction(false);
         propagator.removeForceModels();
         if (initialState.isOrbitDefined()) {
-            propagator.setOrbitType(initialState.getOrbit().getType());
+            propagator.setOrbitParamsType(initialState.getOrbit().getType());
         } else {
             if (propagationSettings.getForceModels().stream().noneMatch(NewtonianAttraction.class::isInstance)) {
                 propagator.setIgnoreCentralAttraction(true);
             }
-            propagator.setOrbitType(null);
+            propagator.setOrbitParamsType(null);
         }
         for (final ForceModel forceModel: propagationSettings.getForceModels()) {
             propagator.addForceModel(forceModel);

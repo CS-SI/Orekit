@@ -31,7 +31,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.ToleranceProvider;
@@ -135,7 +135,7 @@ public abstract class AbstractManeuverTriggersInitializationTest<T extends Abstr
         double minStep = 1.0e-5;
         double maxStep = 1000.0;
         double positionTolerance = 1.0e-4;
-        OrbitType propagationType = OrbitType.KEPLERIAN;
+        OrbitParamsType propagationType = OrbitParamsType.KEPLERIAN;
         double[][] tolerances = ToleranceProvider.getDefaultToleranceProvider(positionTolerance).getTolerances(orbit, propagationType);
         DormandPrince853Integrator integrator =
                 new DormandPrince853Integrator(minStep, maxStep,
@@ -144,7 +144,7 @@ public abstract class AbstractManeuverTriggersInitializationTest<T extends Abstr
         integrator.setMaxGrowth(2.0);
         //Set up propagator
         propagator = new NumericalPropagator(integrator);
-        propagator.setOrbitType(propagationType);
+        propagator.setOrbitParamsType(propagationType);
 
         //Control deltaVs and mass changes
         double flowRate = -thrust / (Constants.G0_STANDARD_GRAVITY * isp);

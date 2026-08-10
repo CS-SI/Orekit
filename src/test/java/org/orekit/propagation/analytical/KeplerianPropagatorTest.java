@@ -775,7 +775,7 @@ public class KeplerianPropagatorTest {
 
     @Test
     public void testNoDerivatives() {
-        for (OrbitType type : OrbitType.values()) {
+        for (OrbitParamsType type : OrbitParamsType.values()) {
 
             // create an initial orbit with non-Keplerian acceleration
             final AbsoluteDate date         = new AbsoluteDate(2003, 9, 16, TimeScalesFactory.getUTC());

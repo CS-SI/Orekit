@@ -23,7 +23,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
@@ -47,47 +47,47 @@ public interface ToleranceProvider extends CartesianToleranceProvider {
     /**
      * Retrieve the integration tolerances given a reference orbit.
      * @param referenceOrbit orbit
-     * @param propagationOrbitType orbit type for propagation (can be different from the input orbit one)
+     * @param propagationOrbitParamsType orbit type for propagation (can be different from the input orbit one)
      * @param positionAngleType reference position angle type
      * @return absolute and relative tolerances
      */
-    double[][] getTolerances(Orbit referenceOrbit, OrbitType propagationOrbitType,
+    double[][] getTolerances(Orbit referenceOrbit, OrbitParamsType propagationOrbitParamsType,
                              PositionAngleType positionAngleType);
 
     /**
      * Retrieve the integration tolerances given a reference orbit.
      * @param referenceOrbit orbit
-     * @param propagationOrbitType orbit type for propagation (can be different from the input orbit one)
+     * @param propagationOrbitParamsType orbit type for propagation (can be different from the input orbit one)
      * @return absolute and relative tolerances
      */
-    default double[][] getTolerances(final Orbit referenceOrbit, final OrbitType propagationOrbitType) {
-        return getTolerances(referenceOrbit, propagationOrbitType, NumericalPropagator.DEFAULT_POSITION_ANGLE_TYPE);
+    default double[][] getTolerances(final Orbit referenceOrbit, final OrbitParamsType propagationOrbitParamsType) {
+        return getTolerances(referenceOrbit, propagationOrbitParamsType, NumericalPropagator.DEFAULT_POSITION_ANGLE_TYPE);
     }
 
     /**
      * Retrieve the integration tolerances given a reference Field orbit.
      * @param referenceOrbit orbit
-     * @param propagationOrbitType orbit type for propagation (can be different from the input orbit one)
+     * @param propagationOrbitParamsType orbit type for propagation (can be different from the input orbit one)
      * @param positionAngleType reference position angle type
      * @param <T> field type
      * @return absolute and relative tolerances
      */
     default <T extends CalculusFieldElement<T>> double[][] getTolerances(final FieldOrbit<T> referenceOrbit,
-                                                                         final OrbitType propagationOrbitType,
+                                                                         final OrbitParamsType propagationOrbitParamsType,
                                                                          final PositionAngleType positionAngleType) {
-        return getTolerances(referenceOrbit.toOrbit(), propagationOrbitType, positionAngleType);
+        return getTolerances(referenceOrbit.toOrbit(), propagationOrbitParamsType, positionAngleType);
     }
 
     /**
      * Retrieve the integration tolerances given a reference Field orbit.
      * @param referenceOrbit orbit
-     * @param propagationOrbitType orbit type for propagation (can be different from the input orbit one)
+     * @param propagationOrbitParamsType orbit type for propagation (can be different from the input orbit one)
      * @param <T> field type
      * @return absolute and relative tolerances
      */
     default <T extends CalculusFieldElement<T>> double[][] getTolerances(final FieldOrbit<T> referenceOrbit,
-                                                                         final OrbitType propagationOrbitType) {
-        return getTolerances(referenceOrbit, propagationOrbitType, NumericalPropagator.DEFAULT_POSITION_ANGLE_TYPE);
+                                                                         final OrbitParamsType propagationOrbitParamsType) {
+        return getTolerances(referenceOrbit, propagationOrbitParamsType, NumericalPropagator.DEFAULT_POSITION_ANGLE_TYPE);
     }
 
     /**
@@ -106,12 +106,12 @@ public interface ToleranceProvider extends CartesianToleranceProvider {
             }
 
             @Override
-            public double[][] getTolerances(final Orbit referenceOrbit, final OrbitType propagationOrbitType,
+            public double[][] getTolerances(final Orbit referenceOrbit, final OrbitParamsType propagationOrbitParamsType,
                                             final PositionAngleType positionAngleType) {
                 // compute Cartesian-related tolerances
                 final double[][] cartesianTolerances = getTolerances(referenceOrbit.getPosition(),
                         referenceOrbit.getVelocity());
-                if (propagationOrbitType == OrbitType.CARTESIAN) {
+                if (propagationOrbitParamsType == OrbitParamsType.CARTESIAN) {
                     return cartesianTolerances;
                 }
 
@@ -122,7 +122,7 @@ public interface ToleranceProvider extends CartesianToleranceProvider {
 
                 // convert the orbit to the desired type
                 final double[][] jacobian = new double[6][6];
-                final Orbit converted = propagationOrbitType.convertType(referenceOrbit);
+                final Orbit converted = propagationOrbitParamsType.convertType(referenceOrbit);
                 converted.getJacobianWrtCartesian(positionAngleType, jacobian);
 
                 double minimumRel = cartRelTol[6];
@@ -135,7 +135,7 @@ public interface ToleranceProvider extends CartesianToleranceProvider {
                             FastMath.abs(row[4]) * cartAbsTol[4] +
                             FastMath.abs(row[5]) * cartAbsTol[5];
                     if (Double.isNaN(absTol[i])) {
-                        throw new OrekitException(OrekitMessages.SINGULAR_JACOBIAN_FOR_ORBIT_TYPE, propagationOrbitType);
+                        throw new OrekitException(OrekitMessages.SINGULAR_JACOBIAN_FOR_ORBIT_TYPE, propagationOrbitParamsType);
                     }
                     minimumRel = FastMath.min(minimumRel, cartRelTol[i]);
                 }
@@ -164,7 +164,7 @@ public interface ToleranceProvider extends CartesianToleranceProvider {
     static ToleranceProvider getDefaultToleranceProvider(final double dP) {
         return new ToleranceProvider() {
             @Override
-            public double[][] getTolerances(final Orbit referenceOrbit, final OrbitType propagationOrbitType,
+            public double[][] getTolerances(final Orbit referenceOrbit, final OrbitParamsType propagationOrbitParamsType,
                                             final PositionAngleType positionAngleType) {
                 // Cartesian case
                 final double[] relTol = new double[7];
@@ -180,14 +180,14 @@ public interface ToleranceProvider extends CartesianToleranceProvider {
                 Arrays.fill(cartAbsTol, 3, 6, dV);
                 cartAbsTol[6] = DEFAULT_ABSOLUTE_MASS_TOLERANCE;
 
-                if (propagationOrbitType == OrbitType.CARTESIAN) {
+                if (propagationOrbitParamsType == OrbitParamsType.CARTESIAN) {
                     return new double[][] {cartAbsTol, relTol};
                 }
 
                 // convert the orbit to the desired type
                 final double[] absTol = cartAbsTol.clone();
                 final double[][] jacobian = new double[6][6];
-                final Orbit converted = propagationOrbitType.convertType(referenceOrbit);
+                final Orbit converted = propagationOrbitParamsType.convertType(referenceOrbit);
                 converted.getJacobianWrtCartesian(PositionAngleType.TRUE, jacobian);
 
                 for (int i = 0; i < jacobian.length; ++i) {
@@ -199,7 +199,7 @@ public interface ToleranceProvider extends CartesianToleranceProvider {
                             FastMath.abs(row[4]) * cartAbsTol[4] +
                             FastMath.abs(row[5]) * cartAbsTol[5];
                     if (Double.isNaN(absTol[i])) {
-                        throw new OrekitException(OrekitMessages.SINGULAR_JACOBIAN_FOR_ORBIT_TYPE, propagationOrbitType);
+                        throw new OrekitException(OrekitMessages.SINGULAR_JACOBIAN_FOR_ORBIT_TYPE, propagationOrbitParamsType);
                     }
                 }
 

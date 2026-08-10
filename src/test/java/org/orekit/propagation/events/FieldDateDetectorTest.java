@@ -35,7 +35,7 @@ import org.orekit.Utils;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.FieldOrbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.propagation.FieldPropagator;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.analytical.tle.FieldTLE;
@@ -178,7 +178,7 @@ public class FieldDateDetectorTest {
             T restrictedDt = restrictedCurr.getDate().durationFrom(restrictedPrev.getDate());
             Assertions.assertEquals(dt.multiply(0.5).getReal(), restrictedDt.getReal(), 1.0e-10);
         });
-        propagator.setOrbitType(OrbitType.EQUINOCTIAL);
+        propagator.setOrbitParamsType(OrbitParamsType.EQUINOCTIAL);
         propagator.setInitialState(initialState.addAdditionalData("dummy", MathArrays.buildArray(field, 1)));
 
         FieldDateDetector<T>  dateDetector = new FieldDateDetector<>(field, toArray(iniDate.shiftedBy(2.0*dt))).
@@ -209,7 +209,7 @@ public class FieldDateDetectorTest {
             new DormandPrince853FieldIntegrator<>(field, 0.001, 1000, absTolerance, relTolerance);
         integrator.setInitialStepSize(60);
         FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(integrator);
-        propagator.setOrbitType(OrbitType.EQUINOCTIAL);
+        propagator.setOrbitParamsType(OrbitParamsType.EQUINOCTIAL);
         propagator.setInitialState(initialState);
         @SuppressWarnings("unchecked")
         FieldDateDetector<T> dateDetector = new FieldDateDetector<>(field, (FieldTimeStamped<T>[]) Array.newInstance(FieldTimeStamped.class, 0)).
@@ -252,7 +252,7 @@ public class FieldDateDetectorTest {
             new DormandPrince853FieldIntegrator<>(field, 0.001, 1000, absTolerance, relTolerance);
         integrator.setInitialStepSize(60);
         FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(integrator);
-        propagator.setOrbitType(OrbitType.EQUINOCTIAL);
+        propagator.setOrbitParamsType(OrbitParamsType.EQUINOCTIAL);
         propagator.setInitialState(initialState);
 
         FieldDateDetector<T> dateDetector = new FieldDateDetector<>(field, toArray(iniDate.shiftedBy(-dt))).
@@ -290,7 +290,7 @@ public class FieldDateDetectorTest {
             new DormandPrince853FieldIntegrator<>(field, 0.001, 1000, absTolerance, relTolerance);
         integrator.setInitialStepSize(60);
         FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(integrator);
-        propagator.setOrbitType(OrbitType.EQUINOCTIAL);
+        propagator.setOrbitParamsType(OrbitParamsType.EQUINOCTIAL);
         propagator.setInitialState(initialState);
 
         FieldDateDetector<T> dateDetector = new FieldDateDetector<>(field, toArray(iniDate.shiftedBy(dt))).
@@ -332,7 +332,7 @@ public class FieldDateDetectorTest {
             new DormandPrince853FieldIntegrator<>(field, 0.001, 1000, absTolerance, relTolerance);
         integrator.setInitialStepSize(60);
         FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(integrator);
-        propagator.setOrbitType(OrbitType.EQUINOCTIAL);
+        propagator.setOrbitParamsType(OrbitParamsType.EQUINOCTIAL);
         propagator.setInitialState(initialState);
 
         //setup
