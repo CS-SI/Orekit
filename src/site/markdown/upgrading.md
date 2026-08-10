@@ -69,3 +69,4 @@ to these hints pages:
 | upgrade hints                                 |
 |-----------------------------------------------|
 | [from 12.X to 13.0](./upgrades/12-to-13.html) |
+| [from 13.X to 14.0](./upgrades/13-to-14.html) |
