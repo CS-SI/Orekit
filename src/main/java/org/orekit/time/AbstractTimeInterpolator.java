@@ -258,7 +258,7 @@ public abstract class AbstractTimeInterpolator<T extends TimeStamped> implements
          * @param interpolationDate interpolation date
          * @param sample            time stamped sample (chronologically sorted)
          */
-        protected InterpolationData(final AbsoluteDate interpolationDate, final Collection<T> sample) {
+        protected InterpolationData(final AbsoluteDate interpolationDate, final Collection<? extends T> sample) {
             this(interpolationDate, (sample instanceof List) ? (List<T>) sample : new ArrayList<>(sample));
         }
 
