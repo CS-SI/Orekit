@@ -20,7 +20,6 @@ import org.hipparchus.CalculusFieldElement;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbstractFieldTimeInterpolator;
 import org.orekit.time.FieldTimeInterpolator;
-import org.orekit.time.FieldTimeStamped;
 import org.orekit.utils.TimeStampedFieldAngularCoordinates;
 
 import java.util.Collections;
