@@ -98,7 +98,7 @@ public class FieldAttitudeInterpolator<KK extends CalculusFieldElement<KK>>
     }
 
     @Override
-    public List<FieldTimeInterpolator<? extends FieldTimeStamped<KK>, KK>> getSubInterpolators() {
+    public List<FieldTimeInterpolator<?, KK>> getSubInterpolators() {
         return Collections.singletonList(interpolator);
     }
 }

@@ -229,7 +229,7 @@ public class FieldAttitudeInterpolatorTest {
                 new FieldAttitudeInterpolator<>(FramesFactory.getGCRF(), mockTimeInterpolator);
 
         // WHEN
-        final List<FieldTimeInterpolator<? extends FieldTimeStamped<Binary64>, Binary64>> actualSubInterpolators =
+        final List<FieldTimeInterpolator<?, Binary64>> actualSubInterpolators =
                 attitudeInterpolator.getSubInterpolators();
 
         // THEN
