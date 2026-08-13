@@ -34,6 +34,7 @@ import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 /** Enumerate for {@link Orbit} and {@link FieldOrbit} parameters types.
+ * They are full physical coordinates (six-dimensional) in the two-body (possibly perturbed) problem.
  */
 public enum OrbitParamsType {
 

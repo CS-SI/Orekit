@@ -99,7 +99,7 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
                                           final double threshold,
                                           final int maxIterations) {
         this.builder       = builder;
-        this.frame         = builder.getOrbitalParameterFactory().getFrame();
+        this.frame         = builder.getOrbitalStateFactory().getFrame();
         this.optimizer     = new LevenbergMarquardtOptimizer();
         this.maxIterations = maxIterations;
         this.sample        = new ArrayList<>();

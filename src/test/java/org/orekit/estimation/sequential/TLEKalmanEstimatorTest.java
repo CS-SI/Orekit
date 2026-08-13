@@ -16,6 +16,10 @@
  */
 package org.orekit.estimation.sequential;
 
+import java.io.Serial;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
@@ -42,10 +46,6 @@ import org.orekit.propagation.conversion.TLEPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
-
-import java.io.Serial;
-import java.util.ArrayList;
-import java.util.List;
 
 public class TLEKalmanEstimatorTest {
 
@@ -98,7 +98,7 @@ public class TLEKalmanEstimatorTest {
 
         // the filter state vector holds the builder parameters, not the Cartesian coordinates,
         // so both matrices have to be converted: P(B) = dB/dC P(C) (dB/dC)^T
-        final RealMatrix dBdC = propagatorBuilder.getOrbitalParameterFactory().getJacobianWrtCartesian();
+        final RealMatrix dBdC = propagatorBuilder.getOrbitalStateFactory().getJacobianWrtCartesian();
         final RealMatrix initialP = dBdC.multiply(initialCartesianP.multiply(dBdC.transpose()));
         final RealMatrix Q = dBdC.multiply(initialCartesianQ.multiply(dBdC.transpose()));
 
@@ -162,7 +162,7 @@ public class TLEKalmanEstimatorTest {
         // as a 10 m shift along X, but it is of the same order of magnitude, which is all
         // this test needs to start away from the solution.
         final ParameterDriver meanMotionDriver =
-            propagatorBuilder.getOrbitalParameterFactory().getOrbitalParametersDrivers().getDrivers().getFirst();
+            propagatorBuilder.getOrbitalStateFactory().getOrbitalParametersDrivers().getDrivers().getFirst();
         final double meanMotion = meanMotionDriver.getValue();
         final double semiMajorAxis = FastMath.cbrt(TLEPropagator.getMU() / (meanMotion * meanMotion));
         final double deltaMeanMotion = -1.5 * meanMotion / semiMajorAxis * 10;
@@ -177,7 +177,7 @@ public class TLEKalmanEstimatorTest {
 
         // the filter state vector holds the builder parameters, not the Cartesian coordinates,
         // so the covariance has to be converted: P(B) = dB/dC P(C) (dB/dC)^T
-        final RealMatrix dBdC = propagatorBuilder.getOrbitalParameterFactory().getJacobianWrtCartesian();
+        final RealMatrix dBdC = propagatorBuilder.getOrbitalStateFactory().getJacobianWrtCartesian();
         final RealMatrix initialP = dBdC.multiply(cartesianP.multiply(dBdC.transpose()));
 
         // Process noise matrix is set to 0 here
@@ -218,7 +218,7 @@ public class TLEKalmanEstimatorTest {
         // Create initial orbit and propagator builder
         final double        dP            = 1.;
         final TLEPropagatorBuilder propagatorBuilder = context.createTleBuilder(dP);
-        propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getOrbitalParameterFactory().getFrame(),
+        propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getOrbitalStateFactory().getFrame(),
                                                             LOFType.LVLH));
 
         // Antenna phase center definition
@@ -258,7 +258,7 @@ public class TLEKalmanEstimatorTest {
         // as a 10 m shift along X, but it is of the same order of magnitude, which is all
         // this test needs to start away from the solution.
         final ParameterDriver meanMotionDriver =
-            propagatorBuilder.getOrbitalParameterFactory().getOrbitalParametersDrivers().getDrivers().getFirst();
+            propagatorBuilder.getOrbitalStateFactory().getOrbitalParametersDrivers().getDrivers().getFirst();
         final double meanMotion = meanMotionDriver.getValue();
         final double semiMajorAxis = FastMath.cbrt(TLEPropagator.getMU() / (meanMotion * meanMotion));
         final double deltaMeanMotion = -1.5 * meanMotion / semiMajorAxis * 10;
@@ -273,7 +273,7 @@ public class TLEKalmanEstimatorTest {
 
         // the filter state vector holds the builder parameters, not the Cartesian coordinates,
         // so the covariance has to be converted: P(B) = dB/dC P(C) (dB/dC)^T
-        final RealMatrix dBdC = propagatorBuilder.getOrbitalParameterFactory().getJacobianWrtCartesian();
+        final RealMatrix dBdC = propagatorBuilder.getOrbitalStateFactory().getJacobianWrtCartesian();
         final RealMatrix initialP = dBdC.multiply(cartesianP.multiply(dBdC.transpose()));
 
         // Process noise matrix is set to 0 here
@@ -347,7 +347,7 @@ public class TLEKalmanEstimatorTest {
         // as a 10 m shift along X, but it is of the same order of magnitude, which is all
         // this test needs to start away from the solution.
         final ParameterDriver meanMotionDriver =
-            propagatorBuilder.getOrbitalParameterFactory().getOrbitalParametersDrivers().getDrivers().getFirst();
+            propagatorBuilder.getOrbitalStateFactory().getOrbitalParametersDrivers().getDrivers().getFirst();
         final double meanMotion = meanMotionDriver.getValue();
         final double semiMajorAxis = FastMath.cbrt(TLEPropagator.getMU() / (meanMotion * meanMotion));
         final double deltaMeanMotion = -1.5 * meanMotion / semiMajorAxis * 10;
@@ -362,7 +362,7 @@ public class TLEKalmanEstimatorTest {
 
         // the filter state vector holds the builder parameters, not the Cartesian coordinates,
         // so the covariance has to be converted: P(B) = dB/dC P(C) (dB/dC)^T
-        final RealMatrix dBdC = propagatorBuilder.getOrbitalParameterFactory().getJacobianWrtCartesian();
+        final RealMatrix dBdC = propagatorBuilder.getOrbitalStateFactory().getJacobianWrtCartesian();
         final RealMatrix initialP = dBdC.multiply(cartesianP.multiply(dBdC.transpose()));
 
         // Process noise matrix is set to 0 here

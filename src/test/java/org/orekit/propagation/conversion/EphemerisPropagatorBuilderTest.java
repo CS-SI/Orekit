@@ -17,6 +17,10 @@
 
 package org.orekit.propagation.conversion;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
@@ -35,11 +39,6 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeInterpolator;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -82,9 +81,9 @@ public class EphemerisPropagatorBuilderTest {
 
         // THEN
         // Assert initial orbit
-        assertEquals(defaultOrbit.getFrame(), builder.getOrbitalParameterFactory().getFrame());
-        assertEquals(defaultOrbit.getDate(),  builder.getOrbitalParameterFactory().getDate());
-        assertEquals(defaultOrbit.getMu(),    builder.getOrbitalParameterFactory().getMu());
+        assertEquals(defaultOrbit.getFrame(), builder.getOrbitalStateFactory().getFrame());
+        assertEquals(defaultOrbit.getDate(),  builder.getOrbitalStateFactory().getDate());
+        assertEquals(defaultOrbit.getMu(),    builder.getOrbitalStateFactory().getMu());
 
         // Assert attitude provider
         assertEquals(mockAttitudeProvider,  builder.getAttitudeProvider());

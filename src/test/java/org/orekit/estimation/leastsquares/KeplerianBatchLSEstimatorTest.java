@@ -160,7 +160,7 @@ class KeplerianBatchLSEstimatorTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final KeplerianPropagatorBuilder propagatorBuilder = context.createKeplerian(PositionAngleType.MEAN, true, 1.0);
-        propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getOrbitalParameterFactory().getFrame(),
+        propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getOrbitalStateFactory().getFrame(),
                                                             LOFType.LVLH));
         final Vector3D antennaPhaseCenter = new Vector3D(-1.2, 2.3, -0.7);
 

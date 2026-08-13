@@ -84,7 +84,7 @@ public class UnscentedKalmanEstimatorTest {
         final TLEPropagatorBuilder propagatorBuilder =
             new TLEPropagatorBuilder(new FixedPointTleGenerationAlgorithm(tle));
         for (final ParameterDriver driver :
-            propagatorBuilder.getOrbitalParameterFactory().getOrbitalParametersDrivers().getDrivers()) {
+            propagatorBuilder.getOrbitalStateFactory().getOrbitalParametersDrivers().getDrivers()) {
             driver.setSelected(false);
         }
         propagatorBuilder.getPropagationParametersDrivers().getDrivers().getFirst().setSelected(true);
@@ -127,7 +127,7 @@ public class UnscentedKalmanEstimatorTest {
 
         // Unselect all orbital propagation parameters
         final ParameterDriversList drivers =
-            propagatorBuilder.getOrbitalParameterFactory().getOrbitalParametersDrivers();
+            propagatorBuilder.getOrbitalStateFactory().getOrbitalParametersDrivers();
         drivers.getDrivers().forEach(driver -> driver.setSelected(false));
 
         // Select eccentricity and anomaly
@@ -202,9 +202,9 @@ public class UnscentedKalmanEstimatorTest {
 
         // Unselect all orbital propagation parameters
         final ParameterDriversList oDrivers1 =
-            propagatorBuilder1.getOrbitalParameterFactory().getOrbitalParametersDrivers();
+            propagatorBuilder1.getOrbitalStateFactory().getOrbitalParametersDrivers();
         final ParameterDriversList oDrivers2 =
-            propagatorBuilder2.getOrbitalParameterFactory().getOrbitalParametersDrivers();
+            propagatorBuilder2.getOrbitalStateFactory().getOrbitalParametersDrivers();
         oDrivers1.getDrivers().forEach(driver -> driver.setSelected(false));
         oDrivers2.getDrivers().forEach(driver -> driver.setSelected(false));
 
@@ -868,7 +868,7 @@ public class UnscentedKalmanEstimatorTest {
         final NumericalPropagatorBuilder propagatorBuilder2 =
                         context.createNumerical(OrbitParamsType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 1.0);
-        final AbsoluteDate referenceDate = propagatorBuilder1.getOrbitalParameterFactory().getDate();
+        final AbsoluteDate referenceDate = propagatorBuilder1.getOrbitalStateFactory().getDate();
 
         // Create perfect inter-satellites range measurements
         final TimeStampedPVCoordinates original = context.initialOrbit.getPVCoordinates();

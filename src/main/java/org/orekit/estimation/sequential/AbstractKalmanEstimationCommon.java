@@ -129,7 +129,7 @@ abstract class AbstractKalmanEstimationCommon implements KalmanEstimation {
         this.estimatedMeasurementsParameters = estimatedMeasurementParameters;
         this.measurementParameterColumns     = new HashMap<>(estimatedMeasurementsParameters.getDrivers().size());
         this.currentMeasurementNumber        = 0;
-        this.referenceDate                   = propagatorBuilders.getFirst().getOrbitalParameterFactory().getDate();
+        this.referenceDate                   = propagatorBuilders.getFirst().getOrbitalStateFactory().getDate();
         this.currentDate                     = referenceDate;
 
         final Map<String, Integer> orbitalParameterColumns = new HashMap<>(6 * builders.size());
@@ -143,7 +143,7 @@ abstract class AbstractKalmanEstimationCommon implements KalmanEstimation {
             orbitsStartColumns[k] = columns;
             final String suffix = propagatorBuilders.size() > 1 ? "[" + k + "]" : null;
             final ParameterDriversList drivers = builders.get(k).
-                                                 getOrbitalParameterFactory().
+                    getOrbitalStateFactory().
                                                  getOrbitalParametersDrivers();
             for (final ParameterDriver driver : drivers.getDrivers()) {
                 if (driver.getReferenceDate() == null) {
@@ -208,7 +208,7 @@ abstract class AbstractKalmanEstimationCommon implements KalmanEstimation {
         this.covarianceIndirection       = new int[builders.size()][columns];
         for (int k = 0; k < covarianceIndirection.length; ++k) {
             final ParameterDriversList orbitDrivers      = builders.get(k).
-                                                           getOrbitalParameterFactory().
+                    getOrbitalStateFactory().
                                                            getOrbitalParametersDrivers();
             final ParameterDriversList parametersDrivers = builders.get(k).
                                                            getPropagationParametersDrivers();
@@ -304,7 +304,7 @@ abstract class AbstractKalmanEstimationCommon implements KalmanEstimation {
             }
 
             KalmanEstimatorUtil.checkDimension(noiseK.getRowDimension(),
-                                               builders.get(k).getOrbitalParameterFactory().getOrbitalParametersDrivers(),
+                                               builders.get(k).getOrbitalStateFactory().getOrbitalParametersDrivers(),
                                                builders.get(k).getPropagationParametersDrivers(),
                                                estimatedMeasurementsParameters);
 
@@ -534,7 +534,7 @@ abstract class AbstractKalmanEstimationCommon implements KalmanEstimation {
             }
 
             KalmanEstimatorUtil.checkDimension(noiseK.getRowDimension(),
-                                              builders.get(k).getOrbitalParameterFactory().getOrbitalParametersDrivers(),
+                                              builders.get(k).getOrbitalStateFactory().getOrbitalParametersDrivers(),
                                               builders.get(k).getPropagationParametersDrivers(),
                                               estimatedMeasurementsParameters);
 

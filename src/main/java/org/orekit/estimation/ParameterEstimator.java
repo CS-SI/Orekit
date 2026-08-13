@@ -53,7 +53,7 @@ public interface ParameterEstimator {
         for (int i = 0; i < propagatorBuilders.length; ++i) {
             final String suffix = propagatorBuilders.length > 1 ? "[" + i + "]" : null;
             propagatorBuilders[i].
-                    getOrbitalParameterFactory().
+                    getOrbitalStateFactory().
                     getOrbitalParametersDrivers().
                     getDrivers().
                     stream().

@@ -31,7 +31,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.OrbitParamsType;
-import org.orekit.orbits.OrbitalParameters;
+import org.orekit.orbits.OrbitalState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.generation.TleGenerationAlgorithm;
 import org.orekit.propagation.analytical.tle.generation.TleGenerationUtil;
@@ -61,7 +61,7 @@ import org.orekit.utils.Constants;
  * @author Fabien Maussion
  * @author Luc Maisonobe
  */
-public class TLE implements OrbitalParameters {
+public class TLE implements OrbitalState {
 
     /** Identifier for SGP type of ephemeris. */
     public static final int SGP = 1;

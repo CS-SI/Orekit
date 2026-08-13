@@ -17,6 +17,9 @@
 
 package org.orekit.propagation.conversion;
 
+import java.util.Collection;
+import java.util.List;
+
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -38,10 +41,6 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
-
-import java.util.Collection;
-import java.util.List;
-
 import static org.orekit.propagation.conversion.AbstractPropagatorBuilderTest.assertPropagatorBuilderIsACopy;
 
 public class NumericalPropagatorBuilderTest {
@@ -140,7 +139,7 @@ public class NumericalPropagatorBuilderTest {
         // Then
         // Original builder should still have original orbit
         final PVCoordinates originalPv = orbit.getPVCoordinates();
-        final PVCoordinates initialPv = builder.getOrbitalParameterFactory().createFromDrivers().getPVCoordinates();
+        final PVCoordinates initialPv = builder.getOrbitalStateFactory().createFromDrivers().getPVCoordinates();
         final double dP = originalPv.getPosition().distance(initialPv.getPosition());
         final double dV = originalPv.getVelocity().distance(initialPv.getVelocity());
         final double dA = originalPv.getAcceleration().distance(initialPv.getAcceleration());

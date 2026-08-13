@@ -16,6 +16,10 @@
  */
 package org.orekit.propagation.conversion;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FrameAlignedProvider;
@@ -35,10 +39,6 @@ import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTNewtonianAttraction;
 import org.orekit.utils.ParameterDriversList;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 /** Builder for DSST propagator.
  * @author Bryan Cazabonne
@@ -96,7 +96,7 @@ public class DSSTPropagatorBuilder
 
         // Use cloned builder to unlink orbital drivers
         final DSSTPropagatorBuilder copyBuilder =
-            new DSSTPropagatorBuilder((EquinoctialOrbitFactory) clonedBuilder.getOrbitalParameterFactory().clone(),
+            new DSSTPropagatorBuilder((EquinoctialOrbitFactory) clonedBuilder.getOrbitalStateFactory().clone(),
                                       clonedBuilder.getIntegratorBuilder(),
                                       clonedBuilder.getPropagationType(),
                                       clonedBuilder.getStateType(),
@@ -169,7 +169,7 @@ public class DSSTPropagatorBuilder
     public DSSTPropagator buildPropagator(final double[] normalizedParameters) {
 
         setParameters(normalizedParameters);
-        final EquinoctialOrbit orbit    = getOrbitalParameterFactory().createFromDrivers();
+        final EquinoctialOrbit orbit    = getOrbitalStateFactory().createFromDrivers();
         final Attitude         attitude = getAttitudeProvider().getAttitude(orbit, orbit.getDate(), orbit.getFrame());
         final SpacecraftState  state    = new SpacecraftState(orbit, attitude).withMass(getMass());
 

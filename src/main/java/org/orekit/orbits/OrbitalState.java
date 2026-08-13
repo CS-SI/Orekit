@@ -18,9 +18,9 @@ package org.orekit.orbits;
 
 import org.orekit.time.TimeStamped;
 
-/** Interface for orbital parameters.
+/** Interface for time-stamped orbital state.
  * @since 14.0
  */
-public interface OrbitalParameters extends TimeStamped {
+public interface OrbitalState extends TimeStamped {
     // this is a marker interface, it contains nothing
 }

@@ -44,6 +44,7 @@ import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationsProvider;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.OrbitalStateFactory;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.BrouwerLyddanePropagator;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
@@ -290,8 +291,8 @@ public class BatchLSEstimator implements ParameterEstimator {
      * For parameters whose reference date has not been set to a non-null date beforehand (i.e.
      * the parameters for which {@link ParameterDriver#getReferenceDate()} returns {@code null},
      * a default reference date will be set automatically at the start of the estimation to the
-     * {@link AbstractPropagatorBuilder#getOrbitalParameterFactory() orbital parameters factory}
-     * {@link org.orekit.orbits.OrbitalParameterFactory#getDate() initial orbit date} of the first
+     * {@link AbstractPropagatorBuilder#getOrbitalStateFactory() orbital parameters factory}
+     * {@link OrbitalStateFactory#getDate() initial orbit date} of the first
      * propagator builder. For parameters whose reference date has been set to a non-null date,
      * this reference date is untouched.
      * </p>
@@ -316,7 +317,7 @@ public class BatchLSEstimator implements ParameterEstimator {
     public Propagator[] estimate() {
 
         // extract default date
-        final AbsoluteDate defaultDate = builders[0].getOrbitalParameterFactory().getDate();
+        final AbsoluteDate defaultDate = builders[0].getOrbitalStateFactory().getDate();
 
         // set reference date for all parameters that lack one (including the not estimated parameters)
         for (final ParameterDriver driver : getOrbitalParametersDrivers(false).getDrivers()) {

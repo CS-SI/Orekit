@@ -16,6 +16,10 @@
  */
 package org.orekit.estimation.sequential;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.LUDecomposition;
 import org.hipparchus.linear.MatrixUtils;
@@ -48,10 +52,6 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.TimeSpanMap.Span;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 /** Test class for Kalman model.
  * This class is deeply entangled with KalmanEstimator class. Thus it is difficult to test as a stand-alone.
@@ -499,7 +499,7 @@ class KalmanModelTest {
         final List<Double> scaleList = new ArrayList<>();
 
         // Orbital parameters
-        for (ParameterDriver driver : builder.getOrbitalParameterFactory().getOrbitalParametersDrivers().getDrivers()) {
+        for (ParameterDriver driver : builder.getOrbitalStateFactory().getOrbitalParametersDrivers().getDrivers()) {
             if (driver.isSelected()) {
             	for (Span<Double> span = driver.getValueSpanMap().getFirstSpan(); span != null; span = span.next()) {
                     scaleList.add(driver.getScale());
@@ -568,7 +568,7 @@ class KalmanModelTest {
     @Test
     public void MassDepletionTest()  {
         // Add a maneuver with nonzero mass expenditure between the first and second measurement dates.
-        AbsoluteDate initialDate = this.propagatorBuilder.getOrbitalParameterFactory().getDate();
+        AbsoluteDate initialDate = this.propagatorBuilder.getOrbitalStateFactory().getDate();
         double initialMass = this.propagatorBuilder.getMass();
         AbsoluteDate maneuverDate = initialDate.shiftedBy(5.0);
 

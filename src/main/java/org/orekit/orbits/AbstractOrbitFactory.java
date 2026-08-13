@@ -24,7 +24,7 @@ import org.orekit.utils.ParameterDriver;
  * @param <P> type of the orbits
  * @since 14.0
  */
-public abstract class AbstractOrbitFactory<P extends Orbit> extends AbstractOrbitalParameterFactory<P> {
+public abstract class AbstractOrbitFactory<P extends Orbit> extends AbstractOrbitalStateFactory<P> {
 
     /**
      * Simple constructor.

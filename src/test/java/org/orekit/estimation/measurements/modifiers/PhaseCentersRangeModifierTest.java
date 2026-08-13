@@ -56,7 +56,7 @@ public class PhaseCentersRangeModifierTest {
         final NumericalPropagatorBuilder propagatorBuilder =
                         context.createNumerical(OrbitParamsType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
-        propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getOrbitalParameterFactory().getFrame(),
+        propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getOrbitalStateFactory().getFrame(),
                                                             LOFType.LVLH));
 
         // create perfect range measurements without antenna offset
@@ -97,7 +97,7 @@ public class PhaseCentersRangeModifierTest {
         final NumericalPropagatorBuilder propagatorBuilder =
                         context.createNumerical(OrbitParamsType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
-        propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getOrbitalParameterFactory().getFrame(),
+        propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getOrbitalStateFactory().getFrame(),
                                                             LOFType.LVLH));
         final double groundClockOffset = 1.234e-3;
         for (final GroundStation station : context.stations) {
@@ -163,7 +163,7 @@ public class PhaseCentersRangeModifierTest {
         final NumericalPropagatorBuilder propagatorBuilder =
                         context.createNumerical(OrbitParamsType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
-        propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getOrbitalParameterFactory().getFrame(),
+        propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getOrbitalStateFactory().getFrame(),
                                                             LOFType.LVLH));
         final double groundClockOffset = 1.234e-3;
         for (final GroundStation station : context.stations) {

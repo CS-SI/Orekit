@@ -61,7 +61,7 @@ public class JacobianPropagatorConverter extends AbstractPropagatorConverter {
                                        final int maxIterations) {
         super(builder, threshold, maxIterations);
         final AbstractOrbitFactory<Orbit> factory =
-            (AbstractOrbitFactory<Orbit>)  builder.getOrbitalParameterFactory();
+            (AbstractOrbitFactory<Orbit>)  builder.getOrbitalStateFactory();
         if (factory.getOrbitParamsType() != OrbitParamsType.CARTESIAN) {
             throw new OrekitException(OrekitMessages.ORBIT_TYPE_NOT_ALLOWED,
                                       factory.getOrbitParamsType(), OrbitParamsType.CARTESIAN);
@@ -217,7 +217,7 @@ public class JacobianPropagatorConverter extends AbstractPropagatorConverter {
                 }
 
                 fillRows(index, interpolator.getInterpolatedState(next.getDate()),
-                         builder.getOrbitalParameterFactory().getOrbitalParametersDrivers());
+                         builder.getOrbitalStateFactory().getOrbitalParametersDrivers());
 
                 // prepare handling of next measurement
                 ++number;

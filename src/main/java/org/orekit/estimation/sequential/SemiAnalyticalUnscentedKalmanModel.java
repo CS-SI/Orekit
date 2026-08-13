@@ -16,6 +16,10 @@
  */
 package org.orekit.estimation.sequential;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+
 import org.hipparchus.filtering.kalman.ProcessEstimate;
 import org.hipparchus.filtering.kalman.unscented.UnscentedEvolution;
 import org.hipparchus.filtering.kalman.unscented.UnscentedKalmanFilter;
@@ -44,10 +48,6 @@ import org.orekit.time.ChronologicalComparator;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
-
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
 
 /** Class defining the process model dynamics to use with a {@link SemiAnalyticalUnscentedKalmanEstimator}.
  * @author Gaëtan Pierre
@@ -133,7 +133,7 @@ public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, Uns
                                                  final ParameterDriversList estimatedMeasurementParameters,
                                                  final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
 
-        final EquinoctialOrbitFactory factory = propagatorBuilder.getOrbitalParameterFactory();
+        final EquinoctialOrbitFactory factory = propagatorBuilder.getOrbitalStateFactory();
         this.builder                         = propagatorBuilder;
         this.angleType                       = factory.getPositionAngleType();
         this.orbitParamsType = factory.getOrbitParamsType();
@@ -278,7 +278,7 @@ public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, Uns
         // Initialize step handler and set it to a parallelized propagator
         final SemiAnalyticalMeasurementHandler  stepHandler =
             new SemiAnalyticalMeasurementHandler(this, filter, observedMeasurements,
-                                                 builder.getOrbitalParameterFactory().getDate(), true);
+                                                 builder.getOrbitalStateFactory().getDate(), true);
         dsstPropagator.getMultiplexer().add(stepHandler);
         dsstPropagator.propagate(tStart, tStart.shiftedBy(overshootTimeRange));
 
@@ -304,7 +304,7 @@ public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, Uns
         final ObservedMeasurement<?> observedMeasurement = measurement.getObservedMeasurement();
         for (final ParameterDriver driver : observedMeasurement.getParametersDrivers()) {
             if (driver.getReferenceDate() == null) {
-                driver.setReferenceDate(builder.getOrbitalParameterFactory().getDate());
+                driver.setReferenceDate(builder.getOrbitalStateFactory().getDate());
             }
         }
 
@@ -352,7 +352,7 @@ public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, Uns
 
         // Verify dimension
         KalmanEstimatorUtil.checkDimension(noiseK.getRowDimension(),
-                                           builder.getOrbitalParameterFactory().getOrbitalParametersDrivers(),
+                                           builder.getOrbitalStateFactory().getOrbitalParametersDrivers(),
                                            builder.getPropagationParametersDrivers(),
                                            estimatedMeasurementsParameters);
 
@@ -370,7 +370,7 @@ public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, Uns
         final RealVector[] predictedMeasurements = new RealVector[predictedSigmaPoints.length];
 
         // Loop on sigma points
-        final EquinoctialOrbitFactory factory = builder.getOrbitalParameterFactory();
+        final EquinoctialOrbitFactory factory = builder.getOrbitalStateFactory();
         for (int k = 0; k < predictedSigmaPoints.length; ++k) {
 
             // Calculate the predicted osculating elements for the current mean state
@@ -402,7 +402,7 @@ public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, Uns
 
         // Predicted measurement
         final RealVector osculating = computeOsculatingElements(predictedFilterCorrection, nominalMeanSpacecraftState, shortPeriodicTerms);
-        final EquinoctialOrbitFactory factory = builder.getOrbitalParameterFactory();
+        final EquinoctialOrbitFactory factory = builder.getOrbitalStateFactory();
         final Orbit osculatingOrbit = orbitParamsType.mapArrayToOrbit(osculating.toArray(), null, angleType,
                                                                 currentDate, factory.getMu(), factory.getFrame());
         predictedSpacecraftState = new SpacecraftState(osculatingOrbit);
@@ -434,7 +434,7 @@ public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, Uns
         // Update the previous nominal mean spacecraft state
         // Calculate the corrected osculating elements
         final RealVector osculating = computeOsculatingElements(correctedFilterCorrection, nominalMeanSpacecraftState, shortPeriodicTerms);
-        final EquinoctialOrbitFactory factory = builder.getOrbitalParameterFactory();
+        final EquinoctialOrbitFactory factory = builder.getOrbitalStateFactory();
         final Orbit osculatingOrbit = orbitParamsType.mapArrayToOrbit(osculating.toArray(), null,
                                                                 factory.getPositionAngleType(),
                                                                 currentDate, factory.getMu(), factory.getFrame());
@@ -487,7 +487,7 @@ public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, Uns
         final RealMatrix stm = MatrixUtils.createRealIdentityMatrix(nbDym + nbMeas);
 
         // State transition matrix using Keplerian contribution only
-        final double mu  = builder.getOrbitalParameterFactory().getMu();
+        final double mu  = builder.getOrbitalStateFactory().getMu();
         final double sma = previousNominalMeanSpacecraftState.getOrbit().getA();
         final double dt  = currentDate.durationFrom(previousNominalMeanSpacecraftState.getDate());
         final double contribution = -1.5 * dt * FastMath.sqrt(mu / FastMath.pow(sma, 5));

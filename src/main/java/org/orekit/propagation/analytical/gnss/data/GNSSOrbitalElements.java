@@ -16,20 +16,20 @@
  */
 package org.orekit.propagation.analytical.gnss.data;
 
+import java.util.function.DoubleFunction;
+import java.util.function.ToDoubleFunction;
+
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.util.MathArrays;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
-import org.orekit.orbits.OrbitalParameters;
+import org.orekit.orbits.OrbitalState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
 import org.orekit.utils.ParameterDriver;
-
-import java.util.function.DoubleFunction;
-import java.util.function.ToDoubleFunction;
 
 /** This class provides the minimal set of orbital elements needed by
  * {@link org.orekit.propagation.analytical.gnss.GNSSPropagator}.
@@ -39,7 +39,7 @@ import java.util.function.ToDoubleFunction;
  * @since 13.0
  */
 public abstract class GNSSOrbitalElements<O extends GNSSOrbitalElements<O>>
-    implements OrbitalParameters, GNSSClockElements {
+    implements OrbitalState, GNSSClockElements {
 
     /** Mean angular velocity of the Earth for the GNSS model. */
     private final double angularVelocity;

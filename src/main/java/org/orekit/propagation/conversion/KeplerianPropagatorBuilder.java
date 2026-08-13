@@ -20,7 +20,7 @@ import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.orbits.AbstractOrbitFactory;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitalParameterFactory;
+import org.orekit.orbits.OrbitalStateFactory;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 
@@ -35,9 +35,9 @@ public class KeplerianPropagatorBuilder
     /** Build a new instance.
      * @param factory factory for initial orbit
      * @since 14.0
-     * @see #KeplerianPropagatorBuilder(OrbitalParameterFactory, AttitudeProvider)
+     * @see #KeplerianPropagatorBuilder(OrbitalStateFactory, AttitudeProvider)
      */
-    public KeplerianPropagatorBuilder(final OrbitalParameterFactory<? extends Orbit> factory) {
+    public KeplerianPropagatorBuilder(final OrbitalStateFactory<? extends Orbit> factory) {
         this(factory, FrameAlignedProvider.of(factory.getFrame()));
     }
 
@@ -46,7 +46,7 @@ public class KeplerianPropagatorBuilder
      * @param attitudeProvider attitude law to use.
      * @since 10.1
      */
-    public KeplerianPropagatorBuilder(final OrbitalParameterFactory<? extends Orbit> factory,
+    public KeplerianPropagatorBuilder(final OrbitalStateFactory<? extends Orbit> factory,
                                       final AttitudeProvider attitudeProvider) {
         super((AbstractOrbitFactory<Orbit>) factory, true, attitudeProvider, Propagator.DEFAULT_MASS);
     }
@@ -59,7 +59,7 @@ public class KeplerianPropagatorBuilder
 
         // Use copy constructor to unlink orbital drivers
         final KeplerianPropagatorBuilder builder =
-            new KeplerianPropagatorBuilder(clonedBuilder.getOrbitalParameterFactory().clone(),
+            new KeplerianPropagatorBuilder(clonedBuilder.getOrbitalStateFactory().clone(),
                                            clonedBuilder.getAttitudeProvider());
 
         // Set mass
@@ -73,8 +73,8 @@ public class KeplerianPropagatorBuilder
     public KeplerianPropagator buildPropagator(final double[] normalizedParameters) {
         setParameters(normalizedParameters);
         final KeplerianPropagator propagator =
-            new KeplerianPropagator(getOrbitalParameterFactory().createFromDrivers(),
-                                    getAttitudeProvider(), getOrbitalParameterFactory().getMu(),
+            new KeplerianPropagator(getOrbitalStateFactory().createFromDrivers(),
+                                    getAttitudeProvider(), getOrbitalStateFactory().getMu(),
                                     getMass());
         getImpulseManeuvers().forEach(propagator::addEventDetector);
         return propagator;

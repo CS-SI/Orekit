@@ -17,20 +17,20 @@
 package org.orekit.propagation.conversion;
 
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.estimation.leastsquares.AbstractBatchLSModel;
 import org.orekit.estimation.leastsquares.BatchLSModel;
 import org.orekit.estimation.leastsquares.ModelObserver;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.forces.maneuvers.ImpulseManeuver;
-import org.orekit.orbits.OrbitalParameterFactory;
-import org.orekit.orbits.OrbitalParameters;
+import org.orekit.orbits.OrbitalState;
+import org.orekit.orbits.OrbitalStateFactory;
 import org.orekit.propagation.analytical.AbstractAnalyticalPropagator;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Abstract class for propagator builders of analytical models (except for ephemeris i.e. interpolated ones).
@@ -42,8 +42,8 @@ import java.util.List;
  * @since 12.2
  */
 public abstract class AbstractAnalyticalPropagatorBuilder<T extends AbstractAnalyticalPropagator,
-                                                          O extends OrbitalParameters,
-                                                          F extends OrbitalParameterFactory<O>>
+                                                          O extends OrbitalState,
+                                                          F extends OrbitalStateFactory<O>>
     extends AbstractPropagatorBuilder<T, O, F> {
 
     /** Impulse maneuvers. */
@@ -55,7 +55,7 @@ public abstract class AbstractAnalyticalPropagatorBuilder<T extends AbstractAnal
      * are selected, which means that if the builder is used for orbit determination or
      * propagator conversion, all orbital parameters will be estimated. If only a subset
      * of the orbital parameters must be estimated, caller must retrieve the orbital
-     * parameters by calling {@link #getOrbitalParameterFactory()}.{@link OrbitalParameterFactory#getOrbitalParametersDrivers()}
+     * parameters by calling {@link #getOrbitalStateFactory()}.{@link OrbitalStateFactory#getOrbitalParametersDrivers()}
      * and then call {@link ParameterDriver#setSelected(boolean) setSelected(false)}.
      * </p>
      * @param factory factory for initial orbit

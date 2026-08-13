@@ -21,11 +21,11 @@ import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriversList;
 
-/** Factory for orbital parameters.
- * @param <P> type of the orbital parameters
+/** Factory for orbital state.
+ * @param <P> type of the orbital state
  * @since 14.0
  */
-public interface OrbitalParameterFactory<P extends OrbitalParameters> extends Cloneable {
+public interface OrbitalStateFactory<P extends OrbitalState> extends Cloneable {
 
     /** Get the orbit type to use.
      * @return orbit type to use

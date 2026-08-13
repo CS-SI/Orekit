@@ -16,15 +16,15 @@
  */
 package org.orekit.propagation.analytical.gnss.data;
 
+import java.util.function.Function;
+
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.MathArrays;
 import org.orekit.orbits.FieldKeplerianOrbit;
-import org.orekit.orbits.FieldOrbitalParameters;
+import org.orekit.orbits.FieldOrbitalState;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.FieldGNSSDate;
 import org.orekit.time.TimeScales;
-
-import java.util.function.Function;
 
 /** This class provides the minimal set of orbital elements needed by the {@link
  * org.orekit.propagation.analytical.gnss.FieldGnssPropagator}.
@@ -35,7 +35,7 @@ import java.util.function.Function;
 */
 public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>,
                                                O extends GNSSOrbitalElements<O>>
-    implements FieldOrbitalParameters<T>, FieldGNSSClockElements<T> {
+    implements FieldOrbitalState<T>, FieldGNSSClockElements<T> {
 
     /** Mean angular velocity of the Earth for the GNSS model. */
     private final double angularVelocity;

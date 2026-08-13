@@ -16,6 +16,8 @@
  */
 package org.orekit.estimation.sequential;
 
+import java.util.List;
+
 import org.hipparchus.filtering.kalman.ProcessEstimate;
 import org.hipparchus.filtering.kalman.unscented.UnscentedEvolution;
 import org.hipparchus.filtering.kalman.unscented.UnscentedProcess;
@@ -36,8 +38,6 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
-
-import java.util.List;
 
 /** Class defining the process model dynamics to use with a {@link UnscentedKalmanEstimator}.
  * @author Gaëtan Pierre
@@ -96,7 +96,7 @@ public class UnscentedKalmanModel extends AbstractKalmanEstimationCommon impleme
         final ObservedMeasurement<?> observedMeasurement = measurement.getObservedMeasurement();
         for (final ParameterDriver driver : observedMeasurement.getParametersDrivers()) {
             if (driver.getReferenceDate() == null) {
-                driver.setReferenceDate(getBuilders().getFirst().getOrbitalParameterFactory().getDate());
+                driver.setReferenceDate(getBuilders().getFirst().getOrbitalStateFactory().getDate());
             }
         }
 
@@ -295,7 +295,7 @@ public class UnscentedKalmanModel extends AbstractKalmanEstimationCommon impleme
             // the selected orbital drivers are already up to date with the prediction
             final ParameterDriversList drivers = getBuilders().
                                                  get(k).
-                                                 getOrbitalParameterFactory().
+                    getOrbitalStateFactory().
                                                  getOrbitalParametersDrivers();
             for (DelegatingDriver orbitalDriver : drivers.getDrivers()) {
                 if (orbitalDriver.isSelected()) {

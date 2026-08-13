@@ -228,7 +228,7 @@ class TLEBatchLSEstimatorTest {
             } else {
                 // default reference date
                 Assertions.assertEquals(0,
-                                        driver.getReferenceDate().durationFrom(propagatorBuilder.getOrbitalParameterFactory().getDate()),
+                                        driver.getReferenceDate().durationFrom(propagatorBuilder.getOrbitalStateFactory().getDate()),
                                         1.0e-15);
             }
         }

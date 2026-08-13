@@ -754,7 +754,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
         // Jacobian of the builder parameters w/r to Cartesian. It is asked to the builder
         // rather than to the orbit, as the builder parameters are not necessarily an orbit
         // type: TLE and specialized GNSS propagators use their own orbital elements.
-        final RealMatrix Jac = propagatorBuilder.getOrbitalParameterFactory().getJacobianWrtCartesian();
+        final RealMatrix Jac = propagatorBuilder.getOrbitalStateFactory().getJacobianWrtCartesian();
         RealMatrix orbitalP = Jac.multiply(cartesianOrbitalP.multiply(Jac.transpose()));
 
         // Orbital process noise matrix
