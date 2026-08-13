@@ -240,7 +240,7 @@ public abstract class Orbit
     /** Get the orbit type.
      * @return orbit type
      */
-    public abstract OrbitType getType();
+    public abstract OrbitParamsType getType();
 
     /**
      * Get a factory for the current orbit type.

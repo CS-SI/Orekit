@@ -24,7 +24,7 @@ import org.orekit.TestUtils;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -38,15 +38,15 @@ import static org.junit.jupiter.api.Assertions.*;
 class NumericalTimeDerivativesEquationsTest {
 
     @ParameterizedTest
-    @EnumSource(value = OrbitType.class, names = {"EQUINOCTIAL", "KEPLERIAN", "CIRCULAR"})
-    void testComputeTimeDerivatives(final OrbitType orbitType) {
+    @EnumSource(value = OrbitParamsType.class, names = {"EQUINOCTIAL", "KEPLERIAN", "CIRCULAR"})
+    void testComputeTimeDerivatives(final OrbitParamsType orbitParamsType) {
         // GIVEN
         final Orbit orbit = TestUtils.getDefaultOrbit(AbsoluteDate.ARBITRARY_EPOCH);
         final SpacecraftState state = new SpacecraftState(orbit);
         final List<ForceModel> forceModelList = new ArrayList<>();
         final ForceModel forceModel = new NewtonianAttraction(Constants.EGM96_EARTH_MU);
         forceModelList.add(forceModel);
-        final NumericalTimeDerivativesEquations equations = new NumericalTimeDerivativesEquations(orbitType,
+        final NumericalTimeDerivativesEquations equations = new NumericalTimeDerivativesEquations(orbitParamsType,
                 PositionAngleType.MEAN, forceModelList);
         // WHEN
         final double[] derivatives = equations.computeTimeDerivatives(state);
@@ -69,7 +69,7 @@ class NumericalTimeDerivativesEquationsTest {
         final List<ForceModel> forceModelList = new ArrayList<>();
         final NewtonianAttraction forceModel = new NewtonianAttraction(Constants.EGM96_EARTH_MU);
         forceModelList.add(forceModel);
-        final NumericalTimeDerivativesEquations equations = new NumericalTimeDerivativesEquations(OrbitType.CARTESIAN,
+        final NumericalTimeDerivativesEquations equations = new NumericalTimeDerivativesEquations(OrbitParamsType.CARTESIAN,
                 PositionAngleType.MEAN, forceModelList);
         // WHEN
         final double[] derivatives = equations.computeTimeDerivatives(state);

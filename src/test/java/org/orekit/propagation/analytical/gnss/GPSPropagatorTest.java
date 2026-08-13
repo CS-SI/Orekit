@@ -37,7 +37,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.gnss.SEMParser;
 import org.orekit.gnss.SatelliteSystem;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.AdditionalDataProvider;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -450,7 +450,7 @@ class GPSPropagatorTest {
         // extract state transition matrix
         final RealMatrix stm    = harvester.getStateTransitionMatrix(state);
         final RealMatrix dY0dB0 = harvester.getStateJacobianVsBuilderParameters(propagator.getBaseInitialState());
-        Assertions.assertEquals(OrbitType.CARTESIAN, harvester.getOrbitType());
+        Assertions.assertEquals(OrbitParamsType.CARTESIAN, harvester.getOrbitParamsType());
         Assertions.assertEquals(6, stm.getRowDimension());
         Assertions.assertEquals(6, stm.getColumnDimension());
 
@@ -467,7 +467,7 @@ class GPSPropagatorTest {
         // Cartesian. The reference above is da(t)/da(B0), a Keplerian row, so the rows have to be
         // converted before the two can be compared.
         final double[][] dKepdC = new double[6][6];
-        OrbitType.KEPLERIAN.convertType(state.getOrbit()).
+        OrbitParamsType.KEPLERIAN.convertType(state.getOrbit()).
             getJacobianWrtCartesian(PositionAngleType.MEAN, dKepdC);
         final RealMatrix dKepdB0 = MatrixUtils.createRealMatrix(dKepdC).multiply(stm.multiply(dY0dB0));
         Assertions.assertEquals(dada, dKepdB0.getEntry(0, 0), 6.0e-5);

@@ -165,8 +165,8 @@ public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends Fiel
     }
 
     /** {@inheritDoc} */
-    public OrbitType getType() {
-        return OrbitType.CARTESIAN;
+    public OrbitParamsType getType() {
+        return OrbitParamsType.CARTESIAN;
     }
 
     /** Lazy evaluation of equinoctial parameters. */

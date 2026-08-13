@@ -18,7 +18,7 @@ package org.orekit.propagation.conversion;
 
 import org.hipparchus.ode.nonstiff.MidpointIntegrator;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 
 /** Builder for MidpointIntegrator.
@@ -37,7 +37,7 @@ public class MidpointIntegratorBuilder extends AbstractFixedSingleStepIntegrator
 
     /** {@inheritDoc} */
     @Override
-    public MidpointIntegrator buildIntegrator(final Orbit orbit, final OrbitType orbitType,
+    public MidpointIntegrator buildIntegrator(final Orbit orbit, final OrbitParamsType orbitParamsType,
                                               final PositionAngleType angleType) {
         return new MidpointIntegrator(getStep());
     }

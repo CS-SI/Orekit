@@ -39,7 +39,7 @@ import org.orekit.frames.LOFType;
 import org.orekit.frames.encounter.EncounterLOF;
 import org.orekit.frames.encounter.EncounterLOFType;
 import org.orekit.orbits.FieldOrbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.covariance.FieldStateCovariance;
 import org.orekit.time.FieldAbsoluteDate;
@@ -610,7 +610,7 @@ public class FieldShortTermEncounter2DDefinition<T extends CalculusFieldElement<
 
         final FieldStateCovariance<T> otherCovarianceInReferenceInertial = new FieldStateCovariance<>(
                 otherCovarianceMatrixInReferenceInertial, tca, referenceAtTCA.getFrame(),
-                OrbitType.CARTESIAN, PositionAngleType.MEAN);
+                OrbitParamsType.CARTESIAN, PositionAngleType.MEAN);
 
         // Express other covariance in reference TNW local orbital frame
         final FieldMatrix<T> otherCovarianceMatrixInReferenceTNW = otherCovarianceInReferenceInertial.changeCovarianceFrame(

@@ -356,7 +356,7 @@ class DSSTZonalTest {
         final ClassicalRungeKuttaIntegrator integrator = new ClassicalRungeKuttaIntegrator(step);
 
         final NumericalPropagator numProp = new NumericalPropagator(integrator);
-        numProp.setOrbitType(oscOrbit0.getType());
+        numProp.setOrbitParamsType(oscOrbit0.getType());
         numProp.setInitialState(oscState0);
         numProp.setAttitudeProvider(attProvider);
         numProp.addForceModel(new HolmesFeatherstoneAttractionModel(itrf, normalized)); // J2-only gravity field

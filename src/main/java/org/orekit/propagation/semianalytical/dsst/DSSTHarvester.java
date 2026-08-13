@@ -25,7 +25,7 @@ import java.util.Map;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.AbstractMatricesHarvester;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -85,7 +85,7 @@ public class DSSTHarvester extends AbstractMatricesHarvester {
     /** Simple constructor.
      * <p>
      * The arguments for initial matrices <em>must</em> be compatible with the
-     * {@link org.orekit.orbits.OrbitType#EQUINOCTIAL equinoctial orbit type}
+     * {@link OrbitParamsType#EQUINOCTIAL equinoctial orbit type}
      * and {@link PositionAngleType position angle} that will be used by propagator
      * </p>
      * @param propagator propagator bound to this harvester
@@ -413,8 +413,8 @@ public class DSSTHarvester extends AbstractMatricesHarvester {
 
     /** {@inheritDoc} */
     @Override
-    public OrbitType getOrbitType() {
-        return propagator.getOrbitType();
+    public OrbitParamsType getOrbitParamsType() {
+        return propagator.getOrbitParamsType();
     }
 
     /** {@inheritDoc} */

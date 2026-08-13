@@ -56,7 +56,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
@@ -128,7 +128,7 @@ class ResidualFilterTest {
     }
     private Propagator buildPropagator(final Orbit orbit) {
         NumericalPropagator propa = new NumericalPropagator(new DormandPrince853Integrator(0.1, 500, 0.001, 0.001));
-        propa.setOrbitType(OrbitType.CARTESIAN);
+        propa.setOrbitParamsType(OrbitParamsType.CARTESIAN);
         propa.resetInitialState(new SpacecraftState(orbit));
         return propa;
     }

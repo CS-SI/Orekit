@@ -54,7 +54,7 @@ import org.orekit.gnss.antenna.FrequencyPattern;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.EphemerisGenerator;
@@ -107,14 +107,14 @@ class KalmanEstimatorTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         // Create initial orbit and propagator builder
-        final OrbitType orbitType = OrbitType.KEPLERIAN;
+        final OrbitParamsType orbitParamsType = OrbitParamsType.KEPLERIAN;
         final PositionAngleType positionAngleType = PositionAngleType.TRUE;
         final boolean perfectStart = true;
         final double minStep = 1.e-6;
         final double maxStep = 60.;
         final double dP = 1.;
         final NumericalPropagatorBuilder propagatorBuilder =
-                context.createNumerical(orbitType, positionAngleType, perfectStart,
+                context.createNumerical(orbitParamsType, positionAngleType, perfectStart,
                         minStep, maxStep, dP);
 
         // Create an imperfect PV measurement
@@ -172,18 +172,18 @@ class KalmanEstimatorTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         // Create initial orbit and propagator builders
-        final OrbitType orbitType = OrbitType.KEPLERIAN;
+        final OrbitParamsType orbitParamsType = OrbitParamsType.KEPLERIAN;
         final PositionAngleType positionAngleType = PositionAngleType.TRUE;
         final boolean perfectStart = true;
         final double minStep = 1.e-6;
         final double maxStep = 60.;
         final double dP = 1.;
         final NumericalPropagatorBuilder propagatorBuilder1 =
-                context.createNumerical(orbitType, positionAngleType, perfectStart,
+                context.createNumerical(orbitParamsType, positionAngleType, perfectStart,
                         minStep, maxStep, dP, Force.POTENTIAL);
 
         final NumericalPropagatorBuilder propagatorBuilder2 =
-                context.createNumerical(orbitType, positionAngleType, perfectStart,
+                context.createNumerical(orbitParamsType, positionAngleType, perfectStart,
                         minStep, maxStep, dP, Force.POTENTIAL, Force.SOLAR_RADIATION_PRESSURE);
 
         // Create imperfect PV measurements
@@ -302,14 +302,14 @@ class KalmanEstimatorTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         // Create initial orbit and propagator builder
-        final OrbitType orbitType = OrbitType.KEPLERIAN;
+        final OrbitParamsType orbitParamsType = OrbitParamsType.KEPLERIAN;
         final PositionAngleType positionAngleType = PositionAngleType.TRUE;
         final boolean perfectStart = true;
         final double minStep = 1.e-6;
         final double maxStep = 60.;
         final double dP = 1.;
         final NumericalPropagatorBuilder propagatorBuilder =
-                context.createNumerical(orbitType, positionAngleType, perfectStart, minStep, maxStep, dP);
+                context.createNumerical(orbitParamsType, positionAngleType, perfectStart, minStep, maxStep, dP);
 
         // Create an imperfect PV measurement
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit, propagatorBuilder);
@@ -408,14 +408,14 @@ class KalmanEstimatorTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         // Create initial orbit and propagator builder
-        final OrbitType     orbitType     = OrbitType.KEPLERIAN;
+        final OrbitParamsType orbitParamsType = OrbitParamsType.KEPLERIAN;
         final PositionAngleType positionAngleType = PositionAngleType.TRUE;
         final boolean       perfectStart  = true;
         final double        minStep       = 1.e-6;
         final double        maxStep       = 60.;
         final double        dP            = 1.;
         final NumericalPropagatorBuilder propagatorBuilder =
-                context.createNumerical(orbitType, positionAngleType, perfectStart, minStep, maxStep, dP);
+                context.createNumerical(orbitParamsType, positionAngleType, perfectStart, minStep, maxStep, dP);
 
         // Create perfect range measurements
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit, propagatorBuilder);
@@ -446,7 +446,7 @@ class KalmanEstimatorTest {
         });
 
         // Jacobian of the orbital parameters w/r to Cartesian
-        final Orbit initialOrbit = orbitType.convertType(context.initialOrbit);
+        final Orbit initialOrbit = orbitParamsType.convertType(context.initialOrbit);
         final double[][] dYdC = new double[6][6];
         initialOrbit.getJacobianWrtCartesian(PositionAngleType.TRUE, dYdC);
         final RealMatrix Jac = MatrixUtils.createRealMatrix(dYdC);
@@ -541,14 +541,14 @@ class KalmanEstimatorTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         // Create initial orbit and propagator builder
-        final OrbitType     orbitType     = OrbitType.KEPLERIAN;
+        final OrbitParamsType orbitParamsType = OrbitParamsType.KEPLERIAN;
         final PositionAngleType positionAngleType = PositionAngleType.TRUE;
         final boolean       perfectStart  = true;
         final double        minStep       = 1.e-6;
         final double        maxStep       = 60.;
         final double        dP            = 1.;
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createNumerical(orbitType, positionAngleType, perfectStart, minStep, maxStep, dP);
+                        context.createNumerical(orbitParamsType, positionAngleType, perfectStart, minStep, maxStep, dP);
 
         // Create perfect PV measurements
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit, propagatorBuilder);
@@ -606,14 +606,14 @@ class KalmanEstimatorTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         // Create initial orbit and propagator builder
-        final OrbitType     orbitType     = OrbitType.KEPLERIAN;
+        final OrbitParamsType orbitParamsType = OrbitParamsType.KEPLERIAN;
         final PositionAngleType positionAngleType = PositionAngleType.TRUE;
         final boolean       perfectStart  = true;
         final double        minStep       = 1.e-6;
         final double        maxStep       = 60.;
         final double        dP            = 1.;
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createNumerical(orbitType, positionAngleType, perfectStart, minStep, maxStep, dP);
+                        context.createNumerical(orbitParamsType, positionAngleType, perfectStart, minStep, maxStep, dP);
 
         // Create perfect range measurements
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit, propagatorBuilder);
@@ -642,7 +642,7 @@ class KalmanEstimatorTest {
         });
 
         // Jacobian of the orbital parameters w/r to Cartesian
-        final Orbit initialOrbit = orbitType.convertType(context.initialOrbit);
+        final Orbit initialOrbit = orbitParamsType.convertType(context.initialOrbit);
         final double[][] dYdC = new double[6][6];
         initialOrbit.getJacobianWrtCartesian(PositionAngleType.TRUE, dYdC);
         final RealMatrix Jac = MatrixUtils.createRealMatrix(dYdC);
@@ -685,14 +685,14 @@ class KalmanEstimatorTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         // Create initial orbit and propagator builder
-        final OrbitType     orbitType     = OrbitType.KEPLERIAN;
+        final OrbitParamsType orbitParamsType = OrbitParamsType.KEPLERIAN;
         final PositionAngleType positionAngleType = PositionAngleType.TRUE;
         final boolean       perfectStart  = true;
         final double        minStep       = 1.e-6;
         final double        maxStep       = 60.;
         final double        dP            = 1.;
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createNumerical(orbitType, positionAngleType, perfectStart,
+                        context.createNumerical(orbitParamsType, positionAngleType, perfectStart,
                                               minStep, maxStep, dP);
         propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getOrbitalParameterFactory().getFrame(),
                                                             LOFType.LVLH));
@@ -738,7 +738,7 @@ class KalmanEstimatorTest {
         });
 
         // Jacobian of the orbital parameters w/r to Cartesian
-        final Orbit initialOrbit = OrbitType.KEPLERIAN.convertType(context.initialOrbit);
+        final Orbit initialOrbit = OrbitParamsType.KEPLERIAN.convertType(context.initialOrbit);
         final double[][] dYdC = new double[6][6];
         initialOrbit.getJacobianWrtCartesian(PositionAngleType.TRUE, dYdC);
         final RealMatrix Jac = MatrixUtils.createRealMatrix(dYdC);
@@ -781,14 +781,14 @@ class KalmanEstimatorTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         // Create initial orbit and propagator builder
-        final OrbitType     orbitType     = OrbitType.CARTESIAN;
+        final OrbitParamsType orbitParamsType = OrbitParamsType.CARTESIAN;
         final PositionAngleType positionAngleType = PositionAngleType.TRUE;
         final boolean       perfectStart  = true;
         final double        minStep       = 1.e-6;
         final double        maxStep       = 60.;
         final double        dP            = 1.;
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createNumerical(orbitType, positionAngleType, perfectStart, minStep, maxStep, dP);
+                        context.createNumerical(orbitParamsType, positionAngleType, perfectStart, minStep, maxStep, dP);
 
         // Create perfect range measurements
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit, propagatorBuilder);
@@ -811,7 +811,7 @@ class KalmanEstimatorTest {
         });
 
         // Jacobian of the orbital parameters w/r to Cartesian
-        final Orbit initialOrbit = orbitType.convertType(context.initialOrbit);
+        final Orbit initialOrbit = orbitParamsType.convertType(context.initialOrbit);
         final double[][] dYdC = new double[6][6];
         initialOrbit.getJacobianWrtCartesian(PositionAngleType.TRUE, dYdC);
         final RealMatrix Jac = MatrixUtils.createRealMatrix(dYdC);
@@ -857,14 +857,14 @@ class KalmanEstimatorTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         // Create initial orbit and propagator builder
-        final OrbitType     orbitType     = OrbitType.CIRCULAR;
+        final OrbitParamsType orbitParamsType = OrbitParamsType.CIRCULAR;
         final PositionAngleType positionAngleType = PositionAngleType.TRUE;
         final boolean       perfectStart  = true;
         final double        minStep       = 1.e-6;
         final double        maxStep       = 60.;
         final double        dP            = 1.;
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createNumerical(orbitType, positionAngleType, perfectStart, minStep, maxStep, dP);
+                        context.createNumerical(orbitParamsType, positionAngleType, perfectStart, minStep, maxStep, dP);
 
         // Create perfect range measurements
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit, propagatorBuilder);
@@ -886,7 +886,7 @@ class KalmanEstimatorTest {
         });
 
         // Jacobian of the orbital parameters w/r to Cartesian
-        final Orbit initialOrbit = orbitType.convertType(context.initialOrbit);
+        final Orbit initialOrbit = orbitParamsType.convertType(context.initialOrbit);
         final double[][] dYdC = new double[6][6];
         initialOrbit.getJacobianWrtCartesian(PositionAngleType.TRUE, dYdC);
         final RealMatrix Jac = MatrixUtils.createRealMatrix(dYdC);
@@ -932,14 +932,14 @@ class KalmanEstimatorTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         // Create initial orbit and propagator builder
-        final OrbitType     orbitType     = OrbitType.EQUINOCTIAL;
+        final OrbitParamsType orbitParamsType = OrbitParamsType.EQUINOCTIAL;
         final PositionAngleType positionAngleType = PositionAngleType.TRUE;
         final boolean       perfectStart  = true;
         final double        minStep       = 1.e-6;
         final double        maxStep       = 60.;
         final double        dP            = 1.;
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createNumerical(orbitType, positionAngleType, perfectStart, minStep, maxStep, dP);
+                        context.createNumerical(orbitParamsType, positionAngleType, perfectStart, minStep, maxStep, dP);
 
         // Create perfect range measurements
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit, propagatorBuilder);
@@ -961,7 +961,7 @@ class KalmanEstimatorTest {
         });
 
         // Jacobian of the orbital parameters w/r to Cartesian
-        final Orbit initialOrbit = orbitType.convertType(context.initialOrbit);
+        final Orbit initialOrbit = orbitParamsType.convertType(context.initialOrbit);
         final double[][] dYdC = new double[6][6];
         initialOrbit.getJacobianWrtCartesian(positionAngleType, dYdC);
         final RealMatrix Jac = MatrixUtils.createRealMatrix(dYdC);
@@ -1007,14 +1007,14 @@ class KalmanEstimatorTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         // Create initial orbit and propagator builder
-        final OrbitType     orbitType     = OrbitType.KEPLERIAN;
+        final OrbitParamsType orbitParamsType = OrbitParamsType.KEPLERIAN;
         final PositionAngleType positionAngleType = PositionAngleType.TRUE;
         final boolean       perfectStart  = true;
         final double        minStep       = 1.e-6;
         final double        maxStep       = 60.;
         final double        dP            = 1.;
         final NumericalPropagatorBuilder measPropagatorBuilder =
-                        context.createNumerical(orbitType, positionAngleType, perfectStart, minStep, maxStep, dP);
+                        context.createNumerical(orbitParamsType, positionAngleType, perfectStart, minStep, maxStep, dP);
 
         // Create perfect range measurements
         final Propagator rangePropagator = EstimationTestUtils.createPropagator(context.initialOrbit, measPropagatorBuilder);
@@ -1051,7 +1051,7 @@ class KalmanEstimatorTest {
 
         // Biased propagator for the Kalman
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createNumerical(orbitType, positionAngleType, false,
+                        context.createNumerical(orbitParamsType, positionAngleType, false,
                                               minStep, maxStep, dP);
 
         // Cartesian covariance matrix initialization
@@ -1061,7 +1061,7 @@ class KalmanEstimatorTest {
         });
 
         // Jacobian of the orbital parameters w/r to Cartesian
-        final Orbit initialOrbit = orbitType.convertType(context.initialOrbit);
+        final Orbit initialOrbit = orbitParamsType.convertType(context.initialOrbit);
         final double[][] dYdC = new double[6][6];
         initialOrbit.getJacobianWrtCartesian(positionAngleType, dYdC);
         final RealMatrix Jac = MatrixUtils.createRealMatrix(dYdC);
@@ -1106,14 +1106,14 @@ class KalmanEstimatorTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         // Create initial orbit and propagator builder
-        final OrbitType     orbitType     = OrbitType.KEPLERIAN;
+        final OrbitParamsType orbitParamsType = OrbitParamsType.KEPLERIAN;
         final PositionAngleType positionAngleType = PositionAngleType.TRUE;
         final boolean       perfectStart  = true;
         final double        minStep       = 1.e-6;
         final double        maxStep       = 60.;
         final double        dP            = 1.;
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createNumerical(orbitType, positionAngleType, perfectStart, minStep, maxStep, dP);
+                        context.createNumerical(orbitParamsType, positionAngleType, perfectStart, minStep, maxStep, dP);
 
         // Create perfect range & range rate measurements
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit, propagatorBuilder);
@@ -1146,7 +1146,7 @@ class KalmanEstimatorTest {
         });
 
         // Jacobian of the orbital parameters w/r to Cartesian
-        final Orbit initialOrbit = orbitType.convertType(context.initialOrbit);
+        final Orbit initialOrbit = orbitParamsType.convertType(context.initialOrbit);
         final double[][] dYdC = new double[6][6];
         initialOrbit.getJacobianWrtCartesian(PositionAngleType.TRUE, dYdC);
         final RealMatrix Jac = MatrixUtils.createRealMatrix(dYdC);
@@ -1187,10 +1187,10 @@ class KalmanEstimatorTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder1 =
-                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitParamsType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 1.0);
         final NumericalPropagatorBuilder propagatorBuilder2 =
-                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitParamsType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 1.0);
         final AbsoluteDate referenceDate = propagatorBuilder1.getOrbitalParameterFactory().getDate();
 
@@ -1305,14 +1305,14 @@ class KalmanEstimatorTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         // Create initial orbit and propagator builder
-        final OrbitType     orbitType     = OrbitType.KEPLERIAN;
+        final OrbitParamsType orbitParamsType = OrbitParamsType.KEPLERIAN;
         final PositionAngleType positionAngleType = PositionAngleType.TRUE;
         final boolean       perfectStart  = true;
         final double        minStep       = 1.e-6;
         final double        maxStep       = 60.;
         final double        dP            = 1.;
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createNumerical(orbitType, positionAngleType, perfectStart,
+                        context.createNumerical(orbitParamsType, positionAngleType, perfectStart,
                                               minStep, maxStep, dP);
 
         // Create perfect range measurements
@@ -1381,10 +1381,10 @@ class KalmanEstimatorTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder1 =
-                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitParamsType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 1.0);
         final NumericalPropagatorBuilder propagatorBuilder2 =
-                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitParamsType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 1.0);
         final AbsoluteDate referenceDate = propagatorBuilder1.getOrbitalParameterFactory().getDate();
 
@@ -1508,12 +1508,12 @@ class KalmanEstimatorTest {
 
         // Create propagator builder
         final NumericalPropagatorBuilder propagatorBuilder1 =
-                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitParamsType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 1.0);
         propagatorBuilder1.getPropagationParametersDrivers().getDrivers().forEach(driver -> driver.setSelected(true));
 
         final NumericalPropagatorBuilder propagatorBuilder2 =
-                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitParamsType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 1.0);
         propagatorBuilder2.getPropagationParametersDrivers().getDrivers().forEach(driver -> driver.setSelected(true));
 

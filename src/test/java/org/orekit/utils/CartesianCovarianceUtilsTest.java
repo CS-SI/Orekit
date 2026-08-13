@@ -28,7 +28,7 @@ import org.junit.jupiter.params.provider.EnumSource;
 import org.orekit.Utils;
 import org.orekit.frames.*;
 import org.orekit.orbits.CartesianOrbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.propagation.covariance.StateCovariance;
 import org.orekit.time.AbsoluteDate;
 
@@ -62,7 +62,7 @@ class CartesianCovarianceUtilsTest {
         final RealMatrix actualMatrix = CartesianCovarianceUtils.convertToLofType(position, velocity, matrix, lofType);
         // THEN
         final StateCovariance covariance = new StateCovariance(matrix, AbsoluteDate.ARBITRARY_EPOCH,
-                FramesFactory.getGCRF(), OrbitType.CARTESIAN, null);
+                FramesFactory.getGCRF(), OrbitParamsType.CARTESIAN, null);
         final CartesianOrbit orbit = new CartesianOrbit(new PVCoordinates(position, velocity), covariance.getFrame(),
                 covariance.getDate(), 1.);
         final RealMatrix expectedMatrix = covariance.changeCovarianceFrame(orbit, lofType).getMatrix();

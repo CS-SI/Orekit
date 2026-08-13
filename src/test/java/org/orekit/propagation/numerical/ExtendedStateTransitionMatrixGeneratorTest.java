@@ -67,7 +67,7 @@ import org.orekit.frames.LOFType;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.SpacecraftState;
@@ -98,7 +98,7 @@ class ExtendedStateTransitionMatrixGeneratorTest {
     @Test
     void testManeuverTriggerDateParameter() {
         // GIVEN
-        final NumericalPropagator propagator = buildPropagator(OrbitType.CARTESIAN, null);
+        final NumericalPropagator propagator = buildPropagator(OrbitParamsType.CARTESIAN, null);
         final LofOffset lofOffset = new LofOffset(propagator.getFrame(), LOFType.TNW);
         propagator.setAttitudeProvider(lofOffset);
         final String stmName = "stm";
@@ -118,10 +118,10 @@ class ExtendedStateTransitionMatrixGeneratorTest {
         final SpacecraftState state = propagator.propagate(targetDate);
         // THEN
         final double dP = 1e-1;
-        final NumericalPropagator propagatorFiniteDifference1 = setupPropagator(propagator.getOrbitType(), lofOffset,
+        final NumericalPropagator propagatorFiniteDifference1 = setupPropagator(propagator.getOrbitParamsType(), lofOffset,
                 startDate, duration, propulsionModel, -dP/2.);
         final SpacecraftState finiteDifferencesState1 = propagatorFiniteDifference1.propagate(targetDate);
-        final NumericalPropagator propagatorFiniteDifference2 = setupPropagator(propagator.getOrbitType(), lofOffset,
+        final NumericalPropagator propagatorFiniteDifference2 = setupPropagator(propagator.getOrbitParamsType(), lofOffset,
                 startDate, duration, propulsionModel, dP/2.);
         final SpacecraftState finiteDifferencesState2 = propagatorFiniteDifference2.propagate(targetDate);
         final PVCoordinates relativePV = new PVCoordinates(finiteDifferencesState1.getPVCoordinates(),
@@ -130,11 +130,11 @@ class ExtendedStateTransitionMatrixGeneratorTest {
         compareWithFiniteDifferences(relativePV, dP, parameterJacobian, 1e-3);
     }
 
-    private static NumericalPropagator setupPropagator(final OrbitType orbitType, final AttitudeProvider attitudeProvider,
-                                                         final AbsoluteDate startDate, final double duration,
-                                                         final BasicConstantThrustPropulsionModel propulsionModel,
-                                                         final double dt) {
-        final NumericalPropagator propagator = buildPropagator(orbitType, attitudeProvider);
+    private static NumericalPropagator setupPropagator(final OrbitParamsType orbitParamsType, final AttitudeProvider attitudeProvider,
+                                                       final AbsoluteDate startDate, final double duration,
+                                                       final BasicConstantThrustPropulsionModel propulsionModel,
+                                                       final double dt) {
+        final NumericalPropagator propagator = buildPropagator(orbitParamsType, attitudeProvider);
         final AbsoluteDate shiftedStartDate = startDate.shiftedBy(dt);
         final ConstantThrustManeuver maneuver = new ConstantThrustManeuver(shiftedStartDate, duration - dt, null, propulsionModel);
         propagator.addForceModel(maneuver);
@@ -144,7 +144,7 @@ class ExtendedStateTransitionMatrixGeneratorTest {
     @Test
     void testManeuverPropulsionParameter() {
         // GIVEN
-        final NumericalPropagator propagator = buildPropagator(OrbitType.CARTESIAN);
+        final NumericalPropagator propagator = buildPropagator(OrbitParamsType.CARTESIAN);
         final String stmName = "stm";
         final MatricesHarvester harvester = propagator.setupMatricesComputation(stmName, MatrixUtils.createRealIdentityMatrix(7), null);
         final double thrustMagnitude = 0.1;
@@ -166,12 +166,12 @@ class ExtendedStateTransitionMatrixGeneratorTest {
                                                                       final double thrustMagnitude,
                                                                       final AbsoluteDate targetDate,
                                                                       final RealMatrix parameterJacobian) {
-        final NumericalPropagator propagatorFiniteDifference1 = buildPropagator(propagator.getOrbitType(),
+        final NumericalPropagator propagatorFiniteDifference1 = buildPropagator(propagator.getOrbitParamsType(),
                 propagator.getAttitudeProvider());
         final double dP = 1e-5;
         propagatorFiniteDifference1.addForceModel(getPermanentManeuver((thrustMagnitude - dP / 2.)));
         final SpacecraftState finiteDifferencesState1 = propagatorFiniteDifference1.propagate(targetDate);
-        final NumericalPropagator propagatorFiniteDifference2 = buildPropagator(propagator.getOrbitType(),
+        final NumericalPropagator propagatorFiniteDifference2 = buildPropagator(propagator.getOrbitParamsType(),
                 propagator.getAttitudeProvider());
         propagatorFiniteDifference2.addForceModel(getPermanentManeuver(thrustMagnitude + dP / 2.));
         final SpacecraftState finiteDifferencesState2 = propagatorFiniteDifference2.propagate(targetDate);
@@ -231,8 +231,8 @@ class ExtendedStateTransitionMatrixGeneratorTest {
     @Test
     void testStm7x7vs6x6Column() {
         // GIVEN
-        final OrbitType orbitType = OrbitType.CARTESIAN;
-        final NumericalPropagator propagator = buildPropagator(orbitType);
+        final OrbitParamsType orbitParamsType = OrbitParamsType.CARTESIAN;
+        final NumericalPropagator propagator = buildPropagator(orbitParamsType);
         final String stmName = "stm";
         final MatricesHarvester harvester7x7 = propagator.setupMatricesComputation(stmName, MatrixUtils.createRealIdentityMatrix(7), null);
         final double timeOfFlight = 1e5;
@@ -246,7 +246,7 @@ class ExtendedStateTransitionMatrixGeneratorTest {
         final SpacecraftState state = propagator.propagate(targetDate);
         final RealMatrix actualJacobian = harvester7x7.getParametersJacobian(state);
         // THEN
-        final NumericalPropagator otherPropagator = buildPropagator(orbitType);
+        final NumericalPropagator otherPropagator = buildPropagator(orbitParamsType);
         otherPropagator.addForceModel(force);
         final MatricesHarvester harvester6x6 = otherPropagator.setupMatricesComputation(stmName, MatrixUtils.createRealIdentityMatrix(6), null);
         final SpacecraftState otherState = otherPropagator.propagate(targetDate);
@@ -255,10 +255,10 @@ class ExtendedStateTransitionMatrixGeneratorTest {
     }
 
     @ParameterizedTest
-    @EnumSource(OrbitType.class)
-    void testStm7x7vs6x6J2(final OrbitType orbitType) {
+    @EnumSource(OrbitParamsType.class)
+    void testStm7x7vs6x6J2(final OrbitParamsType orbitParamsType) {
         // GIVEN
-        final NumericalPropagator propagator = buildPropagator(orbitType);
+        final NumericalPropagator propagator = buildPropagator(orbitParamsType);
         final String stmName = "stm";
         final MatricesHarvester harvester7x7 = propagator.setupMatricesComputation(stmName, MatrixUtils.createRealIdentityMatrix(7), null);
         final double timeOfFlight = 1e5;
@@ -271,12 +271,12 @@ class ExtendedStateTransitionMatrixGeneratorTest {
         final SpacecraftState state = propagator.propagate(targetDate);
         final RealMatrix actualStm = harvester7x7.getStateTransitionMatrix(state);
         // THEN
-        final NumericalPropagator otherPropagator = buildPropagator(orbitType);
+        final NumericalPropagator otherPropagator = buildPropagator(orbitParamsType);
         otherPropagator.addForceModel(j2Perturbation);
         final MatricesHarvester harvester6x6 = otherPropagator.setupMatricesComputation(stmName, MatrixUtils.createRealIdentityMatrix(6), null);
         final SpacecraftState otherState = otherPropagator.propagate(targetDate);
         final RealMatrix expectedStm = harvester6x6.getStateTransitionMatrix(otherState);
-        final double tolerance = orbitType == OrbitType.KEPLERIAN ? 1e-4 : 0;
+        final double tolerance = orbitParamsType == OrbitParamsType.KEPLERIAN ? 1e-4 : 0;
         for (int i = 0; i < 6; i++) {
             assertArrayEquals(expectedStm.getRow(i), Arrays.copyOfRange(actualStm.getRow(i), 0, 6), tolerance);
         }
@@ -285,7 +285,7 @@ class ExtendedStateTransitionMatrixGeneratorTest {
     @Test
     void testParameterJacobian7x7vs6x6ProfileThrust() {
         // GIVEN
-        final NumericalPropagator propagator = buildPropagator(OrbitType.CARTESIAN);
+        final NumericalPropagator propagator = buildPropagator(OrbitParamsType.CARTESIAN);
         final String stmName = "stm";
         final MatricesHarvester harvester7x7 = propagator.setupMatricesComputation(stmName, MatrixUtils.createRealIdentityMatrix(7), null);
         final double timeOfFlight = 1e3;
@@ -304,7 +304,7 @@ class ExtendedStateTransitionMatrixGeneratorTest {
         final SpacecraftState state = propagator.propagate(targetDate);
         final RealMatrix actualJacobian = harvester7x7.getParametersJacobian(state);
         // THEN
-        final NumericalPropagator otherPropagator = buildPropagator(propagator.getOrbitType(), propagator.getAttitudeProvider());
+        final NumericalPropagator otherPropagator = buildPropagator(propagator.getOrbitParamsType(), propagator.getAttitudeProvider());
         otherPropagator.addForceModel(new Maneuver(null, buildDatedBasedTriggers(startDate, duration, 0.), propulsionModel));
         otherPropagator.getAllForceModels().getFirst().getParameterDriver(parameterName).setSelected(true);
         final MatricesHarvester harvester6x6 = otherPropagator.setupMatricesComputation(stmName, MatrixUtils.createRealIdentityMatrix(6), null);
@@ -316,7 +316,7 @@ class ExtendedStateTransitionMatrixGeneratorTest {
     @Test
     void testManeuverTriggerDateParameterWithProfileThrust() {
         // GIVEN
-        final NumericalPropagator propagator = buildPropagator(OrbitType.CARTESIAN, null);
+        final NumericalPropagator propagator = buildPropagator(OrbitParamsType.CARTESIAN, null);
         final LofOffset lofOffset = new LofOffset(propagator.getFrame(), LOFType.TNW);
         propagator.setAttitudeProvider(lofOffset);
         final String stmName = "stm";
@@ -336,12 +336,12 @@ class ExtendedStateTransitionMatrixGeneratorTest {
         final SpacecraftState state = propagator.propagate(targetDate);
         // THEN
         final double dT = 1e-1;
-        final NumericalPropagator propagatorFiniteDifference1 = buildPropagator(propagator.getOrbitType(), lofOffset);
+        final NumericalPropagator propagatorFiniteDifference1 = buildPropagator(propagator.getOrbitParamsType(), lofOffset);
         final double shiftBackward = -dT /2.;
         propagatorFiniteDifference1.addForceModel(new Maneuver(null, buildDatedBasedTriggers(startDate,
                 duration, shiftBackward), buildProfileModel(thrustVectorProvider)));
         final SpacecraftState finiteDifferencesState1 = propagatorFiniteDifference1.propagate(targetDate);
-        final NumericalPropagator propagatorFiniteDifference2 = buildPropagator(propagator.getOrbitType(), lofOffset);
+        final NumericalPropagator propagatorFiniteDifference2 = buildPropagator(propagator.getOrbitParamsType(), lofOffset);
         final double shiftForward = dT /2.;
         propagatorFiniteDifference2.addForceModel(new Maneuver(null, buildDatedBasedTriggers(startDate,
                 duration, shiftForward), buildProfileModel(thrustVectorProvider)));
@@ -378,18 +378,18 @@ class ExtendedStateTransitionMatrixGeneratorTest {
         };
     }
 
-    private static NumericalPropagator buildPropagator(final OrbitType orbitType) {
-        final NumericalPropagator propagator = buildPropagator(orbitType, null);
+    private static NumericalPropagator buildPropagator(final OrbitParamsType orbitParamsType) {
+        final NumericalPropagator propagator = buildPropagator(orbitParamsType, null);
         propagator.setAttitudeProvider(new FrameAlignedProvider(propagator.getFrame()));
         return propagator;
     }
 
-    private static NumericalPropagator buildPropagator(final OrbitType orbitType, final AttitudeProvider attitudeProvider) {
+    private static NumericalPropagator buildPropagator(final OrbitParamsType orbitParamsType, final AttitudeProvider attitudeProvider) {
         final Orbit orbit = new EquinoctialOrbit(7e6, 0.001, 0.001, 1., 2., 3., PositionAngleType.MEAN,
                 FramesFactory.getGCRF(), AbsoluteDate.ARBITRARY_EPOCH, Constants.EGM96_EARTH_MU);
-        final ODEIntegrator integrator = new DormandPrince54IntegratorBuilder(1e-3, 50., 1e-4).buildIntegrator(orbit, orbitType);
+        final ODEIntegrator integrator = new DormandPrince54IntegratorBuilder(1e-3, 50., 1e-4).buildIntegrator(orbit, orbitParamsType);
         final NumericalPropagator propagator = new NumericalPropagator(integrator, attitudeProvider);
-        propagator.setOrbitType(orbitType);
+        propagator.setOrbitParamsType(orbitParamsType);
         propagator.setResetAtEnd(false);
         propagator.setInitialState(new SpacecraftState(orbit));
         return propagator;
@@ -400,11 +400,11 @@ class ExtendedStateTransitionMatrixGeneratorTest {
                                                                  final AbsoluteDate targetDate,
                                                                  final RealMatrix stateTransitionMatrix) {
         final double dM = 1.;
-        final NumericalPropagator propagator1 = buildPropagator(OrbitType.CARTESIAN);
+        final NumericalPropagator propagator1 = buildPropagator(OrbitParamsType.CARTESIAN);
         propagator1.resetInitialState(state.withMass(state.getMass() - dM/2.));
         propagator1.addForceModel(forceModel);
         final SpacecraftState propagated1 = propagator1.propagate(targetDate);
-        final NumericalPropagator propagator2 = buildPropagator(OrbitType.CARTESIAN);
+        final NumericalPropagator propagator2 = buildPropagator(OrbitParamsType.CARTESIAN);
         propagator2.resetInitialState(state.withMass(state.getMass() + dM/2.));
         propagator2.addForceModel(forceModel);
         final SpacecraftState propagated2 = propagator2.propagate(targetDate);
@@ -419,10 +419,10 @@ class ExtendedStateTransitionMatrixGeneratorTest {
     }
 
     @ParameterizedTest
-    @EnumSource(value = OrbitType.class, names = {"CARTESIAN", "EQUINOCTIAL", "CIRCULAR"})
-    void testRadiationPressure(final OrbitType orbitType) {
+    @EnumSource(value = OrbitParamsType.class, names = {"CARTESIAN", "EQUINOCTIAL", "CIRCULAR"})
+    void testRadiationPressure(final OrbitParamsType orbitParamsType) {
         // GIVEN
-        final NumericalPropagator propagator = buildPropagator(orbitType);
+        final NumericalPropagator propagator = buildPropagator(orbitParamsType);
         final String stmName = "stm";
         final MatricesHarvester harvester = propagator.setupMatricesComputation(stmName, MatrixUtils.createRealIdentityMatrix(7), null);
         final CylindricallyShadowedLightFluxModel shadowModel = new CylindricallyShadowedLightFluxModel(new AnalyticalSolarPositionProvider(),
@@ -447,7 +447,7 @@ class ExtendedStateTransitionMatrixGeneratorTest {
         matrix.setSubMatrix(conversionJacobian, 0, 0);
         final RealMatrix jacobianCartesian = matrix.multiply(jacobianMatrix);
         // THEN
-        compareRadiationCoefficientGradientWithFiniteDifferences(propagator.getOrbitType(), shadowModel, crossSection,
+        compareRadiationCoefficientGradientWithFiniteDifferences(propagator.getOrbitParamsType(), shadowModel, crossSection,
                 coefficientValue, targetDate, jacobianCartesian);
         final RealMatrix stm = harvester.getStateTransitionMatrix(state);
         for (int i = 0; i < 6; i++) {
@@ -455,17 +455,17 @@ class ExtendedStateTransitionMatrixGeneratorTest {
         }
     }
 
-    private static void compareRadiationCoefficientGradientWithFiniteDifferences(final OrbitType orbitType,
+    private static void compareRadiationCoefficientGradientWithFiniteDifferences(final OrbitParamsType orbitParamsType,
                                                                  final LightFluxModel fluxModel,
                                                                  final double crossSection, final double singleCoefficient,
                                                                  final AbsoluteDate targetDate,
                                                                  final RealMatrix jacobianMatrix) {
         final double dP = 0.01;
-        final NumericalPropagator propagator1 = buildPropagator(orbitType);
+        final NumericalPropagator propagator1 = buildPropagator(orbitParamsType);
         propagator1.addForceModel(new RadiationPressureModel(fluxModel, new IsotropicRadiationSingleCoefficient(crossSection,
                 singleCoefficient - dP /2)));
         final SpacecraftState propagated1 = propagator1.propagate(targetDate);
-        final NumericalPropagator propagator2 = buildPropagator(propagator1.getOrbitType(), propagator1.getAttitudeProvider());
+        final NumericalPropagator propagator2 = buildPropagator(propagator1.getOrbitParamsType(), propagator1.getAttitudeProvider());
         propagator2.addForceModel(new RadiationPressureModel(fluxModel, new IsotropicRadiationSingleCoefficient(crossSection,
                 singleCoefficient + dP /2)));
         final SpacecraftState propagated2 = propagator2.propagate(targetDate);
@@ -485,7 +485,7 @@ class ExtendedStateTransitionMatrixGeneratorTest {
     @ValueSource(doubles = {-2e4, 2e4})
     void testManeuverApside(final double timeOfFlight) {
         // GIVEN
-        final NumericalPropagator propagator = buildPropagator(OrbitType.CARTESIAN);
+        final NumericalPropagator propagator = buildPropagator(OrbitParamsType.CARTESIAN);
         final String stmName = "stm";
         final MatricesHarvester harvester = propagator.setupMatricesComputation(stmName, MatrixUtils.createRealIdentityMatrix(7), null);
         final double thrustMagnitude = 5e-3;
@@ -519,11 +519,11 @@ class ExtendedStateTransitionMatrixGeneratorTest {
                                                      final AbsoluteDate targetDate, final RealVector stateTransitionMatrixColumn) {
         final double[] cartesianVector = new double[6];
         cartesianVector[index] = -dX/2.;
-        final NumericalPropagator propagator1 = buildPropagator(propagator.getOrbitType(), propagator.getAttitudeProvider());
+        final NumericalPropagator propagator1 = buildPropagator(propagator.getOrbitParamsType(), propagator.getAttitudeProvider());
         propagator1.resetInitialState(modifyState(initialState, cartesianVector));
         propagator1.addForceModel(maneuver);
         final SpacecraftState propagated1 = propagator1.propagate(targetDate);
-        final NumericalPropagator propagator2 = buildPropagator(propagator.getOrbitType(), propagator.getAttitudeProvider());
+        final NumericalPropagator propagator2 = buildPropagator(propagator.getOrbitParamsType(), propagator.getAttitudeProvider());
         cartesianVector[index] *= -1;
         propagator2.resetInitialState(modifyState(initialState, cartesianVector));
         propagator2.addForceModel(maneuver);

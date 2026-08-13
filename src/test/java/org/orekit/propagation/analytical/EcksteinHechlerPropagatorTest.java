@@ -59,7 +59,7 @@ import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
@@ -570,7 +570,7 @@ public class EcksteinHechlerPropagatorTest {
         Vector3D referenceV    = interpolated.getVelocity();
         Vector3D computedA     = sample.get(1).getAcceleration();
         Vector3D referenceA    = interpolated.getAcceleration();
-        final CircularOrbit propagated = (CircularOrbit) OrbitType.CIRCULAR.convertType(propagator.propagateOrbit(target));
+        final CircularOrbit propagated = (CircularOrbit) OrbitParamsType.CIRCULAR.convertType(propagator.propagateOrbit(target));
         final CircularOrbit keplerian =
                 new CircularOrbit(propagated.getA(),
                                   propagated.getCircularEx(),
@@ -745,7 +745,7 @@ public class EcksteinHechlerPropagatorTest {
 
         // the osculating parameters recomputed by the default Eckstein-Hechler propagator are quite different
         // from initial orbit
-        CircularOrbit defaultOrbit = (CircularOrbit) OrbitType.CIRCULAR.convertType(defaultEH.propagateOrbit(initial.getDate()));
+        CircularOrbit defaultOrbit = (CircularOrbit) OrbitParamsType.CIRCULAR.convertType(defaultEH.propagateOrbit(initial.getDate()));
         Assertions.assertEquals(267.4, defaultOrbit.getA() - initial.getA(), 0.1);
 
         // the position on the other hand match perfectly
@@ -756,13 +756,13 @@ public class EcksteinHechlerPropagatorTest {
 
         // set up a reference numerical propagator starting for the specified start orbit
         // using the same force models (i.e. the first few zonal terms)
-        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(0.1).getTolerances(initial, OrbitType.CIRCULAR);
+        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(0.1).getTolerances(initial, OrbitParamsType.CIRCULAR);
         AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(0.001, 1000, tol[0], tol[1]);
         integrator.setInitialStepSize(60);
         NumericalPropagator num = new NumericalPropagator(integrator);
         num.addForceModel(new HolmesFeatherstoneAttractionModel(itrf, GravityFieldFactory.getNormalizedProvider(provider)));
         num.setInitialState(new SpacecraftState(initial));
-        num.setOrbitType(OrbitType.CIRCULAR);
+        num.setOrbitParamsType(OrbitParamsType.CIRCULAR);
 
         // find the best Eckstein-Hechler propagator that match the orbit evolution
         PropagatorConverter converter =
@@ -775,7 +775,7 @@ public class EcksteinHechlerPropagatorTest {
 
         // the default Eckstein-Hechler propagator did however quite a good job, as it found
         // an orbit close to the best fitting
-        CircularOrbit fittedOrbit  = (CircularOrbit) OrbitType.CIRCULAR.convertType(fittedEH.propagateOrbit(initial.getDate()));
+        CircularOrbit fittedOrbit  = (CircularOrbit) OrbitParamsType.CIRCULAR.convertType(fittedEH.propagateOrbit(initial.getDate()));
         Assertions.assertEquals(0.623, defaultOrbit.getA() - fittedOrbit.getA(), 0.1);
 
         // the position on the other hand are slightly different
@@ -874,14 +874,14 @@ public class EcksteinHechlerPropagatorTest {
 
         // set up a reference numerical propagator starting for the specified start orbit
         // using the same force models (i.e. the first few zonal terms)
-        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(0.1).getTolerances(initialOsculating, OrbitType.CIRCULAR);
+        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(0.1).getTolerances(initialOsculating, OrbitParamsType.CIRCULAR);
         AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(0.001, 1000, tol[0], tol[1]);
         integrator.setInitialStepSize(60);
         NumericalPropagator num = new NumericalPropagator(integrator);
         Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         num.addForceModel(new HolmesFeatherstoneAttractionModel(itrf, GravityFieldFactory.getNormalizedProvider(provider)));
         num.setInitialState(new SpacecraftState(initialOsculating));
-        num.setOrbitType(OrbitType.CIRCULAR);
+        num.setOrbitParamsType(OrbitParamsType.CIRCULAR);
         num.setPositionAngleType(initialOsculating.getCachedPositionAngleType());
         final StorelessUnivariateStatistic oscMin  = new Min();
         final StorelessUnivariateStatistic oscMax  = new Max();

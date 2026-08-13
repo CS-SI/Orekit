@@ -18,7 +18,7 @@ package org.orekit.propagation.conversion;
 
 import org.hipparchus.ode.nonstiff.ExplicitRungeKuttaIntegrator;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.utils.AbsolutePVCoordinates;
 
@@ -30,10 +30,10 @@ import org.orekit.utils.AbsolutePVCoordinates;
 public interface ExplicitRungeKuttaIntegratorBuilder extends ODEIntegratorBuilder {
 
     /** {@inheritDoc} */
-    ExplicitRungeKuttaIntegrator buildIntegrator(Orbit orbit, OrbitType orbitType, PositionAngleType angleType);
+    ExplicitRungeKuttaIntegrator buildIntegrator(Orbit orbit, OrbitParamsType orbitParamsType, PositionAngleType angleType);
 
     /** {@inheritDoc} */
-    ExplicitRungeKuttaIntegrator buildIntegrator(Orbit orbit, OrbitType orbitType);
+    ExplicitRungeKuttaIntegrator buildIntegrator(Orbit orbit, OrbitParamsType orbitParamsType);
 
     /** {@inheritDoc} */
     ExplicitRungeKuttaIntegrator buildIntegrator(AbsolutePVCoordinates absolutePVCoordinates);

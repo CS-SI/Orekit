@@ -20,7 +20,7 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.ode.nonstiff.LutherFieldIntegrator;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 
 /**
@@ -62,7 +62,7 @@ public class LutherFieldIntegratorBuilder<T extends CalculusFieldElement<T>>
 
     /** {@inheritDoc} */
     @Override
-    public LutherFieldIntegrator<T> buildIntegrator(final Field<T> field, final Orbit orbit, final OrbitType orbitType,
+    public LutherFieldIntegrator<T> buildIntegrator(final Field<T> field, final Orbit orbit, final OrbitParamsType orbitParamsType,
                                                     final PositionAngleType positionAngleType) {
         return new LutherFieldIntegrator<>(field, getFieldStep(field));
     }

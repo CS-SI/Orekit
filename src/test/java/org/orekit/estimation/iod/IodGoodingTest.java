@@ -40,7 +40,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -114,7 +114,7 @@ class IodGoodingTest extends AbstractIodTest {
     void testIssue1166AzEl() {
         // Generate measurements
         final Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
-        final NumericalPropagatorBuilder propagatorBuilder = context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true, 1.0e-6, 60.0, 0.001);
+        final NumericalPropagatorBuilder propagatorBuilder = context.createNumerical(OrbitParamsType.KEPLERIAN, PositionAngleType.TRUE, true, 1.0e-6, 60.0, 0.001);
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,  propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements = EstimationTestUtils.createMeasurements(propagator,
                                                                                                  new AngularAzElMeasurementCreator(context),
@@ -140,7 +140,7 @@ class IodGoodingTest extends AbstractIodTest {
         final Frame frame = context.initialOrbit.getFrame();
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitParamsType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect range measurements
@@ -218,7 +218,7 @@ class IodGoodingTest extends AbstractIodTest {
         final Frame frame = context.initialOrbit.getFrame();
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitParamsType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect range measurements
@@ -270,7 +270,7 @@ class IodGoodingTest extends AbstractIodTest {
         final Frame frame = context.initialOrbit.getFrame();
 
         final NumericalPropagatorBuilder propagatorBuilder =
-            context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+            context.createNumerical(OrbitParamsType.KEPLERIAN, PositionAngleType.TRUE, true,
                 1.0e-6, 60.0, 0.001);
 
         // create perfect range measurements

@@ -226,12 +226,12 @@ public class InertialForcesTest extends AbstractLegacyForceModelTest {
         RIntegrator.setInitialStepSize(60);
 
         FieldNumericalPropagator<DerivativeStructure> FNP = new FieldNumericalPropagator<>(integrator);
-        FNP.setOrbitType(null);
+        FNP.setOrbitParamsType(null);
         FNP.setIgnoreCentralAttraction(true);
         FNP.setInitialState(initialState);
 
         NumericalPropagator NP = new NumericalPropagator(RIntegrator);
-        NP.setOrbitType(null);
+        NP.setOrbitParamsType(null);
         NP.setIgnoreCentralAttraction(true);
         NP.setInitialState(iSR);
 
@@ -290,7 +290,7 @@ public class InertialForcesTest extends AbstractLegacyForceModelTest {
 
             shift_NP.setInitialState(shift_iSR);
 
-            shift_NP.setOrbitType(null);
+            shift_NP.setOrbitParamsType(null);
             shift_NP.setIgnoreCentralAttraction(true);
             shift_NP.addForceModel(forceModel);
 

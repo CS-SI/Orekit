@@ -37,7 +37,7 @@ import org.orekit.forces.gravity.potential.ICGEMFormatReader;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.propagation.*;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.events.DateDetector;
@@ -128,7 +128,7 @@ class IntegratedEphemerisTest {
 
         final String eqName = "derivatives";
         final EphemerisGenerator generator = numericalPropagator.getEphemerisGenerator();
-        numericalPropagator.setOrbitType(OrbitType.CARTESIAN);
+        numericalPropagator.setOrbitParamsType(OrbitParamsType.CARTESIAN);
         final MatricesHarvester harvester = numericalPropagator.setupMatricesComputation(eqName, null, null);
         numericalPropagator.setInitialState(new SpacecraftState(initialOrbit));
         numericalPropagator.propagate(initialOrbit.getDate().shiftedBy(3600.0));
@@ -187,7 +187,7 @@ class IntegratedEphemerisTest {
     void testAdditionalDerivatives() {
 
         AbsoluteDate finalDate = initialOrbit.getDate().shiftedBy(10.0);
-        double[][] tolerances = ToleranceProvider.getDefaultToleranceProvider(1e-3).getTolerances(initialOrbit, OrbitType.CARTESIAN);
+        double[][] tolerances = ToleranceProvider.getDefaultToleranceProvider(1e-3).getTolerances(initialOrbit, OrbitParamsType.CARTESIAN);
         DormandPrince853Integrator integrator = new DormandPrince853Integrator(1.0e-6, 10.0, tolerances[0], tolerances[1]);
         integrator.setInitialStepSize(1.0e-3);
         NumericalPropagator propagator = new NumericalPropagator(integrator);
@@ -226,7 +226,7 @@ class IntegratedEphemerisTest {
         // GIVEN
         final AbsoluteDate initialDate = new AbsoluteDate();
         numericalPropagator.setInitialState(new SpacecraftState(initialOrbit));
-        numericalPropagator.setOrbitType(OrbitType.CARTESIAN);
+        numericalPropagator.setOrbitParamsType(OrbitParamsType.CARTESIAN);
 
         // Setup additional data provider which use the initial state in its init method
         final AdditionalDataProvider<double[]> additionalDataProvider = TestUtils.getAdditionalProviderWithInit();

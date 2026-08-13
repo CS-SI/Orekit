@@ -43,7 +43,7 @@ import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
@@ -282,7 +282,7 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
         FieldSpacecraftState<DerivativeStructure> initialState = new FieldSpacecraftState<>(FKO);
 
         SpacecraftState iSR = initialState.toSpacecraftState();
-        OrbitType type = OrbitType.KEPLERIAN;
+        OrbitParamsType type = OrbitParamsType.KEPLERIAN;
         double[][] tolerance = ToleranceProvider.getDefaultToleranceProvider(0.001).getTolerances(FKO.toOrbit(), type);
 
 
@@ -294,11 +294,11 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
         RIntegrator.setInitialStepSize(60);
 
         FieldNumericalPropagator<DerivativeStructure> FNP = new FieldNumericalPropagator<>(integrator);
-        FNP.setOrbitType(type);
+        FNP.setOrbitParamsType(type);
         FNP.setInitialState(initialState);
 
         NumericalPropagator NP = new NumericalPropagator(RIntegrator);
-        NP.setOrbitType(type);
+        NP.setOrbitParamsType(type);
         NP.setInitialState(iSR);
 
         final Relativity forceModel = new Relativity(Constants.EIGEN5C_EARTH_MU);
@@ -344,7 +344,7 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
         FieldSpacecraftState<Gradient> initialState = new FieldSpacecraftState<>(FKO);
 
         SpacecraftState iSR = initialState.toSpacecraftState();
-        OrbitType type = OrbitType.KEPLERIAN;
+        OrbitParamsType type = OrbitParamsType.KEPLERIAN;
         double[][] tolerance = ToleranceProvider.getDefaultToleranceProvider(0.001).getTolerances(FKO.toOrbit(), type);
 
 
@@ -356,11 +356,11 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
         RIntegrator.setInitialStepSize(60);
 
         FieldNumericalPropagator<Gradient> FNP = new FieldNumericalPropagator<>(integrator);
-        FNP.setOrbitType(type);
+        FNP.setOrbitParamsType(type);
         FNP.setInitialState(initialState);
 
         NumericalPropagator NP = new NumericalPropagator(RIntegrator);
-        NP.setOrbitType(type);
+        NP.setOrbitParamsType(type);
         NP.setInitialState(iSR);
 
         final Relativity forceModel = new Relativity(Constants.EIGEN5C_EARTH_MU);
@@ -405,7 +405,7 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
 
         SpacecraftState iSR = initialState.toSpacecraftState();
 
-        OrbitType type = OrbitType.KEPLERIAN;
+        OrbitParamsType type = OrbitParamsType.KEPLERIAN;
         double[][] tolerance = ToleranceProvider.getDefaultToleranceProvider(0.001).getTolerances(FKO.toOrbit(), type);
 
 
@@ -417,11 +417,11 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
         RIntegrator.setInitialStepSize(60);
 
         FieldNumericalPropagator<DerivativeStructure> FNP = new FieldNumericalPropagator<>(integrator);
-        FNP.setOrbitType(type);
+        FNP.setOrbitParamsType(type);
         FNP.setInitialState(initialState);
 
         NumericalPropagator NP = new NumericalPropagator(RIntegrator);
-        NP.setOrbitType(type);
+        NP.setOrbitParamsType(type);
         NP.setInitialState(iSR);
 
         final Relativity forceModel = new Relativity(Constants.EIGEN5C_EARTH_MU);
@@ -455,10 +455,10 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
                         date,
                         gm
                 );
-        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(0.00001).getTolerances(orbit, OrbitType.CARTESIAN);
+        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(0.00001).getTolerances(orbit, OrbitParamsType.CARTESIAN);
         AbstractIntegrator integrator = new DormandPrince853Integrator(1, 3600, tol[0], tol[1]);
         NumericalPropagator propagator = new NumericalPropagator(integrator);
-        propagator.setOrbitType(OrbitType.CARTESIAN);
+        propagator.setOrbitParamsType(OrbitParamsType.CARTESIAN);
         propagator.addForceModel(new Relativity(gm));
         propagator.setInitialState(new SpacecraftState(orbit));
 

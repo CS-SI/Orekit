@@ -47,7 +47,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.propagation.*;
 import org.orekit.propagation.analytical.FieldKeplerianPropagator;
 import org.orekit.propagation.events.FieldDateDetector;
@@ -265,7 +265,7 @@ public class FieldIntegratedEphemerisTest {
         final FieldOrbit<T> initialOrbit = createOrbit(field);
         FieldAbsoluteDate<T> finalDate = initialOrbit.getDate().shiftedBy(10.0);
         double[][] tolerances = ToleranceProvider.getDefaultToleranceProvider(1e-3).getTolerances(
-                                                                    initialOrbit, OrbitType.CARTESIAN);
+                                                                    initialOrbit, OrbitParamsType.CARTESIAN);
         DormandPrince853FieldIntegrator<T> integrator =
                         new DormandPrince853FieldIntegrator<>(field, 1.0e-6, 10.0, tolerances[0], tolerances[1]);
         integrator.setInitialStepSize(1.0e-3);
@@ -295,7 +295,7 @@ public class FieldIntegratedEphemerisTest {
         final FieldOrbit<T> initialOrbit = createOrbit(field);
         FieldNumericalPropagator<T> numericalPropagator = createPropagator(field);
         numericalPropagator.setInitialState(new FieldSpacecraftState<>(initialOrbit));
-        numericalPropagator.setOrbitType(OrbitType.CARTESIAN);
+        numericalPropagator.setOrbitParamsType(OrbitParamsType.CARTESIAN);
 
         // Setup additional data provider which use the initial state in its init method
         final FieldAdditionalDataProvider<T[], T> additionalDataProvider = TestUtils.getFieldAdditionalProviderWithInit();
@@ -347,11 +347,11 @@ public class FieldIntegratedEphemerisTest {
         double[] relTolerance = {
             1.0e-8, 1.0e-8, 1.0e-8, 1.0e-9, 1.0e-9, 1.0e-9, 1.0e-7
         };
-        OrbitType type = OrbitType.EQUINOCTIAL;
+        OrbitParamsType type = OrbitParamsType.EQUINOCTIAL;
         AdaptiveStepsizeFieldIntegrator<T> integrator = new DormandPrince853FieldIntegrator<>(field, 0.001, 500, absTolerance, relTolerance);
         integrator.setInitialStepSize(100);
         FieldNumericalPropagator<T> numericalPropagator = new FieldNumericalPropagator<>(integrator);
-        numericalPropagator.setOrbitType(type);
+        numericalPropagator.setOrbitParamsType(type);
         return numericalPropagator;
     }
 

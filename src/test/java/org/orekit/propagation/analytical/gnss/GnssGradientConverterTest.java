@@ -31,7 +31,7 @@ import org.orekit.Utils;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.gnss.SatelliteSystem;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.MatricesHarvester;
@@ -178,14 +178,14 @@ class GnssGradientConverterTest {
 
         // check STM against finite differences
         final RealMatrix stm = harvester.getStateTransitionMatrix(state);
-        OrbitType outType = harvester.getOrbitType();
-        Assertions.assertEquals(OrbitType.CARTESIAN, outType);
+        OrbitParamsType outType = harvester.getOrbitParamsType();
+        Assertions.assertEquals(OrbitParamsType.CARTESIAN, outType);
         // The state transition matrix is now dC(t)/dC(t0): Cartesian rows *and* columns, so
         // the finite differences reference is taken on the Cartesian initial coordinates too.
         // The residual error is dominated by the finite differences themselves, not by the
         // matrix: it decreases monotonically when the step grows (1.4e-5 at a 1 m scale down
         // to 1.3e-9 at a 10 km scale), which is the signature of round-off, not of truncation.
-        final OrbitType inType = OrbitType.CARTESIAN;
+        final OrbitParamsType inType = OrbitParamsType.CARTESIAN;
         final double [] steps = ToleranceProvider.
                                 getDefaultToleranceProvider(1000.0).
                                 getTolerances(state.getOrbit(), inType)[0];
@@ -264,7 +264,7 @@ class GnssGradientConverterTest {
     }
 
     private <O extends GNSSOrbitalElements<O>> double differentiate(final GNSSPropagator<O> basePropagator,
-                                                                    final OrbitType inType, final OrbitType outType,
+                                                                    final OrbitParamsType inType, final OrbitParamsType outType,
                                                                     final AbsoluteDate target, final double step,
                                                                     final int outIndex, final int inIndex) {
 
@@ -337,7 +337,7 @@ class GnssGradientConverterTest {
 
             // return desired coordinate
             final double[] out = new double[6];
-            OrbitType.CARTESIAN.mapOrbitToArray(outState.getOrbit(), PositionAngleType.MEAN, out, null);
+            OrbitParamsType.CARTESIAN.mapOrbitToArray(outState.getOrbit(), PositionAngleType.MEAN, out, null);
             return out[outIndex];
 
         };

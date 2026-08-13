@@ -1006,8 +1006,8 @@ class KeplerianOrbitTest {
                                                     0.0, PositionAngleType.MEAN,
                                                     FramesFactory.getEME2000(), date,
                                                     Constants.EIGEN5C_EARTH_MU);
-        EquinoctialOrbit equ = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(initial);
-        KeplerianOrbit converted = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(equ);
+        EquinoctialOrbit equ = (EquinoctialOrbit) OrbitParamsType.EQUINOCTIAL.convertType(initial);
+        KeplerianOrbit converted = (KeplerianOrbit) OrbitParamsType.KEPLERIAN.convertType(equ);
         Assertions.assertEquals(FastMath.PI,
                             MathUtils.normalizeAngle(converted.getRightAscensionOfAscendingNode() +
                                                      converted.getPeriapsisArgument(), FastMath.PI),
@@ -1359,10 +1359,10 @@ class KeplerianOrbitTest {
         Vector3D keplerianAcceleration = new Vector3D(-orbit.getMu() / (r2 * r), position);
         Assertions.assertEquals(0.0101, Vector3D.distance(keplerianAcceleration, acceleration), 1.0e-4);
 
-        for (OrbitType type : OrbitType.values()) {
+        for (OrbitParamsType type : OrbitParamsType.values()) {
             Orbit converted = type.convertType(orbit);
             Assertions.assertTrue(converted.hasNonKeplerianAcceleration());
-            KeplerianOrbit rebuilt = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(converted);
+            KeplerianOrbit rebuilt = (KeplerianOrbit) OrbitParamsType.KEPLERIAN.convertType(converted);
             Assertions.assertTrue(rebuilt.hasNonKeplerianAcceleration());
             Assertions.assertEquals(orbit.getADot(),                             rebuilt.getADot(),                             3.0e-13);
             Assertions.assertEquals(orbit.getEDot(),                             rebuilt.getEDot(),                             1.0e-15);
@@ -1389,10 +1389,10 @@ class KeplerianOrbitTest {
         Vector3D keplerianAcceleration = new Vector3D(-orbit.getMu() / (r2 * r), position);
         Assertions.assertEquals(4.78e-4, Vector3D.distance(keplerianAcceleration, acceleration), 1.0e-6);
 
-        OrbitType type = OrbitType.CARTESIAN;
+        OrbitParamsType type = OrbitParamsType.CARTESIAN;
         Orbit converted = type.convertType(orbit);
         Assertions.assertTrue(converted.hasNonKeplerianAcceleration());
-        KeplerianOrbit rebuilt = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(converted);
+        KeplerianOrbit rebuilt = (KeplerianOrbit) OrbitParamsType.KEPLERIAN.convertType(converted);
         Assertions.assertTrue(rebuilt.hasNonKeplerianAcceleration());
         Assertions.assertEquals(orbit.getADot(),                             rebuilt.getADot(),                             3.0e-13);
         Assertions.assertEquals(orbit.getEDot(),                             rebuilt.getEDot(),                             1.0e-15);
@@ -1410,7 +1410,7 @@ class KeplerianOrbitTest {
                 Vector3D.MINUS_K.scalarMultiply(0.1), Vector3D.MINUS_I);
         final CartesianOrbit cartesianOrbit = new CartesianOrbit(pvCoordinates, FramesFactory.getEME2000(),
                 AbsoluteDate.ARBITRARY_EPOCH, 1.);
-        final KeplerianOrbit keplerianOrbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(cartesianOrbit);
+        final KeplerianOrbit keplerianOrbit = (KeplerianOrbit) OrbitParamsType.KEPLERIAN.convertType(cartesianOrbit);
         // WHEN
         final Vector3D nonKeplerianAcceleration = keplerianOrbit.nonKeplerianAcceleration();
         // THEN
@@ -1527,7 +1527,7 @@ class KeplerianOrbitTest {
                                           -6.28, 6.28, 12.56, PositionAngleType.MEAN,
                                           FramesFactory.getEME2000(), date, mu);
 
-        KeplerianOrbit normalized1 = (KeplerianOrbit) OrbitType.KEPLERIAN.normalize(withoutDerivatives, ref);
+        KeplerianOrbit normalized1 = (KeplerianOrbit) OrbitParamsType.KEPLERIAN.normalize(withoutDerivatives, ref);
         Assertions.assertFalse(normalized1.hasNonKeplerianAcceleration());
         Assertions.assertEquals(0.0, normalized1.getA() - withoutDerivatives.getA(), 1.0e-6);
         Assertions.assertEquals(0.0, normalized1.getE() - withoutDerivatives.getE(), 1.0e-10);
@@ -1543,14 +1543,14 @@ class KeplerianOrbitTest {
         Assertions.assertEquals(withoutDerivatives.getTrueAnomalyDot(), normalized1.getTrueAnomalyDot());
 
         double[] p = new double[6];
-        OrbitType.KEPLERIAN.mapOrbitToArray(withoutDerivatives, PositionAngleType.TRUE, p, null);
-        KeplerianOrbit withDerivatives = (KeplerianOrbit) OrbitType.KEPLERIAN.mapArrayToOrbit(p,
+        OrbitParamsType.KEPLERIAN.mapOrbitToArray(withoutDerivatives, PositionAngleType.TRUE, p, null);
+        KeplerianOrbit withDerivatives = (KeplerianOrbit) OrbitParamsType.KEPLERIAN.mapArrayToOrbit(p,
                                                                                               new double[] { 1.0, 2.0, 3.0, 4.0, 5.0, 6.0 },
                                                                                               PositionAngleType.TRUE,
                                                                                               withoutDerivatives.getDate(),
                                                                                               withoutDerivatives.getMu(),
                                                                                               withoutDerivatives.getFrame());
-        KeplerianOrbit normalized2 = (KeplerianOrbit) OrbitType.KEPLERIAN.normalize(withDerivatives, ref);
+        KeplerianOrbit normalized2 = (KeplerianOrbit) OrbitParamsType.KEPLERIAN.normalize(withDerivatives, ref);
         Assertions.assertTrue(normalized2.hasNonKeplerianAcceleration());
         Assertions.assertEquals(0.0, normalized2.getA() - withoutDerivatives.getA(), 1.0e-6);
         Assertions.assertEquals(0.0, normalized2.getE() - withoutDerivatives.getE(), 1.0e-10);

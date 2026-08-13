@@ -29,7 +29,7 @@ import org.orekit.control.indirect.shooting.propagation.ShootingPropagationSetti
 import org.orekit.forces.ForceModel;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.propagation.numerical.NumericalPropagator;
@@ -49,7 +49,7 @@ class AbstractIndirectShootingTest {
         // WHEN
         final NumericalPropagator propagator = testShooting.buildInternalPropagator(state);
         // THEN
-        Assertions.assertEquals(OrbitType.CARTESIAN, propagator.getOrbitType());
+        Assertions.assertEquals(OrbitParamsType.CARTESIAN, propagator.getOrbitParamsType());
         Assertions.assertEquals(state.getDate(), propagator.getInitialState().getDate());
         Assertions.assertEquals(state.getPosition(propagator.getFrame()), propagator.getInitialState().getPosition());
     }

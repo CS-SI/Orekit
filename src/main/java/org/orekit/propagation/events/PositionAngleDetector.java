@@ -28,7 +28,7 @@ import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
@@ -38,10 +38,10 @@ import org.orekit.utils.TimeSpanMap;
 
 /** Detector for in-orbit position angle.
  * <p>
- * The detector is based on anomaly for {@link OrbitType#KEPLERIAN Keplerian}
- * orbits, latitude argument for {@link OrbitType#CIRCULAR circular} orbits,
- * or longitude argument for {@link OrbitType#EQUINOCTIAL equinoctial} orbits.
- * It does not support {@link OrbitType#CARTESIAN Cartesian} orbits. The
+ * The detector is based on anomaly for {@link OrbitParamsType#KEPLERIAN Keplerian}
+ * orbits, latitude argument for {@link OrbitParamsType#CIRCULAR circular} orbits,
+ * or longitude argument for {@link OrbitParamsType#EQUINOCTIAL equinoctial} orbits.
+ * It does not support {@link OrbitParamsType#CARTESIAN Cartesian} orbits. The
  * angles can be either {@link PositionAngleType#TRUE true}, {@link PositionAngleType#MEAN
  * mean} or {@link PositionAngleType#ECCENTRIC eccentric} angles.
  * </p>
@@ -51,7 +51,7 @@ import org.orekit.utils.TimeSpanMap;
 public class PositionAngleDetector extends AbstractDetector<PositionAngleDetector> {
 
     /** Orbit type defining the angle type. */
-    private final OrbitType orbitType;
+    private final OrbitParamsType orbitParamsType;
 
     /** Type of position angle. */
     private final PositionAngleType positionAngleType;
@@ -69,32 +69,32 @@ public class PositionAngleDetector extends AbstractDetector<PositionAngleDetecto
      * <p>The new instance uses default values for maximal checking interval
      * ({@link #DEFAULT_MAX_CHECK}) and convergence threshold ({@link
      * #DEFAULT_THRESHOLD}).</p>
-     * @param orbitType orbit type defining the angle type
+     * @param orbitParamsType orbit type defining the angle type
      * @param positionAngleType type of position angle
      * @param angle fixed angle to be crossed
-     * @exception OrekitIllegalArgumentException if orbit type is {@link OrbitType#CARTESIAN}
+     * @exception OrekitIllegalArgumentException if orbit type is {@link OrbitParamsType#CARTESIAN}
      */
-    public PositionAngleDetector(final OrbitType orbitType, final PositionAngleType positionAngleType,
+    public PositionAngleDetector(final OrbitParamsType orbitParamsType, final PositionAngleType positionAngleType,
                                  final double angle)
         throws OrekitIllegalArgumentException {
-        this(DEFAULT_MAX_CHECK, DEFAULT_THRESHOLD, orbitType, positionAngleType, angle);
+        this(DEFAULT_MAX_CHECK, DEFAULT_THRESHOLD, orbitParamsType, positionAngleType, angle);
     }
 
     /** Build a detector.
      * <p> This instance uses by default the {@link StopOnEvent} handler </p>
      * @param maxCheck maximal checking interval (s)
      * @param threshold convergence threshold (s)
-     * @param orbitType orbit type defining the angle type
+     * @param orbitParamsType orbit type defining the angle type
      * @param positionAngleType type of position angle
      * @param angle fixed angle to be crossed
-     * @exception OrekitIllegalArgumentException if orbit type is {@link OrbitType#CARTESIAN}
+     * @exception OrekitIllegalArgumentException if orbit type is {@link OrbitParamsType#CARTESIAN}
      */
     public PositionAngleDetector(final double maxCheck, final double threshold,
-                                 final OrbitType orbitType, final PositionAngleType positionAngleType,
+                                 final OrbitParamsType orbitParamsType, final PositionAngleType positionAngleType,
                                  final double angle)
         throws OrekitIllegalArgumentException {
         this(new EventDetectionSettings(maxCheck, threshold, DEFAULT_MAX_ITER), new StopOnEvent(),
-             orbitType, positionAngleType, angle);
+                orbitParamsType, positionAngleType, angle);
     }
 
     /** Protected constructor with full parameters.
@@ -105,41 +105,41 @@ public class PositionAngleDetector extends AbstractDetector<PositionAngleDetecto
      * </p>
      * @param detectionSettings event detection settings
      * @param handler event handler to call at event occurrences
-     * @param orbitType orbit type defining the angle type
+     * @param orbitParamsType orbit type defining the angle type
      * @param positionAngleType type of position angle
      * @param angle fixed angle to be crossed
-     * @exception OrekitIllegalArgumentException if orbit type is {@link OrbitType#CARTESIAN}
+     * @exception OrekitIllegalArgumentException if orbit type is {@link OrbitParamsType#CARTESIAN}
      * @since 13.0
      */
     protected PositionAngleDetector(final EventDetectionSettings detectionSettings, final EventHandler handler,
-                                    final OrbitType orbitType, final PositionAngleType positionAngleType,
+                                    final OrbitParamsType orbitParamsType, final PositionAngleType positionAngleType,
                                     final double angle)
         throws OrekitIllegalArgumentException {
 
         super(detectionSettings, handler);
 
-        this.orbitType        = orbitType;
+        this.orbitParamsType = orbitParamsType;
         this.positionAngleType = positionAngleType;
         this.angle            = angle;
         this.offsetEstimators = null;
 
-        switch (orbitType) {
+        switch (orbitParamsType) {
             case KEPLERIAN:
-                positionAngleExtractor = o -> ((KeplerianOrbit) orbitType.convertType(o)).getAnomaly(positionAngleType);
+                positionAngleExtractor = o -> ((KeplerianOrbit) orbitParamsType.convertType(o)).getAnomaly(positionAngleType);
                 break;
             case CIRCULAR:
-                positionAngleExtractor = o -> ((CircularOrbit) orbitType.convertType(o)).getAlpha(positionAngleType);
+                positionAngleExtractor = o -> ((CircularOrbit) orbitParamsType.convertType(o)).getAlpha(positionAngleType);
                 break;
             case EQUINOCTIAL:
-                positionAngleExtractor = o -> ((EquinoctialOrbit) orbitType.convertType(o)).getL(positionAngleType);
+                positionAngleExtractor = o -> ((EquinoctialOrbit) orbitParamsType.convertType(o)).getL(positionAngleType);
                 break;
             default:
                 final String sep = ", ";
                 throw new OrekitIllegalArgumentException(OrekitMessages.ORBIT_TYPE_NOT_ALLOWED,
-                                                         orbitType,
-                                                         OrbitType.KEPLERIAN   + sep +
-                                                         OrbitType.CIRCULAR    + sep +
-                                                         OrbitType.EQUINOCTIAL);
+                        orbitParamsType,
+                                                         OrbitParamsType.KEPLERIAN   + sep +
+                                                         OrbitParamsType.CIRCULAR    + sep +
+                                                         OrbitParamsType.EQUINOCTIAL);
         }
 
     }
@@ -148,14 +148,14 @@ public class PositionAngleDetector extends AbstractDetector<PositionAngleDetecto
     @Override
     protected PositionAngleDetector create(final EventDetectionSettings detectionSettings,
                                            final EventHandler newHandler) {
-        return new PositionAngleDetector(detectionSettings, newHandler, orbitType, positionAngleType, angle);
+        return new PositionAngleDetector(detectionSettings, newHandler, orbitParamsType, positionAngleType, angle);
     }
 
     /** Get the orbit type defining the angle type.
      * @return orbit type defining the angle type
      */
-    public OrbitType getOrbitType() {
-        return orbitType;
+    public OrbitParamsType getOrbitParamsType() {
+        return orbitParamsType;
     }
 
     /** Get the type of position angle.

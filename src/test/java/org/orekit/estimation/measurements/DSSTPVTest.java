@@ -25,7 +25,7 @@ import org.junit.jupiter.api.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -74,7 +74,7 @@ public class DSSTPVTest {
                                getEstimatedValue();
                     }
                                                   }, measurement.getDimension(),
-                                                  propagator.getAttitudeProvider(), OrbitType.CARTESIAN,
+                                                  propagator.getAttitudeProvider(), OrbitParamsType.CARTESIAN,
                                                   PositionAngleType.TRUE, 1.0, 3).value(state);
 
             Assertions.assertEquals(finiteDifferencesJacobian.length, jacobian.length);

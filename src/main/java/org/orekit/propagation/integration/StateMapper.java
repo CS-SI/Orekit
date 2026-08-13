@@ -18,7 +18,7 @@ package org.orekit.propagation.integration;
 
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.frames.Frame;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
@@ -34,7 +34,7 @@ public abstract class StateMapper {
     private final AbsoluteDate referenceDate;
 
     /** Propagation orbit type. */
-    private final OrbitType orbitType;
+    private final OrbitParamsType orbitParamsType;
 
     /** Position angle type. */
     private final PositionAngleType angleType;
@@ -51,13 +51,13 @@ public abstract class StateMapper {
     /** Simple constructor.
      * <p>
      * The position parameter type is meaningful only if {@link
-     * #getOrbitType() propagation orbit type}
+     * #getOrbitParamsType() propagation orbit type}
      * support it. As an example, it is not meaningful for propagation
-     * in {@link OrbitType#CARTESIAN Cartesian} parameters.
+     * in {@link OrbitParamsType#CARTESIAN Cartesian} parameters.
      * </p>
      * @param referenceDate reference date
      * @param mu central attraction coefficient (m³/s²)
-     * @param orbitType orbit type to use for mapping, null for
+     * @param orbitParamsType orbit type to use for mapping, null for
      * propagating using {@link org.orekit.utils.AbsolutePVCoordinates AbsolutePVCoordinates}
      * rather than {@link org.orekit.orbits Orbit}
      * @param positionAngleType angle type to use for propagation
@@ -65,11 +65,11 @@ public abstract class StateMapper {
      * @param frame inertial frame
      */
     protected StateMapper(final AbsoluteDate referenceDate, final double mu,
-                          final OrbitType orbitType, final PositionAngleType positionAngleType,
+                          final OrbitParamsType orbitParamsType, final PositionAngleType positionAngleType,
                           final AttitudeProvider attitudeProvider, final Frame frame) {
         this.referenceDate    = referenceDate;
         this.mu               = mu;
-        this.orbitType        = orbitType;
+        this.orbitParamsType = orbitParamsType;
         this.angleType        = positionAngleType;
         this.attitudeProvider = attitudeProvider;
         this.frame            = frame;
@@ -85,8 +85,8 @@ public abstract class StateMapper {
     /** Get propagation parameter type.
      * @return orbit type used for propagation
      */
-    public OrbitType getOrbitType() {
-        return orbitType;
+    public OrbitParamsType getOrbitParamsType() {
+        return orbitParamsType;
     }
 
     /** Get propagation parameter type.

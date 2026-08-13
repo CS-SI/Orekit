@@ -46,7 +46,7 @@ import org.orekit.frames.Transform;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.ToleranceProvider;
@@ -379,10 +379,10 @@ public class SolarBodyTest {
                                                            icrf, startingDate, negligibleMu));
 
         //Creation of the numerical propagator
-        final double[][] tol = ToleranceProvider.getDefaultToleranceProvider(1000.).getTolerances(initialState.getOrbit(), OrbitType.CARTESIAN);
+        final double[][] tol = ToleranceProvider.getDefaultToleranceProvider(1000.).getTolerances(initialState.getOrbit(), OrbitParamsType.CARTESIAN);
         AbstractIntegrator dop1 = new DormandPrince853Integrator(1.0, 1.0e5, tol[0], tol[1]);
         NumericalPropagator propag = new NumericalPropagator(dop1);
-        propag.setOrbitType(OrbitType.CARTESIAN);
+        propag.setOrbitParamsType(OrbitParamsType.CARTESIAN);
         propag.setInitialState(initialState);
         propag.setMu(negligibleMu);
 

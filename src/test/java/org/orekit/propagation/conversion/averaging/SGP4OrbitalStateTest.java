@@ -26,7 +26,7 @@ class SGP4OrbitalStateTest {
                 new AveragedKeplerianWithMeanAngle(1e7, 0.1, 1., 2., 3., -1.));
         // WHEN
         final Orbit orbit = averagedState.toOsculatingOrbit();
-        final KeplerianOrbit keplerianOrbit = (KeplerianOrbit) averagedState.getOrbitType().convertType(orbit);
+        final KeplerianOrbit keplerianOrbit = (KeplerianOrbit) averagedState.getOrbitParamsType().convertType(orbit);
         // THEN
         Assertions.assertEquals(averagedState.getDate(), keplerianOrbit.getDate());
         Assertions.assertEquals(averagedState.getFrame(), keplerianOrbit.getFrame());

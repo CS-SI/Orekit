@@ -30,7 +30,7 @@ public interface OrbitalParameterFactory<P extends OrbitalParameters> extends Cl
     /** Get the orbit type to use.
      * @return orbit type to use
      */
-    OrbitType getOrbitType();
+    OrbitParamsType getOrbitParamsType();
 
     /** Get the drivers for orbital parameters.
      * <p>

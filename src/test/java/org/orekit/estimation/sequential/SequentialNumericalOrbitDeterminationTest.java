@@ -57,7 +57,7 @@ import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.forces.radiation.SolarRadiationPressure;
 import org.orekit.models.earth.atmosphere.Atmosphere;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.propagation.conversion.ODEIntegratorBuilder;
@@ -282,7 +282,7 @@ class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDeterminati
 
         // Choice of an orbit type to use
         // Default for test is Cartesian
-        final OrbitType orbitType = OrbitType.CARTESIAN;
+        final OrbitParamsType orbitParamsType = OrbitParamsType.CARTESIAN;
 
         // Cartesian covariance matrix initialization
         final double posVar = FastMath.pow(1e3, 2);
@@ -302,7 +302,7 @@ class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDeterminati
         final RealMatrix measurementQ = MatrixUtils.createRealMatrix(4, 4);
 
         // Kalman orbit determination run.
-        ResultKalman kalmanLageos2 = runKalman(input, orbitType, print,
+        ResultKalman kalmanLageos2 = runKalman(input, orbitParamsType, print,
                                                cartesianOrbitalP, cartesianOrbitalQ,
                                                null, null,
                                                measurementP, measurementQ, isUnscented);
@@ -324,7 +324,7 @@ class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDeterminati
         final Vector3D refVel0 = new Vector3D(-3871.275109, -607.880985, 4280.972530);
 
         // Run the reference until Kalman last date
-        final Orbit refOrbit = runReference(input, orbitType, refPos0, refVel0, null,
+        final Orbit refOrbit = runReference(input, orbitParamsType, refPos0, refVel0, null,
                                             kalmanLageos2.getEstimatedPV().getDate());
         final Vector3D refPos = refOrbit.getPosition();
         final Vector3D refVel = refOrbit.getVelocity();
@@ -348,7 +348,7 @@ class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDeterminati
         Assertions.assertEquals(0.0, dV, velocityAccuracy);
 
         // Run the reference to initial date
-        final Orbit initialOrbit = runReference(input, orbitType, refPos0, refVel0, null,
+        final Orbit initialOrbit = runReference(input, orbitParamsType, refPos0, refVel0, null,
                 kalmanLageos2.getSmoothedState().getDate());
         final Vector3D initialPos = initialOrbit.getPosition();
         final Vector3D initialVel = initialOrbit.getVelocity();
@@ -498,7 +498,7 @@ class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDeterminati
 
         // Choice of an orbit type to use
         // Default for test is Cartesian
-        final OrbitType orbitType = OrbitType.CARTESIAN;
+        final OrbitParamsType orbitParamsType = OrbitParamsType.CARTESIAN;
 
         // Initial orbital Cartesian covariance matrix
         final double positionP = FastMath.pow(1e4, 2);
@@ -536,7 +536,7 @@ class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDeterminati
         final RealMatrix measurementQ = MatrixUtils.createRealMatrix(15, 15);
 
         // Kalman orbit determination run.
-        ResultKalman kalmanW3B = runKalman(input, orbitType, print,
+        ResultKalman kalmanW3B = runKalman(input, orbitParamsType, print,
                                            cartesianOrbitalP, cartesianOrbitalQ,
                                            propagationP, propagationQ,
                                            measurementP, measurementQ, isUnscented);
@@ -674,7 +674,7 @@ class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDeterminati
         }
 
         // Run the reference until Kalman last date
-        final Orbit refOrbit = runReference(input, orbitType, refPos0, refVel0, refPropagationParameters,
+        final Orbit refOrbit = runReference(input, orbitParamsType, refPos0, refVel0, refPropagationParameters,
                                             kalmanW3B.getEstimatedPV().getDate());
 
         // Test on last orbit

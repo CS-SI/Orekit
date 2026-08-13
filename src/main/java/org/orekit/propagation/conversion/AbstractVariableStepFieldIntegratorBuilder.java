@@ -20,7 +20,7 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.ToleranceProvider;
 import org.orekit.utils.FieldAbsolutePVCoordinates;
@@ -89,13 +89,13 @@ public abstract class AbstractVariableStepFieldIntegratorBuilder<T extends Calcu
     /**
      * Computes tolerances.
      * @param orbit initial orbit
-     * @param orbitType orbit type to use
+     * @param orbitParamsType orbit type to use
      * @param angleType position angle type to use
      * @return integrator tolerances
      * @since 13.0
      */
-    protected double[][] getTolerances(final Orbit orbit, final OrbitType orbitType, final PositionAngleType angleType) {
-        return toleranceProvider.getTolerances(orbit, orbitType, angleType);
+    protected double[][] getTolerances(final Orbit orbit, final OrbitParamsType orbitParamsType, final PositionAngleType angleType) {
+        return toleranceProvider.getTolerances(orbit, orbitParamsType, angleType);
     }
 
     /**
@@ -111,8 +111,8 @@ public abstract class AbstractVariableStepFieldIntegratorBuilder<T extends Calcu
     /** {@inheritDoc} */
     @Override
     public W buildIntegrator(final Field<T> field, final Orbit orbit,
-                             final OrbitType orbitType, final PositionAngleType angleType) {
-        return buildIntegrator(field, getTolerances(orbit, orbitType, angleType));
+                             final OrbitParamsType orbitParamsType, final PositionAngleType angleType) {
+        return buildIntegrator(field, getTolerances(orbit, orbitParamsType, angleType));
     }
 
     /** {@inheritDoc} */

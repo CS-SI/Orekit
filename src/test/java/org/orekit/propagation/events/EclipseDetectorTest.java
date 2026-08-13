@@ -39,7 +39,7 @@ import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventsLogger.LoggedEvent;
@@ -66,7 +66,7 @@ class EclipseDetectorTest {
 
     @Test
     void testPolar() {
-        final KeplerianOrbit original = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(initialState.getOrbit());
+        final KeplerianOrbit original = (KeplerianOrbit) OrbitParamsType.KEPLERIAN.convertType(initialState.getOrbit());
         final KeplerianOrbit polar    = new KeplerianOrbit(original.getA(), original.getE(),
                                                            0.5 * FastMath.PI, original.getPeriapsisArgument(),
                                                            original.getRightAscensionOfAscendingNode(),

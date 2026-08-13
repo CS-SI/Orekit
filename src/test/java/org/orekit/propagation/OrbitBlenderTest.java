@@ -37,7 +37,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.analytical.AbstractAnalyticalPropagator;
 import org.orekit.propagation.analytical.BrouwerLyddanePropagator;
@@ -99,9 +99,9 @@ class OrbitBlenderTest {
 
         // Initialize propagator
         final NumericalPropagator propagator = new NumericalPropagator(
-                StateCovarianceKeplerianHermiteInterpolatorTest.generateDefaultIntegrator(sergeiOrbit, OrbitType.CARTESIAN));
+                StateCovarianceKeplerianHermiteInterpolatorTest.generateDefaultIntegrator(sergeiOrbit, OrbitParamsType.CARTESIAN));
 
-        propagator.setOrbitType(OrbitType.CARTESIAN);
+        propagator.setOrbitParamsType(OrbitParamsType.CARTESIAN);
 
         // Initialize harvester
         final MatricesHarvester harvester =
@@ -110,7 +110,7 @@ class OrbitBlenderTest {
         // Initialize state covariance matrix provider
         final StateCovariance sergeiCovariance =
                 new StateCovariance(sergeiCovarianceMatrix, sergeiState.getDate(), sergeiState.getFrame(),
-                                    OrbitType.CARTESIAN, PositionAngleType.MEAN);
+                                    OrbitParamsType.CARTESIAN, PositionAngleType.MEAN);
 
         final StateCovarianceMatrixProvider stateCovarianceMatrixProvider =
                 new StateCovarianceMatrixProvider("covariance", "harvester", harvester, sergeiCovariance);

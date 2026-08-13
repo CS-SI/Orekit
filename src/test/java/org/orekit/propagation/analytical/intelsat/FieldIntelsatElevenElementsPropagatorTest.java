@@ -27,7 +27,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -78,7 +78,7 @@ public class FieldIntelsatElevenElementsPropagatorTest {
         // Reference use of the Intelsat's 11 elements propagator developed in STK
         FieldIntelsatElevenElementsPropagator<Binary64> propagator = new FieldIntelsatElevenElementsPropagator<>(ELEMENTS, FramesFactory.getTOD(IERSConventions.IERS_2010, false),
                                                                                                                  FramesFactory.getITRF(IERSConventions.IERS_2010, false));
-        KeplerianOrbit orbit = ((FieldKeplerianOrbit<Binary64>) OrbitType.KEPLERIAN.convertType(
+        KeplerianOrbit orbit = ((FieldKeplerianOrbit<Binary64>) OrbitParamsType.KEPLERIAN.convertType(
                 propagator.propagateOrbit(ELEMENTS.getEpoch(), propagator.getParameters(ELEMENTS.getEpoch().getField())))).toOrbit();
         Assertions.assertNotNull(propagator.getIntelsatElevenElements());
         Assertions.assertEquals(302.0355, propagator.getEastLongitudeDegrees().getValue().getReal(), 0.0001);

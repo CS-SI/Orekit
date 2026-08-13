@@ -22,7 +22,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.AdapterPropagator;
@@ -80,7 +80,7 @@ public class SmallManeuverAnalyticalModel implements AdapterPropagator.Different
     private final double massRatio;
 
     /** Type of orbit used for internal Jacobians. */
-    private final OrbitType type;
+    private final OrbitParamsType type;
 
     /** Initial Keplerian (or equinoctial) Jacobian with respect to maneuver. */
     private final double[][] j0;
@@ -107,14 +107,14 @@ public class SmallManeuverAnalyticalModel implements AdapterPropagator.Different
     /** Build a maneuver defined in spacecraft frame.
      * @param state0 state at maneuver date, <em>before</em> the maneuver
      * is performed
-     * @param orbitType orbit type to be used later on in Jacobian conversions
+     * @param orbitParamsType orbit type to be used later on in Jacobian conversions
      * @param dV velocity increment in spacecraft frame
      * @param isp engine specific impulse (s)
      * @since 12.1 orbit type added as input
      */
-    public SmallManeuverAnalyticalModel(final SpacecraftState state0, final OrbitType orbitType,
+    public SmallManeuverAnalyticalModel(final SpacecraftState state0, final OrbitParamsType orbitParamsType,
                                         final Vector3D dV, final double isp) {
-        this(state0, orbitType, state0.getFrame(),
+        this(state0, orbitParamsType, state0.getFrame(),
              state0.getAttitude().getRotation().applyInverseTo(dV),
              isp);
     }
@@ -129,29 +129,29 @@ public class SmallManeuverAnalyticalModel implements AdapterPropagator.Different
     public SmallManeuverAnalyticalModel(final SpacecraftState state0, final Frame frame,
                                         final Vector3D dV, final double isp) {
         // No orbit type specified, use equinoctial orbit type if possible, Keplerian if nearly hyperbolic orbits
-        this(state0, (state0.getOrbit().getE() < 0.9) ? OrbitType.EQUINOCTIAL : OrbitType.KEPLERIAN, frame, dV, isp);
+        this(state0, (state0.getOrbit().getE() < 0.9) ? OrbitParamsType.EQUINOCTIAL : OrbitParamsType.KEPLERIAN, frame, dV, isp);
     }
 
     /** Build a maneuver defined in user-specified frame.
      * @param state0 state at maneuver date, <em>before</em> the maneuver
      * is performed
-     * @param orbitType orbit type to be used later on in Jacobian conversions
+     * @param orbitParamsType orbit type to be used later on in Jacobian conversions
      * @param frame frame in which velocity increment is defined
      * @param dV velocity increment in specified frame
      * @param isp engine specific impulse (s)
      * @since 12.1 orbit type added as input
      */
-    public SmallManeuverAnalyticalModel(final SpacecraftState state0, final OrbitType orbitType,
+    public SmallManeuverAnalyticalModel(final SpacecraftState state0, final OrbitParamsType orbitParamsType,
                                         final Frame frame, final Vector3D dV, final double isp) {
 
         this.state0    = state0;
         this.massRatio = FastMath.exp(-dV.getNorm() / (Constants.G0_STANDARD_GRAVITY * isp));
-        this.type = orbitType;
+        this.type = orbitParamsType;
 
         // compute initial Jacobian
         final double[][] fullJacobian = new double[6][6];
         j0 = new double[6][3];
-        final Orbit orbit0 = orbitType.convertType(state0.getOrbit());
+        final Orbit orbit0 = orbitParamsType.convertType(state0.getOrbit());
         orbit0.getJacobianWrtCartesian(PositionAngleType.MEAN, fullJacobian);
         for (int i = 0; i < j0.length; ++i) {
             System.arraycopy(fullJacobian[i], 3, j0[i], 0, 3);

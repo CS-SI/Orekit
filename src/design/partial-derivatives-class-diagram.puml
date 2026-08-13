@@ -39,7 +39,7 @@
       +RealMatrix getStateTransitionMatrix(SpacecraftState state)
       +RealMatrix getParametersJacobian(SpacecraftState state)
       +List<String> getJacobiansColumnsNames()
-      +OrbitType getOrbitType()
+      +OrbitType getOrbitParamsType()
       +PositionAngleType getPositionAngleType()
     }
 

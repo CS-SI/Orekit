@@ -20,7 +20,7 @@ package org.orekit.propagation.events;
 import org.hipparchus.ode.ODEIntegrator;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.RecordAndContinue;
@@ -41,26 +41,26 @@ abstract class AbstractCloseEventsNumericalTest extends CloseEventsAbstractTest 
      * @param stepSize   of integrator.
      * @return a usable propagator.
      */
-    public Propagator getPropagator(double stepSize, OrbitType orbitType) {
-        final NumericalPropagator propagator = new NumericalPropagator(getIntegrator(stepSize, orbitType));
+    public Propagator getPropagator(double stepSize, OrbitParamsType orbitParamsType) {
+        final NumericalPropagator propagator = new NumericalPropagator(getIntegrator(stepSize, orbitParamsType));
         propagator.setInitialState(new SpacecraftState(initialOrbit));
-        propagator.setOrbitType(orbitType);
+        propagator.setOrbitParamsType(orbitParamsType);
         return propagator;
     }
 
     @Override
     public Propagator getPropagator(double stepSize) {
-        return getPropagator(stepSize, OrbitType.CARTESIAN);
+        return getPropagator(stepSize, OrbitParamsType.CARTESIAN);
     }
 
-    abstract ODEIntegrator getIntegrator(final double stepSize, final OrbitType orbitType);
+    abstract ODEIntegrator getIntegrator(final double stepSize, final OrbitParamsType orbitParamsType);
 
     @ParameterizedTest
-    @EnumSource(value = OrbitType.class, names = {"EQUINOCTIAL", "CARTESIAN"})
-    void testOrbitType(final OrbitType orbitType) {
+    @EnumSource(value = OrbitParamsType.class, names = {"EQUINOCTIAL", "CARTESIAN"})
+    void testOrbitType(final OrbitParamsType orbitParamsType) {
         // GIVEN
         final double stepSize = initialOrbit.getKeplerianPeriod() / 200;
-        final Propagator propagator = getPropagator(stepSize, orbitType);
+        final Propagator propagator = getPropagator(stepSize, orbitParamsType);
         final AbsoluteDate firstDateToDetect = initialOrbit.getDate().shiftedBy(stepSize * 5.2);
         final AbsoluteDate secondDateToDetect = firstDateToDetect.getDate().shiftedBy(stepSize * 0.5);
         final RecordAndContinue recorder = new RecordAndContinue();

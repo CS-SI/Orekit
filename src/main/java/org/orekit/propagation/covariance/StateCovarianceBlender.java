@@ -22,7 +22,7 @@ import org.hipparchus.linear.RealMatrix;
 import org.orekit.frames.Frame;
 import org.orekit.frames.LOFType;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeInterpolator;
@@ -67,7 +67,7 @@ public class StateCovarianceBlender extends AbstractStateCovarianceInterpolator 
      * @param outLOF local orbital frame
      *
      * @see Frame
-     * @see OrbitType
+     * @see OrbitParamsType
      * @see PositionAngleType
      */
     public StateCovarianceBlender(final SmoothStepFactory.SmoothStepFunction blendingFunction,
@@ -84,18 +84,18 @@ public class StateCovarianceBlender extends AbstractStateCovarianceInterpolator 
      * @param orbitInterpolator orbit interpolator
      * @param outFrame desired output covariance frame
      * @param outPositionAngleType desired output position angle
-     * @param outOrbitType desired output orbit type
+     * @param outOrbitParamsType desired output orbit type
      *
      * @see Frame
-     * @see OrbitType
+     * @see OrbitParamsType
      * @see PositionAngleType
      */
     public StateCovarianceBlender(final SmoothStepFactory.SmoothStepFunction blendingFunction,
                                   final TimeInterpolator<Orbit> orbitInterpolator,
                                   final Frame outFrame,
-                                  final OrbitType outOrbitType,
+                                  final OrbitParamsType outOrbitParamsType,
                                   final PositionAngleType outPositionAngleType) {
-        super(DEFAULT_INTERPOLATION_POINTS, 0., orbitInterpolator, outFrame, outOrbitType, outPositionAngleType);
+        super(DEFAULT_INTERPOLATION_POINTS, 0., orbitInterpolator, outFrame, outOrbitParamsType, outPositionAngleType);
         this.blendingFunction = blendingFunction;
     }
 
@@ -133,7 +133,7 @@ public class StateCovarianceBlender extends AbstractStateCovarianceInterpolator 
                 forwardedCovarianceMatrix.blendArithmeticallyWith(backwardedCovarianceMatrix, blendingValue);
 
         return new StateCovariance(blendedCovarianceMatrix, interpolationDate, interpolatedOrbit.getFrame(),
-                                   OrbitType.CARTESIAN, DEFAULT_POSITION_ANGLE);
+                                   OrbitParamsType.CARTESIAN, DEFAULT_POSITION_ANGLE);
     }
 
     /**
@@ -163,7 +163,7 @@ public class StateCovarianceBlender extends AbstractStateCovarianceInterpolator 
         // First convert the covariance matrix to equinoctial elements to avoid singularities inherent to keplerian elements
         final PositionAngleType positionAngleType = PositionAngleType.MEAN;
         final RealMatrix covarianceMatrixInEquinoctial =
-                tabulatedCovarianceInOrbitFrame.changeCovarianceType(tabulatedOrbit, OrbitType.EQUINOCTIAL, positionAngleType).getMatrix();
+                tabulatedCovarianceInOrbitFrame.changeCovarianceType(tabulatedOrbit, OrbitParamsType.EQUINOCTIAL, positionAngleType).getMatrix();
 
         // Compute state error transition matrix in equinoctial elements (identical to the one in keplerian elements)
         final RealMatrix stateErrorTransitionMatrixInEquinoctial = MatrixUtils.createRealIdentityMatrix(6);
@@ -178,10 +178,10 @@ public class StateCovarianceBlender extends AbstractStateCovarianceInterpolator 
         // Recreate a StateCovariance instance
         final StateCovariance propagatedCovarianceInEquinoctial =
                 new StateCovariance(propagatedCovarianceMatrixInEquinoctial, interpolationTime,
-                                    interpolatedOrbitFrame, OrbitType.EQUINOCTIAL, positionAngleType);
+                                    interpolatedOrbitFrame, OrbitParamsType.EQUINOCTIAL, positionAngleType);
 
         // Output propagated state covariance after converting back to cartesian elements
         return propagatedCovarianceInEquinoctial.changeCovarianceType(orbitAtInterpolatingTime,
-                                                                      OrbitType.CARTESIAN, DEFAULT_POSITION_ANGLE);
+                                                                      OrbitParamsType.CARTESIAN, DEFAULT_POSITION_ANGLE);
     }
 }

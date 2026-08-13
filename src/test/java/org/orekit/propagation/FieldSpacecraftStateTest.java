@@ -1067,7 +1067,7 @@ class FieldSpacecraftStateTest {
         FieldAbsolutePVCoordinates<T> absPV_f = new FieldAbsolutePVCoordinates<>(FramesFactory.getEME2000(), date, pva_f);
 
         FieldNumericalPropagator<T> prop = new FieldNumericalPropagator<>(new DormandPrince853FieldIntegrator<>(field, 0.1, 500, 0.001, 0.001));
-        prop.setOrbitType(null);
+        prop.setOrbitParamsType(null);
 
         final FieldSpacecraftState<T> initialState = new FieldSpacecraftState<>(absPV_f);
 
@@ -1150,7 +1150,7 @@ class FieldSpacecraftStateTest {
         FieldAbsolutePVCoordinates<T> absPV_f = new FieldAbsolutePVCoordinates<>(FramesFactory.getEME2000(), date, pva_f);
 
         FieldNumericalPropagator<T> prop = new FieldNumericalPropagator<>(new DormandPrince853FieldIntegrator<>(field, 0.1, 500, 0.001, 0.001));
-        prop.setOrbitType(null);
+        prop.setOrbitParamsType(null);
 
         final FieldSpacecraftState<T> initialState = new FieldSpacecraftState<>(absPV_f);
 

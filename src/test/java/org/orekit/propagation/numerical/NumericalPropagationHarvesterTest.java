@@ -34,7 +34,7 @@ import org.orekit.forces.maneuvers.trigger.DateBasedManeuverTriggers;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.ToleranceProvider;
@@ -87,12 +87,12 @@ public class NumericalPropagationHarvesterTest {
 
     @Test
     void testInitialStmCartesian() {
-        doTestInitialStm(OrbitType.CARTESIAN, 0.0);
+        doTestInitialStm(OrbitParamsType.CARTESIAN, 0.0);
     }
 
     @Test
     void testInitialStmKeplerian() {
-        doTestInitialStm(OrbitType.KEPLERIAN, 2160.746);
+        doTestInitialStm(OrbitParamsType.KEPLERIAN, 2160.746);
     }
 
     @Test
@@ -128,12 +128,12 @@ public class NumericalPropagationHarvesterTest {
 
     }
 
-    private void doTestInitialStm(OrbitType type, double deltaId) {
+    private void doTestInitialStm(OrbitParamsType type, double deltaId) {
         PositionAngleType angle = PositionAngleType.TRUE;
         final RealMatrix identity7 = MatrixUtils.createRealIdentityMatrix(7);
         NumericalPropagationHarvester harvester =
                         (NumericalPropagationHarvester) propagator.setupMatricesComputation("stm", identity7, null);
-        propagator.setOrbitType(type);
+        propagator.setOrbitParamsType(type);
         propagator.setPositionAngleType(angle);
         double[] p = new double[49];
         for (int i = 0; i < p.length; i += 8) {
@@ -142,7 +142,7 @@ public class NumericalPropagationHarvesterTest {
         SpacecraftState s = propagator.getInitialState().addAdditionalData(harvester.getStmName(), p);
         RealMatrix stm = harvester.getStateTransitionMatrix(s);
         Assertions.assertEquals(deltaId, stm.subtract(identity7).getNorm1(), 1.0e-3);
-        Assertions.assertEquals(type, harvester.getOrbitType());
+        Assertions.assertEquals(type, harvester.getOrbitParamsType());
         Assertions.assertEquals(angle, harvester.getPositionAngleType());
         Assertions.assertNull(harvester.getStateJacobianVsBuilderParameters(s));
     }

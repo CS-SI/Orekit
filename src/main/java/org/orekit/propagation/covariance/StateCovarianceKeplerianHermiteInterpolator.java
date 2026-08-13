@@ -24,7 +24,7 @@ import org.orekit.errors.OrekitInternalError;
 import org.orekit.frames.Frame;
 import org.orekit.frames.LOFType;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeInterpolator;
@@ -173,12 +173,12 @@ public class StateCovarianceKeplerianHermiteInterpolator extends AbstractStateCo
      *
      * @param orbitInterpolator orbit interpolator
      * @param outFrame output frame
-     * @param outOrbitType output orbit type
+     * @param outOrbitParamsType output orbit type
      * @param outPositionAngleType output position angle
      */
     public StateCovarianceKeplerianHermiteInterpolator(final TimeInterpolator<Orbit> orbitInterpolator, final Frame outFrame,
-                                                       final OrbitType outOrbitType, final PositionAngleType outPositionAngleType) {
-        this(DEFAULT_INTERPOLATION_POINTS, orbitInterpolator, outFrame, outOrbitType, outPositionAngleType);
+                                                       final OrbitParamsType outOrbitParamsType, final PositionAngleType outPositionAngleType) {
+        this(DEFAULT_INTERPOLATION_POINTS, orbitInterpolator, outFrame, outOrbitParamsType, outPositionAngleType);
     }
 
     /**
@@ -194,14 +194,14 @@ public class StateCovarianceKeplerianHermiteInterpolator extends AbstractStateCo
      * @param interpolationPoints number of interpolation points
      * @param orbitInterpolator orbit interpolator
      * @param outFrame output frame
-     * @param outOrbitType output orbit type
+     * @param outOrbitParamsType output orbit type
      * @param outPositionAngleType output position angle
      */
     public StateCovarianceKeplerianHermiteInterpolator(final int interpolationPoints,
                                                        final TimeInterpolator<Orbit> orbitInterpolator, final Frame outFrame,
-                                                       final OrbitType outOrbitType, final PositionAngleType outPositionAngleType) {
+                                                       final OrbitParamsType outOrbitParamsType, final PositionAngleType outPositionAngleType) {
         this(interpolationPoints, DEFAULT_EXTRAPOLATION_THRESHOLD_SEC, orbitInterpolator, CartesianDerivativesFilter.USE_PVA,
-             outFrame, outOrbitType, outPositionAngleType);
+             outFrame, outOrbitParamsType, outPositionAngleType);
     }
 
     /**
@@ -218,14 +218,14 @@ public class StateCovarianceKeplerianHermiteInterpolator extends AbstractStateCo
      * @param filter filter defining if only the state covariance value are used or if first or/and second Keplerian
      * derivatives should be used during the interpolation.
      * @param outFrame output frame
-     * @param outOrbitType output orbit type
+     * @param outOrbitParamsType output orbit type
      * @param outPositionAngleType output position angle
      */
     public StateCovarianceKeplerianHermiteInterpolator(final int interpolationPoints,
                                                        final TimeInterpolator<Orbit> orbitInterpolator,
                                                        final CartesianDerivativesFilter filter, final Frame outFrame,
-                                                       final OrbitType outOrbitType, final PositionAngleType outPositionAngleType) {
-        this(interpolationPoints, DEFAULT_EXTRAPOLATION_THRESHOLD_SEC, orbitInterpolator, filter, outFrame, outOrbitType,
+                                                       final OrbitParamsType outOrbitParamsType, final PositionAngleType outPositionAngleType) {
+        this(interpolationPoints, DEFAULT_EXTRAPOLATION_THRESHOLD_SEC, orbitInterpolator, filter, outFrame, outOrbitParamsType,
                 outPositionAngleType);
     }
 
@@ -242,14 +242,14 @@ public class StateCovarianceKeplerianHermiteInterpolator extends AbstractStateCo
      * @param filter filter defining if only the state covariance value are used or if first or/and second Keplerian
      * derivatives should be used during the interpolation.
      * @param outFrame output frame
-     * @param outOrbitType output orbit type
+     * @param outOrbitParamsType output orbit type
      * @param outPositionAngleType output position angle
      */
     public StateCovarianceKeplerianHermiteInterpolator(final int interpolationPoints, final double extrapolationThreshold,
                                                        final TimeInterpolator<Orbit> orbitInterpolator,
                                                        final CartesianDerivativesFilter filter, final Frame outFrame,
-                                                       final OrbitType outOrbitType, final PositionAngleType outPositionAngleType) {
-        super(interpolationPoints, extrapolationThreshold, orbitInterpolator, outFrame, outOrbitType, outPositionAngleType);
+                                                       final OrbitParamsType outOrbitParamsType, final PositionAngleType outPositionAngleType) {
+        super(interpolationPoints, extrapolationThreshold, orbitInterpolator, outFrame, outOrbitParamsType, outPositionAngleType);
         this.filter = filter;
     }
 
@@ -285,7 +285,7 @@ public class StateCovarianceKeplerianHermiteInterpolator extends AbstractStateCo
 
         return new StateCovariance(interpolatedCovarianceMatrixInEqui,
                                    interpolatedOrbit.getDate(), interpolatedOrbit.getFrame(),
-                                   OrbitType.EQUINOCTIAL, DEFAULT_POSITION_ANGLE);
+                                   OrbitParamsType.EQUINOCTIAL, DEFAULT_POSITION_ANGLE);
     }
 
     /**
@@ -308,7 +308,7 @@ public class StateCovarianceKeplerianHermiteInterpolator extends AbstractStateCo
 
         // Convert to equinoctial elements to avoid singularities
         final StateCovariance covarianceInOrbitFrameInEqui =
-                covarianceInOrbitFrame.changeCovarianceType(orbit, OrbitType.EQUINOCTIAL, DEFAULT_POSITION_ANGLE);
+                covarianceInOrbitFrame.changeCovarianceType(orbit, OrbitParamsType.EQUINOCTIAL, DEFAULT_POSITION_ANGLE);
 
         // Get matrix
         final RealMatrix covarianceInOrbitFrameInEquiMatrix = covarianceInOrbitFrameInEqui.getMatrix();

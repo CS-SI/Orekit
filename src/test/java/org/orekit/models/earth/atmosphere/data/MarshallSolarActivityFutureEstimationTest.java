@@ -54,7 +54,7 @@ import org.orekit.models.earth.atmosphere.NRLMSISE00InputParameters;
 import org.orekit.models.earth.atmosphere.data.MarshallSolarActivityFutureEstimation.StrengthLevel;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
@@ -240,7 +240,7 @@ public class MarshallSolarActivityFutureEstimationTest {
         propagator.addForceModel(new DragForce(atmosphere, satellite));
 
         propagator.setInitialState(ic);
-        propagator.setOrbitType(OrbitType.CARTESIAN);
+        propagator.setOrbitParamsType(OrbitParamsType.CARTESIAN);
 
         return propagator;
     }
@@ -266,7 +266,7 @@ public class MarshallSolarActivityFutureEstimationTest {
         propagator.addForceModel(new DragForce(atmosphere, satellite));
 
         propagator.setInitialState(ic);
-        propagator.setOrbitType(OrbitType.CARTESIAN);
+        propagator.setOrbitParamsType(OrbitParamsType.CARTESIAN);
 
         return propagator;
     }

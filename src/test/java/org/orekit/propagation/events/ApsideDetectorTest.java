@@ -27,7 +27,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
@@ -66,7 +66,7 @@ class ApsideDetectorTest {
 
         Assertions.assertEquals(30, logger.getLoggedEvents().size());
         for (LoggedEvent e : logger.getLoggedEvents()) {
-            KeplerianOrbit o = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(e.getState().getOrbit());
+            KeplerianOrbit o = (KeplerianOrbit) OrbitParamsType.KEPLERIAN.convertType(e.getState().getOrbit());
             double expected = e.isIncreasing() ? 0.0 : FastMath.PI;
             Assertions.assertEquals(expected, MathUtils.normalizeAngle(o.getMeanAnomaly(), expected), 4.0e-14);
         }

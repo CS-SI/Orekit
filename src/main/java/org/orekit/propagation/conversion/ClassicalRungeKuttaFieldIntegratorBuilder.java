@@ -20,7 +20,7 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaFieldIntegrator;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 
 /**
@@ -63,7 +63,7 @@ public class ClassicalRungeKuttaFieldIntegratorBuilder<T extends CalculusFieldEl
     /** {@inheritDoc} */
     @Override
     public ClassicalRungeKuttaFieldIntegrator<T> buildIntegrator(final Field<T> field, final Orbit orbit,
-                                                                 final OrbitType orbitType, final PositionAngleType angleType) {
+                                                                 final OrbitParamsType orbitParamsType, final PositionAngleType angleType) {
         return new ClassicalRungeKuttaFieldIntegrator<>(field, getFieldStep(field));
     }
 

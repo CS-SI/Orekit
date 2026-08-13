@@ -25,7 +25,7 @@ import org.orekit.frames.LOF;
 import org.orekit.frames.LOFType;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleBased;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.utils.DerivativeStateUtils;
@@ -137,15 +137,15 @@ class LinearKeplerianCovarianceMapper {
         final Orbit propagatedOrbit = orbit.shiftedBy(nextOrbit.durationFrom(orbit));
         final LOF lof = stateCovariance.getLOF() == null ? DEFAULT_LOF : stateCovariance.getLOF();
         final StateCovariance cartesianCovarianceInFrame = covarianceToConvert.changeCovarianceType(propagatedOrbit,
-                OrbitType.CARTESIAN, positionAngleType);
+                OrbitParamsType.CARTESIAN, positionAngleType);
         final StateCovariance covarianceInLof = cartesianCovarianceInFrame.changeCovarianceFrame(propagatedOrbit, lof);
         if (stateCovariance.getLOF() != null) {
             return covarianceInLof;
         } else {
             // convert back from an arbitrary LOF to reduce approximation
             final StateCovariance covariance = covarianceInLof.changeCovarianceFrame(nextOrbit, nextOrbit.getFrame());
-            if (stateCovariance.getOrbitType() != OrbitType.CARTESIAN) {
-                return covariance.changeCovarianceType(propagatedOrbit, stateCovariance.getOrbitType(), positionAngleType);
+            if (stateCovariance.getOrbitParamsType() != OrbitParamsType.CARTESIAN) {
+                return covariance.changeCovarianceType(propagatedOrbit, stateCovariance.getOrbitParamsType(), positionAngleType);
             } else {
                 return covariance;
             }

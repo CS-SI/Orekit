@@ -37,7 +37,7 @@ import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvide
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.propagation.analytical.KeplerianPropagator;
@@ -87,7 +87,7 @@ public class PropagatorsParallelizerTest {
 
 
         // Propagator
-        final double[][] tol = ToleranceProvider.getDefaultToleranceProvider(0.01).getTolerances(orbit, OrbitType.EQUINOCTIAL);
+        final double[][] tol = ToleranceProvider.getDefaultToleranceProvider(0.01).getTolerances(orbit, OrbitParamsType.EQUINOCTIAL);
         final DSSTPropagator propagator = new DSSTPropagator(new DormandPrince853Integrator(0.01, 600.0, tol[0], tol[1]), PropagationType.OSCULATING);
 
         // Force models
@@ -436,7 +436,7 @@ public class PropagatorsParallelizerTest {
     }
 
     private NumericalPropagator buildNotInitializedNumerical() {
-        OrbitType type = OrbitType.CARTESIAN;
+        OrbitParamsType type = OrbitParamsType.CARTESIAN;
         double minStep = 0.001;
         double maxStep = 300;
         double[][] tolerances = ToleranceProvider.getDefaultToleranceProvider(10.).getTolerances(orbit, type);

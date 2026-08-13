@@ -30,7 +30,7 @@ import org.orekit.forces.maneuvers.ImpulseManeuver;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.events.DateDetector;
@@ -198,7 +198,7 @@ public class AdditionalDerivativesProvidersTest {
         final Orbit orbit = new EquinoctialOrbit(new PVCoordinates(position,  velocity),
                                                  FramesFactory.getEME2000(), initDate, mu);
         initialState = new SpacecraftState(orbit);
-        tolerance = ToleranceProvider.getDefaultToleranceProvider(0.001).getTolerances(orbit, OrbitType.EQUINOCTIAL);
+        tolerance = ToleranceProvider.getDefaultToleranceProvider(0.001).getTolerances(orbit, OrbitParamsType.EQUINOCTIAL);
     }
 
     @AfterEach

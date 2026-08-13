@@ -21,7 +21,7 @@ import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.ode.nonstiff.AdamsBashforthIntegrator;
 import org.hipparchus.ode.nonstiff.AdamsMoultonIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.numerical.NumericalPropagator;
 
@@ -33,8 +33,8 @@ import org.orekit.propagation.numerical.NumericalPropagator;
  */
 public class CloseEventsNumericalAMTest extends AbstractCloseEventsNumericalTest {
 
-    public ODEIntegrator getIntegrator(double stepSize, final OrbitType orbitType) {
-        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(1).getTolerances(initialOrbit, orbitType);
+    public ODEIntegrator getIntegrator(double stepSize, final OrbitParamsType orbitParamsType) {
+        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(1).getTolerances(initialOrbit, orbitParamsType);
         final AdamsMoultonIntegrator integrator =
                 new AdamsMoultonIntegrator(4, stepSize, stepSize, tol[0], tol[1]);
         final DormandPrince853Integrator starter =

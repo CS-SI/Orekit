@@ -32,7 +32,7 @@ import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvide
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.AbstractMatricesHarvester;
 import org.orekit.propagation.PropagationType;
@@ -702,7 +702,7 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
         final MeanTheory theory = new EcksteinHechlerTheory(referenceRadius, mu,
                                                             c20, c30, c40, c50, c60);
         converter.setMeanTheory(theory);
-        return (CircularOrbit) OrbitType.CIRCULAR.convertType(converter.convertToMean(osculating));
+        return (CircularOrbit) OrbitParamsType.CIRCULAR.convertType(converter.convertToMean(osculating));
     }
 
     /** {@inheritDoc}
@@ -751,12 +751,12 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
                                   final PropagationType stateType,
                                   final OsculatingToMeanConverter converter) {
         super.resetInitialState(state);
-        CircularOrbit circular = (CircularOrbit) OrbitType.CIRCULAR.convertType(state.getOrbit());
+        CircularOrbit circular = (CircularOrbit) OrbitParamsType.CIRCULAR.convertType(state.getOrbit());
         if (stateType == PropagationType.OSCULATING) {
             final MeanTheory theory = new EcksteinHechlerTheory(referenceRadius, mu, ck0[2],
                                                                 ck0[3], ck0[4], ck0[5], ck0[6]);
             converter.setMeanTheory(theory);
-            circular = (CircularOrbit) OrbitType.CIRCULAR.convertType(converter.convertToMean(circular));
+            circular = (CircularOrbit) OrbitParamsType.CIRCULAR.convertType(converter.convertToMean(circular));
         }
         this.initialModel = new EHModel(circular, state.getMass(), referenceRadius, mu, ck0);
         this.models = new TimeSpanMap<>(initialModel);
@@ -798,7 +798,7 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
         final MeanTheory theory = new EcksteinHechlerTheory(referenceRadius, mu, ck0[2],
                                                             ck0[3], ck0[4], ck0[5], ck0[6]);
         converter.setMeanTheory(theory);
-        final CircularOrbit mean = (CircularOrbit) OrbitType.CIRCULAR.convertType(converter.convertToMean(state.getOrbit()));
+        final CircularOrbit mean = (CircularOrbit) OrbitParamsType.CIRCULAR.convertType(converter.convertToMean(state.getOrbit()));
         final EHModel newModel = new EHModel(mean, state.getMass(), referenceRadius, mu, ck0);
         if (forward) {
             models.addValidAfter(newModel, state.getDate(), false);

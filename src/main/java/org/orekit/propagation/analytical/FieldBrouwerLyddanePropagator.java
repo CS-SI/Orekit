@@ -35,7 +35,7 @@ import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvide
 import org.orekit.orbits.FieldKeplerianAnomalyUtility;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
@@ -751,7 +751,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
         // Set BL as the mean theory for converting
         final MeanTheory theory = new BrouwerLyddaneTheory(referenceRadius, mu, c20, c30, c40, c50, m2Value);
         converter.setMeanTheory(theory);
-        return (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(converter.convertToMean(osculating));
+        return (FieldKeplerianOrbit<T>) OrbitParamsType.KEPLERIAN.convertType(converter.convertToMean(osculating));
     }
 
     /** {@inheritDoc}
@@ -802,13 +802,13 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
                                   final PropagationType stateType,
                                   final OsculatingToMeanConverter converter) {
         super.resetInitialState(state);
-        FieldKeplerianOrbit<T> keplerian = (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(state.getOrbit());
+        FieldKeplerianOrbit<T> keplerian = (FieldKeplerianOrbit<T>) OrbitParamsType.KEPLERIAN.convertType(state.getOrbit());
         if (stateType == PropagationType.OSCULATING) {
             final MeanTheory theory = new BrouwerLyddaneTheory(referenceRadius, mu.getReal(),
                                                                ck0[2], ck0[3], ck0[4], ck0[5],
                                                                getM2());
             converter.setMeanTheory(theory);
-            keplerian = (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(converter.convertToMean(keplerian));
+            keplerian = (FieldKeplerianOrbit<T>) OrbitParamsType.KEPLERIAN.convertType(converter.convertToMean(keplerian));
         }
         this.initialModel = new FieldBLModel<>(keplerian, state.getMass(), referenceRadius, mu, ck0);
         this.models = new FieldTimeSpanMap<>(initialModel, state.getMass().getField());
@@ -855,7 +855,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
                                                            ck0[2], ck0[3], ck0[4], ck0[5],
                                                            getM2());
         converter.setMeanTheory(theory);
-        final FieldKeplerianOrbit<T> mean = (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(converter.convertToMean(state.getOrbit()));
+        final FieldKeplerianOrbit<T> mean = (FieldKeplerianOrbit<T>) OrbitParamsType.KEPLERIAN.convertType(converter.convertToMean(state.getOrbit()));
         final FieldBLModel<T> newModel = new FieldBLModel<>(mean, state.getMass(), referenceRadius, mu, ck0);
         if (forward) {
             models.addValidAfter(newModel, state.getDate(), false);

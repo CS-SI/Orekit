@@ -54,7 +54,7 @@ import org.orekit.forces.maneuvers.trigger.ResettableManeuverTriggers;
 import org.orekit.forces.radiation.RadiationForceModel;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.AbstractMatricesHarvester;
 import org.orekit.propagation.AdditionalDataProvider;
@@ -97,8 +97,8 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  *   <li>the central attraction coefficient ({@link #setMu(double)})</li>
  *   <li>the various force models ({@link #addForceModel(ForceModel)},
  *   {@link #removeForceModels()})</li>
- *   <li>the {@link OrbitType type} of orbital parameters to be used for propagation
- *   ({@link #setOrbitType(OrbitType)}),</li>
+ *   <li>the {@link OrbitParamsType type} of orbital parameters to be used for propagation
+ *   ({@link #setOrbitParamsType(OrbitParamsType)}),</li>
  *   <li>the {@link PositionAngleType type} of position angle to be used in orbital parameters
  *   to be used for propagation where it is relevant ({@link
  *   #setPositionAngleType(PositionAngleType)}),</li>
@@ -114,7 +114,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  *   <li>the binding logic with the rest of the application ({@link #getMultiplexer()})</li>
  * </ul>
  * <p>From these configuration parameters, only the initial state is mandatory. The default
- * propagation settings are in {@link OrbitType#EQUINOCTIAL equinoctial} parameters with
+ * propagation settings are in {@link OrbitParamsType#EQUINOCTIAL equinoctial} parameters with
  * {@link PositionAngleType#ECCENTRIC} longitude argument. If the central attraction coefficient
  * is not explicitly specified, the one used to define the initial orbit will be used.
  * However, specifying only the initial state and perhaps the central attraction coefficient
@@ -176,7 +176,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 public class NumericalPropagator extends AbstractIntegratedPropagator {
 
     /** Default orbit type. */
-    public static final OrbitType DEFAULT_ORBIT_TYPE = OrbitType.EQUINOCTIAL;
+    public static final OrbitParamsType DEFAULT_ORBIT_TYPE = OrbitParamsType.EQUINOCTIAL;
 
     /** Default position angle type. */
     public static final PositionAngleType DEFAULT_POSITION_ANGLE_TYPE = PositionAngleType.ECCENTRIC;
@@ -201,8 +201,8 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
      * unspecified default law and there are no perturbing forces at all.
      * This means that if {@link #addForceModel addForceModel} is not
      * called after creation, the integrated orbit will follow a Keplerian
-     * evolution only. The defaults are {@link OrbitType#EQUINOCTIAL}
-     * for {@link #setOrbitType(OrbitType) propagation
+     * evolution only. The defaults are {@link OrbitParamsType#EQUINOCTIAL}
+     * for {@link #setOrbitParamsType(OrbitParamsType) propagation
      * orbit type} and {@link PositionAngleType#ECCENTRIC} for {@link
      * #setPositionAngleType(PositionAngleType) position angle type}.
      *
@@ -222,8 +222,8 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
      * unspecified default law and there are no perturbing forces at all.
      * This means that if {@link #addForceModel addForceModel} is not
      * called after creation, the integrated orbit will follow a Keplerian
-     * evolution only. The defaults are {@link OrbitType#EQUINOCTIAL}
-     * for {@link #setOrbitType(OrbitType) propagation
+     * evolution only. The defaults are {@link OrbitParamsType#EQUINOCTIAL}
+     * for {@link #setOrbitParamsType(OrbitParamsType) propagation
      * orbit type} and {@link PositionAngleType#ECCENTRIC} for {@link
      * #setPositionAngleType(PositionAngleType) position angle type}.
      * @param integrator numerical integrator to use for propagation.
@@ -238,7 +238,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         initMapper();
         setAttitudeProvider(attitudeProvider);
         clearStepHandlers();
-        setOrbitType(DEFAULT_ORBIT_TYPE);
+        setOrbitParamsType(DEFAULT_ORBIT_TYPE);
         setPositionAngleType(DEFAULT_POSITION_ANGLE_TYPE);
     }
 
@@ -370,12 +370,12 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
     }
 
     /** Set propagation orbit type.
-     * @param orbitType orbit type to use for propagation, null for
+     * @param orbitParamsType orbit type to use for propagation, null for
      * propagating using {@link org.orekit.utils.AbsolutePVCoordinates} rather than {@link Orbit}
      */
     @Override
-    public void setOrbitType(final OrbitType orbitType) {
-        super.setOrbitType(orbitType);
+    public void setOrbitParamsType(final OrbitParamsType orbitParamsType) {
+        super.setOrbitParamsType(orbitParamsType);
     }
 
     /** Get propagation parameter type.
@@ -383,16 +383,16 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
      * propagating using {@link org.orekit.utils.AbsolutePVCoordinates} rather than {@link Orbit}
      */
     @Override
-    public OrbitType getOrbitType() {
-        return super.getOrbitType();
+    public OrbitParamsType getOrbitParamsType() {
+        return super.getOrbitParamsType();
     }
 
     /** Set position angle type.
      * <p>
      * The position parameter type is meaningful only if {@link
-     * #getOrbitType() propagation orbit type}
+     * #getOrbitParamsType() propagation orbit type}
      * support it. As an example, it is not meaningful for propagation
-     * in {@link OrbitType#CARTESIAN Cartesian} parameters.
+     * in {@link OrbitParamsType#CARTESIAN Cartesian} parameters.
      * </p>
      * @param positionAngleType angle type to use for propagation
      */
@@ -534,7 +534,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
             // (perhaps due to a previous propagation)
             setInitialState(stmGenerator.setInitialStateTransitionMatrix(getInitialState(),
                                                                          harvester.getInitialStateTransitionMatrix(),
-                                                                         getOrbitType(),
+                                                                         getOrbitParamsType(),
                                                                          getPositionAngleType()));
         }
 
@@ -863,7 +863,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         // convert to Cartesian Jacobian
         final RealMatrix dYdC = MatrixUtils.createRealIdentityMatrix(expectedSize);
         final double[][] jacobian = new double[6][6];
-        getOrbitType().convertType(state.getOrbit()).getJacobianWrtCartesian(getPositionAngleType(), jacobian);
+        getOrbitParamsType().convertType(state.getOrbit()).getJacobianWrtCartesian(getPositionAngleType(), jacobian);
         dYdC.setSubMatrix(jacobian, 0, 0);
         final DecompositionSolver solver = getSolver(dYdC);
         final double[] column = solver.solve(MatrixUtils.createRealVector(dYdQ)).toArray();
@@ -892,9 +892,9 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
     /** {@inheritDoc} */
     @Override
     protected StateMapper createMapper(final AbsoluteDate referenceDate, final double mu,
-                                       final OrbitType orbitType, final PositionAngleType positionAngleType,
+                                       final OrbitParamsType orbitParamsType, final PositionAngleType positionAngleType,
                                        final AttitudeProvider attitudeProvider, final Frame frame) {
-        return new OsculatingMapper(referenceDate, mu, orbitType, positionAngleType, attitudeProvider, frame);
+        return new OsculatingMapper(referenceDate, mu, orbitParamsType, positionAngleType, attitudeProvider, frame);
     }
 
     /** Internal mapper using directly osculating parameters. */
@@ -903,21 +903,21 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         /** Simple constructor.
          * <p>
          * The position parameter type is meaningful only if {@link
-         * #getOrbitType() propagation orbit type}
+         * #getOrbitParamsType() propagation orbit type}
          * support it. As an example, it is not meaningful for propagation
-         * in {@link OrbitType#CARTESIAN Cartesian} parameters.
+         * in {@link OrbitParamsType#CARTESIAN Cartesian} parameters.
          * </p>
          * @param referenceDate reference date
          * @param mu central attraction coefficient (m³/s²)
-         * @param orbitType orbit type to use for mapping (can be null for {@link AbsolutePVCoordinates})
+         * @param orbitParamsType orbit type to use for mapping (can be null for {@link AbsolutePVCoordinates})
          * @param positionAngleType angle type to use for propagation
          * @param attitudeProvider attitude provider
          * @param frame inertial frame
          */
         OsculatingMapper(final AbsoluteDate referenceDate, final double mu,
-                         final OrbitType orbitType, final PositionAngleType positionAngleType,
+                         final OrbitParamsType orbitParamsType, final PositionAngleType positionAngleType,
                          final AttitudeProvider attitudeProvider, final Frame frame) {
-            super(referenceDate, mu, orbitType, positionAngleType, attitudeProvider, frame);
+            super(referenceDate, mu, orbitParamsType, positionAngleType, attitudeProvider, frame);
         }
 
         /** {@inheritDoc} */
@@ -932,7 +932,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
                 throw new OrekitException(OrekitMessages.NOT_POSITIVE_SPACECRAFT_MASS, mass);
             }
 
-            if (super.getOrbitType() == null) {
+            if (super.getOrbitParamsType() == null) {
                 // propagation uses absolute position-velocity-acceleration
                 final Vector3D p = new Vector3D(y[0],    y[1],    y[2]);
                 final Vector3D v = new Vector3D(y[3],    y[4],    y[5]);
@@ -949,7 +949,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
                 return new SpacecraftState(absPva, attitude).withMassRate(massRate).withMass(mass);
             } else {
                 // propagation uses regular orbits
-                final Orbit orbit       = super.getOrbitType().mapArrayToOrbit(y, yDot, super.getPositionAngleType(), date, getMu(), getFrame());
+                final Orbit orbit       = super.getOrbitParamsType().mapArrayToOrbit(y, yDot, super.getPositionAngleType(), date, getMu(), getFrame());
                 final Attitude attitude = getAttitudeProvider().getAttitude(orbit, date, getFrame());
 
                 return new SpacecraftState(orbit, attitude).withMassRate(massRate).withMass(mass);
@@ -959,7 +959,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
 
         /** {@inheritDoc} */
         public void mapStateToArray(final SpacecraftState state, final double[] y, final double[] yDot) {
-            if (super.getOrbitType() == null) {
+            if (super.getOrbitParamsType() == null) {
                 // propagation uses absolute position-velocity-acceleration
                 final Vector3D p = state.getAbsPVA().getPosition();
                 final Vector3D v = state.getAbsPVA().getVelocity();
@@ -972,7 +972,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
                 y[6] = state.getMass();
             }
             else {
-                super.getOrbitType().mapOrbitToArray(state.getOrbit(), super.getPositionAngleType(), y, yDot);
+                super.getOrbitParamsType().mapOrbitToArray(state.getOrbit(), super.getPositionAngleType(), y, yDot);
                 y[6] = state.getMass();
             }
         }
@@ -981,7 +981,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
 
     /** {@inheritDoc} */
     protected MainStateEquations getMainStateEquations(final ODEIntegrator integrator) {
-        return new Main(integrator, getOrbitType(), getPositionAngleType(), getAllForceModels());
+        return new Main(integrator, getOrbitParamsType(), getPositionAngleType(), getAllForceModels());
     }
 
     /** Internal class for osculating parameters integration. */
@@ -992,16 +992,16 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
 
         /** Simple constructor.
          * @param integrator numerical integrator to use for propagation.
-         * @param orbitType orbit type
+         * @param orbitParamsType orbit type
          * @param positionAngleType angle type
          * @param forceModelList forces
          */
-        Main(final ODEIntegrator integrator, final OrbitType orbitType, final PositionAngleType positionAngleType,
+        Main(final ODEIntegrator integrator, final OrbitParamsType orbitParamsType, final PositionAngleType positionAngleType,
              final List<ForceModel> forceModelList) {
 
-            super(orbitType, positionAngleType, forceModelList);
+            super(orbitParamsType, positionAngleType, forceModelList);
             final int numberOfForces = forceModelList.size();
-            if (orbitType != null && orbitType != OrbitType.CARTESIAN && numberOfForces > 0) {
+            if (orbitParamsType != null && orbitParamsType != OrbitParamsType.CARTESIAN && numberOfForces > 0) {
                 if (numberOfForces > 1) {
                     recomputingJacobian = true;
                 } else {
@@ -1020,7 +1020,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
          * @param integrator numerical integrator to use for propagation.
          */
         private void setUpInternalDetectors(final ODEIntegrator integrator) {
-            final NumericalTimeDerivativesEquations cartesianEquations = new NumericalTimeDerivativesEquations(OrbitType.CARTESIAN,
+            final NumericalTimeDerivativesEquations cartesianEquations = new NumericalTimeDerivativesEquations(OrbitParamsType.CARTESIAN,
                     null, forceModels);
             final List<FieldEventDetector<Gradient>> fieldDetectors = new ArrayList<>();
             if (getHarvester() != null) {

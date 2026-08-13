@@ -51,7 +51,7 @@ import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
@@ -80,17 +80,17 @@ public class ECOM2Test extends AbstractForceModelTest {
     }
 
     private NumericalPropagator setUpPropagator(Orbit orbit, double dP,
-                                                OrbitType orbitType, PositionAngleType angleType,
+                                                OrbitParamsType orbitParamsType, PositionAngleType angleType,
                                                 ForceModel... models)
         {
 
         final double minStep = 0.001;
         final double maxStep = 1000;
 
-        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(dP).getTolerances(orbit, orbitType);
+        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(dP).getTolerances(orbit, orbitParamsType);
         NumericalPropagator propagator =
             new NumericalPropagator(new DormandPrince853Integrator(minStep, maxStep, tol[0], tol[1]));
-        propagator.setOrbitType(orbitType);
+        propagator.setOrbitParamsType(orbitParamsType);
         propagator.setPositionAngleType(angleType);
         for (ForceModel model : models) {
             propagator.addForceModel(model);
@@ -98,30 +98,30 @@ public class ECOM2Test extends AbstractForceModelTest {
         return propagator;
     }
 
-    private SpacecraftState shiftState(SpacecraftState state, OrbitType orbitType, PositionAngleType angleType,
+    private SpacecraftState shiftState(SpacecraftState state, OrbitParamsType orbitParamsType, PositionAngleType angleType,
                                        double delta, int column) {
 
-        double[][] array = stateToArray(state, orbitType, angleType, true);
+        double[][] array = stateToArray(state, orbitParamsType, angleType, true);
         array[0][column] += delta;
 
-        return arrayToState(array, orbitType, angleType, state.getFrame(), state.getDate(),
+        return arrayToState(array, orbitParamsType, angleType, state.getFrame(), state.getDate(),
                             state.getOrbit().getMu(), state.getAttitude());
 
     }
 
-    private SpacecraftState arrayToState(double[][] array, OrbitType orbitType, PositionAngleType angleType,
+    private SpacecraftState arrayToState(double[][] array, OrbitParamsType orbitParamsType, PositionAngleType angleType,
                                          Frame frame, AbsoluteDate date, double mu,
                                          Attitude attitude) {
-        Orbit orbit = orbitType.mapArrayToOrbit(array[0], array[1], angleType, date, mu, frame);
+        Orbit orbit = orbitParamsType.mapArrayToOrbit(array[0], array[1], angleType, date, mu, frame);
         return (array.length > 6) ?
                new SpacecraftState(orbit, attitude) :
                new SpacecraftState(orbit, attitude).withMass(array[0][6]);
     }
 
-    private double[][] stateToArray(SpacecraftState state, OrbitType orbitType, PositionAngleType angleType,
+    private double[][] stateToArray(SpacecraftState state, OrbitParamsType orbitParamsType, PositionAngleType angleType,
                                     boolean withMass) {
           double[][] array = new double[2][withMass ? 7 : 6];
-          orbitType.mapOrbitToArray(state.getOrbit(), angleType, array[0], array[1]);
+          orbitParamsType.mapOrbitToArray(state.getOrbit(), angleType, array[0], array[1]);
           if (withMass) {
               array[0][6] = state.getMass();
           }
@@ -187,43 +187,43 @@ public class ECOM2Test extends AbstractForceModelTest {
         final Orbit           orbit     = dsOrbit.toOrbit();
         final SpacecraftState state     = dsState.toSpacecraftState();
         final double[][] refDeriv = new double[3][6];
-        final OrbitType     orbitType = orbit.getType();
+        final OrbitParamsType orbitParamsType = orbit.getType();
         final PositionAngleType angleType = PositionAngleType.MEAN;
         double dP = 0.001;
-        double[] steps = ToleranceProvider.getDefaultToleranceProvider(1000000 * dP).getTolerances(orbit, orbitType)[0];
-        AbstractIntegratedPropagator propagator = setUpPropagator(orbit, dP, orbitType, angleType, gravityField, forceModel);
+        double[] steps = ToleranceProvider.getDefaultToleranceProvider(1000000 * dP).getTolerances(orbit, orbitParamsType)[0];
+        AbstractIntegratedPropagator propagator = setUpPropagator(orbit, dP, orbitParamsType, angleType, gravityField, forceModel);
 
         //Compute derivatives with finite-difference method
         for(int i = 0; i < 6; i++) {
-            propagator.resetInitialState(shiftState(state, orbitType, angleType, -4 * steps[i], i));
+            propagator.resetInitialState(shiftState(state, orbitParamsType, angleType, -4 * steps[i], i));
             SpacecraftState sM4h = propagator.propagate(state.getDate());
             Vector3D accM4 = forceModel.acceleration(sM4h, forceModel.getParameters()); 
             
-            propagator.resetInitialState(shiftState(state, orbitType, angleType, -3 * steps[i], i));
+            propagator.resetInitialState(shiftState(state, orbitParamsType, angleType, -3 * steps[i], i));
             SpacecraftState sM3h = propagator.propagate(state.getDate());
             Vector3D accM3 = forceModel.acceleration(sM3h, forceModel.getParameters()); 
             
-            propagator.resetInitialState(shiftState(state, orbitType, angleType, -2 * steps[i], i));
+            propagator.resetInitialState(shiftState(state, orbitParamsType, angleType, -2 * steps[i], i));
             SpacecraftState sM2h = propagator.propagate(state.getDate());
             Vector3D accM2 = forceModel.acceleration(sM2h, forceModel.getParameters()); 
  
-            propagator.resetInitialState(shiftState(state, orbitType, angleType, -1 * steps[i] , i));
+            propagator.resetInitialState(shiftState(state, orbitParamsType, angleType, -1 * steps[i] , i));
             SpacecraftState sM1h = propagator.propagate(state.getDate());
             Vector3D accM1 = forceModel.acceleration(sM1h, forceModel.getParameters()); 
            
-            propagator.resetInitialState(shiftState(state, orbitType, angleType, 1 * steps[i], i));
+            propagator.resetInitialState(shiftState(state, orbitParamsType, angleType, 1 * steps[i], i));
             SpacecraftState  sP1h = propagator.propagate(state.getDate());
             Vector3D accP1 = forceModel.acceleration(sP1h, forceModel.getParameters()); 
             
-            propagator.resetInitialState(shiftState(state, orbitType, angleType, 2 * steps[i], i));
+            propagator.resetInitialState(shiftState(state, orbitParamsType, angleType, 2 * steps[i], i));
             SpacecraftState sP2h = propagator.propagate(state.getDate());
             Vector3D accP2 = forceModel.acceleration(sP2h, forceModel.getParameters()); 
             
-            propagator.resetInitialState(shiftState(state, orbitType, angleType, 3 * steps[i], i));
+            propagator.resetInitialState(shiftState(state, orbitParamsType, angleType, 3 * steps[i], i));
             SpacecraftState sP3h = propagator.propagate(state.getDate());
             Vector3D accP3 = forceModel.acceleration(sP3h, forceModel.getParameters()); 
             
-            propagator.resetInitialState(shiftState(state, orbitType, angleType, 4 * steps[i], i));
+            propagator.resetInitialState(shiftState(state, orbitParamsType, angleType, 4 * steps[i], i));
             SpacecraftState sP4h = propagator.propagate(state.getDate());
             Vector3D accP4 = forceModel.acceleration(sP4h, forceModel.getParameters()); 
             fillJacobianModelColumn(refDeriv, i, steps[i],
@@ -281,15 +281,15 @@ public class ECOM2Test extends AbstractForceModelTest {
                         new ClassicalRungeKuttaFieldIntegrator<>(field, zero.add(6));
         ClassicalRungeKuttaIntegrator RIntegrator =
                         new ClassicalRungeKuttaIntegrator(6);
-        OrbitType type = OrbitType.EQUINOCTIAL;
+        OrbitParamsType type = OrbitParamsType.EQUINOCTIAL;
 
         // Field and classical numerical propagators
         FieldNumericalPropagator<DerivativeStructure> FNP = new FieldNumericalPropagator<>(integrator);
-        FNP.setOrbitType(type);
+        FNP.setOrbitParamsType(type);
         FNP.setInitialState(initialState);
 
         NumericalPropagator NP = new NumericalPropagator(RIntegrator);
-        NP.setOrbitType(type);
+        NP.setOrbitParamsType(type);
         NP.setInitialState(iSR);
 
         // Set up the force model to test
@@ -342,15 +342,15 @@ public class ECOM2Test extends AbstractForceModelTest {
                         new ClassicalRungeKuttaFieldIntegrator<>(field, zero.add(6));
         ClassicalRungeKuttaIntegrator RIntegrator =
                         new ClassicalRungeKuttaIntegrator(6);
-        OrbitType type = OrbitType.EQUINOCTIAL;
+        OrbitParamsType type = OrbitParamsType.EQUINOCTIAL;
 
         // Field and classical numerical propagators
         FieldNumericalPropagator<Gradient> FNP = new FieldNumericalPropagator<>(integrator);
-        FNP.setOrbitType(type);
+        FNP.setOrbitParamsType(type);
         FNP.setInitialState(initialState);
 
         NumericalPropagator NP = new NumericalPropagator(RIntegrator);
-        NP.setOrbitType(type);
+        NP.setOrbitParamsType(type);
         NP.setInitialState(iSR);
 
         // Set up the force model to test

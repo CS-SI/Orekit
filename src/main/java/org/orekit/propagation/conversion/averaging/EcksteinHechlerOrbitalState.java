@@ -20,7 +20,7 @@ import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvide
 import org.orekit.frames.Frame;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
@@ -57,8 +57,8 @@ public class EcksteinHechlerOrbitalState extends AbstractHarmonicsBasedOrbitalSt
 
     /** {@inheritDoc} */
     @Override
-    public OrbitType getOrbitType() {
-        return OrbitType.CIRCULAR;
+    public OrbitParamsType getOrbitParamsType() {
+        return OrbitParamsType.CIRCULAR;
     }
 
     /** {@inheritDoc} */

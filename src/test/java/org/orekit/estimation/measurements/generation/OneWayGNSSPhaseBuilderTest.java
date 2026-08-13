@@ -41,7 +41,7 @@ import org.orekit.estimation.measurements.modifiers.MeasurementNoise;
 import org.orekit.gnss.PredefinedGnssSignal;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -52,7 +52,6 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FixedStepSelector;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.time.clocks.ConstantClockModel;
-import org.orekit.time.clocks.PolynomialClockModel;
 import org.orekit.utils.PVCoordinates;
 
 class OneWayGNSSPhaseBuilderTest {
@@ -174,7 +173,7 @@ class OneWayGNSSPhaseBuilderTest {
      void setUp() {
          context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
-         propagatorBuilder = context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+         propagatorBuilder = context.createNumerical(OrbitParamsType.KEPLERIAN, PositionAngleType.TRUE, true,
                                                    1.0e-6, 300.0, 0.001, Force.POTENTIAL,
                                                    Force.THIRD_BODY_SUN, Force.THIRD_BODY_MOON);
      }

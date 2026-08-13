@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.AbsolutePVCoordinates;
 
@@ -42,7 +42,7 @@ class ClassicalRungeKuttaIntegratorBuilderTest {
         final ClassicalRungeKuttaIntegrator actualIntegrator = (ClassicalRungeKuttaIntegrator) integrator;
         final CartesianOrbit orbit = new CartesianOrbit(absolutePVCoordinates.getPVCoordinates(), absolutePVCoordinates.getFrame(),
                 absolutePVCoordinates.getDate(), 1.);
-        final ClassicalRungeKuttaIntegrator expectedIntegrator = (ClassicalRungeKuttaIntegrator) builder.buildIntegrator(orbit, OrbitType.CARTESIAN);
+        final ClassicalRungeKuttaIntegrator expectedIntegrator = (ClassicalRungeKuttaIntegrator) builder.buildIntegrator(orbit, OrbitParamsType.CARTESIAN);
         Assertions.assertEquals(expectedIntegrator.getCurrentSignedStepsize(), actualIntegrator.getCurrentSignedStepsize());
     }
 

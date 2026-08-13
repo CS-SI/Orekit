@@ -46,7 +46,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
@@ -642,7 +642,7 @@ class SolidTidesTest extends AbstractLegacyForceModelTest {
 
     private SpacecraftState propagate(Orbit orbit, AbsoluteDate target, ForceModel... forceModels)
         {
-        double[][] tolerances = ToleranceProvider.getDefaultToleranceProvider(10.).getTolerances(orbit, OrbitType.KEPLERIAN);
+        double[][] tolerances = ToleranceProvider.getDefaultToleranceProvider(10.).getTolerances(orbit, OrbitParamsType.KEPLERIAN);
         AbstractIntegrator integrator = new DormandPrince853Integrator(1.0e-3, 300, tolerances[0], tolerances[1]);
         NumericalPropagator propagator = new NumericalPropagator(integrator);
         for (ForceModel forceModel : forceModels) {

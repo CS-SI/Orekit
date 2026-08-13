@@ -24,7 +24,7 @@ import org.orekit.control.indirect.adjoint.cost.FieldCartesianCost;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.integration.FieldAdditionalDerivativesProvider;
 import org.orekit.propagation.integration.FieldCombinedDerivatives;
@@ -84,7 +84,7 @@ public class FieldCartesianAdjointDerivativesProvider<T extends CalculusFieldEle
     @Override
     public void init(final FieldSpacecraftState<T> initialState, final FieldAbsoluteDate<T> target) {
         FieldAdditionalDerivativesProvider.super.init(initialState, target);
-        if (initialState.isOrbitDefined() && initialState.getOrbit().getType() != OrbitType.CARTESIAN) {
+        if (initialState.isOrbitDefined() && initialState.getOrbit().getType() != OrbitParamsType.CARTESIAN) {
             throw new OrekitException(OrekitMessages.WRONG_COORDINATES_FOR_ADJOINT_EQUATION);
         }
     }

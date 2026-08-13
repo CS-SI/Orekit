@@ -38,7 +38,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -70,7 +70,7 @@ public class IodLambertTest {
         final Frame frame = context.initialOrbit.getFrame();
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitParamsType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect range measurements
@@ -135,7 +135,7 @@ public class IodLambertTest {
 
         // Use a simple Keplerian propagator (no perturbation)
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitParamsType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // Create propagator
@@ -145,7 +145,7 @@ public class IodLambertTest {
         final SpacecraftState initialState = propagator.getInitialState();
         final KeplerianOrbit refOrbit = new KeplerianOrbit(initialState.getOrbit());
         double[] refOrbitArray = new double[6];
-        OrbitType.KEPLERIAN.mapOrbitToArray(refOrbit, PositionAngleType.TRUE, refOrbitArray, null);
+        OrbitParamsType.KEPLERIAN.mapOrbitToArray(refOrbit, PositionAngleType.TRUE, refOrbitArray, null);
         final Vector3D position1 = refOrbit.getPosition();
         final AbsoluteDate date1 = refOrbit.getDate();
 
@@ -230,7 +230,7 @@ public class IodLambertTest {
 
         // Use a simple Keplerian propagator (no perturbation)
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitParamsType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // Create propagator
@@ -240,7 +240,7 @@ public class IodLambertTest {
         final SpacecraftState initialState = propagator.getInitialState();
         final KeplerianOrbit refOrbit = new KeplerianOrbit(initialState.getOrbit());
         double[] refOrbitArray = new double[6];
-        OrbitType.KEPLERIAN.mapOrbitToArray(refOrbit, PositionAngleType.TRUE, refOrbitArray, null);
+        OrbitParamsType.KEPLERIAN.mapOrbitToArray(refOrbit, PositionAngleType.TRUE, refOrbitArray, null);
 
         final Vector3D position1 = refOrbit.getPosition();
         final AbsoluteDate date1 = refOrbit.getDate();

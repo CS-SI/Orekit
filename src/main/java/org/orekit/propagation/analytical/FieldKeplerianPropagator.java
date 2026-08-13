@@ -27,7 +27,7 @@ import org.orekit.attitudes.FieldAttitude;
 import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -138,7 +138,7 @@ public class FieldKeplerianPropagator<T extends CalculusFieldElement<T>> extends
     private FieldSpacecraftState<T> fixState(final FieldOrbit<T> orbit, final FieldAttitude<T> attitude, final T mass, final T mu,
                                              final FieldDataDictionary<T> additionalStates,
                                              final FieldArrayDictionary<T> additionalStatesderivatives) {
-        final OrbitType type = orbit.getType();
+        final OrbitParamsType type = orbit.getType();
         final T[] stateVector = MathArrays.buildArray(mass.getField(), 6);
         final PositionAngleType positionAngleType = PositionAngleType.MEAN;
         type.mapOrbitToArray(orbit, positionAngleType, stateVector, null);

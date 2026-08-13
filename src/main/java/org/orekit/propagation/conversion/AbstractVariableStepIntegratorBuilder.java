@@ -18,7 +18,7 @@ package org.orekit.propagation.conversion;
 
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.ToleranceProvider;
 import org.orekit.utils.AbsolutePVCoordinates;
@@ -77,11 +77,11 @@ public abstract class AbstractVariableStepIntegratorBuilder<T extends AdaptiveSt
     /**
      * Computes tolerances.
      * @param orbit initial orbit
-     * @param orbitType orbit type for integration
+     * @param orbitParamsType orbit type for integration
      * @return integrator tolerances
      */
-    protected double[][] getTolerances(final Orbit orbit, final OrbitType orbitType) {
-        return toleranceProvider.getTolerances(orbit, orbitType, PositionAngleType.MEAN);
+    protected double[][] getTolerances(final Orbit orbit, final OrbitParamsType orbitParamsType) {
+        return toleranceProvider.getTolerances(orbit, orbitParamsType, PositionAngleType.MEAN);
     }
 
     /**
@@ -96,9 +96,9 @@ public abstract class AbstractVariableStepIntegratorBuilder<T extends AdaptiveSt
 
     /** {@inheritDoc} */
     @Override
-    public T buildIntegrator(final Orbit orbit, final OrbitType orbitType,
+    public T buildIntegrator(final Orbit orbit, final OrbitParamsType orbitParamsType,
                                               final PositionAngleType angleType) {
-        return buildIntegrator(getTolerances(orbit, orbitType));
+        return buildIntegrator(getTolerances(orbit, orbitParamsType));
     }
 
     /** {@inheritDoc} */

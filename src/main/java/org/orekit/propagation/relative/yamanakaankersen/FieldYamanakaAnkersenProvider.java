@@ -22,7 +22,7 @@ import org.orekit.annotation.DefaultDataContext;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.relative.FieldAbstractRelativeProvider;
@@ -122,7 +122,7 @@ public class FieldYamanakaAnkersenProvider<T extends CalculusFieldElement<T>> ex
      */
     @Override
     public void setTargetTrueAnomaly(final T trueAnomaly) {
-        final FieldKeplerianOrbit<T> orbit = (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(getTargetOrbit());
+        final FieldKeplerianOrbit<T> orbit = (FieldKeplerianOrbit<T>) OrbitParamsType.KEPLERIAN.convertType(getTargetOrbit());
         setTargetOrbit(new FieldKeplerianOrbit<>(orbit.getA(), orbit.getE(), orbit.getI(), orbit.getPeriapsisArgument(),
                                                  orbit.getRightAscensionOfAscendingNode(), trueAnomaly,
                                                  PositionAngleType.TRUE, orbit.getFrame(), orbit.getDate(),
@@ -147,9 +147,9 @@ public class FieldYamanakaAnkersenProvider<T extends CalculusFieldElement<T>> ex
 
         // Initial and final target anomalies
         final FieldKeplerianOrbit<T> initialOrbit =
-                        (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(getTargetOrbit());
+                        (FieldKeplerianOrbit<T>) OrbitParamsType.KEPLERIAN.convertType(getTargetOrbit());
         final FieldKeplerianOrbit<T> currentOrbit =
-                        (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(targetState.getOrbit());
+                        (FieldKeplerianOrbit<T>) OrbitParamsType.KEPLERIAN.convertType(targetState.getOrbit());
         final T initialTrueAnomaly = initialOrbit.getTrueAnomaly();
         final T trueAnomaly = currentOrbit.getTrueAnomaly();
         final T mu = targetState.getOrbit().getMu();

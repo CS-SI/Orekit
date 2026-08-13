@@ -50,7 +50,7 @@ import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
@@ -205,7 +205,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
         FieldSpacecraftState<DerivativeStructure> initialState = new FieldSpacecraftState<>(FKO);
 
         SpacecraftState iSR = initialState.toSpacecraftState();
-        OrbitType type = OrbitType.KEPLERIAN;
+        OrbitParamsType type = OrbitParamsType.KEPLERIAN;
         double[][] tolerance = ToleranceProvider.getDefaultToleranceProvider(10.).getTolerances(FKO.toOrbit(), type);
 
 
@@ -217,11 +217,11 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
         RIntegrator.setInitialStepSize(60);
 
         FieldNumericalPropagator<DerivativeStructure> FNP = new FieldNumericalPropagator<>(integrator);
-        FNP.setOrbitType(type);
+        FNP.setOrbitParamsType(type);
         FNP.setInitialState(initialState);
 
         NumericalPropagator NP = new NumericalPropagator(RIntegrator);
-        NP.setOrbitType(type);
+        NP.setOrbitParamsType(type);
         NP.setInitialState(iSR);
 
         final ThirdBodyAttraction forceModel = new ThirdBodyAttraction(CelestialBodyFactory.getSun());
@@ -266,7 +266,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
         FieldSpacecraftState<Gradient> initialState = new FieldSpacecraftState<>(FKO);
 
         SpacecraftState iSR = initialState.toSpacecraftState();
-        OrbitType type = OrbitType.KEPLERIAN;
+        OrbitParamsType type = OrbitParamsType.KEPLERIAN;
         double[][] tolerance = ToleranceProvider.getDefaultToleranceProvider(10.).getTolerances(FKO.toOrbit(), type);
 
 
@@ -278,11 +278,11 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
         RIntegrator.setInitialStepSize(60);
 
         FieldNumericalPropagator<Gradient> FNP = new FieldNumericalPropagator<>(integrator);
-        FNP.setOrbitType(type);
+        FNP.setOrbitParamsType(type);
         FNP.setInitialState(initialState);
 
         NumericalPropagator NP = new NumericalPropagator(RIntegrator);
-        NP.setOrbitType(type);
+        NP.setOrbitParamsType(type);
         NP.setInitialState(iSR);
 
         final ThirdBodyAttraction forceModel = new ThirdBodyAttraction(CelestialBodyFactory.getSun());
@@ -326,7 +326,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
         FieldSpacecraftState<DerivativeStructure> initialState = new FieldSpacecraftState<>(FKO);
 
         SpacecraftState iSR = initialState.toSpacecraftState();
-        OrbitType type = OrbitType.KEPLERIAN;
+        OrbitParamsType type = OrbitParamsType.KEPLERIAN;
         double[][] tolerance = ToleranceProvider.getDefaultToleranceProvider(0.001).getTolerances(FKO.toOrbit(), type);
 
 
@@ -338,11 +338,11 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
         RIntegrator.setInitialStepSize(60);
 
         FieldNumericalPropagator<DerivativeStructure> FNP = new FieldNumericalPropagator<>(integrator);
-        FNP.setOrbitType(type);
+        FNP.setOrbitParamsType(type);
         FNP.setInitialState(initialState);
 
         NumericalPropagator NP = new NumericalPropagator(RIntegrator);
-        NP.setOrbitType(type);
+        NP.setOrbitParamsType(type);
         NP.setInitialState(iSR);
 
         final ThirdBodyAttraction forceModel = new ThirdBodyAttraction(CelestialBodyFactory.getSun());
@@ -508,13 +508,13 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
                                          0, PositionAngleType.MEAN, FramesFactory.getEME2000(), date,
                                          Constants.EIGEN5C_EARTH_MU);
-        OrbitType integrationType = OrbitType.CARTESIAN;
+        OrbitParamsType integrationType = OrbitParamsType.CARTESIAN;
         double[][] tolerances = ToleranceProvider.getDefaultToleranceProvider(0.01).getTolerances(orbit, integrationType);
 
         NumericalPropagator propagator =
                 new NumericalPropagator(new DormandPrince853Integrator(1.0e-3, 120,
                                                                        tolerances[0], tolerances[1]));
-        propagator.setOrbitType(integrationType);
+        propagator.setOrbitParamsType(integrationType);
         final CelestialBody moon = CelestialBodyFactory.getMoon();
         final ThirdBodyAttraction forceModel = new ThirdBodyAttraction(moon);
         propagator.addForceModel(forceModel);

@@ -20,7 +20,7 @@ import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvide
 import org.orekit.frames.Frame;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
@@ -77,8 +77,8 @@ public class DSST6X0OrbitalState extends AbstractHarmonicsBasedOrbitalState {
 
     /** {@inheritDoc} */
     @Override
-    public OrbitType getOrbitType() {
-        return OrbitType.EQUINOCTIAL;
+    public OrbitParamsType getOrbitParamsType() {
+        return OrbitParamsType.EQUINOCTIAL;
     }
 
     /** {@inheritDoc} */

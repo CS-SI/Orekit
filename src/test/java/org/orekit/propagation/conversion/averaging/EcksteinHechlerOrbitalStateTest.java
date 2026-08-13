@@ -29,7 +29,7 @@ class EcksteinHechlerOrbitalStateTest {
                 0.), FramesFactory.getGCRF(), provider);
         // WHEN
         final Orbit orbit = averagedState.toOsculatingOrbit();
-        final CircularOrbit circularOrbit = (CircularOrbit) averagedState.getOrbitType().convertType(orbit);
+        final CircularOrbit circularOrbit = (CircularOrbit) averagedState.getOrbitParamsType().convertType(orbit);
         // THEN
         Assertions.assertEquals(averagedState.getDate(), circularOrbit.getDate());
         compareOrbitalElements(averagedState.getAveragedElements(), circularOrbit,

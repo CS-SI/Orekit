@@ -40,7 +40,7 @@ import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvide
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.propagation.events.DateDetector;
@@ -183,7 +183,7 @@ public class PropagatorsParallelizerEphemerisTest {
         UnnormalizedSphericalHarmonicsProvider gravity = GravityFieldFactory.getUnnormalizedProvider(8, 8);
 
         // Propagator
-        final double[][] tol = ToleranceProvider.getDefaultToleranceProvider(0.01).getTolerances(orbit, OrbitType.EQUINOCTIAL);
+        final double[][] tol = ToleranceProvider.getDefaultToleranceProvider(0.01).getTolerances(orbit, OrbitParamsType.EQUINOCTIAL);
         final DSSTPropagator propagator = new DSSTPropagator(new DormandPrince853Integrator(minStep, maxStep, tol[0], tol[1]), PropagationType.MEAN);
 
         // Force models
@@ -214,7 +214,7 @@ public class PropagatorsParallelizerEphemerisTest {
 
 
     private NumericalPropagator buildNotInitializedNumerical(double minStep, double maxStep) {
-        OrbitType type = OrbitType.CARTESIAN;
+        OrbitParamsType type = OrbitParamsType.CARTESIAN;
         double[][] tolerances = ToleranceProvider.getDefaultToleranceProvider(10.).getTolerances(orbit, type);
         ODEIntegrator integrator = new DormandPrince853Integrator(minStep, maxStep, tolerances[0], tolerances[1]);
         NumericalPropagator numericalPropagator = new NumericalPropagator(integrator);

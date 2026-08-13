@@ -155,7 +155,7 @@ import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -606,7 +606,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
     /**
      * Run the Kalman filter estimation.
      * @param input Input configuration file
-     * @param orbitType Orbit type to use (calculation and display)
+     * @param orbitParamsType Orbit type to use (calculation and display)
      * @param print Choose whether the results are printed on console or not
      * @param cartesianOrbitalP Orbital part of the initial covariance matrix in Cartesian formalism
      * @param cartesianOrbitalQ Orbital part of the process noise matrix in Cartesian formalism
@@ -615,7 +615,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
      * @param measurementP Measurement part of the initial covariance matrix
      * @param measurementQ Measurement part of the process noise matrix
      */
-    protected ResultKalman runKalman(final File input, final OrbitType orbitType, final boolean print,
+    protected ResultKalman runKalman(final File input, final OrbitParamsType orbitParamsType, final boolean print,
                                      final RealMatrix cartesianOrbitalP, final RealMatrix cartesianOrbitalQ,
                                      final RealMatrix propagationP, final RealMatrix propagationQ,
                                      final RealMatrix measurementP, final RealMatrix measurementQ,
@@ -642,7 +642,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
         Orbit initialGuess = createOrbit(parser, getMu());
 
         // Convert to desired orbit type
-        initialGuess = orbitType.convertType(initialGuess);
+        initialGuess = orbitParamsType.convertType(initialGuess);
 
         // IERS conventions
         final IERSConventions conventions;
@@ -880,14 +880,14 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
       * And run the propagation until the last measurement to get the reference orbit at the same date
       * as the Kalman filter
       * @param input Input configuration file
-      * @param orbitType Orbit type to use (calculation and display)
+      * @param orbitParamsType Orbit type to use (calculation and display)
       * @param refPosition Initial reference position
       * @param refVelocity Initial reference velocity
       * @param refPropagationParameters Reference propagation parameters
       * @param finalDate The final date to usefinal dateame date as the Kalman filter
       * @throws IOException Input file cannot be opened
       */
-     protected Orbit runReference(final File input, final OrbitType orbitType,
+     protected Orbit runReference(final File input, final OrbitParamsType orbitParamsType,
                                   final Vector3D refPosition, final Vector3D refVelocity,
                                   final ParameterDriversList refPropagationParameters,
                                   final AbsoluteDate finalDate) throws IOException {
@@ -907,7 +907,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                                                     getMu());
 
          // Convert to desired orbit type
-         initialRefOrbit = orbitType.convertType(initialRefOrbit);
+         initialRefOrbit = orbitParamsType.convertType(initialRefOrbit);
 
          // IERS conventions
          final IERSConventions conventions;

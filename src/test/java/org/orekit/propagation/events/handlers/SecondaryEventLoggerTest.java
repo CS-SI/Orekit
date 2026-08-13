@@ -26,7 +26,7 @@ import org.junit.jupiter.params.provider.EnumSource;
 import org.orekit.TestUtils;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.time.AbsoluteDate;
@@ -168,6 +168,6 @@ class SecondaryEventLoggerTest {
     }
 
     private SpacecraftState buildState(final AbsoluteDate date) {
-        return new SpacecraftState(OrbitType.EQUINOCTIAL.convertType(TestUtils.getDefaultOrbit(date)));
+        return new SpacecraftState(OrbitParamsType.EQUINOCTIAL.convertType(TestUtils.getDefaultOrbit(date)));
     }
 }

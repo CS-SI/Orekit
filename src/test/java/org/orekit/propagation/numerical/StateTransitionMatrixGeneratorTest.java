@@ -96,7 +96,7 @@ class StateTransitionMatrixGeneratorTest {
 
         // first propagation, covering the maneuver
         DateBasedManeuverTriggers triggers1 = new DateBasedManeuverTriggers("MAN_0", firing, duration);
-        final NumericalPropagator propagator1  = buildPropagator(OrbitType.EQUINOCTIAL, PositionAngleType.TRUE, 20,
+        final NumericalPropagator propagator1  = buildPropagator(OrbitParamsType.EQUINOCTIAL, PositionAngleType.TRUE, 20,
                 firing, duration, triggers1);
         propagator1.
                 getAllForceModels().
@@ -113,7 +113,7 @@ class StateTransitionMatrixGeneratorTest {
 
         // second propagation, interrupted during maneuver
         DateBasedManeuverTriggers triggers2 = new DateBasedManeuverTriggers("MAN_0", firing, duration);
-        final NumericalPropagator propagator2  = buildPropagator(OrbitType.EQUINOCTIAL, PositionAngleType.TRUE, 20,
+        final NumericalPropagator propagator2  = buildPropagator(OrbitParamsType.EQUINOCTIAL, PositionAngleType.TRUE, 20,
                 firing, duration, triggers2);
         propagator2.
                 getAllForceModels().
@@ -193,7 +193,7 @@ class StateTransitionMatrixGeneratorTest {
         PVCoordinates pv = new PVCoordinates(p, v);
         SpacecraftState state = stmGenerator.setInitialStateTransitionMatrix(new SpacecraftState(new CartesianOrbit(pv, eci, date, gm)),
                 MatrixUtils.createRealIdentityMatrix(6),
-                propagator.getOrbitType(),
+                propagator.getOrbitParamsType(),
                 propagator.getPositionAngleType());
 
         //action
@@ -218,12 +218,12 @@ class StateTransitionMatrixGeneratorTest {
 
         double dt = 900;
         double dP = 0.001;
-        for (OrbitType orbitType : OrbitType.values()) {
+        for (OrbitParamsType orbitParamsType : OrbitParamsType.values()) {
             for (PositionAngleType angleType : PositionAngleType.values()) {
 
                 // compute state Jacobian using StateTransitionMatrixGenerator
                 NumericalPropagator propagator =
-                        setUpPropagator(initialOrbit, dP, orbitType, angleType, gravityField);
+                        setUpPropagator(initialOrbit, dP, orbitParamsType, angleType, gravityField);
                 final SpacecraftState initialState = new SpacecraftState(initialOrbit);
                 propagator.setInitialState(initialState);
                 PickUpHandler pickUp = new PickUpHandler(propagator, null, null, null);
@@ -231,7 +231,7 @@ class StateTransitionMatrixGeneratorTest {
                 propagator.propagate(initialState.getDate().shiftedBy(dt));
 
                 // compute reference state Jacobian using finite differences
-                double[][] dYdY0Ref = finiteDifferencesStm(initialOrbit, orbitType, angleType, dP, dt, gravityField);
+                double[][] dYdY0Ref = finiteDifferencesStm(initialOrbit, orbitParamsType, angleType, dP, dt, gravityField);
 
                 for (int i = 0; i < 6; ++i) {
                     for (int j = 0; j < 6; ++j) {
@@ -260,12 +260,12 @@ class StateTransitionMatrixGeneratorTest {
 
         double dt = 900;
         double dP = 0.001;
-        for (OrbitType orbitType : new OrbitType[] { OrbitType.KEPLERIAN, OrbitType.CARTESIAN }) {
+        for (OrbitParamsType orbitParamsType : new OrbitParamsType[] { OrbitParamsType.KEPLERIAN, OrbitParamsType.CARTESIAN }) {
             for (PositionAngleType angleType : PositionAngleType.values()) {
 
                 // compute state Jacobian using StateTransitionMatrixGenerator
                 NumericalPropagator propagator =
-                        setUpPropagator(initialOrbit, dP, orbitType, angleType, gravityField);
+                        setUpPropagator(initialOrbit, dP, orbitParamsType, angleType, gravityField);
                 final SpacecraftState initialState = new SpacecraftState(initialOrbit);
                 PickUpHandler pickUp = new PickUpHandler(propagator, null, null, null);
                 propagator.setInitialState(initialState);
@@ -273,7 +273,7 @@ class StateTransitionMatrixGeneratorTest {
                 propagator.propagate(initialState.getDate().shiftedBy(dt));
 
                 // compute reference state Jacobian using finite differences
-                double[][] dYdY0Ref = finiteDifferencesStm(initialOrbit, orbitType, angleType, dP, dt, gravityField);
+                double[][] dYdY0Ref = finiteDifferencesStm(initialOrbit, orbitParamsType, angleType, dP, dt, gravityField);
                 for (int i = 0; i < 6; ++i) {
                     for (int j = 0; j < 6; ++j) {
                         double error = FastMath.abs((pickUp.getStm().getEntry(i, j) - dYdY0Ref[i][j]) / dYdY0Ref[i][j]);
@@ -332,7 +332,7 @@ class StateTransitionMatrixGeneratorTest {
                         provider.getMu());
 
         NumericalPropagator propagator =
-                setUpPropagator(initialOrbit, 0.001, OrbitType.EQUINOCTIAL, PositionAngleType.MEAN,
+                setUpPropagator(initialOrbit, 0.001, OrbitParamsType.EQUINOCTIAL, PositionAngleType.MEAN,
                         newton);
         final SpacecraftState initialState = new SpacecraftState(initialOrbit);
         propagator.setInitialState(initialState);
@@ -366,7 +366,7 @@ class StateTransitionMatrixGeneratorTest {
                         provider.getMu());
 
         NumericalPropagator propagator =
-                setUpPropagator(initialOrbit, 0.001, OrbitType.EQUINOCTIAL, PositionAngleType.MEAN,
+                setUpPropagator(initialOrbit, 0.001, OrbitParamsType.EQUINOCTIAL, PositionAngleType.MEAN,
                         gravityField, newton);
         final SpacecraftState initialState = new SpacecraftState(initialOrbit);
         propagator.setInitialState(initialState);
@@ -400,18 +400,18 @@ class StateTransitionMatrixGeneratorTest {
 
         double dt = 900;
         double dP = 0.001;
-        for (OrbitType orbitType : OrbitType.values()) {
+        for (OrbitParamsType orbitParamsType : OrbitParamsType.values()) {
             for (PositionAngleType angleType : PositionAngleType.values()) {
 
                 // compute state Jacobian using StateTransitionMatrixGenerator
-                NumericalPropagator propagatorA1 = setUpPropagator(initialOrbitA, dP, orbitType, angleType,
+                NumericalPropagator propagatorA1 = setUpPropagator(initialOrbitA, dP, orbitParamsType, angleType,
                         new HolmesFeatherstoneAttractionModel(itrf, provider));
                 final SpacecraftState initialStateA = new SpacecraftState(initialOrbitA);
                 propagatorA1.setInitialState(initialStateA);
                 final PickUpHandler pickUpA = new PickUpHandler(propagatorA1, null, null, null);
                 propagatorA1.setStepHandler(pickUpA);
 
-                NumericalPropagator propagatorB1 = setUpPropagator(initialOrbitB, dP, orbitType, angleType,
+                NumericalPropagator propagatorB1 = setUpPropagator(initialOrbitB, dP, orbitParamsType, angleType,
                         new HolmesFeatherstoneAttractionModel(itrf, provider));
                 final SpacecraftState initialStateB1 = new SpacecraftState(initialOrbitB);
                 propagatorB1.setInitialState(initialStateB1);
@@ -423,7 +423,7 @@ class StateTransitionMatrixGeneratorTest {
                 parallelizer.propagate(initialStateA.getDate(), initialStateA.getDate().shiftedBy(dt));
 
                 // compute reference state Jacobian using finite differences
-                double[][] dYdY0RefA = finiteDifferencesStm(initialOrbitA, orbitType, angleType, dP, dt,
+                double[][] dYdY0RefA = finiteDifferencesStm(initialOrbitA, orbitParamsType, angleType, dP, dt,
                         new HolmesFeatherstoneAttractionModel(itrf, provider));
                 for (int i = 0; i < 6; ++i) {
                     for (int j = 0; j < 6; ++j) {
@@ -433,7 +433,7 @@ class StateTransitionMatrixGeneratorTest {
                     }
                 }
 
-                double[][] dYdY0RefB = finiteDifferencesStm(initialOrbitB, orbitType, angleType, dP, dt,
+                double[][] dYdY0RefB = finiteDifferencesStm(initialOrbitB, orbitParamsType, angleType, dP, dt,
                         new HolmesFeatherstoneAttractionModel(itrf, provider));
                 for (int i = 0; i < 6; ++i) {
                     for (int j = 0; j < 6; ++j) {
@@ -465,7 +465,7 @@ class StateTransitionMatrixGeneratorTest {
                 FramesFactory.getEME2000(), date, Constants.EIGEN5C_EARTH_MU);
         final AbsoluteDate startDate =  orbit.getDate();
         final AbsoluteDate endDate   = startDate.shiftedBy(120.0);
-        OrbitType type = OrbitType.CARTESIAN;
+        OrbitParamsType type = OrbitParamsType.CARTESIAN;
         double minStep = 0.0001;
         double maxStep = 60;
         double[][] tolerances = ToleranceProvider.getDefaultToleranceProvider(0.001).getTolerances(orbit, type);
@@ -494,7 +494,7 @@ class StateTransitionMatrixGeneratorTest {
 
         double dP = 0.001;
         NumericalPropagator propagator =
-                setUpPropagator(initialOrbit, dP, OrbitType.EQUINOCTIAL, PositionAngleType.TRUE);
+                setUpPropagator(initialOrbit, dP, OrbitParamsType.EQUINOCTIAL, PositionAngleType.TRUE);
         StateTransitionMatrixGenerator stmGenerator = new StateTransitionMatrixGenerator("stm",
                 propagator.getAllForceModels(),
                 propagator.getAttitudeProvider());
@@ -511,7 +511,7 @@ class StateTransitionMatrixGeneratorTest {
 
         double dP = 0.001;
         NumericalPropagator propagator =
-                setUpPropagator(initialOrbit, dP, OrbitType.EQUINOCTIAL, PositionAngleType.TRUE);
+                setUpPropagator(initialOrbit, dP, OrbitParamsType.EQUINOCTIAL, PositionAngleType.TRUE);
         StateTransitionMatrixGenerator stmGenerator = new StateTransitionMatrixGenerator("stm",
                 propagator.getAllForceModels(),
                 propagator.getAttitudeProvider());
@@ -519,7 +519,7 @@ class StateTransitionMatrixGeneratorTest {
         try {
             stmGenerator.setInitialStateTransitionMatrix(new SpacecraftState(initialOrbit),
                     MatrixUtils.createRealMatrix(5,  6),
-                    propagator.getOrbitType(),
+                    propagator.getOrbitParamsType(),
                     propagator.getPositionAngleType());
         } catch (OrekitException oe) {
             Assertions.assertEquals(LocalizedCoreFormats.DIMENSIONS_MISMATCH_2x2, oe.getSpecifier());
@@ -532,7 +532,7 @@ class StateTransitionMatrixGeneratorTest {
         try {
             stmGenerator.setInitialStateTransitionMatrix(new SpacecraftState(initialOrbit),
                     MatrixUtils.createRealMatrix(6,  5),
-                    propagator.getOrbitType(),
+                    propagator.getOrbitParamsType(),
                     propagator.getPositionAngleType());
         } catch (OrekitException oe) {
             Assertions.assertEquals(LocalizedCoreFormats.DIMENSIONS_MISMATCH_2x2, oe.getSpecifier());
@@ -545,19 +545,19 @@ class StateTransitionMatrixGeneratorTest {
     }
 
     private void fillJacobianColumn(double[][] jacobian, int column,
-                                    OrbitType orbitType, PositionAngleType angleType, double h,
+                                    OrbitParamsType orbitParamsType, PositionAngleType angleType, double h,
                                     SpacecraftState sM4h, SpacecraftState sM3h,
                                     SpacecraftState sM2h, SpacecraftState sM1h,
                                     SpacecraftState sP1h, SpacecraftState sP2h,
                                     SpacecraftState sP3h, SpacecraftState sP4h) {
-        double[] aM4h = stateToArray(sM4h, orbitType, angleType)[0];
-        double[] aM3h = stateToArray(sM3h, orbitType, angleType)[0];
-        double[] aM2h = stateToArray(sM2h, orbitType, angleType)[0];
-        double[] aM1h = stateToArray(sM1h, orbitType, angleType)[0];
-        double[] aP1h = stateToArray(sP1h, orbitType, angleType)[0];
-        double[] aP2h = stateToArray(sP2h, orbitType, angleType)[0];
-        double[] aP3h = stateToArray(sP3h, orbitType, angleType)[0];
-        double[] aP4h = stateToArray(sP4h, orbitType, angleType)[0];
+        double[] aM4h = stateToArray(sM4h, orbitParamsType, angleType)[0];
+        double[] aM3h = stateToArray(sM3h, orbitParamsType, angleType)[0];
+        double[] aM2h = stateToArray(sM2h, orbitParamsType, angleType)[0];
+        double[] aM1h = stateToArray(sM1h, orbitParamsType, angleType)[0];
+        double[] aP1h = stateToArray(sP1h, orbitParamsType, angleType)[0];
+        double[] aP2h = stateToArray(sP2h, orbitParamsType, angleType)[0];
+        double[] aP3h = stateToArray(sP3h, orbitParamsType, angleType)[0];
+        double[] aP4h = stateToArray(sP4h, orbitParamsType, angleType)[0];
         for (int i = 0; i < jacobian.length; ++i) {
             jacobian[i][column] = ( -3 * (aP4h[i] - aM4h[i]) +
                     32 * (aP3h[i] - aM3h[i]) -
@@ -566,41 +566,41 @@ class StateTransitionMatrixGeneratorTest {
         }
     }
 
-    private SpacecraftState shiftState(SpacecraftState state, OrbitType orbitType, PositionAngleType angleType,
+    private SpacecraftState shiftState(SpacecraftState state, OrbitParamsType orbitParamsType, PositionAngleType angleType,
                                        double delta, int column) {
 
-        double[][] array = stateToArray(state, orbitType, angleType);
+        double[][] array = stateToArray(state, orbitParamsType, angleType);
         array[0][column] += delta;
 
-        return arrayToState(array, orbitType, angleType, state.getFrame(), state.getDate(),
+        return arrayToState(array, orbitParamsType, angleType, state.getFrame(), state.getDate(),
                 state.getOrbit().getMu(), state.getAttitude());
 
     }
 
-    private double[][] stateToArray(SpacecraftState state, OrbitType orbitType, PositionAngleType angleType) {
+    private double[][] stateToArray(SpacecraftState state, OrbitParamsType orbitParamsType, PositionAngleType angleType) {
         double[][] array = new double[2][6];
-        orbitType.mapOrbitToArray(state.getOrbit(), angleType, array[0], array[1]);
+        orbitParamsType.mapOrbitToArray(state.getOrbit(), angleType, array[0], array[1]);
         return array;
     }
 
-    private SpacecraftState arrayToState(double[][] array, OrbitType orbitType, PositionAngleType angleType,
+    private SpacecraftState arrayToState(double[][] array, OrbitParamsType orbitParamsType, PositionAngleType angleType,
                                          Frame frame, AbsoluteDate date, double mu,
                                          Attitude attitude) {
-        Orbit orbit = orbitType.mapArrayToOrbit(array[0], array[1], angleType, date, mu, frame);
+        Orbit orbit = orbitParamsType.mapArrayToOrbit(array[0], array[1], angleType, date, mu, frame);
         return new SpacecraftState(orbit, attitude);
     }
 
     private NumericalPropagator setUpPropagator(Orbit orbit, double dP,
-                                                OrbitType orbitType, PositionAngleType angleType,
+                                                OrbitParamsType orbitParamsType, PositionAngleType angleType,
                                                 ForceModel... models) {
 
         final double minStep = 0.001;
         final double maxStep = 1000;
 
-        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(dP).getTolerances(orbit, orbitType);
+        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(dP).getTolerances(orbit, orbitParamsType);
         NumericalPropagator propagator =
                 new NumericalPropagator(new DormandPrince853Integrator(minStep, maxStep, tol[0], tol[1]));
-        propagator.setOrbitType(orbitType);
+        propagator.setOrbitParamsType(orbitParamsType);
         propagator.setPositionAngleType(angleType);
         for (ForceModel model : models) {
             propagator.addForceModel(model);
@@ -608,32 +608,32 @@ class StateTransitionMatrixGeneratorTest {
         return propagator;
     }
 
-    private double[][] finiteDifferencesStm(final Orbit initialOrbit, final OrbitType orbitType, final PositionAngleType angleType,
+    private double[][] finiteDifferencesStm(final Orbit initialOrbit, final OrbitParamsType orbitParamsType, final PositionAngleType angleType,
                                             final double dP, final double dt, ForceModel... models) {
 
         // compute reference state Jacobian using finite differences
         double[][] dYdY0Ref = new double[6][6];
-        AbstractIntegratedPropagator propagator2 = setUpPropagator(initialOrbit, dP, orbitType, angleType, models);
+        AbstractIntegratedPropagator propagator2 = setUpPropagator(initialOrbit, dP, orbitParamsType, angleType, models);
         final SpacecraftState initialState = new SpacecraftState(initialOrbit);
-        double[] steps = ToleranceProvider.getDefaultToleranceProvider(1000000 * dP).getTolerances(initialOrbit, orbitType)[0];
+        double[] steps = ToleranceProvider.getDefaultToleranceProvider(1000000 * dP).getTolerances(initialOrbit, orbitParamsType)[0];
         for (int i = 0; i < 6; ++i) {
-            propagator2.resetInitialState(shiftState(initialState, orbitType, angleType, -4 * steps[i], i));
+            propagator2.resetInitialState(shiftState(initialState, orbitParamsType, angleType, -4 * steps[i], i));
             SpacecraftState sM4h = propagator2.propagate(initialState.getDate().shiftedBy(dt));
-            propagator2.resetInitialState(shiftState(initialState, orbitType, angleType, -3 * steps[i], i));
+            propagator2.resetInitialState(shiftState(initialState, orbitParamsType, angleType, -3 * steps[i], i));
             SpacecraftState sM3h = propagator2.propagate(initialState.getDate().shiftedBy(dt));
-            propagator2.resetInitialState(shiftState(initialState, orbitType, angleType, -2 * steps[i], i));
+            propagator2.resetInitialState(shiftState(initialState, orbitParamsType, angleType, -2 * steps[i], i));
             SpacecraftState sM2h = propagator2.propagate(initialState.getDate().shiftedBy(dt));
-            propagator2.resetInitialState(shiftState(initialState, orbitType, angleType, -1 * steps[i], i));
+            propagator2.resetInitialState(shiftState(initialState, orbitParamsType, angleType, -1 * steps[i], i));
             SpacecraftState sM1h = propagator2.propagate(initialState.getDate().shiftedBy(dt));
-            propagator2.resetInitialState(shiftState(initialState, orbitType, angleType,  1 * steps[i], i));
+            propagator2.resetInitialState(shiftState(initialState, orbitParamsType, angleType,  1 * steps[i], i));
             SpacecraftState sP1h = propagator2.propagate(initialState.getDate().shiftedBy(dt));
-            propagator2.resetInitialState(shiftState(initialState, orbitType, angleType,  2 * steps[i], i));
+            propagator2.resetInitialState(shiftState(initialState, orbitParamsType, angleType,  2 * steps[i], i));
             SpacecraftState sP2h = propagator2.propagate(initialState.getDate().shiftedBy(dt));
-            propagator2.resetInitialState(shiftState(initialState, orbitType, angleType,  3 * steps[i], i));
+            propagator2.resetInitialState(shiftState(initialState, orbitParamsType, angleType,  3 * steps[i], i));
             SpacecraftState sP3h = propagator2.propagate(initialState.getDate().shiftedBy(dt));
-            propagator2.resetInitialState(shiftState(initialState, orbitType, angleType,  4 * steps[i], i));
+            propagator2.resetInitialState(shiftState(initialState, orbitParamsType, angleType,  4 * steps[i], i));
             SpacecraftState sP4h = propagator2.propagate(initialState.getDate().shiftedBy(dt));
-            fillJacobianColumn(dYdY0Ref, i, orbitType, angleType, steps[i],
+            fillJacobianColumn(dYdY0Ref, i, orbitParamsType, angleType, steps[i],
                     sM4h, sM3h, sM2h, sM1h, sP1h, sP2h, sP3h, sP4h);
         }
 
@@ -641,7 +641,7 @@ class StateTransitionMatrixGeneratorTest {
 
     }
 
-    private NumericalPropagator buildPropagator(final OrbitType orbitType, final PositionAngleType positionAngleType,
+    private NumericalPropagator buildPropagator(final OrbitParamsType orbitParamsType, final PositionAngleType positionAngleType,
                                                 final int degree, final AbsoluteDate firing, final double duration,
                                                 final DateBasedManeuverTriggers triggers) {
 
@@ -652,12 +652,12 @@ class StateTransitionMatrixGeneratorTest {
         final double f        = 420;
         PropulsionModel propulsionModel = new BasicConstantThrustPropulsionModel(f, isp, Vector3D.PLUS_I, "ABM");
 
-        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(0.01).getTolerances(initialState.getOrbit(), orbitType);
+        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(0.01).getTolerances(initialState.getOrbit(), orbitParamsType);
         AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(0.001, 1000, tol[0], tol[1]);
         integrator.setInitialStepSize(60);
         final NumericalPropagator propagator = new NumericalPropagator(integrator);
 
-        propagator.setOrbitType(orbitType);
+        propagator.setOrbitParamsType(orbitParamsType);
         propagator.setPositionAngleType(positionAngleType);
         propagator.setAttitudeProvider(attitudeProvider);
         if (degree > 0) {

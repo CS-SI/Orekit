@@ -15,7 +15,7 @@ import org.orekit.forces.gravity.potential.SHMFormatReader;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.propagation.analytical.BrouwerLyddanePropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
@@ -40,7 +40,7 @@ class AdditionalDataProviderTest {
         initDate = AbsoluteDate.J2000_EPOCH;
         final Orbit orbit = new EquinoctialOrbit(new PVCoordinates(position, velocity), FramesFactory.getEME2000(), initDate, mu);
         initialState = new SpacecraftState(orbit);
-        double[][] tolerance = ToleranceProvider.getDefaultToleranceProvider(0.001).getTolerances(orbit, OrbitType.EQUINOCTIAL);
+        double[][] tolerance = ToleranceProvider.getDefaultToleranceProvider(0.001).getTolerances(orbit, OrbitParamsType.EQUINOCTIAL);
         integrator = new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(60);
     }

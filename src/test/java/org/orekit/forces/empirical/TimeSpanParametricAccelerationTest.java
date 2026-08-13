@@ -37,7 +37,7 @@ import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
@@ -196,7 +196,7 @@ public class TimeSpanParametricAccelerationTest extends AbstractForceModelTest {
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
                                          0, PositionAngleType.MEAN, FramesFactory.getEME2000(), date,
                                          Constants.EIGEN5C_EARTH_MU);
-        OrbitType integrationType = OrbitType.CARTESIAN;
+        OrbitParamsType integrationType = OrbitParamsType.CARTESIAN;
         double[][] tolerances = ToleranceProvider.getDefaultToleranceProvider(0.01).getTolerances(orbit, integrationType);
 
         // Time span acceleration force model init
@@ -216,7 +216,7 @@ public class TimeSpanParametricAccelerationTest extends AbstractForceModelTest {
         NumericalPropagator propagator =
                         new NumericalPropagator(new DormandPrince853Integrator(1.0e-3, 120,
                                                                                tolerances[0], tolerances[1]));
-        propagator.setOrbitType(integrationType);
+        propagator.setOrbitParamsType(integrationType);
         propagator.addForceModel(forceModel);
         SpacecraftState state0 = new SpacecraftState(orbit);
         // Set target date to 0.5*dt to be inside 1st AccelerationModel
@@ -227,7 +227,7 @@ public class TimeSpanParametricAccelerationTest extends AbstractForceModelTest {
         // Check state derivatives inside 2nd AccelerationModel
         propagator = new NumericalPropagator(new DormandPrince853Integrator(1.0e-3, 120,
                                                                             tolerances[0], tolerances[1]));
-        propagator.setOrbitType(integrationType);
+        propagator.setOrbitParamsType(integrationType);
         propagator.addForceModel(forceModel);
         // Set target date to 1.5*dt to be inside 2nd AccelerationModel
         // The further away we are from the initial date, the greater the checkTolerance parameter must be set
@@ -237,7 +237,7 @@ public class TimeSpanParametricAccelerationTest extends AbstractForceModelTest {
         // Check state derivatives inside 3rd AccelerationModel
         propagator = new NumericalPropagator(new DormandPrince853Integrator(1.0e-3, 120,
                                                                             tolerances[0], tolerances[1]));
-        propagator.setOrbitType(integrationType);
+        propagator.setOrbitParamsType(integrationType);
         propagator.addForceModel(forceModel);
         // Set target date to *1.5*dt to be inside 3rd AccelerationModel
         // The further away we are from the initial date, the greater the checkTolerance parameter must be set
@@ -258,7 +258,7 @@ public class TimeSpanParametricAccelerationTest extends AbstractForceModelTest {
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
                                          0, PositionAngleType.MEAN, FramesFactory.getEME2000(), date,
                                          Constants.EIGEN5C_EARTH_MU);
-        OrbitType integrationType = OrbitType.CARTESIAN;
+        OrbitParamsType integrationType = OrbitParamsType.CARTESIAN;
         double[][] tolerances = ToleranceProvider.getDefaultToleranceProvider(0.01).getTolerances(orbit, integrationType);
 
         // Time span acceleration force model init
@@ -279,7 +279,7 @@ public class TimeSpanParametricAccelerationTest extends AbstractForceModelTest {
         NumericalPropagator propagator =
                         new NumericalPropagator(new DormandPrince853Integrator(1.0e-3, 120,
                                                                                tolerances[0], tolerances[1]));
-        propagator.setOrbitType(integrationType);
+        propagator.setOrbitParamsType(integrationType);
         propagator.addForceModel(forceModel);
         SpacecraftState state0 = new SpacecraftState(orbit);
         // Set target date to 0.5*dt to be inside 1st AccelerationModel
@@ -290,7 +290,7 @@ public class TimeSpanParametricAccelerationTest extends AbstractForceModelTest {
         // Check state derivatives inside 2nd AccelerationModel
         propagator = new NumericalPropagator(new DormandPrince853Integrator(1.0e-3, 120,
                                                                             tolerances[0], tolerances[1]));
-        propagator.setOrbitType(integrationType);
+        propagator.setOrbitParamsType(integrationType);
         propagator.addForceModel(forceModel);
         // Set target date to 1.5*dt to be inside 2nd AccelerationModel
         // The further away we are from the initial date, the greater the checkTolerance parameter must be set
@@ -300,7 +300,7 @@ public class TimeSpanParametricAccelerationTest extends AbstractForceModelTest {
         // Check state derivatives inside 3rd AccelerationModel
         propagator = new NumericalPropagator(new DormandPrince853Integrator(1.0e-3, 120,
                                                                             tolerances[0], tolerances[1]));
-        propagator.setOrbitType(integrationType);
+        propagator.setOrbitParamsType(integrationType);
         propagator.addForceModel(forceModel);
         // Set target date to *1.5*dt to be inside 3rd AccelerationModel
         // The further away we are from the initial date, the greater the checkTolerance parameter must be set
@@ -345,15 +345,15 @@ public class TimeSpanParametricAccelerationTest extends AbstractForceModelTest {
                         new ClassicalRungeKuttaFieldIntegrator<>(field, zero.add(6));
         ClassicalRungeKuttaIntegrator RIntegrator =
                         new ClassicalRungeKuttaIntegrator(6);
-        OrbitType type = OrbitType.EQUINOCTIAL;
+        OrbitParamsType type = OrbitParamsType.EQUINOCTIAL;
 
         // Field and classical numerical propagators
         FieldNumericalPropagator<Gradient> FNP = new FieldNumericalPropagator<>(integrator);
-        FNP.setOrbitType(type);
+        FNP.setOrbitParamsType(type);
         FNP.setInitialState(initialState);
 
         NumericalPropagator NP = new NumericalPropagator(RIntegrator);
-        NP.setOrbitType(type);
+        NP.setOrbitParamsType(type);
         NP.setInitialState(iSR);
 
         // Set up force model

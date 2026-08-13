@@ -118,7 +118,7 @@ public class CR3BPDifferentialCorrection {
                         new NumericalPropagator(integrator, new FrameAlignedProvider(Rotation.IDENTITY, syst.getRotatingFrame()));
 
         // CR3BP has no defined orbit type
-        propagator.setOrbitType(null);
+        propagator.setOrbitParamsType(null);
 
         // CR3BP has central Attraction
         propagator.setIgnoreCentralAttraction(true);

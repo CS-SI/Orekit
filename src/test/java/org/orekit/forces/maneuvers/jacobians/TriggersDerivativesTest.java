@@ -41,7 +41,7 @@ import org.orekit.forces.maneuvers.trigger.DateBasedManeuverTriggers;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.*;
 import org.orekit.propagation.numerical.NumericalPropagator;
@@ -62,101 +62,101 @@ public class TriggersDerivativesTest {
 
     @Test
     void testDerivativeWrtStartTimeCartesianForward() {
-        doTestDerivativeWrtStartStopTime(true, OrbitType.CARTESIAN, true,
+        doTestDerivativeWrtStartStopTime(true, OrbitParamsType.CARTESIAN, true,
                                          4.3e-6, 2.8e-6, 4.3e-6, 1.5e-5, 8.1e-6, 1.5e-5);
     }
 
     @Test
     void testDerivativeWrtStartTimeKeplerianForward() {
-        doTestDerivativeWrtStartStopTime(true, OrbitType.KEPLERIAN, true,
+        doTestDerivativeWrtStartStopTime(true, OrbitParamsType.KEPLERIAN, true,
                                          1.5e-5, 1.5e-5, 1.5e-5, 6.8e-6, 1.1e-4, 3.2e-5);
     }
 
     @Test
     void testDerivativeWrtStartTimeCartesianBackward() {
-        doTestDerivativeWrtStartStopTime(true, OrbitType.CARTESIAN, false,
+        doTestDerivativeWrtStartStopTime(true, OrbitParamsType.CARTESIAN, false,
                                          9.7e-5, 9.7e-5, 9.7e-5, 4.7e-8, 4.7e-8, 4.7e-8);
     }
 
     @Test
     void testDerivativeWrtStartTimeKeplerianBackward() {
-        doTestDerivativeWrtStartStopTime(true, OrbitType.KEPLERIAN, false,
+        doTestDerivativeWrtStartStopTime(true, OrbitParamsType.KEPLERIAN, false,
                                          6.5e-8, 6.5e-8, 6.5e-8, 1.1e-6, 1.8e-6, 6.2e-7);
     }
 
     @Test
     void testDerivativeWrtStopTimeCartesianForward() {
-        doTestDerivativeWrtStartStopTime(false, OrbitType.CARTESIAN, true,
+        doTestDerivativeWrtStartStopTime(false, OrbitParamsType.CARTESIAN, true,
                                          5.2e-10, 6.0e-8, 6.6e-11, 6.8e-12, 3.9e-11, 7.5e-12);
     }
 
     @Test
     void testDerivativeWrtStopTimeKeplerianForward() {
-        doTestDerivativeWrtStartStopTime(false, OrbitType.KEPLERIAN, true,
+        doTestDerivativeWrtStartStopTime(false, OrbitParamsType.KEPLERIAN, true,
                                          1.8e-11, 9.7e-12, 3.1e-12, 2.91e-9, 3.0e-9, 1.97e-9);
     }
 
     @Test
     void testDerivativeWrtStopTimeCartesianBackward() {
-        doTestDerivativeWrtStartStopTime(false, OrbitType.CARTESIAN, false,
+        doTestDerivativeWrtStartStopTime(false, OrbitParamsType.CARTESIAN, false,
                                          9.7e-5, 9.7e-5, 9.7e-5, 1.5e-5, 2.1e-5, 1.5e-5);
     }
 
     @Test
     void testDerivativeWrtStopTimeKeplerianBackward() {
-        doTestDerivativeWrtStartStopTime(false, OrbitType.KEPLERIAN, false,
+        doTestDerivativeWrtStartStopTime(false, OrbitParamsType.KEPLERIAN, false,
                                          1.5e-5, 1.5e-5, 1.5e-5, 3.8e-6, 1.2e-4, 3.0e-4);
     }
 
     @Test
     void testDerivativeWrtMedianCartesianForward() {
-        doTestDerivativeWrtMedianDuration(true, OrbitType.CARTESIAN, true,
+        doTestDerivativeWrtMedianDuration(true, OrbitParamsType.CARTESIAN, true,
                                           1.8e-5, 1.2e-5, 1.8e-5, 2.0e-2, 1.7e-2, 2.0e-2);
     }
 
     @Test
     void testDerivativeWrtMedianKeplerianForward() {
-        doTestDerivativeWrtMedianDuration(true, OrbitType.KEPLERIAN, true,
+        doTestDerivativeWrtMedianDuration(true, OrbitParamsType.KEPLERIAN, true,
                                           0.095, 0.13, 0.11, 9.0e-6, 4.8e-5, 3.2e-4);
     }
 
     @Test
     void testDerivativeWrtMedianCartesianBackward() {
-        doTestDerivativeWrtMedianDuration(true, OrbitType.CARTESIAN, false,
+        doTestDerivativeWrtMedianDuration(true, OrbitParamsType.CARTESIAN, false,
                                           9.7e-5, 9.7e-5, 9.7e-5, 1.9e-2, 2.1e-2, 2.0e-2);
     }
 
     @Test
     void testDerivativeWrtMedianKeplerianBackward() {
-        doTestDerivativeWrtMedianDuration(true, OrbitType.KEPLERIAN, false,
+        doTestDerivativeWrtMedianDuration(true, OrbitParamsType.KEPLERIAN, false,
                                           0.091, 0.13, 0.11, 7.4e-6, 4.7e-5, 3.4e-4);
     }
 
     @Test
     void testDerivativeWrtDurationCartesianForward() {
-        doTestDerivativeWrtMedianDuration(false, OrbitType.CARTESIAN, true,
+        doTestDerivativeWrtMedianDuration(false, OrbitParamsType.CARTESIAN, true,
                                           2.5e-6, 1.6e-6, 2.5e-6, 7.3e-6, 4.1e-6, 7.2e-6);
     }
 
     @Test
     void testDerivativeWrtDurationKeplerianForward() {
-        doTestDerivativeWrtMedianDuration(false, OrbitType.KEPLERIAN, true,
+        doTestDerivativeWrtMedianDuration(false, OrbitParamsType.KEPLERIAN, true,
                                           7.2e-6, 7.2e-6, 7.2e-6, 2.5e-6, 2.5e-5, 1.5e-5);
     }
 
     @Test
     void testDerivativeWrtDurationCartesianBackward() {
-        doTestDerivativeWrtMedianDuration(false, OrbitType.CARTESIAN, false,
+        doTestDerivativeWrtMedianDuration(false, OrbitParamsType.CARTESIAN, false,
                                           9.7e-5, 9.7e-5, 9.7e-5, 7.1e-6, 1.1e-5, 7.2e-6);
     }
 
     @Test
     void testDerivativeWrtDurationKeplerianBackward() {
-        doTestDerivativeWrtMedianDuration(false, OrbitType.KEPLERIAN, false,
+        doTestDerivativeWrtMedianDuration(false, OrbitParamsType.KEPLERIAN, false,
                                           7.2e-6, 7.2e-6, 7.2e-6, 2.3e-6, 2.9e-5, 3.0e-4);
     }
 
-    private void doTestDerivativeWrtStartStopTime(final boolean start, final OrbitType orbitType, final boolean forward,
+    private void doTestDerivativeWrtStartStopTime(final boolean start, final OrbitParamsType orbitParamsType, final boolean forward,
                                                   final double...tolerance) {
 
         final PositionAngleType positionAngleType = PositionAngleType.TRUE;
@@ -165,7 +165,7 @@ public class TriggersDerivativesTest {
         final double        h             = 1.0;
         final double        samplingtep   = 2.0;
 
-        final KeplerianOrbit initial    = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(buildInitialState(buildAttitudeProvider()).getOrbit());
+        final KeplerianOrbit initial    = (KeplerianOrbit) OrbitParamsType.KEPLERIAN.convertType(buildInitialState(buildAttitudeProvider()).getOrbit());
         final double         firingM    = MathUtils.normalizeAngle(FastMath.PI, initial.getMeanAnomaly() + (forward ? FastMath.PI : -FastMath.PI));
         final AbsoluteDate   apogeeDate = initial.getDate().shiftedBy((firingM - initial.getMeanAnomaly()) / initial.getKeplerianMeanMotion());
         final AbsoluteDate   firing     = apogeeDate.shiftedBy(-0.5 * duration);
@@ -177,7 +177,7 @@ public class TriggersDerivativesTest {
             final DateBasedManeuverTriggers trigger = start ?
                                                       new DateBasedManeuverTriggers("MAN_0", firing.shiftedBy(k * h), duration - k * h) :
                                                       new DateBasedManeuverTriggers("MAN_0", firing, duration + k * h);
-            propagators.add(buildPropagator(orbitType, positionAngleType, degree, firing, duration, trigger));
+            propagators.add(buildPropagator(orbitParamsType, positionAngleType, degree, firing, duration, trigger));
         }
 
         // the central propagator (k = 4) will compute derivatives autonomously using State and TriggersDerivatives
@@ -193,9 +193,9 @@ public class TriggersDerivativesTest {
                           forEach(d -> d.setSelected(true)));
 
         DerivativesSampler sampler = start ?
-                                     new DerivativesSampler(harvester, 4, null, -1, null, -1, null, -1, orbitType, positionAngleType,
+                                     new DerivativesSampler(harvester, 4, null, -1, null, -1, null, -1, orbitParamsType, positionAngleType,
                                                             firing, duration, h, samplingtep) :
-                                     new DerivativesSampler(null, -1, harvester, 4, null, -1, null, -1, orbitType, positionAngleType,
+                                     new DerivativesSampler(null, -1, harvester, 4, null, -1, null, -1, orbitParamsType, positionAngleType,
                                                             firing, duration, h, samplingtep);
 
         final PropagatorsParallelizer parallelizer = new PropagatorsParallelizer(propagators, sampler);
@@ -221,7 +221,7 @@ public class TriggersDerivativesTest {
 
     }
 
-    private void doTestDerivativeWrtMedianDuration(final boolean median, final OrbitType orbitType, final boolean forward,
+    private void doTestDerivativeWrtMedianDuration(final boolean median, final OrbitParamsType orbitParamsType, final boolean forward,
                                                    final double...tolerance) {
 
         final PositionAngleType positionAngleType = PositionAngleType.TRUE;
@@ -230,7 +230,7 @@ public class TriggersDerivativesTest {
         final double        h             = 1.0;
         final double        samplingtep   = 2.0;
 
-        final KeplerianOrbit initial    = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(buildInitialState(buildAttitudeProvider()).getOrbit());
+        final KeplerianOrbit initial    = (KeplerianOrbit) OrbitParamsType.KEPLERIAN.convertType(buildInitialState(buildAttitudeProvider()).getOrbit());
         final double         firingM    = MathUtils.normalizeAngle(FastMath.PI, initial.getMeanAnomaly() + (forward ? FastMath.PI : -FastMath.PI));
         final AbsoluteDate   apogeeDate = initial.getDate().shiftedBy((firingM - initial.getMeanAnomaly()) / initial.getKeplerianMeanMotion());
         final AbsoluteDate   firing     = apogeeDate.shiftedBy(-0.5 * duration);
@@ -242,17 +242,17 @@ public class TriggersDerivativesTest {
             final DateBasedManeuverTriggers triggers = median ?
                             new DateBasedManeuverTriggers("MAN_0", firing.shiftedBy(k * h), duration) :
                             new DateBasedManeuverTriggers("MAN_0", firing.shiftedBy(-0.5 * k * h), duration + k * h);
-            propagators.add(buildPropagator(orbitType, positionAngleType, degree, firing, duration, triggers));
+            propagators.add(buildPropagator(orbitParamsType, positionAngleType, degree, firing, duration, triggers));
         }
         for (int k = -4; k <= 4; ++k) {
             final DateBasedManeuverTriggers triggers =
                             new DateBasedManeuverTriggers("MAN_1", firing.shiftedBy(k * h), duration - k * h);
-            propagators.add(buildPropagator(orbitType, positionAngleType, degree, firing, duration, triggers));
+            propagators.add(buildPropagator(orbitParamsType, positionAngleType, degree, firing, duration, triggers));
         }
         for (int k = -4; k <= 4; ++k) {
             final DateBasedManeuverTriggers triggers =
                             new DateBasedManeuverTriggers("MAN_2", firing, duration + k * h);
-            propagators.add(buildPropagator(orbitType, positionAngleType, degree, firing, duration, triggers));
+            propagators.add(buildPropagator(orbitParamsType, positionAngleType, degree, firing, duration, triggers));
         }
 
         // the central propagators (k = 4, 13, 22) will compute derivatives autonomously
@@ -293,10 +293,10 @@ public class TriggersDerivativesTest {
 
         DerivativesSampler sampler = median ?
                                      new DerivativesSampler(harvesterStart, 13, harvesterStop, 22, harvester, 4, null, -1,
-                                                            orbitType, positionAngleType,
+                                             orbitParamsType, positionAngleType,
                                                             firing, duration, h, samplingtep) :
                                      new DerivativesSampler(harvesterStart, 13, harvesterStop, 22, null, -1, harvester, 4,
-                                                            orbitType, positionAngleType,
+                                             orbitParamsType, positionAngleType,
                                                             firing, duration, h, samplingtep);
 
         final PropagatorsParallelizer parallelizer = new PropagatorsParallelizer(propagators, sampler);
@@ -322,7 +322,7 @@ public class TriggersDerivativesTest {
 
     }
 
-    private NumericalPropagator buildPropagator(final OrbitType orbitType, final PositionAngleType positionAngleType,
+    private NumericalPropagator buildPropagator(final OrbitParamsType orbitParamsType, final PositionAngleType positionAngleType,
                                                 final int degree, final AbsoluteDate firing, final double duration,
                                                 final DateBasedManeuverTriggers triggers) {
 
@@ -333,12 +333,12 @@ public class TriggersDerivativesTest {
         final double f        = 420;
         PropulsionModel propulsionModel = new BasicConstantThrustPropulsionModel(f, isp, Vector3D.PLUS_I, "ABM");
 
-        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(0.01).getTolerances(initialState.getOrbit(), orbitType);
+        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(0.01).getTolerances(initialState.getOrbit(), orbitParamsType);
         AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(0.001, 600, tol[0], tol[1]);
         integrator.setInitialStepSize(60);
         final NumericalPropagator propagator = new NumericalPropagator(integrator);
 
-        propagator.setOrbitType(orbitType);
+        propagator.setOrbitParamsType(orbitParamsType);
         propagator.setPositionAngleType(positionAngleType);
         propagator.setAttitudeProvider(attitudeProvider);
         if (degree > 0) {
@@ -393,7 +393,7 @@ public class TriggersDerivativesTest {
         final int               indexMedian;
         final MatricesHarvester harvesterDuration;
         final int               indexDuration;
-        final OrbitType         orbitType;
+        final OrbitParamsType orbitParamsType;
         final PositionAngleType positionAngleType;
         final AbsoluteDate      firing;
         final double            duration;
@@ -403,11 +403,11 @@ public class TriggersDerivativesTest {
         boolean                 forward;
         AbsoluteDate            next;
 
-        DerivativesSampler(final MatricesHarvester harvesterStart,    final int indexStart,
-                           final MatricesHarvester harvesterStop,     final int indexStop,
-                           final MatricesHarvester harvesterMedian,   final int indexMedian,
+        DerivativesSampler(final MatricesHarvester harvesterStart, final int indexStart,
+                           final MatricesHarvester harvesterStop, final int indexStop,
+                           final MatricesHarvester harvesterMedian, final int indexMedian,
                            final MatricesHarvester harvesterDuration, final int indexDuration,
-                           final OrbitType orbitType, final PositionAngleType positionAngleType,
+                           final OrbitParamsType orbitParamsType, final PositionAngleType positionAngleType,
                            final AbsoluteDate firing, final double duration,
                            final double h, final double samplingtep) {
             this.harvesterStart    = harvesterStart;
@@ -418,7 +418,7 @@ public class TriggersDerivativesTest {
             this.indexMedian       = indexMedian;
             this.harvesterDuration = harvesterDuration;
             this.indexDuration     = indexDuration;
-            this.orbitType         = orbitType;
+            this.orbitParamsType = orbitParamsType;
             this.positionAngleType = positionAngleType;
             this.firing            = firing;
             this.duration          = duration;
@@ -461,7 +461,7 @@ public class TriggersDerivativesTest {
             if (index >= 0) {
                 final double[][] o = new double[9][6];
                 for (int i = 0; i < o.length; ++i) {
-                    orbitType.mapOrbitToArray(interpolators.get(index + i - 4).getInterpolatedState(next).getOrbit(),
+                    orbitParamsType.mapOrbitToArray(interpolators.get(index + i - 4).getInterpolatedState(next).getOrbit(),
                             positionAngleType, o[i], null);
                 }
                 final SpacecraftState centralState = interpolators.get(index).getInterpolatedState(next);

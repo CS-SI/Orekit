@@ -43,7 +43,7 @@ import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
@@ -308,12 +308,12 @@ public abstract class AbstractManeuverTriggersTest<T extends AbstractManeuverTri
 
     private NumericalPropagator buildPropagator(final AttitudeProvider attitudeProvider, final SpacecraftState initialState,
                                                 final Maneuver maneuver) {
-        OrbitType orbitType = OrbitType.EQUINOCTIAL;
-        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(1e-3).getTolerances(initialState.getOrbit(), orbitType);
+        OrbitParamsType orbitParamsType = OrbitParamsType.EQUINOCTIAL;
+        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(1e-3).getTolerances(initialState.getOrbit(), orbitParamsType);
         AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(0.001, 1000, tol[0], tol[1]);
         integrator.setInitialStepSize(60);
         final NumericalPropagator propagator = new NumericalPropagator(integrator);
-        propagator.setOrbitType(orbitType);
+        propagator.setOrbitParamsType(orbitParamsType);
         propagator.setInitialState(initialState);
         propagator.setAttitudeProvider(attitudeProvider);
         propagator.addForceModel(maneuver);
@@ -324,12 +324,12 @@ public abstract class AbstractManeuverTriggersTest<T extends AbstractManeuverTri
                                                                                             final AttitudeProvider attitudeProvider,
                                                                                             final FieldSpacecraftState<S> initialState,
                                                                                             final Maneuver maneuver) {
-        OrbitType orbitType = OrbitType.EQUINOCTIAL;
-        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(1e-3).getTolerances(initialState.getOrbit(), orbitType);
+        OrbitParamsType orbitParamsType = OrbitParamsType.EQUINOCTIAL;
+        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(1e-3).getTolerances(initialState.getOrbit(), orbitParamsType);
         AdaptiveStepsizeFieldIntegrator<S> integrator = new DormandPrince853FieldIntegrator<>(field, 0.001, 1000, tol[0], tol[1]);
         integrator.setInitialStepSize(60);
         final FieldNumericalPropagator<S> propagator = new FieldNumericalPropagator<>(integrator);
-        propagator.setOrbitType(orbitType);
+        propagator.setOrbitParamsType(orbitParamsType);
         propagator.setInitialState(initialState);
         propagator.setAttitudeProvider(attitudeProvider);
         propagator.addForceModel(maneuver);

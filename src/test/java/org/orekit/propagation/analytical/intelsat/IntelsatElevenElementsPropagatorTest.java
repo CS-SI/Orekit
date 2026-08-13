@@ -26,7 +26,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -78,7 +78,7 @@ class IntelsatElevenElementsPropagatorTest {
         IntelsatElevenElementsPropagator propagator = new IntelsatElevenElementsPropagator(ELEMENTS, FramesFactory.getTOD(IERSConventions.IERS_2010, false),
                                                                                            FramesFactory.getITRF(IERSConventions.IERS_2010, false));
         Assertions.assertNotNull(propagator.getIntelsatElevenElements());
-        KeplerianOrbit orbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(propagator.propagateOrbit(ELEMENTS.getEpoch()));
+        KeplerianOrbit orbit = (KeplerianOrbit) OrbitParamsType.KEPLERIAN.convertType(propagator.propagateOrbit(ELEMENTS.getEpoch()));
         Assertions.assertEquals(302.0355, propagator.getEastLongitudeDegrees().getValue(), 0.0001);
         Assertions.assertEquals(0.0378, propagator.getGeocentricLatitudeDegrees().getValue(), 0.0001);
         Assertions.assertEquals(-1.529465e-6, propagator.getEastLongitudeDegrees().getFirstDerivative(), 1.0e-12);

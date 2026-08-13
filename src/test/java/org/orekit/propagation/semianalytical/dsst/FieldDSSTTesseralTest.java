@@ -45,7 +45,7 @@ import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
@@ -321,7 +321,7 @@ public class FieldDSSTTesseralTest {
                                                  initDate,
                                                  3.986004415E14);
 
-        final OrbitType orbitType = OrbitType.EQUINOCTIAL;
+        final OrbitParamsType orbitParamsType = OrbitParamsType.EQUINOCTIAL;
 
         final SpacecraftState meanState = new SpacecraftState(orbit);
 
@@ -379,34 +379,34 @@ public class FieldDSSTTesseralTest {
         // Compute reference state Jacobian using finite differences
         double[][] shortPeriodJacobianRef = new double[6][6];
         double dP = 0.001;
-        double[] steps = ToleranceProvider.getDefaultToleranceProvider(1000000 * dP).getTolerances(orbit, orbitType)[0];
+        double[] steps = ToleranceProvider.getDefaultToleranceProvider(1000000 * dP).getTolerances(orbit, orbitParamsType)[0];
         for (int i = 0; i < 6; i++) {
 
-            SpacecraftState stateM4 = shiftState(meanState, orbitType, -4 * steps[i], i);
+            SpacecraftState stateM4 = shiftState(meanState, orbitParamsType, -4 * steps[i], i);
             double[]  shortPeriodM4 = computeShortPeriodTerms(stateM4, tesseral);
 
-            SpacecraftState stateM3 = shiftState(meanState, orbitType, -3 * steps[i], i);
+            SpacecraftState stateM3 = shiftState(meanState, orbitParamsType, -3 * steps[i], i);
             double[]  shortPeriodM3 = computeShortPeriodTerms(stateM3, tesseral);
 
-            SpacecraftState stateM2 = shiftState(meanState, orbitType, -2 * steps[i], i);
+            SpacecraftState stateM2 = shiftState(meanState, orbitParamsType, -2 * steps[i], i);
             double[]  shortPeriodM2 = computeShortPeriodTerms(stateM2, tesseral);
 
-            SpacecraftState stateM1 = shiftState(meanState, orbitType, -1 * steps[i], i);
+            SpacecraftState stateM1 = shiftState(meanState, orbitParamsType, -1 * steps[i], i);
             double[]  shortPeriodM1 = computeShortPeriodTerms(stateM1, tesseral);
 
-            SpacecraftState stateP1 = shiftState(meanState, orbitType, 1 * steps[i], i);
+            SpacecraftState stateP1 = shiftState(meanState, orbitParamsType, 1 * steps[i], i);
             double[]  shortPeriodP1 = computeShortPeriodTerms(stateP1, tesseral);
 
-            SpacecraftState stateP2 = shiftState(meanState, orbitType, 2 * steps[i], i);
+            SpacecraftState stateP2 = shiftState(meanState, orbitParamsType, 2 * steps[i], i);
             double[]  shortPeriodP2 = computeShortPeriodTerms(stateP2, tesseral);
 
-            SpacecraftState stateP3 = shiftState(meanState, orbitType, 3 * steps[i], i);
+            SpacecraftState stateP3 = shiftState(meanState, orbitParamsType, 3 * steps[i], i);
             double[]  shortPeriodP3 = computeShortPeriodTerms(stateP3, tesseral);
 
-            SpacecraftState stateP4 = shiftState(meanState, orbitType, 4 * steps[i], i);
+            SpacecraftState stateP4 = shiftState(meanState, orbitParamsType, 4 * steps[i], i);
             double[]  shortPeriodP4 = computeShortPeriodTerms(stateP4, tesseral);
 
-            fillJacobianColumn(shortPeriodJacobianRef, i, orbitType, steps[i],
+            fillJacobianColumn(shortPeriodJacobianRef, i, orbitParamsType, steps[i],
                                shortPeriodM4, shortPeriodM3, shortPeriodM2, shortPeriodM1,
                                shortPeriodP1, shortPeriodP2, shortPeriodP3, shortPeriodP4);
 
@@ -439,7 +439,7 @@ public class FieldDSSTTesseralTest {
                                                  initDate,
                                                  3.986004415E14);
 
-        final OrbitType orbitType = OrbitType.EQUINOCTIAL;
+        final OrbitParamsType orbitParamsType = OrbitParamsType.EQUINOCTIAL;
 
         final SpacecraftState meanState = new SpacecraftState(orbit);
 
@@ -544,7 +544,7 @@ public class FieldDSSTTesseralTest {
         selected.setValue(p0 + 4 * h);
         final double[] shortPeriodP4 = computeShortPeriodTerms(meanState, tesseral);
 
-        fillJacobianColumn(shortPeriodJacobianRef, 0, orbitType, h,
+        fillJacobianColumn(shortPeriodJacobianRef, 0, orbitParamsType, h,
                            shortPeriodM4, shortPeriodM3, shortPeriodM2, shortPeriodM1,
                            shortPeriodP1, shortPeriodP2, shortPeriodP3, shortPeriodP4);
 
@@ -578,7 +578,7 @@ public class FieldDSSTTesseralTest {
     }
 
     private void fillJacobianColumn(double[][] jacobian, int column,
-                                    OrbitType orbitType, double h,
+                                    OrbitParamsType orbitParamsType, double h,
                                     double[] M4h, double[] M3h,
                                     double[] M2h, double[] M1h,
                                     double[] P1h, double[] P2h,
@@ -591,28 +591,28 @@ public class FieldDSSTTesseralTest {
         }
     }
 
-    private SpacecraftState shiftState(SpacecraftState state, OrbitType orbitType,
+    private SpacecraftState shiftState(SpacecraftState state, OrbitParamsType orbitParamsType,
                                        double delta, int column) {
 
-        double[][] array = stateToArray(state, orbitType);
+        double[][] array = stateToArray(state, orbitParamsType);
         array[0][column] += delta;
 
-        return arrayToState(array, orbitType, state.getFrame(), state.getDate(),
+        return arrayToState(array, orbitParamsType, state.getFrame(), state.getDate(),
                             state.getOrbit().getMu(), state.getAttitude());
 
     }
 
-    private double[][] stateToArray(SpacecraftState state, OrbitType orbitType) {
+    private double[][] stateToArray(SpacecraftState state, OrbitParamsType orbitParamsType) {
           double[][] array = new double[2][6];
 
-          orbitType.mapOrbitToArray(state.getOrbit(), PositionAngleType.MEAN, array[0], array[1]);
+          orbitParamsType.mapOrbitToArray(state.getOrbit(), PositionAngleType.MEAN, array[0], array[1]);
           return array;
       }
 
-    private SpacecraftState arrayToState(double[][] array, OrbitType orbitType,
+    private SpacecraftState arrayToState(double[][] array, OrbitParamsType orbitParamsType,
                                            Frame frame, AbsoluteDate date, double mu,
                                            Attitude attitude) {
-          EquinoctialOrbit orbit = (EquinoctialOrbit) orbitType.mapArrayToOrbit(array[0], array[1], PositionAngleType.MEAN, date, mu, frame);
+          EquinoctialOrbit orbit = (EquinoctialOrbit) orbitParamsType.mapArrayToOrbit(array[0], array[1], PositionAngleType.MEAN, date, mu, frame);
           return new SpacecraftState(orbit, attitude);
     }
 

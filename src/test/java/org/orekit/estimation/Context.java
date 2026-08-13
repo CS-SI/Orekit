@@ -38,7 +38,7 @@ import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.EquinoctialOrbitFactory;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.analytical.BrouwerLyddanePropagator;
@@ -166,7 +166,7 @@ public class Context implements StationDataProvider {
                                             final DSSTForce... forces) {
         // Initialize builder
         final EquinoctialOrbit eo =
-            (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(createInitialOrbit(perfectStart));
+            (EquinoctialOrbit) OrbitParamsType.EQUINOCTIAL.convertType(createInitialOrbit(perfectStart));
         final DSSTPropagatorBuilder propagatorBuilder =
                 new DSSTPropagatorBuilder(new EquinoctialOrbitFactory(eo, dP, PositionAngleType.MEAN),
                                           new DormandPrince853IntegratorBuilder(minStep, maxStep, dP),
@@ -182,7 +182,7 @@ public class Context implements StationDataProvider {
     /**
      * Creates a numerical propagator builder.
      *
-     * @param orbitType the type of orbit to be used by the builder
+     * @param orbitParamsType the type of orbit to be used by the builder
      * @param positionAngleType the position angle type to be used by the builder
      * @param perfectStart if false, orbit estimation will start from a wrong point
      * @param minStep the minimum step size for numerical integration
@@ -191,13 +191,13 @@ public class Context implements StationDataProvider {
      * @param forces the set of force models to include in the numerical propagator
      * @return a configured NumericalPropagatorBuilder instance
      */
-    public NumericalPropagatorBuilder createNumerical(final OrbitType orbitType, final PositionAngleType positionAngleType,
+    public NumericalPropagatorBuilder createNumerical(final OrbitParamsType orbitParamsType, final PositionAngleType positionAngleType,
                                                       final boolean perfectStart,
                                                       final double minStep, final double maxStep, final double dP,
                                                       final Force... forces) {
         // Initialize builder
         final NumericalPropagatorBuilder propagatorBuilder =
-                new NumericalPropagatorBuilder(orbitType.convertType(createInitialOrbit(perfectStart)).
+                new NumericalPropagatorBuilder(orbitParamsType.convertType(createInitialOrbit(perfectStart)).
                                                                    factory(positionAngleType, dP),
                                                new DormandPrince853IntegratorBuilder(minStep, maxStep, dP));
         // Add force models

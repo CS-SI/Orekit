@@ -27,7 +27,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.EphemerisGenerator;
@@ -172,7 +172,7 @@ class AbstractIntegratedPropagatorTest {
         }
 
         @Override
-        protected StateMapper createMapper(AbsoluteDate referenceDate, double mu, OrbitType orbitType, PositionAngleType positionAngleType, AttitudeProvider attitudeProvider, Frame frame) {
+        protected StateMapper createMapper(AbsoluteDate referenceDate, double mu, OrbitParamsType orbitParamsType, PositionAngleType positionAngleType, AttitudeProvider attitudeProvider, Frame frame) {
             return null;
         }
 

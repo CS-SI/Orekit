@@ -21,7 +21,7 @@ import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModel;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
 
@@ -42,7 +42,7 @@ class NumericalTimeDerivativesEquations implements TimeDerivativesEquations {
     private final double[] yDot;
 
     /** Orbit type of coordinates. */
-    private final OrbitType orbitType;
+    private final OrbitParamsType orbitParamsType;
 
     /** Position angle type of coordinates. */
     private final PositionAngleType positionAngleType;
@@ -58,13 +58,13 @@ class NumericalTimeDerivativesEquations implements TimeDerivativesEquations {
 
     /**
      * Constructor.
-     * @param orbitType orbit type used in equations
+     * @param orbitParamsType orbit type used in equations
      * @param positionAngleType angle type used in equations if applicable
      * @param forceModels forces
      */
-    NumericalTimeDerivativesEquations(final OrbitType orbitType, final PositionAngleType positionAngleType,
+    NumericalTimeDerivativesEquations(final OrbitParamsType orbitParamsType, final PositionAngleType positionAngleType,
                                       final List<ForceModel> forceModels) {
-        this.orbitType = orbitType;
+        this.orbitParamsType = orbitParamsType;
         this.positionAngleType = positionAngleType;
         this.forceModels = forceModels;
         this.yDot     = new double[7];
@@ -116,7 +116,7 @@ class NumericalTimeDerivativesEquations implements TimeDerivativesEquations {
             forceModel.addContribution(state, this);
         }
 
-        if (orbitType == null) {
+        if (orbitParamsType == null) {
             // position derivative is velocity, and was not added above in the force models
             // (it is added when orbit type is non-null because NewtonianAttraction considers it)
             final Vector3D velocity = state.getPVCoordinates().getVelocity();
@@ -131,7 +131,7 @@ class NumericalTimeDerivativesEquations implements TimeDerivativesEquations {
     /** {@inheritDoc} */
     @Override
     public void addKeplerContribution(final double mu) {
-        if (orbitType == null) {
+        if (orbitParamsType == null) {
             // if mu is neither 0 nor NaN, we want to include Newtonian acceleration
             if (mu > 0) {
                 // velocity derivative is Newtonian acceleration
@@ -145,7 +145,7 @@ class NumericalTimeDerivativesEquations implements TimeDerivativesEquations {
 
         } else {
             // propagation uses regular orbits
-            orbitType.convertType(currentState.getOrbit()).addKeplerContribution(positionAngleType, mu, yDot);
+            orbitParamsType.convertType(currentState.getOrbit()).addKeplerContribution(positionAngleType, mu, yDot);
         }
     }
 

@@ -29,7 +29,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.orbits.AbstractOrbitFactory;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
@@ -52,7 +52,7 @@ public class JacobianPropagatorConverter extends AbstractPropagatorConverter {
 
     /** Simple constructor.
      * @param builder builder for adapted propagator, it <em>must</em>
-     * be configured to generate {@link OrbitType#CARTESIAN} states
+     * be configured to generate {@link OrbitParamsType#CARTESIAN} states
      * @param threshold absolute threshold for optimization algorithm
      * @param maxIterations maximum number of iterations for fitting
      */
@@ -62,9 +62,9 @@ public class JacobianPropagatorConverter extends AbstractPropagatorConverter {
         super(builder, threshold, maxIterations);
         final AbstractOrbitFactory<Orbit> factory =
             (AbstractOrbitFactory<Orbit>)  builder.getOrbitalParameterFactory();
-        if (factory.getOrbitType() != OrbitType.CARTESIAN) {
+        if (factory.getOrbitParamsType() != OrbitParamsType.CARTESIAN) {
             throw new OrekitException(OrekitMessages.ORBIT_TYPE_NOT_ALLOWED,
-                                      factory.getOrbitType(), OrbitType.CARTESIAN);
+                                      factory.getOrbitParamsType(), OrbitParamsType.CARTESIAN);
         }
         this.builder = builder;
     }

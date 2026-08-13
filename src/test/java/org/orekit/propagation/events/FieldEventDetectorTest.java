@@ -45,7 +45,7 @@ import org.orekit.orbits.FieldCircularOrbit;
 import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldPropagator;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -322,7 +322,7 @@ class FieldEventDetectorTest {
         final T step = zero.add(60.0);
         final int    n    = 100;
         FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(new ClassicalRungeKuttaFieldIntegrator<>(field, step));
-        propagator.setOrbitType(OrbitType.EQUINOCTIAL);
+        propagator.setOrbitParamsType(OrbitParamsType.EQUINOCTIAL);
         propagator.resetInitialState(new FieldSpacecraftState<>(orbit));
         GCallsCounter<T> counter = new GCallsCounter<>(FieldAdaptableInterval.of(100000.0), zero.add(1.0e-6), 20,
                                                        new FieldStopOnEvent<>());
@@ -580,11 +580,11 @@ class FieldEventDetectorTest {
 
     private <T extends CalculusFieldElement<T>> FieldPropagator<T> buildNumerical(final FieldOrbit<T> orbit) {
         Field<T>            field      = orbit.getDate().getField();
-        OrbitType           type       = OrbitType.CARTESIAN;
+        OrbitParamsType type       = OrbitParamsType.CARTESIAN;
         double[][]          tol        = ToleranceProvider.getDefaultToleranceProvider(0.0001).getTolerances(orbit, type);
         FieldODEIntegrator<T> integrator = new DormandPrince853FieldIntegrator<>(field, 0.0001, 10.0, tol[0], tol[1]);
         FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(integrator);
-        propagator.setOrbitType(type);
+        propagator.setOrbitParamsType(type);
         propagator.setInitialState(new FieldSpacecraftState<>(orbit));
         return propagator;
     }

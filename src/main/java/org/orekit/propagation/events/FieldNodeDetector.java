@@ -25,7 +25,7 @@ import org.orekit.frames.Frame;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.functions.NodeEventFunction;
@@ -146,7 +146,7 @@ public class FieldNodeDetector<T extends CalculusFieldElement<T>> extends FieldA
      */
     private static double estimateNodesTimeSeparation(final Orbit orbit) {
 
-        final KeplerianOrbit keplerian = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(orbit);
+        final KeplerianOrbit keplerian = (KeplerianOrbit) OrbitParamsType.KEPLERIAN.convertType(orbit);
 
         // mean anomaly of ascending node
         final double ascendingM  =  new KeplerianOrbit(keplerian.getA(), keplerian.getE(),

@@ -200,7 +200,7 @@ class SpacecraftStateInterpolatorTest {
         final NumericalPropagator propagator = new NumericalPropagator(integrator);
 
         // Configure propagator
-        propagator.setOrbitType(null);
+        propagator.setOrbitParamsType(null);
 
         // Add force models
         final Frame                                itrf      = FramesFactory.getITRF(IERSConventions.IERS_2010, true);

@@ -397,8 +397,8 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased<Kepleria
 
     /** {@inheritDoc} */
     @Override
-    public OrbitType getType() {
-        return OrbitType.KEPLERIAN;
+    public OrbitParamsType getType() {
+        return OrbitParamsType.KEPLERIAN;
     }
 
     /** {@inheritDoc} */

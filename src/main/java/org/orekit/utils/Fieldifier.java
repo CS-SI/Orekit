@@ -80,7 +80,7 @@ public class Fieldifier {
         final FieldAbsoluteDate<T> fieldEpoch  = new FieldAbsoluteDate<>(field, stateCovariance.getDate());
         if (stateCovariance.getLOF() == null) {
             return new FieldStateCovariance<>(fieldMatrix, fieldEpoch, stateCovariance.getFrame(),
-                                              stateCovariance.getOrbitType(), stateCovariance.getPositionAngleType());
+                                              stateCovariance.getOrbitParamsType(), stateCovariance.getPositionAngleType());
         }
         return new FieldStateCovariance<>(fieldMatrix, fieldEpoch, stateCovariance.getLOF());
     }

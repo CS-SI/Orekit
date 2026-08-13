@@ -475,10 +475,10 @@ public class FieldCartesianOrbitTest {
                                                                      position);
         Assertions.assertEquals(0.0101, FieldVector3D.distance(keplerianAcceleration, acceleration).getReal(), 1.0e-4);
 
-        for (OrbitType type : OrbitType.values()) {
+        for (OrbitParamsType type : OrbitParamsType.values()) {
             FieldOrbit<T> converted = type.convertType(orbit);
             Assertions.assertTrue(converted.hasNonKeplerianAcceleration());
-            FieldCartesianOrbit<T> rebuilt = (FieldCartesianOrbit<T>) OrbitType.CARTESIAN.convertType(converted);
+            FieldCartesianOrbit<T> rebuilt = (FieldCartesianOrbit<T>) OrbitParamsType.CARTESIAN.convertType(converted);
             Assertions.assertTrue(rebuilt.hasNonKeplerianAcceleration());
             Assertions.assertEquals(0, FieldVector3D.distance(rebuilt.getPosition(),     position).getReal(),     2.0e-9);
             Assertions.assertEquals(0, FieldVector3D.distance(rebuilt.getVelocity(),     velocity).getReal(),     7.0e-12);
@@ -509,10 +509,10 @@ public class FieldCartesianOrbitTest {
                                                                      position);
         Assertions.assertEquals(4.78e-4, FieldVector3D.distance(keplerianAcceleration, acceleration).getReal(), 1.0e-6);
 
-        OrbitType type = OrbitType.KEPLERIAN;
+        OrbitParamsType type = OrbitParamsType.KEPLERIAN;
         FieldOrbit<T> converted = type.convertType(orbit);
         Assertions.assertTrue(converted.hasNonKeplerianAcceleration());
-        FieldCartesianOrbit<T> rebuilt = (FieldCartesianOrbit<T>) OrbitType.CARTESIAN.convertType(converted);
+        FieldCartesianOrbit<T> rebuilt = (FieldCartesianOrbit<T>) OrbitParamsType.CARTESIAN.convertType(converted);
         Assertions.assertTrue(rebuilt.hasNonKeplerianAcceleration());
         Assertions.assertEquals(0, FieldVector3D.distance(rebuilt.getPosition(),     position).getReal(),     1.0e-15);
         Assertions.assertEquals(0, FieldVector3D.distance(rebuilt.getVelocity(),     velocity).getReal(),     1.0e-15);

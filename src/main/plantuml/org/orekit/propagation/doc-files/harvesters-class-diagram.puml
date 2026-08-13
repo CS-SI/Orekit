@@ -39,7 +39,7 @@
       +RealMatrix getParametersJacobian(state)
       +RealMatrix getInitialStateJacobianVsBuilderParameters()
       +List<String> getJacobiansColumnsNames()
-      +OrbitType getOrbitType()
+      +OrbitType getOrbitParamsType()
       +PositionAngleType getPositionAngleType()
     }
     note left

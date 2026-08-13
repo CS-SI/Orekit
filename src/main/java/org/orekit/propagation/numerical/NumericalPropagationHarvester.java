@@ -21,7 +21,7 @@ import java.util.List;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.AbstractMatricesHarvester;
 import org.orekit.propagation.SpacecraftState;
@@ -52,7 +52,7 @@ class NumericalPropagationHarvester extends AbstractMatricesHarvester {
 
     /** Simple constructor.
      * <p>
-     * The arguments for initial matrices <em>must</em> be compatible with the {@link org.orekit.orbits.OrbitType orbit type}
+     * The arguments for initial matrices <em>must</em> be compatible with the {@link OrbitParamsType orbit type}
      * and {@link PositionAngleType position angle} that will be used by propagator
      * </p>
      * <p>
@@ -80,9 +80,9 @@ class NumericalPropagationHarvester extends AbstractMatricesHarvester {
      */
     private double[][] getConversionJacobian(final SpacecraftState state) {
 
-        if (state.isOrbitDefined() && state.getOrbit().getType() != OrbitType.CARTESIAN) {
+        if (state.isOrbitDefined() && state.getOrbit().getType() != OrbitParamsType.CARTESIAN) {
             // make sure the state is in the desired orbit type
-            final Orbit orbit = propagator.getOrbitType().convertType(state.getOrbit());
+            final Orbit orbit = propagator.getOrbitParamsType().convertType(state.getOrbit());
 
             // compute the Jacobian, taking the position angle type into account
             final double[][] dYdC = new double[IDENTITY6.length][IDENTITY6[0].length];
@@ -108,8 +108,8 @@ class NumericalPropagationHarvester extends AbstractMatricesHarvester {
 
     /** {@inheritDoc} */
     @Override
-    public OrbitType getOrbitType() {
-        return propagator.getOrbitType();
+    public OrbitParamsType getOrbitParamsType() {
+        return propagator.getOrbitParamsType();
     }
 
     /** {@inheritDoc} */
@@ -131,7 +131,7 @@ class NumericalPropagationHarvester extends AbstractMatricesHarvester {
         final RealMatrix  dCdY0 = toSquareMatrix(p);
 
         final RealMatrix  dYdY0;
-        if (!state.isOrbitDefined() || state.getOrbit().getType() == OrbitType.CARTESIAN) {
+        if (!state.isOrbitDefined() || state.getOrbit().getType() == OrbitParamsType.CARTESIAN) {
             dYdY0 = dCdY0;
         } else {
             // get the conversion Jacobian

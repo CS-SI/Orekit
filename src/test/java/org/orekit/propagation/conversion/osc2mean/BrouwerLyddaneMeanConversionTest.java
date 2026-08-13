@@ -43,7 +43,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
@@ -88,9 +88,9 @@ public class BrouwerLyddaneMeanConversionTest {
 
         //Get state at initial date and 3 days before
         SpacecraftState tleState = propagator.getInitialState();
-        final KeplerianOrbit osculating0 = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(tleState.getOrbit());
+        final KeplerianOrbit osculating0 = (KeplerianOrbit) OrbitParamsType.KEPLERIAN.convertType(tleState.getOrbit());
         SpacecraftState tleStateAtDate = propagator.propagate(propagator.getInitialState().getDate().shiftedBy(3,  TimeUnit.DAYS));
-        final KeplerianOrbit osculating1 = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(tleStateAtDate.getOrbit());
+        final KeplerianOrbit osculating1 = (KeplerianOrbit) OrbitParamsType.KEPLERIAN.convertType(tleStateAtDate.getOrbit());
 
         // BL theory
         final BrouwerLyddaneTheory theory = new BrouwerLyddaneTheory(provider,
@@ -218,14 +218,14 @@ public class BrouwerLyddaneMeanConversionTest {
         // set up a reference numerical propagator starting for the specified start orbit
         // using the same force models (i.e. the first few zonal terms)
         double[][] tol = ToleranceProvider.getDefaultToleranceProvider(0.1)
-                                          .getTolerances(initialOsculating, OrbitType.KEPLERIAN);
+                                          .getTolerances(initialOsculating, OrbitParamsType.KEPLERIAN);
         AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(0.001, 1000, tol[0], tol[1]);
         integrator.setInitialStepSize(60);
         NumericalPropagator num = new NumericalPropagator(integrator);
         Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         num.addForceModel(new HolmesFeatherstoneAttractionModel(itrf, GravityFieldFactory.getNormalizedProvider(provider)));
         num.setInitialState(new SpacecraftState(initialOsculating));
-        num.setOrbitType(OrbitType.KEPLERIAN);
+        num.setOrbitParamsType(OrbitParamsType.KEPLERIAN);
         num.setPositionAngleType(initialOsculating.getCachedPositionAngleType());
         final StorelessUnivariateStatistic oscMin  = new Min();
         final StorelessUnivariateStatistic oscMax  = new Max();
@@ -285,7 +285,7 @@ public class BrouwerLyddaneMeanConversionTest {
 
         // propagate
         final SpacecraftState state = bl.propagate(date);
-        final KeplerianOrbit orbOsc = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(state.getOrbit());
+        final KeplerianOrbit orbOsc = (KeplerianOrbit) OrbitParamsType.KEPLERIAN.convertType(state.getOrbit());
 
         if (doPrint) {
             System.out.println(orbit);
@@ -324,7 +324,7 @@ public class BrouwerLyddaneMeanConversionTest {
 
         // propagate
         final SpacecraftState state2 = bl2.propagate(date.shiftedBy(Constants.JULIAN_DAY));
-        final KeplerianOrbit orbOsc2 = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(state2.getOrbit());
+        final KeplerianOrbit orbOsc2 = (KeplerianOrbit) OrbitParamsType.KEPLERIAN.convertType(state2.getOrbit());
         if (doPrint) {
             System.out.println(orbOsc2);
         }

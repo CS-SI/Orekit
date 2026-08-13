@@ -32,7 +32,7 @@ import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.EquinoctialOrbitFactory;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.CartesianToleranceProvider;
 import org.orekit.propagation.PropagationType;
@@ -171,7 +171,7 @@ public class DSSTPropagatorBuilderTest {
                 new AbsoluteDate(), Constants.EIGEN5C_EARTH_MU);
 
         final DSSTPropagatorBuilder builder =
-                new DSSTPropagatorBuilder(new EquinoctialOrbitFactory((EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(orbit),
+                new DSSTPropagatorBuilder(new EquinoctialOrbitFactory((EquinoctialOrbit) OrbitParamsType.EQUINOCTIAL.convertType(orbit),
                                                                       1.0, PositionAngleType.ECCENTRIC),
                                           integratorBuilder, PropagationType.OSCULATING, PropagationType.OSCULATING);
 
@@ -345,7 +345,7 @@ public class DSSTPropagatorBuilderTest {
                                                new AbsoluteDate(), Constants.EIGEN5C_EARTH_MU);
 
         final DSSTPropagatorBuilder builder =
-                        new DSSTPropagatorBuilder(new EquinoctialOrbitFactory((EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(orbit),
+                        new DSSTPropagatorBuilder(new EquinoctialOrbitFactory((EquinoctialOrbit) OrbitParamsType.EQUINOCTIAL.convertType(orbit),
                                                                               1.0, PositionAngleType.ECCENTRIC),
                                                   integratorBuilder,
                                                   PropagationType.OSCULATING, PropagationType.OSCULATING);
@@ -406,7 +406,7 @@ public class DSSTPropagatorBuilderTest {
         moon = new DSSTThirdBody(CelestialBodyFactory.getMoon(), mu);
         sun = new DSSTThirdBody(CelestialBodyFactory.getSun(), mu);
 
-        tolerance  = toleranceProvider.getTolerances(orbit, OrbitType.EQUINOCTIAL);
+        tolerance  = toleranceProvider.getTolerances(orbit, OrbitParamsType.EQUINOCTIAL);
         propagator = new DSSTPropagator(new DormandPrince853Integrator(minStep, maxStep, tolerance[0], tolerance[1]));
         propagator.setInitialState(new SpacecraftState(orbit).withMass(1000.), PropagationType.MEAN);
         propagator.addForceModel(moon);

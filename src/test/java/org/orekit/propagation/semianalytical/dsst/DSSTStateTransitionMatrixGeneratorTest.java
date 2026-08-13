@@ -153,14 +153,14 @@ class DSSTStateTransitionMatrixGeneratorTest {
 
         double dt = 900;
         double dP = 0.001;
-        final OrbitType orbitType = OrbitType.EQUINOCTIAL;
+        final OrbitParamsType orbitParamsType = OrbitParamsType.EQUINOCTIAL;
 
         // compute state Jacobian using DSSTStateTransitionMatrixGenerator
         DSSTPropagator propagator = setUpPropagator(type,  dP, provider);
         propagator.setMu(provider.getMu());
         final SpacecraftState initialState = propagator.getInitialState();
         final double[] stateVector = new double[6];
-        OrbitType.EQUINOCTIAL.mapOrbitToArray(initialState.getOrbit(), PositionAngleType.MEAN, stateVector, null);
+        OrbitParamsType.EQUINOCTIAL.mapOrbitToArray(initialState.getOrbit(), PositionAngleType.MEAN, stateVector, null);
         final AbsoluteDate target = propagator.getInitialState().getDate().shiftedBy(dt);
         PickUpHandler pickUp = new PickUpHandler(propagator, null, null, null);
         propagator.getMultiplexer().add(pickUp);
@@ -170,25 +170,25 @@ class DSSTStateTransitionMatrixGeneratorTest {
         double[][] dYdY0Ref = new double[6][6];
         DSSTPropagator propagator2 = setUpPropagator(type, dP, provider);
         propagator2.setMu(provider.getMu());
-        double[] steps = ToleranceProvider.getDefaultToleranceProvider(1000000 * dP).getTolerances(initialState.getOrbit(), orbitType)[0];
+        double[] steps = ToleranceProvider.getDefaultToleranceProvider(1000000 * dP).getTolerances(initialState.getOrbit(), orbitParamsType)[0];
         for (int i = 0; i < 6; ++i) {
-            propagator2.setInitialState(shiftState(initialState, orbitType, -4 * steps[i], i), type);
+            propagator2.setInitialState(shiftState(initialState, orbitParamsType, -4 * steps[i], i), type);
             SpacecraftState sM4h = propagator2.propagate(target);
-            propagator2.setInitialState(shiftState(initialState, orbitType, -3 * steps[i], i), type);
+            propagator2.setInitialState(shiftState(initialState, orbitParamsType, -3 * steps[i], i), type);
             SpacecraftState sM3h = propagator2.propagate(target);
-            propagator2.setInitialState(shiftState(initialState, orbitType, -2 * steps[i], i), type);
+            propagator2.setInitialState(shiftState(initialState, orbitParamsType, -2 * steps[i], i), type);
             SpacecraftState sM2h = propagator2.propagate(target);
-            propagator2.setInitialState(shiftState(initialState, orbitType, -1 * steps[i], i), type);
+            propagator2.setInitialState(shiftState(initialState, orbitParamsType, -1 * steps[i], i), type);
             SpacecraftState sM1h = propagator2.propagate(target);
-            propagator2.setInitialState(shiftState(initialState, orbitType,  1 * steps[i], i), type);
+            propagator2.setInitialState(shiftState(initialState, orbitParamsType,  1 * steps[i], i), type);
             SpacecraftState sP1h = propagator2.propagate(target);
-            propagator2.setInitialState(shiftState(initialState, orbitType,  2 * steps[i], i), type);
+            propagator2.setInitialState(shiftState(initialState, orbitParamsType,  2 * steps[i], i), type);
             SpacecraftState sP2h = propagator2.propagate(target);
-            propagator2.setInitialState(shiftState(initialState, orbitType,  3 * steps[i], i), type);
+            propagator2.setInitialState(shiftState(initialState, orbitParamsType,  3 * steps[i], i), type);
             SpacecraftState sP3h = propagator2.propagate(target);
-            propagator2.setInitialState(shiftState(initialState, orbitType,  4 * steps[i], i), type);
+            propagator2.setInitialState(shiftState(initialState, orbitParamsType,  4 * steps[i], i), type);
             SpacecraftState sP4h = propagator2.propagate(target);
-            fillJacobianColumn(dYdY0Ref, i, orbitType, steps[i],
+            fillJacobianColumn(dYdY0Ref, i, orbitParamsType, steps[i],
                                sM4h, sM3h, sM2h, sM1h, sP1h, sP2h, sP3h, sP4h);
         }
 
@@ -203,19 +203,19 @@ class DSSTStateTransitionMatrixGeneratorTest {
     }
 
     private void fillJacobianColumn(double[][] jacobian, int column,
-                                    OrbitType orbitType, double h,
+                                    OrbitParamsType orbitParamsType, double h,
                                     SpacecraftState sM4h, SpacecraftState sM3h,
                                     SpacecraftState sM2h, SpacecraftState sM1h,
                                     SpacecraftState sP1h, SpacecraftState sP2h,
                                     SpacecraftState sP3h, SpacecraftState sP4h) {
-        double[] aM4h = stateToArray(sM4h, orbitType)[0];
-        double[] aM3h = stateToArray(sM3h, orbitType)[0];
-        double[] aM2h = stateToArray(sM2h, orbitType)[0];
-        double[] aM1h = stateToArray(sM1h, orbitType)[0];
-        double[] aP1h = stateToArray(sP1h, orbitType)[0];
-        double[] aP2h = stateToArray(sP2h, orbitType)[0];
-        double[] aP3h = stateToArray(sP3h, orbitType)[0];
-        double[] aP4h = stateToArray(sP4h, orbitType)[0];
+        double[] aM4h = stateToArray(sM4h, orbitParamsType)[0];
+        double[] aM3h = stateToArray(sM3h, orbitParamsType)[0];
+        double[] aM2h = stateToArray(sM2h, orbitParamsType)[0];
+        double[] aM1h = stateToArray(sM1h, orbitParamsType)[0];
+        double[] aP1h = stateToArray(sP1h, orbitParamsType)[0];
+        double[] aP2h = stateToArray(sP2h, orbitParamsType)[0];
+        double[] aP3h = stateToArray(sP3h, orbitParamsType)[0];
+        double[] aP4h = stateToArray(sP4h, orbitParamsType)[0];
         for (int i = 0; i < jacobian.length; ++i) {
             jacobian[i][column] = ( -3 * (aP4h[i] - aM4h[i]) +
                                     32 * (aP3h[i] - aM3h[i]) -
@@ -224,28 +224,28 @@ class DSSTStateTransitionMatrixGeneratorTest {
         }
     }
 
-    private SpacecraftState shiftState(SpacecraftState state, OrbitType orbitType,
+    private SpacecraftState shiftState(SpacecraftState state, OrbitParamsType orbitParamsType,
                                        double delta, int column) {
 
-        double[][] array = stateToArray(state, orbitType);
+        double[][] array = stateToArray(state, orbitParamsType);
         array[0][column] += delta;
 
-        return arrayToState(array, orbitType, state.getFrame(), state.getDate(),
+        return arrayToState(array, orbitParamsType, state.getFrame(), state.getDate(),
                             state.getOrbit().getMu(), state.getAttitude());
 
     }
 
-    private double[][] stateToArray(SpacecraftState state, OrbitType orbitType) {
+    private double[][] stateToArray(SpacecraftState state, OrbitParamsType orbitParamsType) {
           double[][] array = new double[2][6];
 
-          orbitType.mapOrbitToArray(state.getOrbit(), PositionAngleType.MEAN, array[0], array[1]);
+          orbitParamsType.mapOrbitToArray(state.getOrbit(), PositionAngleType.MEAN, array[0], array[1]);
           return array;
       }
 
-      private SpacecraftState arrayToState(double[][] array, OrbitType orbitType,
+      private SpacecraftState arrayToState(double[][] array, OrbitParamsType orbitParamsType,
                                            Frame frame, AbsoluteDate date, double mu,
                                            Attitude attitude) {
-          EquinoctialOrbit orbit = (EquinoctialOrbit) orbitType.mapArrayToOrbit(array[0], array[1], PositionAngleType.MEAN, date, mu, frame);
+          EquinoctialOrbit orbit = (EquinoctialOrbit) orbitParamsType.mapArrayToOrbit(array[0], array[1], PositionAngleType.MEAN, date, mu, frame);
           return new SpacecraftState(orbit, attitude);
       }
 
@@ -273,10 +273,10 @@ class DSSTStateTransitionMatrixGeneratorTest {
                 new KeplerianOrbit(8000000.0, 0.01, 0.1, 0.7, 0, 1.2, PositionAngleType.MEAN,
                                    FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
                                    provider.getMu());
-        final EquinoctialOrbit orbit = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(initialOrbit);
+        final EquinoctialOrbit orbit = (EquinoctialOrbit) OrbitParamsType.EQUINOCTIAL.convertType(initialOrbit);
 
         // compute state Jacobian using DSSTStateTransitionMatrixGenerator
-        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(dP).getTolerances(orbit, OrbitType.EQUINOCTIAL);
+        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(dP).getTolerances(orbit, OrbitParamsType.EQUINOCTIAL);
         DSSTPropagator propagator =
             new DSSTPropagator(new DormandPrince853Integrator(minStep, maxStep, tol[0], tol[1]), type);
         propagator.addForceModel(srp);
@@ -332,7 +332,7 @@ class DSSTStateTransitionMatrixGeneratorTest {
         for (int i = 0; i < 6; ++i) {
             Assertions.assertEquals(0.0, dYdPMEAN.getEntry(i, 0), 1e-9);
         }
-        Assertions.assertEquals(OrbitType.EQUINOCTIAL, harvesterMEAN.getOrbitType());
+        Assertions.assertEquals(OrbitParamsType.EQUINOCTIAL, harvesterMEAN.getOrbitParamsType());
         Assertions.assertEquals(PositionAngleType.MEAN, harvesterMEAN.getPositionAngleType());
         Assertions.assertNull(harvesterMEAN.getStateJacobianVsBuilderParameters(initialStateMEAN));
 

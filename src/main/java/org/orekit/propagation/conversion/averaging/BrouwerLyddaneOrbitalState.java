@@ -20,7 +20,7 @@ import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvide
 import org.orekit.frames.Frame;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.analytical.BrouwerLyddanePropagator;
@@ -60,8 +60,8 @@ public class BrouwerLyddaneOrbitalState extends AbstractHarmonicsBasedOrbitalSta
 
     /** {@inheritDoc} */
     @Override
-    public OrbitType getOrbitType() {
-        return OrbitType.KEPLERIAN;
+    public OrbitParamsType getOrbitParamsType() {
+        return OrbitParamsType.KEPLERIAN;
     }
 
     /** {@inheritDoc} */

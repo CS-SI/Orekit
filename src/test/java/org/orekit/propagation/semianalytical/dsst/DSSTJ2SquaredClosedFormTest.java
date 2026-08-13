@@ -230,7 +230,7 @@ public class DSSTJ2SquaredClosedFormTest {
     public void testMeanElementRateDerivatives() {
 
         // Spacecraft state
-        final OrbitType orbitType = OrbitType.EQUINOCTIAL;
+        final OrbitParamsType orbitParamsType = OrbitParamsType.EQUINOCTIAL;
         final Orbit orbit = createOrbit(650000.0, 680000.0);
         final SpacecraftState state = new SpacecraftState(orbit).withMass(1000.0);
 
@@ -268,34 +268,34 @@ public class DSSTJ2SquaredClosedFormTest {
         // Compute reference state Jacobian using finite differences
         double[][] meanElementRatesJacobianRef = new double[6][6];
         double dP = 1.0;
-        double[] steps = ToleranceProvider.getDefaultToleranceProvider(dP * 1000).getTolerances(orbit, orbitType)[0];
+        double[] steps = ToleranceProvider.getDefaultToleranceProvider(dP * 1000).getTolerances(orbit, orbitParamsType)[0];
         for (int i = 0; i < 6; i++) {
 
-            SpacecraftState stateM4 = shiftState(state, orbitType, -4 * steps[i], i);
+            SpacecraftState stateM4 = shiftState(state, orbitParamsType, -4 * steps[i], i);
             double[]  meanRatesM4   = meanElementsRates(stateM4, j2Squared);
 
-            SpacecraftState stateM3 = shiftState(state, orbitType, -3 * steps[i], i);
+            SpacecraftState stateM3 = shiftState(state, orbitParamsType, -3 * steps[i], i);
             double[]  meanRatesM3   = meanElementsRates(stateM3, j2Squared);
 
-            SpacecraftState stateM2 = shiftState(state, orbitType, -2 * steps[i], i);
+            SpacecraftState stateM2 = shiftState(state, orbitParamsType, -2 * steps[i], i);
             double[]  meanRatesM2   = meanElementsRates(stateM2, j2Squared);
 
-            SpacecraftState stateM1 = shiftState(state, orbitType, -1 * steps[i], i);
+            SpacecraftState stateM1 = shiftState(state, orbitParamsType, -1 * steps[i], i);
             double[]  meanRatesM1   = meanElementsRates(stateM1, j2Squared);
 
-            SpacecraftState stateP1 = shiftState(state, orbitType, 1 * steps[i], i);
+            SpacecraftState stateP1 = shiftState(state, orbitParamsType, 1 * steps[i], i);
             double[]  meanRatesP1   = meanElementsRates(stateP1, j2Squared);
 
-            SpacecraftState stateP2 = shiftState(state, orbitType, 2 * steps[i], i);
+            SpacecraftState stateP2 = shiftState(state, orbitParamsType, 2 * steps[i], i);
             double[]  meanRatesP2   = meanElementsRates(stateP2, j2Squared);
 
-            SpacecraftState stateP3 = shiftState(state, orbitType, 3 * steps[i], i);
+            SpacecraftState stateP3 = shiftState(state, orbitParamsType, 3 * steps[i], i);
             double[]  meanRatesP3   = meanElementsRates(stateP3, j2Squared);
 
-            SpacecraftState stateP4 = shiftState(state, orbitType, 4 * steps[i], i);
+            SpacecraftState stateP4 = shiftState(state, orbitParamsType, 4 * steps[i], i);
             double[]  meanRatesP4   = meanElementsRates(stateP4, j2Squared);
 
-            fillJacobianColumn(meanElementRatesJacobianRef, i, orbitType, steps[i],
+            fillJacobianColumn(meanElementRatesJacobianRef, i, orbitParamsType, steps[i],
                                meanRatesM4, meanRatesM3, meanRatesM2, meanRatesM1,
                                meanRatesP1, meanRatesP2, meanRatesP3, meanRatesP4);
 
@@ -333,7 +333,7 @@ public class DSSTJ2SquaredClosedFormTest {
         final KeplerianOrbit kep = new KeplerianOrbit(sma, ecc, inc, aop, raan, anom, angleType, frame, epoch, provider.getMu());
         
         // Equinoctial
-        return OrbitType.EQUINOCTIAL.convertType(kep);
+        return OrbitParamsType.EQUINOCTIAL.convertType(kep);
 
     }
 
@@ -364,7 +364,7 @@ public class DSSTJ2SquaredClosedFormTest {
                 angleType, frame, fieldEpoch, zero.add(provider.getMu()));
         
         // Equinoctial
-        return OrbitType.EQUINOCTIAL.convertType(fieldKep);
+        return OrbitParamsType.EQUINOCTIAL.convertType(fieldKep);
 
     }
 
@@ -374,7 +374,7 @@ public class DSSTJ2SquaredClosedFormTest {
     }
 
     private void fillJacobianColumn(double[][] jacobian, int column,
-                                    OrbitType orbitType, double h,
+                                    OrbitParamsType orbitParamsType, double h,
                                     double[] M4h, double[] M3h,
                                     double[] M2h, double[] M1h,
                                     double[] P1h, double[] P2h,
@@ -387,25 +387,25 @@ public class DSSTJ2SquaredClosedFormTest {
         }
     }
 
-    private SpacecraftState shiftState(SpacecraftState state, OrbitType orbitType,
+    private SpacecraftState shiftState(SpacecraftState state, OrbitParamsType orbitParamsType,
                                        double delta, int column) {
-        double[][] array = stateToArray(state, orbitType);
+        double[][] array = stateToArray(state, orbitParamsType);
         array[0][column] += delta;
-        return arrayToState(array, orbitType, state.getFrame(), state.getDate(),
+        return arrayToState(array, orbitParamsType, state.getFrame(), state.getDate(),
                             state.getOrbit().getMu(), state.getAttitude());
 
     }
 
-    private double[][] stateToArray(SpacecraftState state, OrbitType orbitType) {
+    private double[][] stateToArray(SpacecraftState state, OrbitParamsType orbitParamsType) {
           double[][] array = new double[2][6];
-          orbitType.mapOrbitToArray(state.getOrbit(), PositionAngleType.MEAN, array[0], array[1]);
+          orbitParamsType.mapOrbitToArray(state.getOrbit(), PositionAngleType.MEAN, array[0], array[1]);
           return array;
       }
 
-    private SpacecraftState arrayToState(double[][] array, OrbitType orbitType,
+    private SpacecraftState arrayToState(double[][] array, OrbitParamsType orbitParamsType,
                                            Frame frame, AbsoluteDate date, double mu,
                                            Attitude attitude) {
-          EquinoctialOrbit orbit = (EquinoctialOrbit) orbitType.mapArrayToOrbit(array[0], array[1], PositionAngleType.MEAN, date, mu, frame);
+          EquinoctialOrbit orbit = (EquinoctialOrbit) orbitParamsType.mapArrayToOrbit(array[0], array[1], PositionAngleType.MEAN, date, mu, frame);
           return new SpacecraftState(orbit, attitude);
     }
 

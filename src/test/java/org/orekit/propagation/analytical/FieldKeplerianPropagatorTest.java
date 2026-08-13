@@ -58,7 +58,7 @@ import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldBoundedPropagator;
 import org.orekit.propagation.FieldEphemerisGenerator;
@@ -890,7 +890,7 @@ public class FieldKeplerianPropagatorTest {
 
     private <T extends CalculusFieldElement<T>> void doTestNoDerivatives(Field<T> field) {
         T zero = field.getZero();
-        for (OrbitType type : OrbitType.values()) {
+        for (OrbitParamsType type : OrbitParamsType.values()) {
 
             // create an initial orbit with non-Keplerian acceleration
             final FieldAbsoluteDate<T> date         = new FieldAbsoluteDate<>(field, 2003, 9, 16, TimeScalesFactory.getUTC());

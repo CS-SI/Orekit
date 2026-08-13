@@ -38,7 +38,7 @@ import org.orekit.models.earth.atmosphere.Atmosphere;
 import org.orekit.models.earth.atmosphere.SimpleExponentialAtmosphere;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.ToleranceProvider;
@@ -75,7 +75,7 @@ public class NumericalConverterTest {
         final ODEIntegratorBuilder dp54Builder = new DormandPrince54IntegratorBuilder(minStep, maxStep, dP);
         // Propagator builder
         final NumericalPropagatorBuilder builder =
-                        new NumericalPropagatorBuilder(OrbitType.CIRCULAR.convertType(orbit).
+                        new NumericalPropagatorBuilder(OrbitParamsType.CIRCULAR.convertType(orbit).
                                                        factory(PositionAngleType.TRUE, 1.0),
                                                        dp54Builder);
         builder.addForceModel(gravity);
@@ -93,7 +93,7 @@ public class NumericalConverterTest {
     @Test
     public void testOnlyCartesianAllowed() {
         NumericalPropagatorBuilder builder =
-                        new NumericalPropagatorBuilder(OrbitType.CIRCULAR.convertType(orbit).
+                        new NumericalPropagatorBuilder(OrbitParamsType.CIRCULAR.convertType(orbit).
                                                        factory(PositionAngleType.TRUE, 1.0),
                                                        new LutherIntegratorBuilder(100.0));
         builder.addForceModel(drag);
@@ -103,8 +103,8 @@ public class NumericalConverterTest {
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.ORBIT_TYPE_NOT_ALLOWED, oe.getSpecifier());
-            Assertions.assertEquals(OrbitType.CIRCULAR, oe.getParts()[0]);
-            Assertions.assertEquals(OrbitType.CARTESIAN, oe.getParts()[1]);
+            Assertions.assertEquals(OrbitParamsType.CIRCULAR, oe.getParts()[0]);
+            Assertions.assertEquals(OrbitParamsType.CARTESIAN, oe.getParts()[1]);
         }
     }
 
@@ -214,7 +214,7 @@ public class NumericalConverterTest {
         final ODEIntegratorBuilder dp54Builder = new DormandPrince54IntegratorBuilder(minStep, maxStep, dP);
         // Propagator builder
         final NumericalPropagatorBuilder builder =
-                        new NumericalPropagatorBuilder(OrbitType.CIRCULAR.convertType(orbit).
+                        new NumericalPropagatorBuilder(OrbitParamsType.CIRCULAR.convertType(orbit).
                                                        factory(PositionAngleType.TRUE, 1.0),
                                                        dp54Builder);
         builder.addForceModel(drag);
@@ -268,7 +268,7 @@ public class NumericalConverterTest {
         final ODEIntegratorBuilder dp54Builder = new DormandPrince54IntegratorBuilder(minStep, maxStep, dP);
         // Propagator builder
         final NumericalPropagatorBuilder builder =
-                        new NumericalPropagatorBuilder(OrbitType.CIRCULAR.convertType(orbit).
+                        new NumericalPropagatorBuilder(OrbitParamsType.CIRCULAR.convertType(orbit).
                                                        factory(PositionAngleType.TRUE, 1.0),
                                                        dp54Builder);
         for (ParameterDriver driver : builder.getOrbitalParameterFactory().getOrbitalParametersDrivers().getDrivers()) {
@@ -287,7 +287,7 @@ public class NumericalConverterTest {
         throws IOException, ParseException {
 
         NumericalPropagatorBuilder builder =
-                        new NumericalPropagatorBuilder(OrbitType.CARTESIAN.convertType(orbit).
+                        new NumericalPropagatorBuilder(OrbitParamsType.CARTESIAN.convertType(orbit).
                                                        factory(PositionAngleType.TRUE, dP),
                                                        new DormandPrince853IntegratorBuilder(minStep, maxStep, dP));
 
@@ -358,7 +358,7 @@ public class NumericalConverterTest {
 
     protected void checkFit(final ODEIntegratorBuilder foiBuilder) {
 
-        NumericalPropagatorBuilder builder = new NumericalPropagatorBuilder(OrbitType.CARTESIAN.convertType(orbit).
+        NumericalPropagatorBuilder builder = new NumericalPropagatorBuilder(OrbitParamsType.CARTESIAN.convertType(orbit).
                                                                             factory(PositionAngleType.TRUE, 1.0),
                                                                             foiBuilder);
 
@@ -416,10 +416,10 @@ public class NumericalConverterTest {
         orbit = new EquinoctialOrbit(new PVCoordinates(position,  velocity),
                                      FramesFactory.getEME2000(), initDate, mu);
 
-        final double[][] tol = ToleranceProvider.getDefaultToleranceProvider(dP).getTolerances(orbit, OrbitType.CARTESIAN);
+        final double[][] tol = ToleranceProvider.getDefaultToleranceProvider(dP).getTolerances(orbit, OrbitParamsType.CARTESIAN);
         propagator = new NumericalPropagator(new DormandPrince853Integrator(minStep, maxStep, tol[0], tol[1]));
         propagator.setInitialState(new SpacecraftState(orbit));
-        propagator.setOrbitType(OrbitType.CARTESIAN);
+        propagator.setOrbitParamsType(OrbitParamsType.CARTESIAN);
 
 
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,

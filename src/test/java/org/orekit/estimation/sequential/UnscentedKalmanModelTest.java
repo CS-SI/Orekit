@@ -42,7 +42,7 @@ import org.orekit.estimation.measurements.modifiers.Bias;
 import org.orekit.forces.maneuvers.ConstantThrustManeuver;
 import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
@@ -54,7 +54,7 @@ import org.orekit.utils.ParameterDriversList;
 public class UnscentedKalmanModelTest {
 
     /** Orbit type for propagation. */
-    private final OrbitType orbitType = OrbitType.CARTESIAN;
+    private final OrbitParamsType orbitParamsType = OrbitParamsType.CARTESIAN;
 
     /** Position angle for propagation. */
     private final PositionAngleType positionAngleType = PositionAngleType.TRUE;
@@ -108,7 +108,7 @@ public class UnscentedKalmanModelTest {
         ObservableSatellite sat = new ObservableSatellite(0);
 
         // Create propagator builder
-        this.propagatorBuilder = context.createNumerical(orbitType, positionAngleType, true,
+        this.propagatorBuilder = context.createNumerical(orbitParamsType, positionAngleType, true,
                                                        1.0e-6, 60.0, 10., Force.SOLAR_RADIATION_PRESSURE);
 
         // Create PV at t0
@@ -241,7 +241,7 @@ public class UnscentedKalmanModelTest {
         final RealVector x = model.getPhysicalEstimatedState();
         final RealVector expX = MatrixUtils.createRealVector(M);
         final double[] orbitState0 = new double[6];
-        orbitType.mapOrbitToArray(orbit0, positionAngleType, orbitState0, null);
+        orbitParamsType.mapOrbitToArray(orbit0, positionAngleType, orbitState0, null);
         expX.setSubVector(0, MatrixUtils.createRealVector(orbitState0));
         expX.setEntry(6, srpCoefDriver.getReferenceValue());
         expX.setEntry(7, satRangeBiasDriver.getReferenceValue());

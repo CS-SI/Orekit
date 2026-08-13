@@ -32,7 +32,7 @@ import org.orekit.frames.LOFType;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.EphemerisGenerator;
@@ -68,7 +68,7 @@ class SmallManeuverAnalyticalModelTest {
         BoundedPropagator withoutManeuver = getEphemeris(leo, mass, t0, Vector3D.ZERO, f, isp);
         BoundedPropagator withManeuver    = getEphemeris(leo, mass, t0, dV, f, isp);
         SmallManeuverAnalyticalModel model =
-                new SmallManeuverAnalyticalModel(withoutManeuver.propagate(t0), OrbitType.CIRCULAR, dV, isp);
+                new SmallManeuverAnalyticalModel(withoutManeuver.propagate(t0), OrbitParamsType.CIRCULAR, dV, isp);
         Assertions.assertEquals(t0, model.getDate());
 
         for (AbsoluteDate t = withoutManeuver.getMinDate();
@@ -117,7 +117,7 @@ class SmallManeuverAnalyticalModelTest {
         SpacecraftState stateWithoutManeuver = withoutManeuver.propagate(t0);
         Vector3D rotatedDV = stateWithoutManeuver.getAttitude().getRotation().applyInverseTo(dV);
         SmallManeuverAnalyticalModel model =
-                new SmallManeuverAnalyticalModel(stateWithoutManeuver, OrbitType.EQUINOCTIAL, leo.getFrame(), rotatedDV, isp);
+                new SmallManeuverAnalyticalModel(stateWithoutManeuver, OrbitParamsType.EQUINOCTIAL, leo.getFrame(), rotatedDV, isp);
         Assertions.assertEquals(t0, model.getDate());
 
         for (AbsoluteDate t = withoutManeuver.getMinDate();
@@ -214,9 +214,9 @@ class SmallManeuverAnalyticalModelTest {
         double f        = 400.0;
         double isp      = 315.0;
 
-        for (OrbitType orbitType : OrbitType.values()) {
+        for (OrbitParamsType orbitParamsType : OrbitParamsType.values()) {
             for (PositionAngleType positionAngleType : PositionAngleType.values()) {
-                BoundedPropagator withoutManeuver = getEphemeris(orbitType.convertType(leo), mass, t0, Vector3D.ZERO, f, isp);
+                BoundedPropagator withoutManeuver = getEphemeris(orbitParamsType.convertType(leo), mass, t0, Vector3D.ZERO, f, isp);
 
                 SpacecraftState state0 = withoutManeuver.propagate(t0);
                 SmallManeuverAnalyticalModel model = new SmallManeuverAnalyticalModel(state0, eme2000, dV0, isp);
@@ -253,7 +253,7 @@ class SmallManeuverAnalyticalModelTest {
                     // compute reference orbit gradient by finite differences
                     double c = 1.0 / (840 * h);
                     for (int j = 0; j < models.length; ++j) {
-                        orbitType.mapOrbitToArray(models[j].apply(orbitWithout), positionAngleType, array[j], null);
+                        orbitParamsType.mapOrbitToArray(models[j].apply(orbitWithout), positionAngleType, array[j], null);
                     }
                     double[] orbitGradient = new double[6];
                     for (int k = 0; k < orbitGradient.length; ++k) {
@@ -297,7 +297,7 @@ class SmallManeuverAnalyticalModelTest {
             new DormandPrince853Integrator(0.001, 1000, tolerances[0], tolerances[1]);
         integrator.setInitialStepSize(orbit.getKeplerianPeriod() / 100.0);
         final NumericalPropagator propagator = new NumericalPropagator(integrator);
-        propagator.setOrbitType(orbit.getType());
+        propagator.setOrbitParamsType(orbit.getType());
         propagator.setPositionAngleType(PositionAngleType.TRUE);
         propagator.setInitialState(initialState);
         propagator.setAttitudeProvider(law);

@@ -33,7 +33,7 @@ public abstract class AbstractOrbitalParameterFactory<P extends OrbitalParameter
     implements OrbitalParameterFactory<P> {
 
     /** Orbit type. */
-    private final OrbitType orbitType;
+    private final OrbitParamsType orbitParamsType;
 
     /** Drivers for orbital parameters. */
     private ParameterDriversList orbitalDrivers;
@@ -53,19 +53,19 @@ public abstract class AbstractOrbitalParameterFactory<P extends OrbitalParameter
     /**
      * Simple constructor.
      *
-     * @param orbitType         orbit type
+     * @param orbitParamsType         orbit type
      * @param orbitalDrivers    drivers for orbital parameters
      * @param frame             frame in which the orbital parameters are defined
      * @param positionAngleType position angle type to use
      * @param date              date of the orbital parameters
      * @param mu                central attraction coefficient (m³/s²)
      */
-    protected AbstractOrbitalParameterFactory(final OrbitType orbitType,
+    protected AbstractOrbitalParameterFactory(final OrbitParamsType orbitParamsType,
                                               final ParameterDriversList orbitalDrivers,
                                               final Frame frame,
                                               final PositionAngleType positionAngleType,
                                               final AbsoluteDate date, final double mu) {
-        this.orbitType         = orbitType;
+        this.orbitParamsType = orbitParamsType;
         this.orbitalDrivers    = orbitalDrivers;
         this.date              = date;
         this.frame             = frame;
@@ -75,8 +75,8 @@ public abstract class AbstractOrbitalParameterFactory<P extends OrbitalParameter
 
     /** {@inheritDoc} */
     @Override
-    public OrbitType getOrbitType() {
-        return orbitType;
+    public OrbitParamsType getOrbitParamsType() {
+        return orbitParamsType;
     }
 
     /** {@inheritDoc} */

@@ -34,7 +34,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.analytical.BrouwerLyddanePropagator;
 import org.orekit.propagation.analytical.tle.FieldTLE;
@@ -140,11 +140,11 @@ class OsculatingToMeanConverterTest {
         Assertions.assertEquals(FixedPointConverter.DEFAULT_THRESHOLD,        fpConverter.getThreshold(), 0.);
         Assertions.assertEquals(LeastSquaresConverter.DEFAULT_MAX_ITERATIONS, lsConverter.getMaxIterations(), 0);
         Assertions.assertEquals(LeastSquaresConverter.DEFAULT_THRESHOLD,      lsConverter.getThreshold(), 0.);
-        Assertions.assertEquals(fpMean.getType(),  OrbitType.KEPLERIAN);
+        Assertions.assertEquals(fpMean.getType(),  OrbitParamsType.KEPLERIAN);
         Assertions.assertEquals(fpMean.getDate(),  osculating.getDate());
         Assertions.assertEquals(fpMean.getFrame(), FramesFactory.getTEME());
         Assertions.assertEquals(fpMean.getMu(),    TLEConstants.MU);
-        Assertions.assertEquals(lsMean.getType(),  OrbitType.KEPLERIAN);
+        Assertions.assertEquals(lsMean.getType(),  OrbitParamsType.KEPLERIAN);
         Assertions.assertEquals(lsMean.getDate(),  osculating.getDate());
         Assertions.assertEquals(lsMean.getFrame(), FramesFactory.getTEME());
         Assertions.assertEquals(lsMean.getMu(),    TLEConstants.MU);
@@ -270,7 +270,7 @@ class OsculatingToMeanConverterTest {
         // THEN
         Assertions.assertNotEquals(0, fpConvert.getIterationsNb());
         if (theory.getTheoryName().contentEquals(EcksteinHechlerTheory.THEORY)) {
-            Assertions.assertEquals(OrbitType.CIRCULAR, fpMean.getType());
+            Assertions.assertEquals(OrbitParamsType.CIRCULAR, fpMean.getType());
         } else {
             Assertions.assertEquals(fpMean.getType(),  osculating.getType());
         }
@@ -312,7 +312,7 @@ class OsculatingToMeanConverterTest {
         Assertions.assertNotEquals(0, lsConvert.getIterationsNb());
         Assertions.assertNotEquals(0, lsConvert.getRMS());
         if (theory.getTheoryName().contentEquals(EcksteinHechlerTheory.THEORY)) {
-            Assertions.assertEquals(OrbitType.CIRCULAR, lsMean.getType());
+            Assertions.assertEquals(OrbitParamsType.CIRCULAR, lsMean.getType());
         } else {
             Assertions.assertEquals(lsMean.getType(),  osculating.getType());
         }

@@ -36,7 +36,7 @@ import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvide
 import org.orekit.orbits.FieldKeplerianAnomalyUtility;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.AbstractMatricesHarvester;
 import org.orekit.propagation.MatricesHarvester;
@@ -780,7 +780,7 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator imple
         // Set BL as the mean theory for converting
         final MeanTheory theory = new BrouwerLyddaneTheory(referenceRadius, mu, c20, c30, c40, c50, m2Value);
         converter.setMeanTheory(theory);
-        return (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(converter.convertToMean(osculating));
+        return (KeplerianOrbit) OrbitParamsType.KEPLERIAN.convertType(converter.convertToMean(osculating));
     }
 
     /** Conversion from osculating to mean orbit.
@@ -812,7 +812,7 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator imple
         // Set BL as the mean theory for converting
         final MeanTheory theory = new BrouwerLyddaneTheory(provider, m2Value);
         converter.setMeanTheory(theory);
-        return (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(converter.convertToMean(osculating));
+        return (KeplerianOrbit) OrbitParamsType.KEPLERIAN.convertType(converter.convertToMean(osculating));
     }
 
     /** {@inheritDoc}
@@ -859,13 +859,13 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator imple
                                   final PropagationType stateType,
                                   final OsculatingToMeanConverter converter) {
         super.resetInitialState(state);
-        KeplerianOrbit keplerian = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(state.getOrbit());
+        KeplerianOrbit keplerian = (KeplerianOrbit) OrbitParamsType.KEPLERIAN.convertType(state.getOrbit());
         if (stateType == PropagationType.OSCULATING) {
             final MeanTheory theory = new BrouwerLyddaneTheory(referenceRadius, mu,
                                                                ck0[2], ck0[3], ck0[4], ck0[5],
                                                                getM2());
             converter.setMeanTheory(theory);
-            keplerian = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(converter.convertToMean(keplerian));
+            keplerian = (KeplerianOrbit) OrbitParamsType.KEPLERIAN.convertType(converter.convertToMean(keplerian));
         }
         this.initialModel = new BLModel(keplerian, state.getMass(), referenceRadius, mu, ck0);
         this.models = new TimeSpanMap<>(initialModel);
@@ -907,7 +907,7 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator imple
                                                            ck0[2], ck0[3], ck0[4], ck0[5],
                                                            getM2());
         converter.setMeanTheory(theory);
-        final KeplerianOrbit mean = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(converter.convertToMean(state.getOrbit()));
+        final KeplerianOrbit mean = (KeplerianOrbit) OrbitParamsType.KEPLERIAN.convertType(converter.convertToMean(state.getOrbit()));
         final BLModel newModel = new BLModel(mean, state.getMass(), referenceRadius, mu, ck0);
         if (forward) {
             models.addValidAfter(newModel, state.getDate(), false);

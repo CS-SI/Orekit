@@ -30,7 +30,7 @@ import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.orbits.KeplerianOrbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.OrbitalParameters;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.generation.TleGenerationAlgorithm;
@@ -702,7 +702,7 @@ public class TLE implements OrbitalParameters {
                                  final OsculatingToMeanConverter converter,
                                  final DataContext dataContext) {
         converter.setMeanTheory(new TLETheory(generationAlgorithm.getTemplateTLE(), dataContext));
-        final KeplerianOrbit mean = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(converter.convertToMean(state.getOrbit()));
+        final KeplerianOrbit mean = (KeplerianOrbit) OrbitParamsType.KEPLERIAN.convertType(converter.convertToMean(state.getOrbit()));
         return TleGenerationUtil.newTLE(mean, generationAlgorithm.getTemplateTLE());
     }
 

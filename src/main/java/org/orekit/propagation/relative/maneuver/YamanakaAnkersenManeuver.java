@@ -20,7 +20,7 @@ package org.orekit.propagation.relative.maneuver;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.relative.yamanakaankersen.YamanakaAnkersenProvider;
 
@@ -50,7 +50,7 @@ public class YamanakaAnkersenManeuver extends AbstractRelativeManeuver<YamanakaA
     @Override
     public void resetTrueAnomalyAtManeuver(final Orbit orbit) {
         // Reset the TrueAnomaly of the spacecraft to the current true anomaly.
-        final KeplerianOrbit target = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(orbit);
+        final KeplerianOrbit target = (KeplerianOrbit) OrbitParamsType.KEPLERIAN.convertType(orbit);
         getRelativeProvider().setTargetTrueAnomaly(target.getTrueAnomaly());
     }
 }

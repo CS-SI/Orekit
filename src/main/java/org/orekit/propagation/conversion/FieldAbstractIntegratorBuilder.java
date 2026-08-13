@@ -22,7 +22,7 @@ import org.hipparchus.ode.AbstractFieldIntegrator;
 import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.utils.FieldAbsolutePVCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
@@ -46,17 +46,17 @@ public abstract class FieldAbstractIntegratorBuilder<T extends CalculusFieldElem
 
     /** {@inheritDoc} */
     @Override
-    public W buildIntegrator(final Field<T> field, final Orbit orbit, final OrbitType orbitType) {
-        return buildIntegrator(field, orbit, orbitType, PositionAngleType.MEAN);
+    public W buildIntegrator(final Field<T> field, final Orbit orbit, final OrbitParamsType orbitParamsType) {
+        return buildIntegrator(field, orbit, orbitParamsType, PositionAngleType.MEAN);
     }
 
     /** {@inheritDoc} */
-    public abstract W buildIntegrator(Field<T> field, Orbit orbit, OrbitType orbitType, PositionAngleType angleType);
+    public abstract W buildIntegrator(Field<T> field, Orbit orbit, OrbitParamsType orbitParamsType, PositionAngleType angleType);
 
     /** {@inheritDoc} */
     @Override
-    public W buildIntegrator(final FieldOrbit<T> orbit, final OrbitType orbitType) {
-        return buildIntegrator(orbit.getA().getField(), orbit.toOrbit(), orbitType);
+    public W buildIntegrator(final FieldOrbit<T> orbit, final OrbitParamsType orbitParamsType) {
+        return buildIntegrator(orbit.getA().getField(), orbit.toOrbit(), orbitParamsType);
     }
 
     /** {@inheritDoc} */
@@ -65,6 +65,6 @@ public abstract class FieldAbstractIntegratorBuilder<T extends CalculusFieldElem
         final TimeStampedFieldPVCoordinates<T> fieldPVCoordinates = fieldAbsolutePVCoordinates.getPVCoordinates();
         final FieldCartesianOrbit<T> fieldOrbit = new FieldCartesianOrbit<>(fieldPVCoordinates, fieldAbsolutePVCoordinates.getFrame(),
                 fieldAbsolutePVCoordinates.getDate().getField().getOne());
-        return buildIntegrator(fieldOrbit, OrbitType.CARTESIAN);
+        return buildIntegrator(fieldOrbit, OrbitParamsType.CARTESIAN);
     }
 }

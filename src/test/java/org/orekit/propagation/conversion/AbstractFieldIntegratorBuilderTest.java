@@ -27,7 +27,7 @@ import org.junit.jupiter.api.Test;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.FieldCartesianOrbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.FieldAbsolutePVCoordinates;
@@ -50,7 +50,7 @@ class AbstractFieldIntegratorBuilderTest {
         final CartesianOrbit orbit = new CartesianOrbit(absolutePVCoordinates.getPVCoordinates(), absolutePVCoordinates.getFrame(),
                 absolutePVCoordinates.getDate(), 1.);
         final FieldCartesianOrbit<Complex> fieldOrbit = new FieldCartesianOrbit<>(field, orbit);
-        final ClassicalRungeKuttaFieldIntegrator<Complex> expectedIntegrator = (ClassicalRungeKuttaFieldIntegrator<Complex>) builder.buildIntegrator(fieldOrbit, OrbitType.CARTESIAN);
+        final ClassicalRungeKuttaFieldIntegrator<Complex> expectedIntegrator = (ClassicalRungeKuttaFieldIntegrator<Complex>) builder.buildIntegrator(fieldOrbit, OrbitParamsType.CARTESIAN);
         Assertions.assertEquals(expectedIntegrator.getCurrentSignedStepsize(), actualIntegrator.getCurrentSignedStepsize());
     }
 

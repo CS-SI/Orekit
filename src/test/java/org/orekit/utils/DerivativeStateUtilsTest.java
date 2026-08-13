@@ -37,7 +37,7 @@ import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
@@ -48,23 +48,23 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class DerivativeStateUtilsTest {
 
     @ParameterizedTest
-    @EnumSource(OrbitType.class)
-    void testBuildOrbitGradient(final OrbitType orbitType) {
+    @EnumSource(OrbitParamsType.class)
+    void testBuildOrbitGradient(final OrbitParamsType orbitParamsType) {
         // GIVEN
-        final Orbit orbit = orbitType.convertType(TestUtils.getDefaultOrbit(AbsoluteDate.ARBITRARY_EPOCH));
+        final Orbit orbit = orbitParamsType.convertType(TestUtils.getDefaultOrbit(AbsoluteDate.ARBITRARY_EPOCH));
         final GradientField field = GradientField.getField(6);
         final PositionAngleType positionAngleType = PositionAngleType.TRUE;
         // WHEN
         final FieldOrbit<Gradient> fieldOrbit = DerivativeStateUtils.buildOrbitGradient(field, orbit);
         // THEN
         final double[] expected = new double[6];
-        orbitType.mapOrbitToArray(orbit, positionAngleType, expected, null);
+        orbitParamsType.mapOrbitToArray(orbit, positionAngleType, expected, null);
         final Gradient[] actual = MathArrays.buildArray(field, 6);
-        orbitType.mapOrbitToArray(fieldOrbit, positionAngleType, actual, null);
+        orbitParamsType.mapOrbitToArray(fieldOrbit, positionAngleType, actual, null);
         for (int i = 0; i < actual.length; i++) {
             assertEquals(expected[i], actual[i].getReal());
         }
-        switch (orbitType) {
+        switch (orbitParamsType) {
 
             case CARTESIAN:
                 assertEquals(1., fieldOrbit.getPosition().getX().getGradient()[0]);
@@ -120,7 +120,7 @@ class DerivativeStateUtilsTest {
     @ValueSource(ints = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15})
     void testBuildOrbitGradientCartesian(final int freeParameters) {
         // GIVEN
-        final Orbit orbit = OrbitType.CARTESIAN.convertType(TestUtils.getDefaultOrbit(AbsoluteDate.ARBITRARY_EPOCH));
+        final Orbit orbit = OrbitParamsType.CARTESIAN.convertType(TestUtils.getDefaultOrbit(AbsoluteDate.ARBITRARY_EPOCH));
         final GradientField field = GradientField.getField(freeParameters);
         // WHEN
         final FieldOrbit<Gradient> fieldOrbit = DerivativeStateUtils.buildOrbitGradient(field, orbit);
@@ -150,7 +150,7 @@ class DerivativeStateUtilsTest {
     @ValueSource(ints = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15})
     void testBuildOrbitGradientPV(final int freeParameters) {
         // GIVEN
-        final Orbit orbit = OrbitType.CARTESIAN.convertType(TestUtils.getDefaultOrbit(AbsoluteDate.ARBITRARY_EPOCH));
+        final Orbit orbit = OrbitParamsType.CARTESIAN.convertType(TestUtils.getDefaultOrbit(AbsoluteDate.ARBITRARY_EPOCH));
         final GradientField field = GradientField.getField(freeParameters);
         final AbsolutePVCoordinates pvCoordinates = new AbsolutePVCoordinates(orbit.getFrame(), orbit.getDate(),
                 orbit.getPVCoordinates());

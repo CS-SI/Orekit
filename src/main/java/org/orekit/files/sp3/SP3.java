@@ -393,7 +393,7 @@ public class SP3 implements EphemerisFile<SP3Coordinate, SP3Segment> {
 
         if (!(previous.header.getType()             == header.getType()                  &&
               previous.header.getTimeSystem()       == header.getTimeSystem()            &&
-              previous.header.getOrbitType()        == header.getOrbitType()             &&
+              previous.header.getOrbitParamsType()        == header.getOrbitParamsType()             &&
               previous.header.getCoordinateSystem().equals(header.getCoordinateSystem()) &&
               previous.header.getDataUsed().equals(header.getDataUsed())                 &&
               previous.header.getAgency().equals(header.getAgency()))) {

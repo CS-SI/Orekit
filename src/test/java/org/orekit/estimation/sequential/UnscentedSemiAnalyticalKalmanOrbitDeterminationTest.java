@@ -69,7 +69,7 @@ import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.EquinoctialOrbitFactory;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.PropagationType;
@@ -304,7 +304,7 @@ public class UnscentedSemiAnalyticalKalmanOrbitDeterminationTest {
         final ODEIntegratorBuilder integrator = new ClassicalRungeKuttaIntegratorBuilder(step);
 
         // Convert initial orbit in equinoctial elements
-        final EquinoctialOrbit equinoctial = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(orbit);
+        final EquinoctialOrbit equinoctial = (EquinoctialOrbit) OrbitParamsType.EQUINOCTIAL.convertType(orbit);
 
         // Initialize the numerical builder
         final DSSTPropagatorBuilder propagator =
@@ -497,7 +497,7 @@ public class UnscentedSemiAnalyticalKalmanOrbitDeterminationTest {
                                                                     final DSSTPropagatorBuilder propagatorBuilder,
                                                                     final Orbit orbit)  {
         // Jacobian of the orbital parameters w/r to Cartesian
-        final Orbit initialOrbit = OrbitType.EQUINOCTIAL.convertType(orbit);
+        final Orbit initialOrbit = OrbitParamsType.EQUINOCTIAL.convertType(orbit);
         final double[][] dYdC = new double[6][6];
         initialOrbit.getJacobianWrtCartesian(propagatorBuilder.getOrbitalParameterFactory().getPositionAngleType(),
                                              dYdC);

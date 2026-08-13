@@ -56,7 +56,7 @@ import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitHermiteInterpolator;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.AdditionalDataProvider;
 import org.orekit.propagation.OrbitBlender;
@@ -690,12 +690,12 @@ class EphemerisTest {
                 new OrbitBlender(blendingFunction, new KeplerianPropagator(initialState), inertialFrame);
 
         final TimeInterpolator<TimeStampedPair<Orbit, StateCovariance>> covarianceBlender =
-                new StateCovarianceBlender(blendingFunction, orbitBlender, inertialFrame, OrbitType.CARTESIAN,
+                new StateCovarianceBlender(blendingFunction, orbitBlender, inertialFrame, OrbitParamsType.CARTESIAN,
                                            PositionAngleType.MEAN);
 
         final TimeInterpolator<TimeStampedPair<Orbit, StateCovariance>> covarianceHermite =
                 new StateCovarianceKeplerianHermiteInterpolator(2, orbitBlender, CartesianDerivativesFilter.USE_PVA,
-                                                                inertialFrame, OrbitType.CARTESIAN, PositionAngleType.MEAN);
+                                                                inertialFrame, OrbitParamsType.CARTESIAN, PositionAngleType.MEAN);
 
         Ephemeris ephemerisUsingBlender = new Ephemeris(states, stateInterpolator, covariances, covarianceBlender);
         Ephemeris ephemerisUsingHermite = new Ephemeris(states, stateInterpolator, covariances, covarianceHermite);
@@ -758,7 +758,7 @@ class EphemerisTest {
                                                                                  { 0, 0, 0, 0, 1e-3, 0 },
                                                                                  { 0, 0, 0, 0, 0, 1e-3 }, });
 
-        return new StateCovariance(covarianceMatrix, date, frame, OrbitType.CARTESIAN, PositionAngleType.MEAN);
+        return new StateCovariance(covarianceMatrix, date, frame, OrbitParamsType.CARTESIAN, PositionAngleType.MEAN);
     }
 
     @Test

@@ -134,8 +134,8 @@ public class CartesianOrbit extends Orbit {
 
     /** {@inheritDoc} */
     @Override
-    public OrbitType getType() {
-        return OrbitType.CARTESIAN;
+    public OrbitParamsType getType() {
+        return OrbitParamsType.CARTESIAN;
     }
 
     /** {@inheritDoc} */

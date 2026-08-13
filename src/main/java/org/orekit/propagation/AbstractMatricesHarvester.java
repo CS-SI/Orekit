@@ -18,6 +18,7 @@ package org.orekit.propagation;
 
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.utils.DoubleArrayDictionary;
 
@@ -54,7 +55,7 @@ public abstract class AbstractMatricesHarvester implements MatricesHarvester {
     /** Set the initial State Transition Matrix.
      * <p>
      * The arguments for initial matrices <em>must</em> be compatible with the
-     * {@link org.orekit.orbits.OrbitType orbit type} and
+     * {@link OrbitParamsType orbit type} and
      * {@link PositionAngleType position angle} that will be used by propagator,
      * which may be different from input and output
      * </p>
@@ -74,7 +75,7 @@ public abstract class AbstractMatricesHarvester implements MatricesHarvester {
     /** Set the initial columns of the Jacobians matrix with respect to parameters.
      * <p>
      * The arguments for initial matrices <em>must</em> be compatible with the
-     * {@link org.orekit.orbits.OrbitType orbit type} and
+     * {@link OrbitParamsType orbit type} and
      * {@link PositionAngleType position angle} that will be used by propagator
      * </p>
      * @param initialJacobianColumns initial columns of the Jacobians matrix with respect to parameters,

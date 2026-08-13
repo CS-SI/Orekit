@@ -25,7 +25,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.SpacecraftState;
@@ -42,22 +42,22 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class LinearKeplerianCovarianceHandlerTest {
 
     @ParameterizedTest
-    @EnumSource(OrbitType.class)
-    void testPropagationLof(final OrbitType orbitType) {
-        testPropagationTemplate(LOFType.QSW, orbitType);
+    @EnumSource(OrbitParamsType.class)
+    void testPropagationLof(final OrbitParamsType orbitParamsType) {
+        testPropagationTemplate(LOFType.QSW, orbitParamsType);
     }
 
     @ParameterizedTest
     @EnumSource(value = LOFType.class, names = {"QSW", "TNW", "NTW", "LVLH"})
     void testPropagationLof(final LOFType lofType) {
-        testPropagationTemplate(lofType, OrbitType.CARTESIAN);
+        testPropagationTemplate(lofType, OrbitParamsType.CARTESIAN);
     }
 
-    private void testPropagationTemplate(final LOFType lofType, final OrbitType orbitType) {
+    private void testPropagationTemplate(final LOFType lofType, final OrbitParamsType orbitParamsType) {
         // GIVEN
         final Orbit initialOrbit = new EquinoctialOrbit(7e6, 0.0001, 0., 1., 2., 3., PositionAngleType.MEAN,
                 FramesFactory.getGCRF(), AbsoluteDate.ARBITRARY_EPOCH, Constants.EGM96_EARTH_MU);
-        final NumericalPropagator propagator = buildPropagator(initialOrbit, orbitType);
+        final NumericalPropagator propagator = buildPropagator(initialOrbit, orbitParamsType);
         final AbsoluteDate targetDate = initialOrbit.getDate().shiftedBy(1e4);
         final RealMatrix initialMatrix = MatrixUtils.createRealIdentityMatrix(6);
         initialMatrix.setSubMatrix(MatrixUtils.createRealIdentityMatrix(3).scalarMultiply(1e-2).getData(), 3, 3);
@@ -69,7 +69,7 @@ class LinearKeplerianCovarianceHandlerTest {
         final List<StateCovariance> covariances = covarianceHandler.getStatesCovariances();
         final StateCovariance actualTerminalCovariance = covariances.getLast();
         // THEN
-        final NumericalPropagator otherPropagator = buildPropagator(initialOrbit, orbitType);
+        final NumericalPropagator otherPropagator = buildPropagator(initialOrbit, orbitParamsType);
         final String stmName = "stm";
         final MatricesHarvester harvester = otherPropagator.setupMatricesComputation(stmName, null, null);
         final StateCovarianceMatrixProvider covarianceMatrixProvider = new StateCovarianceMatrixProvider("cov",
@@ -82,13 +82,13 @@ class LinearKeplerianCovarianceHandlerTest {
         assertEquals(0., difference.getNorm1(),expectedCovariance.getMatrix().getNorm1() * 1e-6);
     }
 
-    private static NumericalPropagator buildPropagator(final Orbit initialOrbit, final OrbitType orbitType) {
+    private static NumericalPropagator buildPropagator(final Orbit initialOrbit, final OrbitParamsType orbitParamsType) {
         final ToleranceProvider toleranceProvider = ToleranceProvider.getDefaultToleranceProvider(1e-3);
         final DormandPrince54IntegratorBuilder integratorBuilder = new DormandPrince54IntegratorBuilder(1e-3, 1e2, toleranceProvider);
-        final DormandPrince54Integrator integrator = integratorBuilder.buildIntegrator(initialOrbit, orbitType);
+        final DormandPrince54Integrator integrator = integratorBuilder.buildIntegrator(initialOrbit, orbitParamsType);
         final NumericalPropagator propagator = new NumericalPropagator(integrator);
         propagator.setInitialState(new SpacecraftState(initialOrbit));
-        propagator.setOrbitType(orbitType);
+        propagator.setOrbitParamsType(orbitParamsType);
         propagator.setPositionAngleType(PositionAngleType.MEAN);
         return propagator;
     }

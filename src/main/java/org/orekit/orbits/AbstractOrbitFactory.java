@@ -52,11 +52,11 @@ public abstract class AbstractOrbitFactory<P extends Orbit> extends AbstractOrbi
 
         // fix both frame and type
         final Orbit partiallyConverted = orbit.getFrame() == getFrame() ? orbit : orbit.inFrame(getFrame());
-        final Orbit fullyConverted     = getOrbitType().convertType(partiallyConverted);
+        final Orbit fullyConverted     = getOrbitParamsType().convertType(partiallyConverted);
 
         // retrieve orbital parameters
         final double[] stateVector = new double[6];
-        getOrbitType().mapOrbitToArray(fullyConverted, getPositionAngleType(), stateVector, null);
+        getOrbitParamsType().mapOrbitToArray(fullyConverted, getPositionAngleType(), stateVector, null);
 
         return stateVector;
 
@@ -64,7 +64,7 @@ public abstract class AbstractOrbitFactory<P extends Orbit> extends AbstractOrbi
 
     /** {@inheritDoc}
      * <p>
-     * The orbital parameters being a regular {@link OrbitType orbit type}, the Jacobian is
+     * The orbital parameters being a regular {@link OrbitParamsType orbit type}, the Jacobian is
      * the closed-form one provided by {@link Orbit#getJacobianWrtParameters(PositionAngleType, double[][])}.
      * </p>
      */

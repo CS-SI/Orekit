@@ -38,7 +38,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.AbstractPropagator;
 import org.orekit.propagation.MatricesHarvester;
@@ -93,7 +93,7 @@ import org.orekit.utils.TimeSpanMap.Span;
  * </ul>
  * <p>
  * From these configuration parameters, only the initial state is mandatory.
- * The default propagation settings are in {@link OrbitType#EQUINOCTIAL equinoctial}
+ * The default propagation settings are in {@link OrbitParamsType#EQUINOCTIAL equinoctial}
  * parameters with {@link PositionAngleType#TRUE true} longitude argument.
  * The central attraction coefficient used to define the initial orbit will be used.
  * However, specifying only the initial state would mean the propagator would use
@@ -211,7 +211,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         forceModels = new ArrayList<>();
         initMapper();
         // DSST uses only equinoctial orbits and mean longitude argument
-        setOrbitType(OrbitType.EQUINOCTIAL);
+        setOrbitParamsType(OrbitParamsType.EQUINOCTIAL);
         setPositionAngleType(PositionAngleType.MEAN);
         setAttitudeProvider(attitudeProvider);
         setInterpolationGridToFixedNumberOfPoints(INTERPOLATION_POINTS_PER_STEP);
@@ -627,8 +627,8 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      * @return orbit type used for propagation
      */
     @Override
-    public OrbitType getOrbitType() {
-        return super.getOrbitType();
+    public OrbitParamsType getOrbitParamsType() {
+        return super.getOrbitParamsType();
     }
 
     /** Get propagation parameter type.
@@ -896,7 +896,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
 
         final double[] mean = new double[6];
         final double[] meanDot = new double[6];
-        OrbitType.EQUINOCTIAL.mapOrbitToArray(meanState.getOrbit(), PositionAngleType.MEAN, mean, meanDot);
+        OrbitParamsType.EQUINOCTIAL.mapOrbitToArray(meanState.getOrbit(), PositionAngleType.MEAN, mean, meanDot);
         final double[] y = mean.clone();
         for (final ShortPeriodTerms spt : shortPeriodTerms) {
             final double[] shortPeriodic = spt.value(meanState.getOrbit());
@@ -904,7 +904,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
                 y[i] += shortPeriodic[i];
             }
         }
-        return (EquinoctialOrbit) OrbitType.EQUINOCTIAL.mapArrayToOrbit(y, meanDot,
+        return (EquinoctialOrbit) OrbitParamsType.EQUINOCTIAL.mapArrayToOrbit(y, meanDot,
                                                                         PositionAngleType.MEAN, meanState.getDate(),
                                                                         meanState.getOrbit().getMu(), meanState.getFrame());
     }
@@ -924,14 +924,14 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
 
     /** {@inheritDoc}
      * <p>
-     * Note that for DSST, orbit type is hardcoded to {@link OrbitType#EQUINOCTIAL}
+     * Note that for DSST, orbit type is hardcoded to {@link OrbitParamsType#EQUINOCTIAL}
      * and position angle type is hardcoded to {@link PositionAngleType#MEAN}, so
      * the corresponding parameters are ignored.
      * </p>
      */
     @Override
     protected StateMapper createMapper(final AbsoluteDate referenceDate, final double mu,
-                                       final OrbitType ignoredOrbitType, final PositionAngleType ignoredPositionAngleType,
+                                       final OrbitParamsType ignoredOrbitParamsType, final PositionAngleType ignoredPositionAngleType,
                                        final AttitudeProvider attitudeProvider, final Frame frame) {
 
         // create a mapper with the common settings provided as arguments
@@ -1001,7 +1001,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         MeanPlusShortPeriodicMapper(final AbsoluteDate referenceDate, final double mu,
                                     final AttitudeProvider attitudeProvider, final Frame frame) {
 
-            super(referenceDate, mu, OrbitType.EQUINOCTIAL, PositionAngleType.MEAN, attitudeProvider, frame);
+            super(referenceDate, mu, OrbitParamsType.EQUINOCTIAL, PositionAngleType.MEAN, attitudeProvider, frame);
 
             this.selectedCoefficients = null;
 
@@ -1026,7 +1026,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
             if (type == PropagationType.MEAN) {
                 coefficients = null;
             } else {
-                final Orbit meanOrbit = OrbitType.EQUINOCTIAL.mapArrayToOrbit(elements, yDot, PositionAngleType.MEAN, date, getMu(), getFrame());
+                final Orbit meanOrbit = OrbitParamsType.EQUINOCTIAL.mapArrayToOrbit(elements, yDot, PositionAngleType.MEAN, date, getMu(), getFrame());
                 coefficients = selectedCoefficients == null ? null : new DataDictionary();
                 for (final ShortPeriodTerms spt : shortPeriodTerms) {
                     final double[] shortPeriodic = spt.value(meanOrbit);
@@ -1044,7 +1044,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
                 throw new OrekitException(OrekitMessages.NOT_POSITIVE_SPACECRAFT_MASS, mass);
             }
 
-            final Orbit orbit       = OrbitType.EQUINOCTIAL.mapArrayToOrbit(elements, yDot, PositionAngleType.MEAN, date, getMu(), getFrame());
+            final Orbit orbit       = OrbitParamsType.EQUINOCTIAL.mapArrayToOrbit(elements, yDot, PositionAngleType.MEAN, date, getMu(), getFrame());
             final Attitude attitude = getAttitudeProvider().getAttitude(orbit, date, getFrame());
 
             return new SpacecraftState(orbit, attitude, mass, coefficients, null);
@@ -1055,7 +1055,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         @Override
         public void mapStateToArray(final SpacecraftState state, final double[] y, final double[] yDot) {
 
-            OrbitType.EQUINOCTIAL.mapOrbitToArray(state.getOrbit(), PositionAngleType.MEAN, y, yDot);
+            OrbitParamsType.EQUINOCTIAL.mapOrbitToArray(state.getOrbit(), PositionAngleType.MEAN, y, yDot);
             y[6] = state.getMass();
 
         }

@@ -18,7 +18,7 @@ package org.orekit.propagation.conversion;
 
 import org.hipparchus.ode.nonstiff.ThreeEighthesIntegrator;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 
 /** Builder for ThreeEighthesIntegrator.
@@ -37,7 +37,7 @@ public class ThreeEighthesIntegratorBuilder extends AbstractFixedSingleStepInteg
 
     /** {@inheritDoc} */
     @Override
-    public ThreeEighthesIntegrator buildIntegrator(final Orbit orbit, final OrbitType orbitType,
+    public ThreeEighthesIntegrator buildIntegrator(final Orbit orbit, final OrbitParamsType orbitParamsType,
                                                    final PositionAngleType angleType) {
         return new ThreeEighthesIntegrator(getStep());
     }

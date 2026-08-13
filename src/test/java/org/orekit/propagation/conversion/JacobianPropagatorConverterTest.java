@@ -46,7 +46,7 @@ import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.CartesianOrbitFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -122,7 +122,7 @@ public class JacobianPropagatorConverterTest {
         // as the test is based on external differentiation using finite differences,
         // an adaptive step size integrator would introduce *lots* of numerical noise
         NumericalPropagatorBuilder builder =
-                        new NumericalPropagatorBuilder(new CartesianOrbitFactory((CartesianOrbit) OrbitType.CARTESIAN.convertType(orbit),
+                        new NumericalPropagatorBuilder(new CartesianOrbitFactory((CartesianOrbit) OrbitParamsType.CARTESIAN.convertType(orbit),
                                                                                  dP),
                                                        new LutherIntegratorBuilder(10.0));
         builder.setMass(200.0);

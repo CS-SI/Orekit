@@ -39,7 +39,7 @@ import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -484,11 +484,11 @@ class EventDetectorTest {
     }
 
     private Propagator buildNumerical(final Orbit orbit) {
-        OrbitType           type       = OrbitType.CARTESIAN;
+        OrbitParamsType type       = OrbitParamsType.CARTESIAN;
         double[][]          tol        = ToleranceProvider.getDefaultToleranceProvider(0.0001).getTolerances(orbit, type);
         ODEIntegrator       integrator = new DormandPrince853Integrator(0.0001, 10.0, tol[0], tol[1]);
         NumericalPropagator propagator = new NumericalPropagator(integrator);
-        propagator.setOrbitType(type);
+        propagator.setOrbitParamsType(type);
         propagator.setInitialState(new SpacecraftState(orbit));
         return propagator;
     }

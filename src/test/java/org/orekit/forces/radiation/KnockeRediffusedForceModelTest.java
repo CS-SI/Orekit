@@ -41,7 +41,7 @@ import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
@@ -147,13 +147,13 @@ class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
                                          0, PositionAngleType.MEAN, FramesFactory.getEME2000(), date,
                                          Constants.EIGEN5C_EARTH_MU);
-        OrbitType integrationType = OrbitType.CARTESIAN;
+        OrbitParamsType integrationType = OrbitParamsType.CARTESIAN;
         double[][] tolerances = ToleranceProvider.getDefaultToleranceProvider(0.01).getTolerances(orbit, integrationType);
 
         NumericalPropagator propagator =
                 new NumericalPropagator(new DormandPrince853Integrator(1.0e-3, 120,
                                                                        tolerances[0], tolerances[1]));
-        propagator.setOrbitType(integrationType);
+        propagator.setOrbitParamsType(integrationType);
 
         // Sun
         final ExtendedPositionProvider sun = CelestialBodyFactory.getSun();
@@ -212,15 +212,15 @@ class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
                         new ClassicalRungeKuttaFieldIntegrator<>(field, zero.add(6));
         ClassicalRungeKuttaIntegrator RIntegrator =
                         new ClassicalRungeKuttaIntegrator(6);
-        OrbitType type = OrbitType.KEPLERIAN;
+        OrbitParamsType type = OrbitParamsType.KEPLERIAN;
 
         // Field and classical numerical propagators
         FieldNumericalPropagator<DerivativeStructure> FNP = new FieldNumericalPropagator<>(integrator);
-        FNP.setOrbitType(type);
+        FNP.setOrbitParamsType(type);
         FNP.setInitialState(initialState);
 
         NumericalPropagator NP = new NumericalPropagator(RIntegrator);
-        NP.setOrbitType(type);
+        NP.setOrbitParamsType(type);
         NP.setInitialState(iSR);
 
         // Sun
@@ -282,15 +282,15 @@ class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
                         new ClassicalRungeKuttaFieldIntegrator<>(field, zero.add(6));
         final ClassicalRungeKuttaIntegrator RIntegrator =
                         new ClassicalRungeKuttaIntegrator(6);
-        final OrbitType type = OrbitType.KEPLERIAN;
+        final OrbitParamsType type = OrbitParamsType.KEPLERIAN;
 
         // Field and classical numerical propagators
         final FieldNumericalPropagator<Gradient> FNP = new FieldNumericalPropagator<>(integrator);
-        FNP.setOrbitType(type);
+        FNP.setOrbitParamsType(type);
         FNP.setInitialState(initialState);
 
         final NumericalPropagator NP = new NumericalPropagator(RIntegrator);
-        NP.setOrbitType(type);
+        NP.setOrbitParamsType(type);
         NP.setInitialState(iSR);
 
         // Sun
@@ -331,7 +331,7 @@ class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
                                  "2 08820 109.8332 127.3884 0044194 201.3006 158.6132 06.38663945018402");
 
         // Orbit
-        final KeplerianOrbit keplerianTLE = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(TLEPropagator.selectExtrapolator(tle).
+        final KeplerianOrbit keplerianTLE = (KeplerianOrbit) OrbitParamsType.KEPLERIAN.convertType(TLEPropagator.selectExtrapolator(tle).
                                                                                       propagate(tle.getDate()).getOrbit());
         final double a    = keplerianTLE.getA();
         final double e    = keplerianTLE.getE();
@@ -375,7 +375,7 @@ class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
         final double maxStep = duration * 0.5;
         final double handlerStep = duration / 20;
         final double positionTolerance = 1e-3;
-        final double[][] tolerances = ToleranceProvider.getDefaultToleranceProvider(positionTolerance).getTolerances(keplerian, OrbitType.KEPLERIAN);
+        final double[][] tolerances = ToleranceProvider.getDefaultToleranceProvider(positionTolerance).getTolerances(keplerian, OrbitParamsType.KEPLERIAN);
         AdaptiveStepsizeIntegrator integrator =
             new DormandPrince853Integrator(minStep, maxStep, tolerances[0], tolerances[1]);
 

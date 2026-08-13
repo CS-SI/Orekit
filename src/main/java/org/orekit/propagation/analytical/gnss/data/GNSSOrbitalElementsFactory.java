@@ -30,7 +30,7 @@ import org.orekit.orbits.FieldKeplerianParameters;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.KeplerianParameters;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.gnss.FieldGnssPropagator;
@@ -128,7 +128,7 @@ public abstract class GNSSOrbitalElementsFactory<O extends GNSSOrbitalElements<O
     protected GNSSOrbitalElementsFactory(final double angularVelocity, final TimeScales timeScales,
                                          final SatelliteSystem system, final String type,
                                          final Frame inertial, final Frame bodyFixed, final double mu) {
-        super(OrbitType.KEPLERIAN, buildOrbitalDrivers(), null, PositionAngleType.MEAN, null, mu);
+        super(OrbitParamsType.KEPLERIAN, buildOrbitalDrivers(), null, PositionAngleType.MEAN, null, mu);
 
         // immutable fields
         this.angularVelocity = angularVelocity;
@@ -421,11 +421,11 @@ public abstract class GNSSOrbitalElementsFactory<O extends GNSSOrbitalElements<O
 
         // fix both frame and type
         final Orbit partiallyConverted = orbit.getFrame() == getFrame() ? orbit : orbit.inFrame(getFrame());
-        final Orbit fullyConverted     = OrbitType.KEPLERIAN.convertType(partiallyConverted);
+        final Orbit fullyConverted     = OrbitParamsType.KEPLERIAN.convertType(partiallyConverted);
 
         // retrieve orbital parameters
         final double[] stateVector = new double[6];
-        OrbitType.KEPLERIAN.mapOrbitToArray(fullyConverted, PositionAngleType.MEAN, stateVector, null);
+        OrbitParamsType.KEPLERIAN.mapOrbitToArray(fullyConverted, PositionAngleType.MEAN, stateVector, null);
 
         return stateVector;
 
@@ -457,7 +457,7 @@ public abstract class GNSSOrbitalElementsFactory<O extends GNSSOrbitalElements<O
 
         // set up the six orbital elements as the free variables of the gradients
         final GradientField field = GradientField.getField(DEFAULT_STATE_DIMENSION);
-        final KeplerianOrbit orbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(elements.getOrbit());
+        final KeplerianOrbit orbit = (KeplerianOrbit) OrbitParamsType.KEPLERIAN.convertType(elements.getOrbit());
         final FieldKeplerianOrbit<Gradient> gOrbit =
             new FieldKeplerianOrbit<>(new FieldKeplerianParameters<>(Gradient.variable(DEFAULT_STATE_DIMENSION, 0, orbit.getA()),
                                                                      Gradient.variable(DEFAULT_STATE_DIMENSION, 1, orbit.getE()),

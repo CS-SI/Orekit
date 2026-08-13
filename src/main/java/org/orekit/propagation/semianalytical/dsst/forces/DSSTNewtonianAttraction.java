@@ -26,7 +26,7 @@ import org.hipparchus.util.MathArrays;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.FieldEquinoctialOrbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
@@ -127,7 +127,7 @@ public class DSSTNewtonianAttraction implements DSSTForceModel {
         final DSSTNewtonianAttractionContext context = initializeStep(auxiliaryElements, parameters);
 
         final double[] yDot = new double[7];
-        final EquinoctialOrbit orbit = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(state.getOrbit());
+        final EquinoctialOrbit orbit = (EquinoctialOrbit) OrbitParamsType.EQUINOCTIAL.convertType(state.getOrbit());
         orbit.addKeplerContribution(PositionAngleType.MEAN, context.getGM(), yDot);
 
         return yDot;
@@ -146,7 +146,7 @@ public class DSSTNewtonianAttraction implements DSSTForceModel {
         final FieldDSSTNewtonianAttractionContext<T> context = initializeStep(auxiliaryElements, parameters);
 
         final T[] yDot = MathArrays.buildArray(field, 7);
-        final FieldEquinoctialOrbit<T> orbit = (FieldEquinoctialOrbit<T>) OrbitType.EQUINOCTIAL.convertType(state.getOrbit());
+        final FieldEquinoctialOrbit<T> orbit = (FieldEquinoctialOrbit<T>) OrbitParamsType.EQUINOCTIAL.convertType(state.getOrbit());
         orbit.addKeplerContribution(PositionAngleType.MEAN, context.getGM(), yDot);
 
         return yDot;

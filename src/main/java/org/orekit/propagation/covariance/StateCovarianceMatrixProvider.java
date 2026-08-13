@@ -19,7 +19,7 @@ package org.orekit.propagation.covariance;
 import org.hipparchus.linear.RealMatrix;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.AdditionalDataProvider;
 import org.orekit.propagation.MatricesHarvester;
@@ -68,13 +68,13 @@ public class StateCovarianceMatrixProvider implements AdditionalDataProvider<Rea
     private final String additionalName;
 
     /** Orbit type used for the State Transition Matrix. */
-    private final OrbitType stmOrbitType;
+    private final OrbitParamsType stmOrbitParamsType;
 
     /** Position angle used for State Transition Matrix. */
     private final PositionAngleType stmAngleType;
 
     /** Orbit type for the covariance matrix. */
-    private final OrbitType covOrbitType;
+    private final OrbitParamsType covOrbitParamsType;
 
     /** Position angle used for the covariance matrix. */
     private final PositionAngleType covAngleType;
@@ -101,9 +101,9 @@ public class StateCovarianceMatrixProvider implements AdditionalDataProvider<Rea
         this.stmName        = stmName;
         this.harvester      = harvester;
         this.covRef         = covRef;
-        this.covOrbitType   = covRef.getOrbitType();
+        this.covOrbitParamsType = covRef.getOrbitParamsType();
         this.covAngleType   = covRef.getPositionAngleType();
-        this.stmOrbitType   = harvester.getOrbitType();
+        this.stmOrbitParamsType = harvester.getOrbitParamsType();
         this.stmAngleType   = harvester.getPositionAngleType();
     }
 
@@ -120,7 +120,7 @@ public class StateCovarianceMatrixProvider implements AdditionalDataProvider<Rea
             // Convert the initial state covariance in the same orbit type and frame as the STM
             final Orbit initialOrbit = initialState.getOrbit();
             StateCovariance covariance = covRef.changeCovarianceFrame(initialOrbit, initialState.getFrame());
-            covariance = covariance.changeCovarianceType(initialOrbit, stmOrbitType, stmAngleType);
+            covariance = covariance.changeCovarianceType(initialOrbit, stmOrbitParamsType, stmAngleType);
             covMatrixRef = covariance.getMatrix();
         }
     }
@@ -146,10 +146,10 @@ public class StateCovarianceMatrixProvider implements AdditionalDataProvider<Rea
 
         // Compute the propagated covariance matrix
         RealMatrix propCov = dYdY0.multiply(covMatrixRef.multiplyTransposed(dYdY0));
-        final StateCovariance propagated = new StateCovariance(propCov, state.getDate(), state.getFrame(), stmOrbitType, stmAngleType);
+        final StateCovariance propagated = new StateCovariance(propCov, state.getDate(), state.getFrame(), stmOrbitParamsType, stmAngleType);
 
         // Update to the user defined type
-        propCov = propagated.changeCovarianceType(state.getOrbit(), covOrbitType, covAngleType).getMatrix();
+        propCov = propagated.changeCovarianceType(state.getOrbit(), covOrbitParamsType, covAngleType).getMatrix();
 
         // Return the propagated covariance matrix
         return propCov;
@@ -161,8 +161,8 @@ public class StateCovarianceMatrixProvider implements AdditionalDataProvider<Rea
      *
      * @return the orbit type
      */
-    public OrbitType getCovarianceOrbitType() {
-        return covOrbitType;
+    public OrbitParamsType getCovarianceOrbitType() {
+        return covOrbitParamsType;
     }
 
     /**
@@ -172,7 +172,7 @@ public class StateCovarianceMatrixProvider implements AdditionalDataProvider<Rea
      * @param state spacecraft state to which the covariance matrix should correspond
      * @return the state covariance
      * @see #getStateCovariance(SpacecraftState, Frame)
-     * @see #getStateCovariance(SpacecraftState, OrbitType, PositionAngleType)
+     * @see #getStateCovariance(SpacecraftState, OrbitParamsType, PositionAngleType)
      */
     public StateCovariance getStateCovariance(final SpacecraftState state) {
 
@@ -181,7 +181,7 @@ public class StateCovarianceMatrixProvider implements AdditionalDataProvider<Rea
 
         // Create associated state covariance
         final StateCovariance covariance =
-                new StateCovariance(covarianceMatrix, state.getDate(), state.getFrame(), covOrbitType, covAngleType);
+                new StateCovariance(covarianceMatrix, state.getDate(), state.getFrame(), covOrbitParamsType, covAngleType);
 
         // Return the state covariance in same frame/lof as reference covariance
         if (covRef.getLOF() == null) {
@@ -202,7 +202,7 @@ public class StateCovarianceMatrixProvider implements AdditionalDataProvider<Rea
      * @param frame output frame for which the output covariance matrix must be expressed (must be inertial)
      * @return the state covariance expressed in <code>frame</code>
      * @see #getStateCovariance(SpacecraftState)
-     * @see #getStateCovariance(SpacecraftState, OrbitType, PositionAngleType)
+     * @see #getStateCovariance(SpacecraftState, OrbitParamsType, PositionAngleType)
      */
     public StateCovariance getStateCovariance(final SpacecraftState state, final Frame frame) {
         // Return the converted covariance
@@ -213,15 +213,15 @@ public class StateCovarianceMatrixProvider implements AdditionalDataProvider<Rea
      * Get the state covariance expressed in a given orbit type.
      *
      * @param state spacecraft state to which the covariance matrix should correspond
-     * @param orbitType output orbit type
+     * @param orbitParamsType output orbit type
      * @param angleType output position angle (not used if orbitType equals {@code CARTESIAN})
      * @return the state covariance in <code>orbitType</code> and <code>angleType</code>
      * @see #getStateCovariance(SpacecraftState)
      * @see #getStateCovariance(SpacecraftState, Frame)
      */
-    public StateCovariance getStateCovariance(final SpacecraftState state, final OrbitType orbitType,
+    public StateCovariance getStateCovariance(final SpacecraftState state, final OrbitParamsType orbitParamsType,
                                               final PositionAngleType angleType) {
         // Return the converted covariance
-        return getStateCovariance(state).changeCovarianceType(state.getOrbit(), orbitType, angleType);
+        return getStateCovariance(state).changeCovarianceType(state.getOrbit(), orbitParamsType, angleType);
     }
 }

@@ -40,7 +40,7 @@ import org.orekit.estimation.measurements.modifiers.DynamicOutlierFilter;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
@@ -72,7 +72,7 @@ public class SemiAnalyticalKalmanEstimatorTest {
         // Create context
         Context context = EstimationTestUtils.dsstEccentricContext("regular-data:potential:tides");
         // Create initial orbit and DSST propagator builder
-        final OrbitType     orbitType     = OrbitType.EQUINOCTIAL;
+        final OrbitParamsType orbitParamsType = OrbitParamsType.EQUINOCTIAL;
         final boolean       perfectStart  = true;
         final double        minStep       = 120.0;
         final double        maxStep       = 1200.0;
@@ -96,7 +96,7 @@ public class SemiAnalyticalKalmanEstimatorTest {
         });
 
         // Jacobian of the orbital parameters w/r to Cartesian
-        final Orbit initialOrbit = orbitType.convertType(context.initialOrbit);
+        final Orbit initialOrbit = orbitParamsType.convertType(context.initialOrbit);
         final double[][] dYdC = new double[6][6];
         initialOrbit.getJacobianWrtCartesian(PositionAngleType.MEAN, dYdC);
         final RealMatrix Jac = MatrixUtils.createRealMatrix(dYdC);
@@ -138,7 +138,7 @@ public class SemiAnalyticalKalmanEstimatorTest {
         Context context = EstimationTestUtils.dsstEccentricContext("regular-data:potential:tides");
 
         // Create initial orbit and DSST propagator builder
-        final OrbitType     orbitType     = OrbitType.EQUINOCTIAL;
+        final OrbitParamsType orbitParamsType = OrbitParamsType.EQUINOCTIAL;
         final boolean       perfectStart  = true;
         final double        minStep       = 120.0;
         final double        maxStep       = 1200.0;
@@ -171,7 +171,7 @@ public class SemiAnalyticalKalmanEstimatorTest {
         });
 
         // Jacobian of the orbital parameters w/r to Cartesian
-        final Orbit initialOrbit = orbitType.convertType(context.initialOrbit);
+        final Orbit initialOrbit = orbitParamsType.convertType(context.initialOrbit);
         final double[][] dYdC = new double[6][6];
         initialOrbit.getJacobianWrtCartesian(PositionAngleType.MEAN, dYdC);
         final RealMatrix Jac = MatrixUtils.createRealMatrix(dYdC);
@@ -229,7 +229,7 @@ public class SemiAnalyticalKalmanEstimatorTest {
         Context context = EstimationTestUtils.dsstEccentricContext("regular-data:potential:tides");
 
         // Create initial orbit and propagator builder
-        final OrbitType     orbitType     = OrbitType.EQUINOCTIAL;
+        final OrbitParamsType orbitParamsType = OrbitParamsType.EQUINOCTIAL;
         final boolean       perfectStart  = true;
         final double        minStep       = 120.0;
         final double        maxStep       = 1200.0;
@@ -269,7 +269,7 @@ public class SemiAnalyticalKalmanEstimatorTest {
         });
 
         // Jacobian of the orbital parameters w/r to Cartesian
-        final Orbit initialOrbit = orbitType.convertType(context.initialOrbit);
+        final Orbit initialOrbit = orbitParamsType.convertType(context.initialOrbit);
         final double[][] dYdC = new double[6][6];
         initialOrbit.getJacobianWrtCartesian(PositionAngleType.TRUE, dYdC);
         final RealMatrix Jac = MatrixUtils.createRealMatrix(dYdC);
@@ -328,7 +328,7 @@ public class SemiAnalyticalKalmanEstimatorTest {
         Context context = EstimationTestUtils.dsstEccentricContext("regular-data:potential:tides");
 
         // Create initial orbit and propagator builder
-        final OrbitType     orbitType     = OrbitType.EQUINOCTIAL;
+        final OrbitParamsType orbitParamsType = OrbitParamsType.EQUINOCTIAL;
         final boolean       perfectStart  = true;
         final double        minStep       = 120.0;
         final double        maxStep       = 1200.0;
@@ -378,7 +378,7 @@ public class SemiAnalyticalKalmanEstimatorTest {
         });
 
         // Jacobian of the orbital parameters w/r to Cartesian
-        final Orbit initialOrbit = orbitType.convertType(context.initialOrbit);
+        final Orbit initialOrbit = orbitParamsType.convertType(context.initialOrbit);
         final double[][] dYdC = new double[6][6];
         initialOrbit.getJacobianWrtCartesian(PositionAngleType.TRUE, dYdC);
         final RealMatrix Jac = MatrixUtils.createRealMatrix(dYdC);
@@ -467,7 +467,7 @@ public class SemiAnalyticalKalmanEstimatorTest {
         Context context = EstimationTestUtils.dsstEccentricContext("regular-data:potential:tides");
 
         // Create initial orbit and propagator builder
-        final OrbitType     orbitType     = OrbitType.EQUINOCTIAL;
+        final OrbitParamsType orbitParamsType = OrbitParamsType.EQUINOCTIAL;
         final boolean       perfectStart  = true;
         final double        minStep       = 120.0;
         final double        maxStep       = 1200.0;
@@ -510,7 +510,7 @@ public class SemiAnalyticalKalmanEstimatorTest {
         });
 
         // Jacobian of the orbital parameters w/r to Cartesian
-        final Orbit initialOrbit = orbitType.convertType(context.initialOrbit);
+        final Orbit initialOrbit = orbitParamsType.convertType(context.initialOrbit);
         final double[][] dYdC = new double[6][6];
         initialOrbit.getJacobianWrtCartesian(PositionAngleType.TRUE, dYdC);
         final RealMatrix Jac = MatrixUtils.createRealMatrix(dYdC);
@@ -564,7 +564,7 @@ public class SemiAnalyticalKalmanEstimatorTest {
         Context context = EstimationTestUtils.dsstEccentricContext("regular-data:potential:tides");
 
         // Create initial orbit and propagator builder
-        final OrbitType     orbitType     = OrbitType.EQUINOCTIAL;
+        final OrbitParamsType orbitParamsType = OrbitParamsType.EQUINOCTIAL;
         final boolean       perfectStart  = true;
         final double        minStep       = 120.0;
         final double        maxStep       = 1200.0;
@@ -615,7 +615,7 @@ public class SemiAnalyticalKalmanEstimatorTest {
         });
 
         // Jacobian of the orbital parameters w/r to Cartesian
-        final Orbit initialOrbit = orbitType.convertType(context.initialOrbit);
+        final Orbit initialOrbit = orbitParamsType.convertType(context.initialOrbit);
         final double[][] dYdC = new double[6][6];
         initialOrbit.getJacobianWrtCartesian(PositionAngleType.TRUE, dYdC);
         final RealMatrix Jac = MatrixUtils.createRealMatrix(dYdC);

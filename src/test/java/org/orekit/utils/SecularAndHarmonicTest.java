@@ -54,7 +54,7 @@ import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -329,7 +329,7 @@ public class SecularAndHarmonicTest {
     }
 
     private NumericalPropagator createPropagator(CircularOrbit orbit) {
-        OrbitType type = OrbitType.CIRCULAR;
+        OrbitParamsType type = OrbitParamsType.CIRCULAR;
         double[][] tolerances = ToleranceProvider.getDefaultToleranceProvider(0.1).getTolerances(orbit, type);
         DormandPrince853Integrator integrator =
                 new DormandPrince853Integrator(1.0, 600, tolerances[0], tolerances[1]);
@@ -338,7 +338,7 @@ public class SecularAndHarmonicTest {
         propagator.addForceModel(new HolmesFeatherstoneAttractionModel(earth.getBodyFrame(), gravityField));
         propagator.addForceModel(new ThirdBodyAttraction(CelestialBodyFactory.getSun()));
         propagator.addForceModel(new ThirdBodyAttraction(CelestialBodyFactory.getMoon()));
-        propagator.setOrbitType(type);
+        propagator.setOrbitParamsType(type);
         propagator.resetInitialState(new SpacecraftState(orbit));
         return propagator;
     }

@@ -83,15 +83,15 @@ class ToleranceProviderTest {
                 .thenReturn(new double[][] {absoluteTolerances, relativeTolerances});
         // WHEN
         final ToleranceProvider toleranceProvider = ToleranceProvider.of(mockedProvider);
-        final double[][] actualTolerances = toleranceProvider.getTolerances(mockedOrbit, OrbitType.CARTESIAN, null);
+        final double[][] actualTolerances = toleranceProvider.getTolerances(mockedOrbit, OrbitParamsType.CARTESIAN, null);
         // THEN
         Assertions.assertArrayEquals(absoluteTolerances, actualTolerances[0]);
         Assertions.assertArrayEquals(relativeTolerances, actualTolerances[1]);
     }
 
     @ParameterizedTest
-    @EnumSource(value=OrbitType.class, names = {"KEPLERIAN", "EQUINOCTIAL"})
-    void testOfCartesianProviderOrbit(final OrbitType orbitType) {
+    @EnumSource(value= OrbitParamsType.class, names = {"KEPLERIAN", "EQUINOCTIAL"})
+    void testOfCartesianProviderOrbit(final OrbitParamsType orbitParamsType) {
         // GIVEN
         final double[] absoluteTolerances = new double[7];
         Arrays.fill(absoluteTolerances, 1.);
@@ -104,11 +104,11 @@ class ToleranceProviderTest {
         final PositionAngleType angleType = PositionAngleType.TRUE;
         // WHEN
         final ToleranceProvider toleranceProvider = ToleranceProvider.of(mockedProvider);
-        final double[][] actualTolerances = toleranceProvider.getTolerances(orbit, orbitType, angleType);
+        final double[][] actualTolerances = toleranceProvider.getTolerances(orbit, orbitParamsType, angleType);
         // THEN
-        final double[][] cartesianTolerances = toleranceProvider.getTolerances((CartesianOrbit) OrbitType.CARTESIAN.convertType(orbit));
+        final double[][] cartesianTolerances = toleranceProvider.getTolerances((CartesianOrbit) OrbitParamsType.CARTESIAN.convertType(orbit));
         final double[] cartAbsTol = cartesianTolerances[0];
-        final Orbit converted = orbitType.convertType(orbit);
+        final Orbit converted = orbitParamsType.convertType(orbit);
         final double[][] jacobian = new double[6][6];
         converted.getJacobianWrtCartesian(angleType, jacobian);
         for (int i = 0; i < jacobian.length; ++i) {

@@ -276,7 +276,7 @@ class FieldOrbitHermiteInterpolatorTest {
         // set up a 5 points sample
         List<FieldOrbit<Binary64>> sample = new ArrayList<>();
         for (Binary64 dt = zero; dt.getReal() < 300.0; dt = dt.add(60.0)) {
-            FieldOrbit<Binary64> orbit = OrbitType.CIRCULAR.convertType(propagator.propagate(date.shiftedBy(dt)).getOrbit());
+            FieldOrbit<Binary64> orbit = OrbitParamsType.CIRCULAR.convertType(propagator.propagate(date.shiftedBy(dt)).getOrbit());
             if (!useDerivatives) {
                 // remove derivatives
                 Binary64[] stateVector = MathArrays.buildArray(field, 6);
@@ -372,7 +372,7 @@ class FieldOrbitHermiteInterpolatorTest {
         List<FieldOrbit<Binary64>> sample = new ArrayList<>();
         for (double dt = 0; dt < 300.0; dt += 60.0) {
             FieldOrbit<Binary64> orbit =
-                    OrbitType.EQUINOCTIAL.convertType(propagator.propagate(date.shiftedBy(dt)).getOrbit());
+                    OrbitParamsType.EQUINOCTIAL.convertType(propagator.propagate(date.shiftedBy(dt)).getOrbit());
             if (!useDerivatives) {
                 // remove derivatives
                 Binary64[] stateVector = MathArrays.buildArray(field, 6);
@@ -472,7 +472,7 @@ class FieldOrbitHermiteInterpolatorTest {
         List<FieldOrbit<Binary64>> sample = new ArrayList<>();
         for (double dt = 0; dt < 300.0; dt += 60.0) {
             FieldOrbit<Binary64> orbit =
-                    OrbitType.KEPLERIAN.convertType(propagator.propagate(date.shiftedBy(dt)).getOrbit());
+                    OrbitParamsType.KEPLERIAN.convertType(propagator.propagate(date.shiftedBy(dt)).getOrbit());
             if (!useDerivatives) {
                 // remove derivatives
                 Binary64[] stateVector = MathArrays.buildArray(field, 6);

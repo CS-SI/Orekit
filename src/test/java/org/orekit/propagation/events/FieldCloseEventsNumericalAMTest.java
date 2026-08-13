@@ -22,7 +22,7 @@ import org.hipparchus.ode.nonstiff.AdamsMoultonFieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.propagation.FieldPropagator;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.ToleranceProvider;
@@ -49,7 +49,7 @@ public class FieldCloseEventsNumericalAMTest extends FieldCloseEventsAbstractTes
      * @return a usable propagator.
      */
     public FieldPropagator<Binary64> getPropagator(double stepSize) {
-        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(1).getTolerances(initialOrbit, OrbitType.CARTESIAN);
+        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(1).getTolerances(initialOrbit, OrbitParamsType.CARTESIAN);
         final AdamsMoultonFieldIntegrator<Binary64> integrator =
                 new AdamsMoultonFieldIntegrator<>(field, 4, stepSize, stepSize, tol[0], tol[1]);
         final DormandPrince853FieldIntegrator<Binary64> starter =
@@ -59,7 +59,7 @@ public class FieldCloseEventsNumericalAMTest extends FieldCloseEventsAbstractTes
         integrator.setStarterIntegrator(starter);
         final FieldNumericalPropagator<Binary64> propagator = new FieldNumericalPropagator<>(integrator);
         propagator.setInitialState(new FieldSpacecraftState<>(initialOrbit));
-        propagator.setOrbitType(OrbitType.CARTESIAN);
+        propagator.setOrbitParamsType(OrbitParamsType.CARTESIAN);
         return propagator;
     }
 

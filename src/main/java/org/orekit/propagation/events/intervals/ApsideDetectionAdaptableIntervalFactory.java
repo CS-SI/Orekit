@@ -20,7 +20,7 @@ import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 
 /**
  * Factory class for {@link AdaptableInterval} suitable for apside detection on eccentric orbits.
@@ -111,7 +111,7 @@ public class ApsideDetectionAdaptableIntervalFactory {
      * @return Keplerian orbit
      */
     private static KeplerianOrbit convertOrbitIntoKeplerianOne(final Orbit orbit) {
-        return (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(orbit);
+        return (KeplerianOrbit) OrbitParamsType.KEPLERIAN.convertType(orbit);
     }
 
     /**

@@ -27,6 +27,7 @@ import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Frames;
 import org.orekit.frames.KinematicTransform;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
@@ -264,7 +265,7 @@ public interface Propagator extends PVCoordinatesProvider {
      * computed, and the harvester will allow to retrieve them.
      * </p>
      * <p>
-     * The arguments for initial matrices <em>must</em> be compatible with the {@link org.orekit.orbits.OrbitType
+     * The arguments for initial matrices <em>must</em> be compatible with the {@link OrbitParamsType
      * orbit type} and {@link PositionAngleType position angle} that will be used by the propagator.
      * </p>
      * @param stmName State Transition Matrix state name

@@ -19,7 +19,7 @@ package org.orekit.propagation.events;
 
 import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.numerical.NumericalPropagator;
 
@@ -32,8 +32,8 @@ import org.orekit.propagation.numerical.NumericalPropagator;
 public class CloseEventsNumericalDP853Test extends AbstractCloseEventsNumericalTest {
 
     @Override
-    ODEIntegrator getIntegrator(double stepSize, final OrbitType orbitType) {
-        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(1e-1).getTolerances(initialOrbit, orbitType);
+    ODEIntegrator getIntegrator(double stepSize, final OrbitParamsType orbitParamsType) {
+        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(1e-1).getTolerances(initialOrbit, orbitParamsType);
         return new DormandPrince853Integrator(stepSize, stepSize, tol[0], tol[1]);
     }
 

@@ -958,10 +958,10 @@ public class EquinoctialOrbitTest {
         Vector3D keplerianAcceleration = new Vector3D(-orbit.getMu() / (r2 * r), position);
         Assertions.assertEquals(0.0101, Vector3D.distance(keplerianAcceleration, acceleration), 1.0e-4);
 
-        for (OrbitType type : OrbitType.values()) {
+        for (OrbitParamsType type : OrbitParamsType.values()) {
             Orbit converted = type.convertType(orbit);
             Assertions.assertTrue(converted.hasNonKeplerianAcceleration());
-            EquinoctialOrbit rebuilt = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(converted);
+            EquinoctialOrbit rebuilt = (EquinoctialOrbit) OrbitParamsType.EQUINOCTIAL.convertType(converted);
             Assertions.assertTrue(rebuilt.hasNonKeplerianAcceleration());
             Assertions.assertEquals(orbit.getADot(),             rebuilt.getADot(),             3.0e-13);
             Assertions.assertEquals(orbit.getEquinoctialExDot(), rebuilt.getEquinoctialExDot(), 1.0e-15);
@@ -1047,7 +1047,7 @@ public class EquinoctialOrbitTest {
                                              -6.28, PositionAngleType.MEAN,
                                              FramesFactory.getEME2000(), date, mu);
 
-        EquinoctialOrbit normalized1 = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.normalize(withoutDerivatives, ref);
+        EquinoctialOrbit normalized1 = (EquinoctialOrbit) OrbitParamsType.EQUINOCTIAL.normalize(withoutDerivatives, ref);
         Assertions.assertFalse(normalized1.hasNonKeplerianAcceleration());
         Assertions.assertEquals(0.0, normalized1.getA()             - withoutDerivatives.getA(),             1.0e-6);
         Assertions.assertEquals(0.0, normalized1.getEquinoctialEx() - withoutDerivatives.getEquinoctialEx(), 1.0e-10);
@@ -1063,14 +1063,14 @@ public class EquinoctialOrbitTest {
         Assertions.assertEquals(withoutDerivatives.getLvDot(), normalized1.getLvDot(), 1e-15);
 
         double[] p = new double[6];
-        OrbitType.EQUINOCTIAL.mapOrbitToArray(withoutDerivatives, PositionAngleType.TRUE, p, null);
-        EquinoctialOrbit withDerivatives = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.mapArrayToOrbit(p,
+        OrbitParamsType.EQUINOCTIAL.mapOrbitToArray(withoutDerivatives, PositionAngleType.TRUE, p, null);
+        EquinoctialOrbit withDerivatives = (EquinoctialOrbit) OrbitParamsType.EQUINOCTIAL.mapArrayToOrbit(p,
                                                                                                     new double[] { 1.0, 2.0, 3.0, 4.0, 5.0, 6.0 },
                                                                                                     PositionAngleType.TRUE,
                                                                                                     withoutDerivatives.getDate(),
                                                                                                     withoutDerivatives.getMu(),
                                                                                                     withoutDerivatives.getFrame());
-        EquinoctialOrbit normalized2 = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.normalize(withDerivatives, ref);
+        EquinoctialOrbit normalized2 = (EquinoctialOrbit) OrbitParamsType.EQUINOCTIAL.normalize(withDerivatives, ref);
         Assertions.assertTrue(normalized2.hasNonKeplerianAcceleration());
         Assertions.assertFalse(normalized1.hasNonKeplerianAcceleration());
         Assertions.assertEquals(0.0, normalized1.getA()                - withoutDerivatives.getA(),             1.0e-6);
@@ -1218,7 +1218,7 @@ public class EquinoctialOrbitTest {
                 Vector3D.MINUS_K.scalarMultiply(0.1), Vector3D.MINUS_I);
         final CartesianOrbit cartesianOrbit = new CartesianOrbit(pvCoordinates, FramesFactory.getEME2000(),
                 AbsoluteDate.ARBITRARY_EPOCH, 1.);
-        final EquinoctialOrbit equinoctialOrbit = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(cartesianOrbit);
+        final EquinoctialOrbit equinoctialOrbit = (EquinoctialOrbit) OrbitParamsType.EQUINOCTIAL.convertType(cartesianOrbit);
         // WHEN
         final Vector3D nonKeplerianAcceleration = equinoctialOrbit.nonKeplerianAcceleration();
         // THEN

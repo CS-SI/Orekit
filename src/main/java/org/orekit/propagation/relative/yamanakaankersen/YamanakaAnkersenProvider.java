@@ -24,7 +24,7 @@ import org.orekit.frames.LOF;
 import org.orekit.frames.LOFType;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.relative.AbstractRelativeProvider;
@@ -149,10 +149,10 @@ public class YamanakaAnkersenProvider extends AbstractRelativeProvider {
         final double mu = targetState.getOrbit().getMu();
 
         // Initial and final target anomalies
-        final KeplerianOrbit initialOrbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(getTargetOrbit());
+        final KeplerianOrbit initialOrbit = (KeplerianOrbit) OrbitParamsType.KEPLERIAN.convertType(getTargetOrbit());
         final double initialTrueAnomaly = initialOrbit.getTrueAnomaly();
 
-        final KeplerianOrbit currentOrbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(targetState.getOrbit());
+        final KeplerianOrbit currentOrbit = (KeplerianOrbit) OrbitParamsType.KEPLERIAN.convertType(targetState.getOrbit());
         final double trueAnomaly = currentOrbit.getTrueAnomaly();
 
         // Get the Yamanaka-Ankersen state transition matrices

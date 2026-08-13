@@ -402,8 +402,8 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased<Equino
 
     /** {@inheritDoc} */
     @Override
-    public OrbitType getType() {
-        return OrbitType.EQUINOCTIAL;
+    public OrbitParamsType getType() {
+        return OrbitParamsType.EQUINOCTIAL;
     }
 
     /** {@inheritDoc} */
