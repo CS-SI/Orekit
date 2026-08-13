@@ -60,7 +60,6 @@ import org.orekit.time.AbstractTimeInterpolator;
 import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.FieldTimeInterpolator;
-import org.orekit.time.FieldTimeStamped;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.time.TimeStampedField;
@@ -912,7 +911,7 @@ class FieldSpacecraftStateInterpolatorTest {
         }
 
         @Override
-        public List<FieldTimeInterpolator<? extends FieldTimeStamped<Binary64>, Binary64>> getSubInterpolators() {
+        public List<FieldTimeInterpolator<?, Binary64>> getSubInterpolators() {
             return Collections.emptyList();
         }
 

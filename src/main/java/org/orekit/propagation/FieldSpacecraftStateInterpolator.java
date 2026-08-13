@@ -43,7 +43,6 @@ import org.orekit.time.AbstractFieldTimeInterpolator;
 import org.orekit.time.AbstractTimeInterpolator;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.FieldTimeInterpolator;
-import org.orekit.time.FieldTimeStamped;
 import org.orekit.time.TimeStampedField;
 import org.orekit.time.TimeStampedFieldHermiteInterpolator;
 import org.orekit.utils.AngularDerivativesFilter;
@@ -309,7 +308,7 @@ public class FieldSpacecraftStateInterpolator<KK extends CalculusFieldElement<KK
      */
     @Override
     public FieldSpacecraftState<KK> interpolate(final FieldAbsoluteDate<KK> interpolationDate,
-                                                final Collection<FieldSpacecraftState<KK>> sample) {
+                                                final Collection<? extends FieldSpacecraftState<KK>> sample) {
 
         final List<FieldSpacecraftState<KK>> sampleList = new ArrayList<>(sample);
 
@@ -335,10 +334,10 @@ public class FieldSpacecraftStateInterpolator<KK extends CalculusFieldElement<KK
 
     /** {@inheritDoc} */
     @Override
-    public List<FieldTimeInterpolator<? extends FieldTimeStamped<KK>, KK>> getSubInterpolators() {
+    public List<FieldTimeInterpolator<?, KK>> getSubInterpolators() {
 
         // Add all sub interpolators that are defined
-        final List<FieldTimeInterpolator<? extends FieldTimeStamped<KK>, KK>> subInterpolators = new ArrayList<>();
+        final List<FieldTimeInterpolator<?, KK>> subInterpolators = new ArrayList<>();
 
         addOptionalSubInterpolatorIfDefined(orbitInterpolator, subInterpolators);
         addOptionalSubInterpolatorIfDefined(absPVAInterpolator, subInterpolators);

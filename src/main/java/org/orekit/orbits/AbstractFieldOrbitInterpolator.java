@@ -57,7 +57,7 @@ public abstract class AbstractFieldOrbitInterpolator<KK extends CalculusFieldEle
     /** {@inheritDoc}. */
     @Override
     public FieldOrbit<KK> interpolate(final FieldAbsoluteDate<KK> interpolationDate,
-                                      final Collection<FieldOrbit<KK>> sample) {
+                                      final Collection<? extends FieldOrbit<KK>> sample) {
 
         // Convert to orbit list
         final List<Orbit> orbits = sample.stream().map(FieldOrbit::toOrbit).collect(Collectors.toList());

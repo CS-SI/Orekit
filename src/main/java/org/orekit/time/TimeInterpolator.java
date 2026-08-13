@@ -45,7 +45,7 @@ public interface TimeInterpolator<T extends TimeStamped> {
      * @see TimeStamped
      * @see AbsoluteDate
      */
-    T interpolate(AbsoluteDate interpolationDate, Stream<T> sample);
+    T interpolate(AbsoluteDate interpolationDate, Stream<? extends T> sample);
 
     /**
      * Get an interpolated instance.
@@ -58,7 +58,8 @@ public interface TimeInterpolator<T extends TimeStamped> {
      *
      * @return a new instance, interpolated at specified date
      */
-    T interpolate(AbsoluteDate interpolationDate, Collection<T> sample);
+    T interpolate(AbsoluteDate interpolationDate,
+                  Collection<? extends T> sample);
 
     /**
      * Get all lowest level interpolators implemented by this instance, otherwise return a list with this instance only.
@@ -70,7 +71,7 @@ public interface TimeInterpolator<T extends TimeStamped> {
      *
      * @return list of interpolators
      */
-    List<TimeInterpolator<? extends TimeStamped>> getSubInterpolators();
+    List<TimeInterpolator<?>> getSubInterpolators();
 
     /**
      * Get the number of interpolation points. In the specific case where this interpolator contains multiple

@@ -74,8 +74,8 @@ public abstract class AbstractTimeInterpolator<T extends TimeStamped> implements
             final int sampleSize) {
 
         // Retrieve all sub-interpolators (or a singleton list with given interpolator if there are no sub-interpolators)
-        final List<TimeInterpolator<? extends TimeStamped>> subInterpolators = interpolator.getSubInterpolators();
-        for (final TimeInterpolator<? extends TimeStamped> subInterpolator : subInterpolators) {
+        for (final TimeInterpolator<?> subInterpolator :
+                interpolator.getSubInterpolators()) {
             if (sampleSize < subInterpolator.getNbInterpolationPoints()) {
                 throw new OrekitIllegalArgumentException(OrekitMessages.NOT_ENOUGH_DATA, sampleSize);
             }
@@ -88,7 +88,8 @@ public abstract class AbstractTimeInterpolator<T extends TimeStamped> implements
      * The stream must hold elements in chronological order.
      */
     @Override
-    public T interpolate(final AbsoluteDate interpolationDate, final Stream<T> sample) {
+    public T interpolate(final AbsoluteDate interpolationDate,
+                         final Stream<? extends T> sample) {
         return interpolate(interpolationDate, sample.collect(Collectors.toList()));
     }
 
@@ -100,7 +101,8 @@ public abstract class AbstractTimeInterpolator<T extends TimeStamped> implements
      * {@link org.orekit.errors.TimeStampedCacheException}.
      */
     @Override
-    public T interpolate(final AbsoluteDate interpolationDate, final Collection<T> sample) {
+    public T interpolate(final AbsoluteDate interpolationDate,
+                         final Collection<? extends T> sample) {
         final InterpolationData interpolationData = new InterpolationData(interpolationDate, sample);
         return interpolate(interpolationData);
     }
@@ -155,7 +157,7 @@ public abstract class AbstractTimeInterpolator<T extends TimeStamped> implements
     }
 
     /** {@inheritDoc} */
-    public List<TimeInterpolator<? extends TimeStamped>> getSubInterpolators() {
+    public List<TimeInterpolator<?>> getSubInterpolators() {
         return Collections.singletonList(this);
     }
 
@@ -256,7 +258,7 @@ public abstract class AbstractTimeInterpolator<T extends TimeStamped> implements
          * @param interpolationDate interpolation date
          * @param sample            time stamped sample (chronologically sorted)
          */
-        protected InterpolationData(final AbsoluteDate interpolationDate, final Collection<T> sample) {
+        protected InterpolationData(final AbsoluteDate interpolationDate, final Collection<? extends T> sample) {
             this(interpolationDate, (sample instanceof List) ? (List<T>) sample : new ArrayList<>(sample));
         }
 
@@ -271,7 +273,8 @@ public abstract class AbstractTimeInterpolator<T extends TimeStamped> implements
          * @param interpolationDate interpolation date
          * @param sample            time stamped sample (chronologically sorted)
          */
-        protected InterpolationData(final AbsoluteDate interpolationDate, final List<T> sample) {
+        protected InterpolationData(final AbsoluteDate interpolationDate,
+                                    final List<? extends T> sample) {
 
             // Check if there is enough sample points
             final int nbInterpolationPoints = getNbInterpolationPoints();

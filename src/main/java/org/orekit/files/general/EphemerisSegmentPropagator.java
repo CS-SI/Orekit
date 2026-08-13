@@ -170,12 +170,8 @@ public class EphemerisSegmentPropagator<C extends TimeStampedPVCoordinates> exte
     private TimeStampedPVCoordinates interpolate(final AbsoluteDate date) {
         final Stream<C> neighbors = this.cache.getNeighbors(date);
 
-        // cast stream to super type
-        final Stream<TimeStampedPVCoordinates> castedNeighbors =
-                neighbors.map(neighbor -> neighbor);
-
         // create interpolator
-        return interpolator.interpolate(date, castedNeighbors);
+        return interpolator.interpolate(date, neighbors);
     }
 
 }

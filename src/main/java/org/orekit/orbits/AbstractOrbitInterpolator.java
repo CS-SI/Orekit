@@ -55,7 +55,9 @@ public abstract class AbstractOrbitInterpolator extends AbstractTimeInterpolator
      *
      * @param sample orbits sample
      */
-    public static void checkOrbitsConsistency(final Collection<Orbit> sample) {
+    public static void checkOrbitsConsistency(
+            final Collection<? extends Orbit> sample) {
+
         // Convert sample to list
         final List<Orbit> sampleList = new ArrayList<>(sample);
 
@@ -79,7 +81,8 @@ public abstract class AbstractOrbitInterpolator extends AbstractTimeInterpolator
 
     /** {@inheritDoc}. */
     @Override
-    public Orbit interpolate(final AbsoluteDate interpolationDate, final Collection<Orbit> sample) {
+    public Orbit interpolate(final AbsoluteDate interpolationDate,
+                             final Collection<? extends Orbit> sample) {
 
         // Check orbits consistency
         checkOrbitsConsistency(sample);

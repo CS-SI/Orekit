@@ -349,7 +349,8 @@ public class SpacecraftStateInterpolator extends AbstractTimeInterpolator<Spacec
      * definition type
      */
     @Override
-    public SpacecraftState interpolate(final AbsoluteDate interpolationDate, final Collection<SpacecraftState> sample) {
+    public SpacecraftState interpolate(final AbsoluteDate interpolationDate,
+                                       final Collection<? extends SpacecraftState> sample) {
 
         final List<SpacecraftState> sampleList = new ArrayList<>(sample);
 
