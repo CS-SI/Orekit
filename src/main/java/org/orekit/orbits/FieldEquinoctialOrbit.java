@@ -437,6 +437,15 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
         this(field, (EquinoctialOrbit) OrbitParamsType.EQUINOCTIAL.convertType(op));
     }
 
+    /**
+     * Method providing with the equinoctial elements, using the cached type for the argument of longitude.
+     * @return equinoctial elements
+     * @since 14.0
+     */
+    public FieldEquinoctialParameters<T> getEquinoctialParameters() {
+        return new FieldEquinoctialParameters<>(a, ex, ey, hx, hy, cachedL, cachedPositionAngleType);
+    }
+
     /** {@inheritDoc} */
     @Override
     public OrbitParamsType getType() {
@@ -506,11 +515,7 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
     /** {@inheritDoc} */
     @Override
     public T getLv() {
-        return switch (cachedPositionAngleType) {
-            case TRUE -> cachedL;
-            case ECCENTRIC -> FieldEquinoctialLongitudeArgumentUtility.eccentricToTrue(ex, ey, cachedL);
-            case MEAN -> FieldEquinoctialLongitudeArgumentUtility.meanToTrue(ex, ey, cachedL);
-        };
+        return getL(PositionAngleType.TRUE);
     }
 
     /** {@inheritDoc} */
@@ -544,11 +549,7 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
     /** {@inheritDoc} */
     @Override
     public T getLE() {
-        return switch (cachedPositionAngleType) {
-            case TRUE -> FieldEquinoctialLongitudeArgumentUtility.trueToEccentric(ex, ey, cachedL);
-            case ECCENTRIC -> cachedL;
-            case MEAN -> FieldEquinoctialLongitudeArgumentUtility.meanToEccentric(ex, ey, cachedL);
-        };
+        return getL(PositionAngleType.ECCENTRIC);
     }
 
     /** {@inheritDoc} */
@@ -583,11 +584,7 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
     /** {@inheritDoc} */
     @Override
     public T getLM() {
-        return switch (cachedPositionAngleType) {
-            case TRUE -> FieldEquinoctialLongitudeArgumentUtility.trueToMean(ex, ey, cachedL);
-            case MEAN -> cachedL;
-            case ECCENTRIC -> FieldEquinoctialLongitudeArgumentUtility.eccentricToMean(ex, ey, cachedL);
-        };
+        return getL(PositionAngleType.MEAN);
     }
 
     /** {@inheritDoc} */
@@ -623,9 +620,7 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
      * @return longitude argument (rad)
      */
     public T getL(final PositionAngleType type) {
-        return (type == PositionAngleType.MEAN) ? getLM() :
-                                              ((type == PositionAngleType.ECCENTRIC) ? getLE() :
-                                                                                   getLv());
+        return getEquinoctialParameters().withPositionAngleType(type).longitudeArgument();
     }
 
     /** Get the longitude argument derivative.
