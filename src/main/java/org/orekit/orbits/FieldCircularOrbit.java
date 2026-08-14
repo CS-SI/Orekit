@@ -147,6 +147,21 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
     }
 
     /** Creates a new instance without derivatives and with cached position angle same as value inputted.
+     * @param parameters circular orbital parameters
+     * @param frame the frame in which are defined the parameters
+     * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
+     * @param date date of the orbital parameters
+     * @param mu central attraction coefficient (m³/s²)
+     * @exception IllegalArgumentException if eccentricity is equal to 1 or larger or
+     * if frame is not a {@link Frame#isPseudoInertial pseudo-inertial frame}
+     */
+    public FieldCircularOrbit(final FieldCircularParameters<T> parameters,
+                              final Frame frame, final FieldAbsoluteDate<T> date, final T mu) {
+        this(parameters.a(), parameters.ex(), parameters.ey(), parameters.i(), parameters.raan(),
+                parameters.latitudeArgument(), parameters.positionAngleType(), parameters.positionAngleType(), frame, date, mu);
+    }
+
+    /** Creates a new instance without derivatives and with cached position angle same as value inputted.
      * @param a  semi-major axis (m)
      * @param ex e cos(ω), first component of circular eccentricity vector
      * @param ey e sin(ω), second component of circular eccentricity vector
@@ -165,7 +180,7 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
                               final T alpha, final PositionAngleType type,
                               final Frame frame, final FieldAbsoluteDate<T> date, final T mu)
             throws IllegalArgumentException {
-        this(a, ex, ey, i, raan, alpha, type, type, frame, date, mu);
+        this(new FieldCircularParameters<>(a, ex, ey, i, raan, alpha, type), frame, date, mu);
     }
 
     /** Creates a new instance.
@@ -374,7 +389,7 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
      * use {@code mu} and the position to compute the acceleration, including
      * {@link #shiftedBy(CalculusFieldElement)} and {@link #getPVCoordinates(FieldAbsoluteDate, Frame)}.
      *
-     * @param PVCoordinates the {@link FieldPVCoordinates} in inertial frame
+     * @param pvCoordinates the {@link FieldPVCoordinates} in inertial frame
      * @param frame the frame in which are defined the {@link FieldPVCoordinates}
      * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
      * @param date date of the orbital parameters
@@ -382,10 +397,10 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
      * @exception IllegalArgumentException if frame is not a {@link
      * Frame#isPseudoInertial pseudo-inertial frame}
      */
-    public FieldCircularOrbit(final FieldPVCoordinates<T> PVCoordinates, final Frame frame,
+    public FieldCircularOrbit(final FieldPVCoordinates<T> pvCoordinates, final Frame frame,
                               final FieldAbsoluteDate<T> date, final T mu)
         throws IllegalArgumentException {
-        this(new TimeStampedFieldPVCoordinates<>(date, PVCoordinates), frame, mu);
+        this(new TimeStampedFieldPVCoordinates<>(date, pvCoordinates), frame, mu);
     }
 
     /** Constructor from any kind of orbital parameters.
@@ -472,6 +487,15 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
      */
     public FieldCircularOrbit(final Field<T> field, final Orbit op) {
         this(field, (CircularOrbit) OrbitParamsType.CIRCULAR.convertType(op));
+    }
+
+    /**
+     * Method providing with the circular elements, using the cached type for the argument of latitude.
+     * @return circular elements
+     * @since 14.0
+     */
+    public FieldCircularParameters<T> getCircularParameters() {
+        return new FieldCircularParameters<>(a, ex, ey, i, raan, cachedAlpha, cachedPositionAngleType);
     }
 
     /** {@inheritDoc} */
@@ -620,11 +644,7 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
      * @return v + ω true latitude argument (rad)
      */
     public T getAlphaV() {
-        return switch (cachedPositionAngleType) {
-            case TRUE -> cachedAlpha;
-            case ECCENTRIC -> FieldCircularLatitudeArgumentUtility.eccentricToTrue(ex, ey, cachedAlpha);
-            case MEAN -> FieldCircularLatitudeArgumentUtility.meanToTrue(ex, ey, cachedAlpha);
-        };
+        return getAlpha(PositionAngleType.TRUE);
     }
 
     /** Get the true latitude argument derivative.
@@ -661,11 +681,7 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
      * @return E + ω eccentric latitude argument (rad)
      */
     public T getAlphaE() {
-        return switch (cachedPositionAngleType) {
-            case TRUE -> FieldCircularLatitudeArgumentUtility.trueToEccentric(ex, ey, cachedAlpha);
-            case ECCENTRIC -> cachedAlpha;
-            case MEAN -> FieldCircularLatitudeArgumentUtility.meanToEccentric(ex, ey, cachedAlpha);
-        };
+        return getAlpha(PositionAngleType.ECCENTRIC);
     }
 
     /** Get the eccentric latitude argument derivative.
@@ -703,11 +719,7 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
      * @return M + ω mean latitude argument (rad)
      */
     public T getAlphaM() {
-        return switch (cachedPositionAngleType) {
-            case TRUE -> FieldCircularLatitudeArgumentUtility.trueToMean(ex, ey, cachedAlpha);
-            case MEAN -> cachedAlpha;
-            case ECCENTRIC -> FieldCircularLatitudeArgumentUtility.eccentricToMean(ex, ey, cachedAlpha);
-        };
+        return getAlpha(PositionAngleType.MEAN);
     }
 
     /** Get the mean latitude argument derivative.
@@ -745,9 +757,7 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
      * @return latitude argument (rad)
      */
     public T getAlpha(final PositionAngleType type) {
-        return (type == PositionAngleType.MEAN) ? getAlphaM() :
-                                              ((type == PositionAngleType.ECCENTRIC) ? getAlphaE() :
-                                                                                   getAlphaV());
+        return getCircularParameters().withPositionAngleType(type).latitudeArgument();
     }
 
     /** Get the latitude argument derivative.

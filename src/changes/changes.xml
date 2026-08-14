@@ -21,9 +21,12 @@
   <body>
       <release version="14.0" date="TBD" description="TBD">
           <action dev="evan" type="update">
-          Fix generics in TimeInterpolator so it can be used without casts.
-        </action>
-        <action dev="luc" type="update" issue="1995">
+              Fix generics in TimeInterpolator so it can be used without casts.
+          </action>
+          <action dev="serrof" type="add" issue="1997">
+              Added Record for two-body problem orbital elements.
+          </action>
+          <action dev="luc" type="update" issue="1995">
               Added support for ORBEX format.
           </action>
           <action dev="ltafur" type="fix" issue="1993">

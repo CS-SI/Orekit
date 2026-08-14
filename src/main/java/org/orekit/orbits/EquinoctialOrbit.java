@@ -136,9 +136,27 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased<Equino
                             final PositionAngleType type, final PositionAngleType cachedPositionAngleType,
                             final Frame frame, final AbsoluteDate date, final double mu)
         throws IllegalArgumentException {
-        this(a, ex, ey, hx, hy, l,
-             0., 0., 0., 0., 0., computeKeplerianLDot(type, a, ex, ey, mu, l, type),
-             type, cachedPositionAngleType, frame, date, mu);
+        this(new EquinoctialParameters(a, ex, ey, hx, hy, l, type).withPositionAngleType(cachedPositionAngleType),
+                frame, date, mu);
+    }
+
+    /** Creates a new instance without derivatives and with cached position angle same as value inputted.
+     * @param parameters equinoctial orbital parameters
+     * @param frame the frame in which the parameters are defined
+     * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
+     * @param date date of the orbital parameters
+     * @param mu central attraction coefficient (m³/s²)
+     * @exception IllegalArgumentException if eccentricity is equal to 1 or larger or
+     * if frame is not a {@link Frame#isPseudoInertial pseudo-inertial frame}
+     * @since 14.0
+     */
+    public EquinoctialOrbit(final EquinoctialParameters parameters, final Frame frame, final AbsoluteDate date,
+                            final double mu)
+            throws IllegalArgumentException {
+        this(parameters.a(), parameters.ex(), parameters.ey(), parameters.hx(), parameters.hy(),
+                parameters.longitudeArgument(), 0., 0., 0., 0., 0.,
+                computeKeplerianLDot(parameters.positionAngleType(), parameters.a(), parameters.ex(), parameters.ey(), mu, parameters.longitudeArgument(), parameters.positionAngleType()),
+                parameters.positionAngleType(), parameters.positionAngleType(), frame, date, mu);
     }
 
     /** Creates a new instance without derivatives and with cached position angle same as value inputted.
@@ -393,6 +411,15 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased<Equino
         partialPV = null;
     }
 
+    /**
+     * Method providing with the equinoctial elements, using the cached type for the argument of longitude.
+     * @return equinoctial elements
+     * @since 14.0
+     */
+    public EquinoctialParameters getEquinoctialParameters() {
+        return new EquinoctialParameters(a, ex, ey, hx, hy, cachedL, cachedPositionAngleType);
+    }
+
     /** {@inheritDoc} */
     @Override
     public boolean hasNonKeplerianAcceleration() {
@@ -476,11 +503,7 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased<Equino
     /** {@inheritDoc} */
     @Override
     public double getLv() {
-        return switch (cachedPositionAngleType) {
-            case TRUE -> cachedL;
-            case ECCENTRIC -> EquinoctialLongitudeArgumentUtility.eccentricToTrue(ex, ey, cachedL);
-            case MEAN -> EquinoctialLongitudeArgumentUtility.meanToTrue(ex, ey, cachedL);
-        };
+        return getL(PositionAngleType.TRUE);
     }
 
     /** {@inheritDoc} */
@@ -514,11 +537,7 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased<Equino
     /** {@inheritDoc} */
     @Override
     public double getLE() {
-        return switch (cachedPositionAngleType) {
-            case TRUE -> EquinoctialLongitudeArgumentUtility.trueToEccentric(ex, ey, cachedL);
-            case ECCENTRIC -> cachedL;
-            case MEAN -> EquinoctialLongitudeArgumentUtility.meanToEccentric(ex, ey, cachedL);
-        };
+        return getL(PositionAngleType.ECCENTRIC);
     }
 
     /** {@inheritDoc} */
@@ -552,11 +571,7 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased<Equino
     /** {@inheritDoc} */
     @Override
     public double getLM() {
-        return switch (cachedPositionAngleType) {
-            case TRUE -> EquinoctialLongitudeArgumentUtility.trueToMean(ex, ey, cachedL);
-            case MEAN -> cachedL;
-            case ECCENTRIC -> EquinoctialLongitudeArgumentUtility.eccentricToMean(ex, ey, cachedL);
-        };
+        return getL(PositionAngleType.MEAN);
     }
 
     /** {@inheritDoc} */
@@ -591,9 +606,7 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased<Equino
      * @return longitude argument (rad)
      */
     public double getL(final PositionAngleType type) {
-        return (type == PositionAngleType.MEAN) ? getLM() :
-                                              ((type == PositionAngleType.ECCENTRIC) ? getLE() :
-                                                                                   getLv());
+        return getEquinoctialParameters().withPositionAngleType(type).longitudeArgument();
     }
 
     /** Get the longitude argument derivative.

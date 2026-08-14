@@ -431,6 +431,15 @@ public class CircularOrbit extends Orbit implements PositionAngleBased<CircularO
 
     }
 
+    /**
+     * Method providing with the circular elements, using the cached type for the argument of latitude.
+     * @return circular parameters
+     * @since 14.0
+     */
+    public CircularParameters getCircularParameters() {
+        return new CircularParameters(a, ex, ey, i, raan, cachedAlpha, cachedPositionAngleType);
+    }
+
     /** {@inheritDoc} */
     @Override
     public boolean hasNonKeplerianAcceleration() {
@@ -580,11 +589,7 @@ public class CircularOrbit extends Orbit implements PositionAngleBased<CircularO
      * @return v + ω true latitude argument (rad)
      */
     public double getAlphaV() {
-        return switch (cachedPositionAngleType) {
-            case TRUE -> cachedAlpha;
-            case ECCENTRIC -> CircularLatitudeArgumentUtility.eccentricToTrue(ex, ey, cachedAlpha);
-            case MEAN -> CircularLatitudeArgumentUtility.meanToTrue(ex, ey, cachedAlpha);
-        };
+        return getAlpha(PositionAngleType.TRUE);
     }
 
     /** Get the true latitude argument derivative.
@@ -624,11 +629,7 @@ public class CircularOrbit extends Orbit implements PositionAngleBased<CircularO
      * @return E + ω eccentric latitude argument (rad)
      */
     public double getAlphaE() {
-        return switch (cachedPositionAngleType) {
-            case TRUE -> CircularLatitudeArgumentUtility.trueToEccentric(ex, ey, cachedAlpha);
-            case ECCENTRIC -> cachedAlpha;
-            case MEAN -> CircularLatitudeArgumentUtility.meanToEccentric(ex, ey, cachedAlpha);
-        };
+        return getAlpha(PositionAngleType.ECCENTRIC);
     }
 
     /** Get the eccentric latitude argument derivative.
@@ -668,11 +669,7 @@ public class CircularOrbit extends Orbit implements PositionAngleBased<CircularO
      * @return M + ω mean latitude argument (rad)
      */
     public double getAlphaM() {
-        return switch (cachedPositionAngleType) {
-            case TRUE -> CircularLatitudeArgumentUtility.trueToMean(ex, ey, cachedAlpha);
-            case MEAN -> cachedAlpha;
-            case ECCENTRIC -> CircularLatitudeArgumentUtility.eccentricToMean(ex, ey, cachedAlpha);
-        };
+        return getAlpha(PositionAngleType.MEAN);
     }
 
     /** Get the mean latitude argument derivative.
@@ -713,9 +710,7 @@ public class CircularOrbit extends Orbit implements PositionAngleBased<CircularO
      * @return latitude argument (rad)
      */
     public double getAlpha(final PositionAngleType type) {
-        return (type == PositionAngleType.MEAN) ? getAlphaM() :
-                                              ((type == PositionAngleType.ECCENTRIC) ? getAlphaE() :
-                                                                                   getAlphaV());
+        return getCircularParameters().withPositionAngleType(type).latitudeArgument();
     }
 
     /** Get the latitude argument derivative.
