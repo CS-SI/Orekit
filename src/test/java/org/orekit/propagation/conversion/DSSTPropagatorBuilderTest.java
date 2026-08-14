@@ -16,11 +16,15 @@
  */
 package org.orekit.propagation.conversion;
 
-import static org.orekit.propagation.conversion.AbstractPropagatorBuilderTest.assertPropagatorBuilderIsACopy;
+import java.io.IOException;
+import java.text.ParseException;
+import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
@@ -51,10 +55,7 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedPVCoordinates;
-
-import java.io.IOException;
-import java.text.ParseException;
-import java.util.List;
+import static org.orekit.propagation.conversion.AbstractPropagatorBuilderTest.assertPropagatorBuilderIsACopy;
 
 public class DSSTPropagatorBuilderTest {
 
@@ -321,11 +322,11 @@ public class DSSTPropagatorBuilderTest {
                                       dp54Builder,
                                       PropagationType.MEAN,
                                       PropagationType.MEAN);
-        for (ParameterDriver driver : builder.getOrbitalParameterFactory().getOrbitalParametersDrivers().getDrivers()) {
+        for (ParameterDriver driver : builder.getOrbitalStateFactory().getOrbitalParametersDrivers().getDrivers()) {
             Assertions.assertTrue(driver.isSelected());
         }
         builder.deselectDynamicParameters();
-        for (ParameterDriver driver : builder.getOrbitalParameterFactory().getOrbitalParametersDrivers().getDrivers()) {
+        for (ParameterDriver driver : builder.getOrbitalStateFactory().getOrbitalParametersDrivers().getDrivers()) {
             Assertions.assertFalse(driver.isSelected());
         }
     }
@@ -363,7 +364,7 @@ public class DSSTPropagatorBuilderTest {
         // Then
         // Original builder should still have original orbit
         final PVCoordinates originalPv = orbit.getPVCoordinates();
-        final PVCoordinates initialPv = builder.getOrbitalParameterFactory().createFromDrivers().getPVCoordinates();
+        final PVCoordinates initialPv = builder.getOrbitalStateFactory().createFromDrivers().getPVCoordinates();
         final double dP = originalPv.getPosition().distance(initialPv.getPosition());
         final double dV = originalPv.getVelocity().distance(initialPv.getVelocity());
         final double dA = originalPv.getAcceleration().distance(initialPv.getAcceleration());

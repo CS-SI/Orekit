@@ -16,13 +16,13 @@
  */
 package org.orekit.propagation.conversion;
 
+import org.hipparchus.CalculusFieldElement;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.data.DataContext;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
-import org.hipparchus.CalculusFieldElement;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.FieldTLE;
@@ -32,7 +32,6 @@ import org.orekit.propagation.analytical.tle.generation.FixedPointTleGenerationA
 import org.orekit.propagation.analytical.tle.generation.TleGenerationAlgorithm;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
-
 import static org.orekit.propagation.conversion.AbstractPropagatorBuilderTest.assertPropagatorBuilderIsACopy;
 
 public class TLEPropagatorBuilderTest {
@@ -53,8 +52,8 @@ public class TLEPropagatorBuilderTest {
 
         // Then
         assertPropagatorBuilderIsACopy(builder, copyBuilder);
-        Assertions.assertEquals(builder.getOrbitalParameterFactory().getTemplateTLE(),
-                                copyBuilder.getOrbitalParameterFactory().getTemplateTLE());
+        Assertions.assertEquals(builder.getOrbitalStateFactory().getTemplateTLE(),
+                                copyBuilder.getOrbitalStateFactory().getTemplateTLE());
 
     }
 
@@ -72,7 +71,7 @@ public class TLEPropagatorBuilderTest {
         final TLEPropagatorBuilder builder =
             new TLEPropagatorBuilder(dataContext,
                                      new FixedPointTleGenerationAlgorithm(tle));
-        final TLE built = builder.getOrbitalParameterFactory().createFromDrivers();
+        final TLE built = builder.getOrbitalStateFactory().createFromDrivers();
         final Orbit orbit = TLEPropagator.selectExtrapolator(built).propagateOrbit(built.getDate());
 
         // When
@@ -89,7 +88,7 @@ public class TLEPropagatorBuilderTest {
         // Original builder should still have original orbit
         final PVCoordinates originalPv = orbit.getPVCoordinates();
         final PVCoordinates initialPv  = TLEPropagator.
-                                         selectExtrapolator(builder.getOrbitalParameterFactory().createFromDrivers()).
+                                         selectExtrapolator(builder.getOrbitalStateFactory().createFromDrivers()).
                                          propagateOrbit(orbit.getDate()).
                                          getPVCoordinates();
         final double dP = originalPv.getPosition().distance(initialPv.getPosition());

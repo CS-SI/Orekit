@@ -176,7 +176,7 @@ public class BrouwerLyddanePropagatorBuilder
 
         // Use cloned builder to unlink orbital drivers
         final BrouwerLyddanePropagatorBuilder builder =
-            new BrouwerLyddanePropagatorBuilder((AbstractOrbitFactory<? extends Orbit>) clonedBuilder.getOrbitalParameterFactory().clone(),
+            new BrouwerLyddanePropagatorBuilder((AbstractOrbitFactory<? extends Orbit>) clonedBuilder.getOrbitalStateFactory().clone(),
                                                 clonedBuilder.provider,
                                                 clonedBuilder.getAttitudeProvider(),
                                                 clonedBuilder.getM2Value());
@@ -211,7 +211,7 @@ public class BrouwerLyddanePropagatorBuilder
 
         // Initialize propagator
         final BrouwerLyddanePropagator propagator =
-            new BrouwerLyddanePropagator(getOrbitalParameterFactory().createFromDrivers(),
+            new BrouwerLyddanePropagator(getOrbitalStateFactory().createFromDrivers(),
                                          getAttitudeProvider(), getMass(),
             provider, newM2);
         propagator.getParametersDrivers().getFirst().setSelected(isSelected);

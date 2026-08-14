@@ -32,7 +32,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.orbits.FieldKeplerianOrbit;
-import org.orekit.orbits.FieldOrbitalParameters;
+import org.orekit.orbits.FieldOrbitalState;
 import org.orekit.orbits.OrbitParamsType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.analytical.tle.generation.TleGenerationUtil;
@@ -65,7 +65,7 @@ import org.orekit.utils.Constants;
  * @since 11.0
  * @param <T> type of the field elements
  */
-public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldOrbitalParameters<T> {
+public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldOrbitalState<T> {
 
     /** Identifier for default type of ephemeris (SGP4/SDP4). */
     public static final int DEFAULT = 0;

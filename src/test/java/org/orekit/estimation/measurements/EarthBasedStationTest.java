@@ -479,7 +479,7 @@ class EarthBasedStationTest {
 
         // just for the fun and to speed up test, we will use orbit determination, *without* estimating orbit
         for (final ParameterDriver driver : zeroPropagatorBuilder.
-                                            getOrbitalParameterFactory().
+                getOrbitalStateFactory().
                                             getOrbitalParametersDrivers().
                                             getDrivers()) {
             driver.setSelected(false);

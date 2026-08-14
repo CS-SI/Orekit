@@ -16,6 +16,12 @@
  */
 package org.orekit.estimation.sequential;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.filtering.kalman.ProcessEstimate;
 import org.hipparchus.filtering.kalman.extended.ExtendedKalmanFilter;
@@ -33,7 +39,7 @@ import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitParamsType;
-import org.orekit.orbits.OrbitalParameterFactory;
+import org.orekit.orbits.OrbitalStateFactory;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.DSSTPropagatorBuilder;
@@ -48,12 +54,6 @@ import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 import org.orekit.utils.TimeSpanMap.Span;
-
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /** Process model to use with a {@link SemiAnalyticalKalmanEstimator}.
  *
@@ -151,7 +151,7 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
                                         final ParameterDriversList estimatedMeasurementParameters,
                                         final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
 
-        final OrbitalParameterFactory<?> factory = propagatorBuilder.getOrbitalParameterFactory();
+        final OrbitalStateFactory<?> factory = propagatorBuilder.getOrbitalStateFactory();
         this.builder                         = propagatorBuilder;
         this.estimatedMeasurementsParameters = estimatedMeasurementParameters;
         this.measurementParameterColumns     = new HashMap<>(estimatedMeasurementsParameters.getDrivers().size());
@@ -280,7 +280,7 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
 
         // Verify dimension
         KalmanEstimatorUtil.checkDimension(noiseK.getRowDimension(),
-                                           builder.getOrbitalParameterFactory().getOrbitalParametersDrivers(),
+                                           builder.getOrbitalStateFactory().getOrbitalParametersDrivers(),
                                            builder.getPropagationParametersDrivers(),
                                            estimatedMeasurementsParameters);
 
@@ -340,7 +340,7 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
             // Initialize step handler and set it to the propagator
             final SemiAnalyticalMeasurementHandler stepHandler =
                 new SemiAnalyticalMeasurementHandler(this, filter, observedMeasurements,
-                                                     builder.getOrbitalParameterFactory().getDate());
+                                                     builder.getOrbitalStateFactory().getDate());
             dsstPropagator.getMultiplexer().add(stepHandler);
             dsstPropagator.propagate(tStart, tStart.shiftedBy(overshootTimeRange));
 
@@ -369,7 +369,7 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
         final ObservedMeasurement<?> observedMeasurement = measurement.getObservedMeasurement();
         for (final ParameterDriver driver : observedMeasurement.getParametersDrivers()) {
             if (driver.getReferenceDate() == null) {
-                driver.setReferenceDate(builder.getOrbitalParameterFactory().getDate());
+                driver.setReferenceDate(builder.getOrbitalStateFactory().getDate());
             }
         }
 
@@ -392,7 +392,7 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
         final double[] osculating = computeOsculatingElements(predictedFilterCorrection);
         final Orbit osculatingOrbit = OrbitParamsType.EQUINOCTIAL.mapArrayToOrbit(osculating, null,
                                                                             builder.
-                                                                                getOrbitalParameterFactory().
+                                                                                    getOrbitalStateFactory().
                                                                                 getPositionAngleType(),
                                                                             currentDate, nominalMeanSpacecraftState.getOrbit().getMu(),
                                                                             nominalMeanSpacecraftState.getFrame());
@@ -428,7 +428,7 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
 
         // Verify dimension
         KalmanEstimatorUtil.checkDimension(noiseK.getRowDimension(),
-                                           builder.getOrbitalParameterFactory().getOrbitalParametersDrivers(),
+                                           builder.getOrbitalStateFactory().getOrbitalParametersDrivers(),
                                            builder.getPropagationParametersDrivers(),
                                            estimatedMeasurementsParameters);
 
@@ -464,7 +464,7 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
         final double[] osculating = computeOsculatingElements(correctedFilterCorrection);
         final Orbit osculatingOrbit = OrbitParamsType.EQUINOCTIAL.mapArrayToOrbit(osculating, null,
                                                                             builder.
-                                                                                getOrbitalParameterFactory().
+                                                                                    getOrbitalStateFactory().
                                                                                 getPositionAngleType(),
                                                                             currentDate, nominalMeanSpacecraftState.getOrbit().getMu(),
                                                                             nominalMeanSpacecraftState.getFrame());
@@ -732,7 +732,7 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
 
         // Fill the state transition matrix with the orbital drivers
         final List<DelegatingDriver> drivers =
-            builder.getOrbitalParameterFactory().getOrbitalParametersDrivers().getDrivers();
+            builder.getOrbitalStateFactory().getOrbitalParametersDrivers().getDrivers();
         for (int i = 0; i < nbOrb; ++i) {
             if (drivers.get(i).isSelected()) {
                 int jOrb = 0;
@@ -810,7 +810,7 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
         final int nbOrb  = getNumberSelectedOrbitalDrivers();
         final int nbProp = getNumberSelectedPropagationDrivers();
         final double[][] aCY = new double[nbOrb][nbOrb];
-        predictedOrbit.getJacobianWrtParameters(builder.getOrbitalParameterFactory().getPositionAngleType(),
+        predictedOrbit.getJacobianWrtParameters(builder.getOrbitalStateFactory().getPositionAngleType(),
                                                 aCY);
         final RealMatrix dCdY = new Array2DRowRealMatrix(aCY, false);
 
@@ -841,7 +841,7 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
         dMdY = dMdY.multiply(IpB1B4);
 
         final List<DelegatingDriver> drivers = builder.
-                                               getOrbitalParameterFactory().
+                getOrbitalStateFactory().
                                                getOrbitalParametersDrivers().
                                                getDrivers();
         for (int i = 0; i < dMdY.getRowDimension(); i++) {
@@ -927,7 +927,7 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
         // Nominal mean elements
         final double[] nominalMeanElements = new double[nbOrb];
         OrbitParamsType.EQUINOCTIAL.mapOrbitToArray(nominalMeanSpacecraftState.getOrbit(),
-                                              builder.getOrbitalParameterFactory().getPositionAngleType(),
+                                              builder.getOrbitalStateFactory().getPositionAngleType(),
                                               nominalMeanElements, null);
 
         // Ref [1] Eq. 3.6

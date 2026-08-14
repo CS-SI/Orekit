@@ -16,6 +16,8 @@
  */
 package org.orekit.propagation.analytical.gnss.data;
 
+import java.util.List;
+
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.differentiation.GradientField;
 import org.hipparchus.linear.MatrixUtils;
@@ -24,7 +26,7 @@ import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.frames.Frame;
 import org.orekit.gnss.SatelliteSystem;
-import org.orekit.orbits.AbstractOrbitalParameterFactory;
+import org.orekit.orbits.AbstractOrbitalStateFactory;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldKeplerianParameters;
 import org.orekit.orbits.KeplerianOrbit;
@@ -45,14 +47,12 @@ import org.orekit.utils.ParameterObserver;
 import org.orekit.utils.TimeSpanMap;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
-import java.util.List;
-
 /** Factory for {@link AbstractNavigationMessage}.
  * @param <O> type of the orbital elements
  * @since 14.0
 */
 public abstract class GNSSOrbitalElementsFactory<O extends GNSSOrbitalElements<O>>
-    extends AbstractOrbitalParameterFactory<O> {
+    extends AbstractOrbitalStateFactory<O> {
 
     /** Name for semi major axis parameter. */
     public static final String SEMI_MAJOR_AXIS = "GnssSemiMajorAxis";

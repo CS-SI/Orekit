@@ -16,6 +16,8 @@
  */
 package org.orekit.propagation.analytical.tle.generation;
 
+import java.util.List;
+
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.differentiation.GradientField;
@@ -24,7 +26,7 @@ import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.orekit.frames.Frame;
-import org.orekit.orbits.AbstractOrbitalParameterFactory;
+import org.orekit.orbits.AbstractOrbitalStateFactory;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
@@ -43,14 +45,12 @@ import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
-import java.util.List;
-
 /**
  * Base class for generating a TLE.
  * @author Bryan Cazabonne
  * @since 12.0
  */
-public abstract class TleGenerationAlgorithm extends AbstractOrbitalParameterFactory<TLE> {
+public abstract class TleGenerationAlgorithm extends AbstractOrbitalStateFactory<TLE> {
 
     /** Name for mean motion. */
     public static final String MEAN_MOTION = "TleMeanMotion";

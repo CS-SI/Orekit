@@ -16,13 +16,13 @@
  */
 package org.orekit.propagation.analytical.gnss;
 
+import java.util.stream.Collectors;
+
 import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.propagation.Propagator;
-import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElementsFactory;
 import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElements;
+import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElementsFactory;
 import org.orekit.propagation.conversion.AbstractAnalyticalPropagatorBuilder;
-
-import java.util.stream.Collectors;
 
 /**
  * Builder for {@link GNSSPropagator}.
@@ -66,9 +66,9 @@ public class GNSSPropagatorBuilder<O extends GNSSOrbitalElements<O>>
         // set parameters
         setParameters(normalizedParameters);
 
-        return new GNSSPropagator<>(getOrbitalParameterFactory().createFromDrivers(),
-                                    getOrbitalParameterFactory().getInertial(),
-                                    getOrbitalParameterFactory().getBodyFixed(),
+        return new GNSSPropagator<>(getOrbitalStateFactory().createFromDrivers(),
+                                    getOrbitalStateFactory().getInertial(),
+                                    getOrbitalStateFactory().getBodyFixed(),
                                     getAttitudeProvider(), getMass());
 
     }

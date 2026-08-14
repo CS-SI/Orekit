@@ -86,7 +86,7 @@ public class NumericalPropagatorBuilder
 
         // Use cloned builder to unlink orbital drivers
         final NumericalPropagatorBuilder builder =
-            new NumericalPropagatorBuilder((AbstractOrbitFactory<Orbit>) clonedBuilder.getOrbitalParameterFactory().clone(),
+            new NumericalPropagatorBuilder((AbstractOrbitFactory<Orbit>) clonedBuilder.getOrbitalStateFactory().clone(),
                                            clonedBuilder.getIntegratorBuilder(), clonedBuilder.getAttitudeProvider());
 
         // Set mass and force models
@@ -161,7 +161,7 @@ public class NumericalPropagatorBuilder
     /** {@inheritDoc} */
     public NumericalPropagator buildPropagator(final double[] normalizedParameters) {
 
-        final AbstractOrbitFactory<Orbit> factory = getOrbitalParameterFactory();
+        final AbstractOrbitFactory<Orbit> factory = getOrbitalStateFactory();
         setParameters(normalizedParameters);
         final Orbit           orbit    = factory.createFromDrivers();
         final Attitude        attitude = getAttitudeProvider().

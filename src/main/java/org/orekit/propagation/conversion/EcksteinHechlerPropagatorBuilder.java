@@ -130,7 +130,7 @@ public class EcksteinHechlerPropagatorBuilder
 
         // Use cloned builder to unlink orbital drivers
         final EcksteinHechlerPropagatorBuilder builder =
-            new EcksteinHechlerPropagatorBuilder((AbstractOrbitFactory<? extends Orbit>) clonedBuilder.getOrbitalParameterFactory().clone(),
+            new EcksteinHechlerPropagatorBuilder((AbstractOrbitFactory<? extends Orbit>) clonedBuilder.getOrbitalStateFactory().clone(),
                                                  clonedBuilder.provider,
                                                  clonedBuilder.getAttitudeProvider());
 
@@ -145,7 +145,7 @@ public class EcksteinHechlerPropagatorBuilder
     public EcksteinHechlerPropagator buildPropagator(final double[] normalizedParameters) {
         setParameters(normalizedParameters);
         final EcksteinHechlerPropagator propagator =
-            new EcksteinHechlerPropagator(getOrbitalParameterFactory().createFromDrivers(),
+            new EcksteinHechlerPropagator(getOrbitalStateFactory().createFromDrivers(),
                                           getAttitudeProvider(), getMass(), provider);
         getImpulseManeuvers().forEach(propagator::addEventDetector);
         return propagator;

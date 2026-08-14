@@ -499,7 +499,7 @@ public class UnscentedSemiAnalyticalKalmanOrbitDeterminationTest {
         // Jacobian of the orbital parameters w/r to Cartesian
         final Orbit initialOrbit = OrbitParamsType.EQUINOCTIAL.convertType(orbit);
         final double[][] dYdC = new double[6][6];
-        initialOrbit.getJacobianWrtCartesian(propagatorBuilder.getOrbitalParameterFactory().getPositionAngleType(),
+        initialOrbit.getJacobianWrtCartesian(propagatorBuilder.getOrbitalStateFactory().getPositionAngleType(),
                                              dYdC);
         final RealMatrix Jac = MatrixUtils.createRealMatrix(dYdC);
 

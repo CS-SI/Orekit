@@ -16,6 +16,13 @@
  */
 package org.orekit.propagation.conversion;
 
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.hipparchus.analysis.MultivariateVectorFunction;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.exception.MathIllegalArgumentException;
@@ -55,13 +62,6 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
-
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class JacobianPropagatorConverterTest {
 
@@ -133,7 +133,7 @@ public class JacobianPropagatorConverterTest {
         // using normalized values different from 0.0 for the sake of generality
         RandomGenerator random = new Well19937a(0xe67f19c1a678d037L);
         List<ParameterDriver> all = new ArrayList<>();
-        for (final ParameterDriver driver : builder.getOrbitalParameterFactory().getOrbitalParametersDrivers().getDrivers()) {
+        for (final ParameterDriver driver : builder.getOrbitalStateFactory().getOrbitalParametersDrivers().getDrivers()) {
             all.add(driver);
         }
         for (final ParameterDriver driver : builder.getPropagationParametersDrivers().getDrivers()) {

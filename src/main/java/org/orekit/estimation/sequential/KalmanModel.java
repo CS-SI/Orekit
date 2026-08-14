@@ -16,6 +16,9 @@
  */
 package org.orekit.estimation.sequential;
 
+import java.util.List;
+import java.util.Map;
+
 import org.hipparchus.filtering.kalman.ProcessEstimate;
 import org.hipparchus.filtering.kalman.extended.NonLinearEvolution;
 import org.hipparchus.filtering.kalman.extended.NonLinearProcess;
@@ -28,7 +31,7 @@ import org.hipparchus.linear.RealVector;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitalParameterFactory;
+import org.orekit.orbits.OrbitalStateFactory;
 import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -39,9 +42,6 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
-
-import java.util.List;
-import java.util.Map;
 
 /** Class defining the process model dynamics to use with a {@link KalmanEstimator}.
  * @author Romain Gerbaud
@@ -159,7 +159,7 @@ public class KalmanModel extends AbstractKalmanEstimationCommon implements NonLi
 
             // Orbital drivers
             final List<DelegatingDriver> orbitalParameterDrivers =
-                    getBuilders().get(k).getOrbitalParameterFactory().getOrbitalParametersDrivers().getDrivers();
+                    getBuilders().get(k).getOrbitalStateFactory().getOrbitalParametersDrivers().getDrivers();
 
             // Indexes
             final int[] indK = covarianceIndirection[k];
@@ -319,7 +319,7 @@ public class KalmanModel extends AbstractKalmanEstimationCommon implements NonLi
         final Map<String, Integer> measurementParameterColumns = getMeasurementParameterColumns();
         for (int k = 0; k < evaluationStates.length; ++k) {
             final int p = observedMeasurement.getSatellites().get(k).getPropagatorIndex();
-            final OrbitalParameterFactory<?> factory = getBuilders().get(p).getOrbitalParameterFactory();
+            final OrbitalStateFactory<?> factory = getBuilders().get(p).getOrbitalStateFactory();
 
             // Predicted orbit
             final Orbit predictedOrbit = evaluationStates[k].getOrbit();
@@ -412,7 +412,7 @@ public class KalmanModel extends AbstractKalmanEstimationCommon implements NonLi
         final ObservedMeasurement<?> observedMeasurement = measurement.getObservedMeasurement();
         for (final ParameterDriver driver : observedMeasurement.getParametersDrivers()) {
             if (driver.getReferenceDate() == null) {
-                driver.setReferenceDate(getBuilders().getFirst().getOrbitalParameterFactory().getDate());
+                driver.setReferenceDate(getBuilders().getFirst().getOrbitalStateFactory().getDate());
             }
         }
 
@@ -537,7 +537,7 @@ public class KalmanModel extends AbstractKalmanEstimationCommon implements NonLi
             // the selected orbital drivers are already up to date with the prediction
             final ParameterDriversList drivers = getBuilders().
                                                  get(k).
-                                                 getOrbitalParameterFactory().
+                    getOrbitalStateFactory().
                                                  getOrbitalParametersDrivers();
             for (DelegatingDriver orbitalDriver : drivers.getDrivers()) {
                 if (orbitalDriver.isSelected()) {

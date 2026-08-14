@@ -44,11 +44,11 @@ public class TLEConverterTest {
                                                                           FixedPointTleGenerationAlgorithm.SCALE_DEFAULT,
                                                                           TimeScalesFactory.getUTC(),
                                                                           FramesFactory.getTEME()));
-        for (ParameterDriver driver : builder.getOrbitalParameterFactory().getOrbitalParametersDrivers().getDrivers()) {
+        for (ParameterDriver driver : builder.getOrbitalStateFactory().getOrbitalParametersDrivers().getDrivers()) {
             Assertions.assertTrue(driver.isSelected());
         }
         builder.deselectDynamicParameters();
-        for (ParameterDriver driver : builder.getOrbitalParameterFactory().getOrbitalParametersDrivers().getDrivers()) {
+        for (ParameterDriver driver : builder.getOrbitalStateFactory().getOrbitalParametersDrivers().getDrivers()) {
             Assertions.assertFalse(driver.isSelected());
         }
     }

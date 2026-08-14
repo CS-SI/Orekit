@@ -234,7 +234,7 @@ public class SemiAnalyticalUnscentedKalmanModelTest {
         final List<Double> scaleList = new ArrayList<>();
 
         // Orbital parameters
-        for (ParameterDriver driver : builder.getOrbitalParameterFactory().getOrbitalParametersDrivers().getDrivers()) {
+        for (ParameterDriver driver : builder.getOrbitalStateFactory().getOrbitalParametersDrivers().getDrivers()) {
             if (driver.isSelected()) {
                 scaleList.add(driver.getScale());
             }

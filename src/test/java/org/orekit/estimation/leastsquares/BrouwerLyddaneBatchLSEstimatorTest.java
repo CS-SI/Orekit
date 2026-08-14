@@ -29,8 +29,8 @@ import org.junit.jupiter.api.Test;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.Context;
+import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.EstimationsProvider;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservedMeasurement;
@@ -177,7 +177,7 @@ public class BrouwerLyddaneBatchLSEstimatorTest {
 
         final BrouwerLyddanePropagatorBuilder propagatorBuilder =
                         context.createBrouwerLyddane(PositionAngleType.MEAN, true, 1.0);
-        propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getOrbitalParameterFactory().getFrame(),
+        propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getOrbitalStateFactory().getFrame(),
                                                             LOFType.LVLH));
         final Vector3D antennaPhaseCenter = new Vector3D(-1.2, 2.3, -0.7);
 

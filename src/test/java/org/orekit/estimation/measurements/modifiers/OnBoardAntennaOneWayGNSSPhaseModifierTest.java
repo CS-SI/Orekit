@@ -55,7 +55,7 @@ public class OnBoardAntennaOneWayGNSSPhaseModifierTest {
         final NumericalPropagatorBuilder propagatorBuilder =
                         context.createNumerical(OrbitParamsType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
-        propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getOrbitalParameterFactory().getFrame(),
+        propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getOrbitalStateFactory().getFrame(),
                                                             LOFType.LVLH));
 
         // create perfect one-way GNSS phase measurements without antenna offset
@@ -119,7 +119,7 @@ public class OnBoardAntennaOneWayGNSSPhaseModifierTest {
         final NumericalPropagatorBuilder propagatorBuilder =
                         context.createNumerical(OrbitParamsType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
-        propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getOrbitalParameterFactory().getFrame(),
+        propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getOrbitalStateFactory().getFrame(),
                                                             LOFType.LVLH));
 
         // create perfect one-way GNSS phase phase measurements without antenna offset

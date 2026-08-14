@@ -83,7 +83,7 @@ class KalmanEstimatorTest {
         final TLEPropagatorBuilder propagatorBuilder =
             new TLEPropagatorBuilder(new FixedPointTleGenerationAlgorithm(tle));
         final ParameterDriversList drivers =
-            propagatorBuilder.getOrbitalParameterFactory().getOrbitalParametersDrivers();
+            propagatorBuilder.getOrbitalStateFactory().getOrbitalParametersDrivers();
         for (final ParameterDriver driver: drivers.getDrivers()) {
             driver.setSelected(false);
         }
@@ -128,7 +128,7 @@ class KalmanEstimatorTest {
 
         // Unselect all orbital propagation parameters
         final ParameterDriversList drivers =
-            propagatorBuilder.getOrbitalParameterFactory().getOrbitalParametersDrivers();
+            propagatorBuilder.getOrbitalStateFactory().getOrbitalParametersDrivers();
         drivers.getDrivers().forEach(driver -> driver.setSelected(false));
 
         // Select eccentricity and anomaly
@@ -203,9 +203,9 @@ class KalmanEstimatorTest {
 
         // Unselect all orbital propagation parameters
         final ParameterDriversList oDrivers1 =
-            propagatorBuilder1.getOrbitalParameterFactory().getOrbitalParametersDrivers();
+            propagatorBuilder1.getOrbitalStateFactory().getOrbitalParametersDrivers();
         final ParameterDriversList oDrivers2 =
-            propagatorBuilder2.getOrbitalParameterFactory().getOrbitalParametersDrivers();
+            propagatorBuilder2.getOrbitalStateFactory().getOrbitalParametersDrivers();
         oDrivers1.getDrivers().forEach(driver -> driver.setSelected(false));
         oDrivers2.getDrivers().forEach(driver -> driver.setSelected(false));
 
@@ -321,7 +321,7 @@ class KalmanEstimatorTest {
                5.0, 5.0, 1.0, new ObservableSatellite(0));
 
         // Unselect all orbital propagation parameters
-        final ParameterDriversList drivers =propagatorBuilder.getOrbitalParameterFactory().getOrbitalParametersDrivers();
+        final ParameterDriversList drivers =propagatorBuilder.getOrbitalStateFactory().getOrbitalParametersDrivers();
         drivers.getDrivers().forEach(driver -> driver.setSelected(false));
 
         // Select eccentricity and anomaly
@@ -435,7 +435,7 @@ class KalmanEstimatorTest {
 
         // Change semi-major axis of 1.2m as in the batch test
         ParameterDriver aDriver =
-            propagatorBuilder.getOrbitalParameterFactory().getOrbitalParametersDrivers().getDrivers().getFirst();
+            propagatorBuilder.getOrbitalStateFactory().getOrbitalParametersDrivers().getDrivers().getFirst();
         aDriver.setValue(aDriver.getValue() + 1.2);
         aDriver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
@@ -631,7 +631,7 @@ class KalmanEstimatorTest {
 
         // Change semi-major axis of 1.2m as in the batch test
         ParameterDriver aDriver =
-            propagatorBuilder.getOrbitalParameterFactory().getOrbitalParametersDrivers().getDrivers().getFirst();
+            propagatorBuilder.getOrbitalStateFactory().getOrbitalParametersDrivers().getDrivers().getFirst();
         aDriver.setValue(aDriver.getValue() + 1.2);
         aDriver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
@@ -694,7 +694,7 @@ class KalmanEstimatorTest {
         final NumericalPropagatorBuilder propagatorBuilder =
                         context.createNumerical(orbitParamsType, positionAngleType, perfectStart,
                                               minStep, maxStep, dP);
-        propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getOrbitalParameterFactory().getFrame(),
+        propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getOrbitalStateFactory().getFrame(),
                                                             LOFType.LVLH));
 
         // Antenna phase center definition
@@ -727,7 +727,7 @@ class KalmanEstimatorTest {
 
         // Change semi-major axis of 1.2m as in the batch test
         ParameterDriver aDriver =
-            propagatorBuilder.getOrbitalParameterFactory().getOrbitalParametersDrivers().getDrivers().getFirst();
+            propagatorBuilder.getOrbitalStateFactory().getOrbitalParametersDrivers().getDrivers().getFirst();
         aDriver.setValue(aDriver.getValue() + 1.2);
         aDriver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
@@ -1192,7 +1192,7 @@ class KalmanEstimatorTest {
         final NumericalPropagatorBuilder propagatorBuilder2 =
                         context.createNumerical(OrbitParamsType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 1.0);
-        final AbsoluteDate referenceDate = propagatorBuilder1.getOrbitalParameterFactory().getDate();
+        final AbsoluteDate referenceDate = propagatorBuilder1.getOrbitalStateFactory().getDate();
 
         // Create perfect inter-satellites range measurements
         final TimeStampedPVCoordinates original = context.initialOrbit.getPVCoordinates();
@@ -1386,7 +1386,7 @@ class KalmanEstimatorTest {
         final NumericalPropagatorBuilder propagatorBuilder2 =
                         context.createNumerical(OrbitParamsType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 1.0);
-        final AbsoluteDate referenceDate = propagatorBuilder1.getOrbitalParameterFactory().getDate();
+        final AbsoluteDate referenceDate = propagatorBuilder1.getOrbitalStateFactory().getDate();
 
         // Create perfect inter-satellites range measurements
         final TimeStampedPVCoordinates original = context.initialOrbit.getPVCoordinates();

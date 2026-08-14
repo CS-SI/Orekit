@@ -19,11 +19,12 @@ package org.orekit.orbits;
 import org.hipparchus.CalculusFieldElement;
 import org.orekit.time.FieldTimeStamped;
 
-/** Interface for orbital parameters.
+/** Interface for time-stamped orbital state.
  * @param <T> type of the field elements
  * @since 14.0
+ * @see OrbitalState
  */
-public interface FieldOrbitalParameters<T extends CalculusFieldElement<T>>
+public interface FieldOrbitalState<T extends CalculusFieldElement<T>>
     extends FieldTimeStamped<T> {
     // this is a marker interface, it contains nothing
 }

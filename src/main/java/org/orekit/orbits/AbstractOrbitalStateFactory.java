@@ -29,8 +29,8 @@ import org.orekit.utils.ParameterDriversList;
  * @param <P> type of the orbital parameters
  * @since 14.0
  */
-public abstract class AbstractOrbitalParameterFactory<P extends OrbitalParameters>
-    implements OrbitalParameterFactory<P> {
+public abstract class AbstractOrbitalStateFactory<P extends OrbitalState>
+    implements OrbitalStateFactory<P> {
 
     /** Orbit type. */
     private final OrbitParamsType orbitParamsType;
@@ -60,11 +60,11 @@ public abstract class AbstractOrbitalParameterFactory<P extends OrbitalParameter
      * @param date              date of the orbital parameters
      * @param mu                central attraction coefficient (m³/s²)
      */
-    protected AbstractOrbitalParameterFactory(final OrbitParamsType orbitParamsType,
-                                              final ParameterDriversList orbitalDrivers,
-                                              final Frame frame,
-                                              final PositionAngleType positionAngleType,
-                                              final AbsoluteDate date, final double mu) {
+    protected AbstractOrbitalStateFactory(final OrbitParamsType orbitParamsType,
+                                          final ParameterDriversList orbitalDrivers,
+                                          final Frame frame,
+                                          final PositionAngleType positionAngleType,
+                                          final AbsoluteDate date, final double mu) {
         this.orbitParamsType = orbitParamsType;
         this.orbitalDrivers    = orbitalDrivers;
         this.date              = date;
@@ -179,11 +179,11 @@ public abstract class AbstractOrbitalParameterFactory<P extends OrbitalParameter
 
     /** {@inheritDoc} */
     @Override
-    public AbstractOrbitalParameterFactory<P> clone() {
+    public AbstractOrbitalStateFactory<P> clone() {
         try {
 
             @SuppressWarnings("unchecked")
-            final AbstractOrbitalParameterFactory<P> clone = (AbstractOrbitalParameterFactory<P>) super.clone();
+            final AbstractOrbitalStateFactory<P> clone = (AbstractOrbitalStateFactory<P>) super.clone();
 
             // de-couple orbital parameters drivers
             final ParameterDriversList oldDrivers = orbitalDrivers;

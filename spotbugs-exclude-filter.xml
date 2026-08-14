@@ -334,7 +334,7 @@
     <Bug pattern="EI_EXPOSE_REP2" />
   </Match>
   <Match>
-    <Class name="org.orekit.orbits.AbstractOrbitalParameterFactory"/>
+    <Class name="org.orekit.orbits.AbstractOrbitalStateFactory"/>
     <Or>
       <Method name="getOrbitalParametersDrivers" />
       <Method name="getFrame" />
@@ -342,7 +342,7 @@
     <Bug pattern="EI_EXPOSE_REP" />
   </Match>
   <Match>
-    <Class name="org.orekit.orbits.AbstractOrbitalParameterFactory"/>
+    <Class name="org.orekit.orbits.AbstractOrbitalStateFactory"/>
     <Method name="setFrame" />
     <Bug pattern="EI_EXPOSE_REP2" />
   </Match>
@@ -444,7 +444,7 @@
   </Match>
   <Match>
     <Class name="org.orekit.propagation.conversion.AbstractPropagatorBuilder"/>
-    <Method name="getOrbitalParameterFactory"/>
+    <Method name="getOrbitalStateFactory"/>
     <Bug pattern="EI_EXPOSE_REP" />
   </Match>
 

@@ -108,11 +108,11 @@ public class TLEPropagatorBuilder
         setParameters(normalizedParameters);
 
         // TLE related to the orbit
-        final TLE tle = getOrbitalParameterFactory().createFromDrivers();
+        final TLE tle = getOrbitalStateFactory().createFromDrivers();
 
         // propagator
         final TLEPropagator propagator = TLEPropagator.selectExtrapolator(tle, getAttitudeProvider(), getMass(),
-                                                                          getOrbitalParameterFactory().getFrame());
+                                                                          getOrbitalStateFactory().getFrame());
 
         final boolean bStarSelected = this.getPropagationParametersDrivers().getDrivers().getFirst().isSelected();
         propagator.getParametersDrivers().getFirst().setSelected(bStarSelected);

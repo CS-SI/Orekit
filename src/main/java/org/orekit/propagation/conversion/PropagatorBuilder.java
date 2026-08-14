@@ -16,17 +16,17 @@
  */
 package org.orekit.propagation.conversion;
 
+import java.util.List;
+
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.estimation.leastsquares.AbstractBatchLSModel;
 import org.orekit.estimation.leastsquares.ModelObserver;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitalParameterFactory;
-import org.orekit.orbits.OrbitalParameters;
+import org.orekit.orbits.OrbitalState;
+import org.orekit.orbits.OrbitalStateFactory;
 import org.orekit.propagation.Propagator;
 import org.orekit.utils.ParameterDriversList;
-
-import java.util.List;
 
 /** This interface is the top-level abstraction to build propagators for conversion.
  * @author Pascal Parraud
@@ -77,7 +77,7 @@ public interface PropagatorBuilder extends Cloneable {
      * @return orbital parameters factory
      * @since 14.0
      */
-    OrbitalParameterFactory<? extends OrbitalParameters> getOrbitalParameterFactory();
+    OrbitalStateFactory<? extends OrbitalState> getOrbitalStateFactory();
 
     /** Get the initial mass.
      * @return the mass (kg)

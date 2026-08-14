@@ -48,7 +48,7 @@ public class OnBoardAntennaTurnAroundRangeModifierTest {
         final NumericalPropagatorBuilder propagatorBuilder =
                         context.createNumerical(OrbitParamsType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
-        propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getOrbitalParameterFactory().getFrame(),
+        propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getOrbitalStateFactory().getFrame(),
                                                             LOFType.LVLH));
 
         // create perfect turn-around range measurements without antenna offset
@@ -85,7 +85,7 @@ public class OnBoardAntennaTurnAroundRangeModifierTest {
         final NumericalPropagatorBuilder propagatorBuilder =
                         context.createNumerical(OrbitParamsType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
-        propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getOrbitalParameterFactory().getFrame(),
+        propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getOrbitalStateFactory().getFrame(),
                                                             LOFType.LVLH));
 
         // create perfect turn-around range measurements without antenna offset

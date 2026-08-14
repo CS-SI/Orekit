@@ -17,8 +17,8 @@
 package org.orekit.propagation.conversion;
 
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.orbits.OrbitalParameterFactory;
-import org.orekit.orbits.OrbitalParameters;
+import org.orekit.orbits.OrbitalState;
+import org.orekit.orbits.OrbitalStateFactory;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
 
@@ -31,8 +31,8 @@ import org.orekit.propagation.integration.AbstractIntegratedPropagator;
  * @author Romain Serra
  */
 public abstract class AbstractIntegratedPropagatorBuilder<T extends AbstractIntegratedPropagator,
-                                                          O extends OrbitalParameters,
-                                                          F extends OrbitalParameterFactory<O>>
+                                                          O extends OrbitalState,
+                                                          F extends OrbitalStateFactory<O>>
     extends AbstractPropagatorBuilder<T, O, F> {
 
     /** First order integrator builder for propagation. */

@@ -16,6 +16,9 @@
  */
 package org.orekit.propagation.conversion;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.AttitudeProvider;
@@ -25,8 +28,8 @@ import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitalParameterFactory;
-import org.orekit.orbits.OrbitalParameters;
+import org.orekit.orbits.OrbitalState;
+import org.orekit.orbits.OrbitalStateFactory;
 import org.orekit.propagation.AbstractPropagator;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
@@ -37,9 +40,6 @@ import org.orekit.utils.ParameterObserver;
 import org.orekit.utils.TimeSpanMap;
 import org.orekit.utils.TimeSpanMap.Span;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /** Base class for propagator builders.
  * @param <T> type of the propagator
  * @param <O> type of the orbital parameters
@@ -48,8 +48,8 @@ import java.util.List;
  * @since 7.1
  */
 public abstract class AbstractPropagatorBuilder<T extends AbstractPropagator,
-                                                O extends OrbitalParameters,
-                                                F extends OrbitalParameterFactory<O>>
+                                                O extends OrbitalState,
+                                                F extends OrbitalStateFactory<O>>
     implements PropagatorBuilder {
 
     /** Central attraction scaling factor.
@@ -85,7 +85,7 @@ public abstract class AbstractPropagatorBuilder<T extends AbstractPropagator,
      * are selected, which means that if the builder is used for orbit determination or
      * propagator conversion, all orbital parameters will be estimated. If only a subset
      * of the orbital parameters must be estimated, caller must retrieve the orbital
-     * parameters by calling {@link #getOrbitalParameterFactory()}.{@link OrbitalParameterFactory#getOrbitalParametersDrivers()}
+     * parameters by calling {@link #getOrbitalStateFactory()}.{@link OrbitalStateFactory#getOrbitalParametersDrivers()}
      * and then call {@link ParameterDriver#setSelected(boolean) setSelected(false)}.
      * </p>
      * @param factory factory for initial orbit
@@ -104,7 +104,7 @@ public abstract class AbstractPropagatorBuilder<T extends AbstractPropagator,
      * are selected, which means that if the builder is used for orbit determination or
      * propagator conversion, all orbital parameters will be estimated. If only a subset
      * of the orbital parameters must be estimated, caller must retrieve the orbital
-     * parameters by calling {@link #getOrbitalParameterFactory()}.{@link OrbitalParameterFactory#getOrbitalParametersDrivers()}
+     * parameters by calling {@link #getOrbitalStateFactory()}.{@link OrbitalStateFactory#getOrbitalParametersDrivers()}
      * and then call {@link ParameterDriver#setSelected(boolean) setSelected(false)}.
      * </p>
      * @param factory factory for initial orbit
@@ -126,7 +126,7 @@ public abstract class AbstractPropagatorBuilder<T extends AbstractPropagator,
      * are selected, which means that if the builder is used for orbit determination or
      * propagator conversion, all orbital parameters will be estimated. If only a subset
      * of the orbital parameters must be estimated, caller must retrieve the orbital
-     * parameters by calling {@link #getOrbitalParameterFactory()}.{@link OrbitalParameterFactory#getOrbitalParametersDrivers()}
+     * parameters by calling {@link #getOrbitalStateFactory()}.{@link OrbitalStateFactory#getOrbitalParametersDrivers()}
      * and then call {@link ParameterDriver#setSelected(boolean) setSelected(false)}.
      * </p>
      * @param factory factory for initial orbit
@@ -198,7 +198,7 @@ public abstract class AbstractPropagatorBuilder<T extends AbstractPropagator,
     }
 
     /** {@inheritDoc} */
-    public F getOrbitalParameterFactory() {
+    public F getOrbitalStateFactory() {
         return factory;
     }
 

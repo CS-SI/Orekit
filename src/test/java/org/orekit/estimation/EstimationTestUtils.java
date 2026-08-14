@@ -61,7 +61,10 @@ import org.orekit.frames.Transform;
 import org.orekit.frames.TransformProvider;
 import org.orekit.models.earth.displacement.StationDisplacement;
 import org.orekit.models.earth.displacement.TidalDisplacement;
-import org.orekit.orbits.*;
+import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.orbits.Orbit;
+import org.orekit.orbits.OrbitParamsType;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
@@ -338,7 +341,7 @@ public class EstimationTestUtils {
                                               final PropagatorBuilder propagatorBuilder) {
 
         // override orbital parameters
-        propagatorBuilder.getOrbitalParameterFactory().reset(initialOrbit);
+        propagatorBuilder.getOrbitalStateFactory().reset(initialOrbit);
 
         // Return the built propagator
         return propagatorBuilder.buildPropagator();
@@ -670,7 +673,7 @@ public class EstimationTestUtils {
             // The filter state vector holds the builder parameters B, which are not the
             // propagated state for TLE and specialized GNSS propagators, so the Jacobian
             // has to be dC/dB and is asked to the builder rather than to the estimated orbit
-            final RealMatrix Jacobian = builders[k].getOrbitalParameterFactory().getJacobianWrtParameters();
+            final RealMatrix Jacobian = builders[k].getOrbitalStateFactory().getJacobianWrtParameters();
             final RealMatrix estimatedCartesianP = Jacobian.multiply(estimatedP.getSubMatrix(0, 5, 0, 5)).multiply(Jacobian.transpose());
 
             // Get the final sigmas (ie.sqrt of the diagonal of the Cartesian orbital covariance matrix)
