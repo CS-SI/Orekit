@@ -287,43 +287,15 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased<Equino
         throws IllegalArgumentException {
         super(pvCoordinates, frame, mu);
 
-        //  compute semi-major axis
-        final Vector3D pvP   = pvCoordinates.getPosition();
-        final Vector3D pvV   = pvCoordinates.getVelocity();
-        final Vector3D pvA   = pvCoordinates.getAcceleration();
-        final double r2      = pvP.getNorm2Sq();
-        final double r       = FastMath.sqrt(r2);
-        final double V2      = pvV.getNorm2Sq();
-        final double rV2OnMu = r * V2 / mu;
-
-        // compute semi-major axis
-        a = r / (2 - rV2OnMu);
-
-        if (!isElliptical()) {
-            throw new OrekitIllegalArgumentException(OrekitMessages.HYPERBOLIC_ORBIT_NOT_HANDLED_AS,
-                                                     getClass().getName());
-        }
-
-        // compute inclination vector
-        final Vector3D w = pvCoordinates.getMomentum().normalize();
-        final double d = 1.0 / (1 + w.getZ());
-        hx = -d * w.getY();
-        hy =  d * w.getX();
-
-        // compute true longitude argument
+        final EquinoctialParametersConverter converter = new EquinoctialParametersConverter(mu);
         cachedPositionAngleType = PositionAngleType.TRUE;
-        final double cLv = (pvP.getX() - d * pvP.getZ() * w.getX()) / r;
-        final double sLv = (pvP.getY() - d * pvP.getZ() * w.getY()) / r;
-        cachedL = FastMath.atan2(sLv, cLv);
-
-        // compute eccentricity vector
-        final double eSE = Vector3D.dotProduct(pvP, pvV) / FastMath.sqrt(mu * a);
-        final double eCE = rV2OnMu - 1;
-        final double e2  = eCE * eCE + eSE * eSE;
-        final double f   = eCE - e2;
-        final double g   = FastMath.sqrt(1 - e2) * eSE;
-        ex = a * (f * cLv + g * sLv) / r;
-        ey = a * (f * sLv - g * cLv) / r;
+        final EquinoctialParameters parameters = converter.toParameters(pvCoordinates, cachedPositionAngleType);
+        a = parameters.a();
+        ex = parameters.ex();
+        ey = parameters.ey();
+        hx = parameters.hx();
+        hy = parameters.hy();
+        cachedL = parameters.longitudeArgument();
 
         partialPV = pvCoordinates;
 
@@ -333,8 +305,9 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased<Equino
             final double[][] jacobian = new double[6][6];
             getJacobianWrtCartesian(PositionAngleType.MEAN, jacobian);
 
-            final Vector3D keplerianAcceleration    = new Vector3D(-mu / (r * r2), pvP);
-            final Vector3D nonKeplerianAcceleration = pvA.subtract(keplerianAcceleration);
+            final double r3 = FastMath.pow(pvCoordinates.getPosition().getNorm2Sq(), 3. / 2.);
+            final Vector3D keplerianAcceleration    = new Vector3D(-mu / r3, pvCoordinates.getPosition());
+            final Vector3D nonKeplerianAcceleration = pvCoordinates.getAcceleration().subtract(keplerianAcceleration);
             final double   aX                       = nonKeplerianAcceleration.getX();
             final double   aY                       = nonKeplerianAcceleration.getY();
             final double   aZ                       = nonKeplerianAcceleration.getZ();
@@ -614,9 +587,11 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased<Equino
      * @return longitude argument derivative (rad/s)
      */
     public double getLDot(final PositionAngleType type) {
-        return (type == PositionAngleType.MEAN) ? getLMDot() :
-                                              ((type == PositionAngleType.ECCENTRIC) ? getLEDot() :
-                                                                                   getLvDot());
+        return switch (type) {
+            case TRUE -> getLvDot();
+            case MEAN -> getLMDot();
+            case ECCENTRIC -> getLEDot();
+        };
     }
 
     /** {@inheritDoc} */
@@ -660,50 +635,8 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased<Equino
             return;
         }
 
-        // get equinoctial parameters
-        final double lE = getLE();
-
-        // inclination-related intermediate parameters
-        final double hx2   = hx * hx;
-        final double hy2   = hy * hy;
-        final double factH = 1. / (1 + hx2 + hy2);
-
-        // reference axes defining the orbital plane
-        final double ux = (1 + hx2 - hy2) * factH;
-        final double uy =  2 * hx * hy * factH;
-        final double uz = -2 * hy * factH;
-
-        final double vx = uy;
-        final double vy = (1 - hx2 + hy2) * factH;
-        final double vz =  2 * hx * factH;
-
-        // eccentricity-related intermediate parameters
-        final double exey = ex * ey;
-        final double ex2  = ex * ex;
-        final double ey2  = ey * ey;
-        final double e2   = ex2 + ey2;
-        final double eta  = 1 + FastMath.sqrt(1 - e2);
-        final double beta = 1. / eta;
-
-        // eccentric longitude argument
-        final SinCos scLe   = FastMath.sinCos(lE);
-        final double cLe    = scLe.cos();
-        final double sLe    = scLe.sin();
-        final double exCeyS = ex * cLe + ey * sLe;
-
-        // coordinates of position and velocity in the orbital plane
-        final double x      = a * ((1 - beta * ey2) * cLe + beta * exey * sLe - ex);
-        final double y      = a * ((1 - beta * ex2) * sLe + beta * exey * cLe - ey);
-
-        final double factor = FastMath.sqrt(getMu() / a) / (1 - exCeyS);
-        final double xdot   = factor * (-sLe + beta * ey * exCeyS);
-        final double ydot   = factor * ( cLe - beta * ex * exCeyS);
-
-        final Vector3D position =
-                        new Vector3D(x * ux + y * vx, x * uy + y * vy, x * uz + y * vz);
-        final Vector3D velocity =
-                        new Vector3D(xdot * ux + ydot * vx, xdot * uy + ydot * vy, xdot * uz + ydot * vz);
-        partialPV = new PVCoordinates(position, velocity);
+        final EquinoctialParametersConverter converter = new EquinoctialParametersConverter(getMu());
+        partialPV = converter.toCartesian(getEquinoctialParameters());
 
     }
 
