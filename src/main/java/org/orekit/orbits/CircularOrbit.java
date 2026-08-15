@@ -161,7 +161,24 @@ public class CircularOrbit extends Orbit implements PositionAngleBased<CircularO
                          final PositionAngleType type,
                          final Frame frame, final AbsoluteDate date, final double mu)
             throws IllegalArgumentException {
-        this(a, ex, ey, i, raan, alpha, type, type, frame, date, mu);
+        this(new CircularParameters(a, ex, ey, i, raan, alpha, type), frame, date, mu);
+    }
+
+    /** Creates a new instance without derivatives and with cached position angle same as value inputted.
+     * @param parameters circular orbital parameters
+     * @param frame the frame in which are defined the parameters
+     * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
+     * @param date date of the orbital parameters
+     * @param mu central attraction coefficient (m³/s²)
+     * @exception IllegalArgumentException if eccentricity is equal to 1 or larger or
+     * if frame is not a {@link Frame#isPseudoInertial pseudo-inertial frame}
+     * @since 14.0
+     */
+    public CircularOrbit(final CircularParameters parameters,
+                         final Frame frame, final AbsoluteDate date, final double mu)
+            throws IllegalArgumentException {
+        this(parameters.a(), parameters.ex(), parameters.ey(), parameters.i(), parameters.raan(), parameters.latitudeArgument(),
+                parameters.positionAngleType(), parameters.positionAngleType(), frame, date, mu);
     }
 
     /** Creates a new instance.
@@ -722,9 +739,11 @@ public class CircularOrbit extends Orbit implements PositionAngleBased<CircularO
      * @since 9.0
      */
     public double getAlphaDot(final PositionAngleType type) {
-        return (type == PositionAngleType.MEAN) ? getAlphaMDot() :
-                                              ((type == PositionAngleType.ECCENTRIC) ? getAlphaEDot() :
-                                                                                   getAlphaVDot());
+        return switch (type) {
+            case TRUE -> getAlphaVDot();
+            case MEAN -> getAlphaMDot();
+            case ECCENTRIC -> getAlphaEDot();
+        };
     }
 
     /** {@inheritDoc} */

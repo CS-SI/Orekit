@@ -120,6 +120,23 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
     private FieldPVCoordinates<T> partialPV;
 
     /** Creates a new instance.
+     * @param parameters equinoctial parameters
+     * @param frame the frame in which the parameters are defined
+     * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
+     * @param date date of the orbital parameters
+     * @param mu central attraction coefficient (m³/s²)
+     * @exception IllegalArgumentException if eccentricity is equal to 1 or larger or
+     * if frame is not a {@link Frame#isPseudoInertial pseudo-inertial frame}
+     * @since 14.0
+     */
+    public FieldEquinoctialOrbit(final FieldEquinoctialParameters<T> parameters,
+                                 final Frame frame, final FieldAbsoluteDate<T> date, final T mu)
+            throws IllegalArgumentException {
+        this(parameters.a(), parameters.ex(), parameters.ey(), parameters.hx(), parameters.hy(), parameters.longitudeArgument(),
+                parameters.positionAngleType(), frame, date, mu);
+    }
+
+    /** Creates a new instance.
      * @param a  semi-major axis (m)
      * @param ex e cos(ω + Ω), first component of eccentricity vector
      * @param ey e sin(ω + Ω), second component of eccentricity vector
@@ -141,9 +158,8 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
                                  final PositionAngleType type, final PositionAngleType cachedPositionAngleType,
                                  final Frame frame, final FieldAbsoluteDate<T> date, final T mu)
         throws IllegalArgumentException {
-        this(a, ex, ey, hx, hy, l,
-             a.getField().getZero(), a.getField().getZero(), a.getField().getZero(), a.getField().getZero(), a.getField().getZero(),
-             computeKeplerianLDot(type, a, ex, ey, mu, l, type), type, cachedPositionAngleType, frame, date, mu);
+        this(new FieldEquinoctialParameters<>(a, ex, ey, hx, hy, l, type).withPositionAngleType(cachedPositionAngleType),
+                frame, date, mu);
     }
 
     /** Creates a new instance.
@@ -278,43 +294,16 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
         throws IllegalArgumentException {
         super(pvCoordinates, frame, mu);
 
-        //  compute semi-major axis
-        final FieldVector3D<T> pvP = pvCoordinates.getPosition();
-        final FieldVector3D<T> pvV = pvCoordinates.getVelocity();
-        final FieldVector3D<T> pvA = pvCoordinates.getAcceleration();
-        final T r2 = pvP.getNorm2Sq();
-        final T r  = r2.sqrt();
-        final T V2 = pvV.getNorm2Sq();
-        final T rV2OnMu = r.multiply(V2).divide(mu);
-
-        // compute semi-major axis
-        a = r.divide(rV2OnMu.negate().add(2));
-
-        if (!isElliptical()) {
-            throw new OrekitIllegalArgumentException(OrekitMessages.HYPERBOLIC_ORBIT_NOT_HANDLED_AS,
-                                                     getClass().getName());
-        }
-
-        // compute inclination vector
-        final FieldVector3D<T> w = pvCoordinates.getMomentum().normalize();
-        final T d = getOne().divide(getOne().add(w.getZ()));
-        hx =  d.negate().multiply(w.getY());
-        hy =  d.multiply(w.getX());
-
-        // compute true longitude argument
+        // compute orbital elements
+        final FieldEquinoctialParametersConverter<T> converter = new FieldEquinoctialParametersConverter<>(mu);
         cachedPositionAngleType = PositionAngleType.TRUE;
-        final T cLv = (pvP.getX().subtract(d.multiply(pvP.getZ()).multiply(w.getX()))).divide(r);
-        final T sLv = (pvP.getY().subtract(d.multiply(pvP.getZ()).multiply(w.getY()))).divide(r);
-        cachedL = sLv.atan2(cLv);
-
-        // compute eccentricity vector
-        final T eSE = FieldVector3D.dotProduct(pvP, pvV).divide(a.multiply(mu).sqrt());
-        final T eCE = rV2OnMu.subtract(1);
-        final T e2  = eCE.square().add(eSE.square());
-        final T f   = eCE.subtract(e2);
-        final T g   = e2.negate().add(1).sqrt().multiply(eSE);
-        ex = a.multiply(f.multiply(cLv).add( g.multiply(sLv))).divide(r);
-        ey = a.multiply(f.multiply(sLv).subtract(g.multiply(cLv))).divide(r);
+        final FieldEquinoctialParameters<T> equinoctialParameters = converter.toParameters(pvCoordinates, cachedPositionAngleType);
+        a = equinoctialParameters.a();
+        ex = equinoctialParameters.ex();
+        ey = equinoctialParameters.ey();
+        hx = equinoctialParameters.hx();
+        hy = equinoctialParameters.hy();
+        cachedL = equinoctialParameters.longitudeArgument();
 
         partialPV = pvCoordinates;
 
@@ -324,6 +313,10 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
             final T[][] jacobian = MathArrays.buildArray(a.getField(), 6, 6);
             getJacobianWrtCartesian(PositionAngleType.MEAN, jacobian);
 
+            final FieldVector3D<T> pvP = pvCoordinates.getPosition();
+            final FieldVector3D<T> pvA = pvCoordinates.getAcceleration();
+            final T r2 = pvP.getNorm2Sq();
+            final T r  = r2.sqrt();
             final FieldVector3D<T> keplerianAcceleration    = new FieldVector3D<>(r.multiply(r2).reciprocal().multiply(mu.negate()), pvP);
             final FieldVector3D<T> nonKeplerianAcceleration = pvA.subtract(keplerianAcceleration);
             final T   aX                       = nonKeplerianAcceleration.getX();
@@ -628,9 +621,11 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
      * @return longitude argument derivative (rad/s)
      */
     public T getLDot(final PositionAngleType type) {
-        return (type == PositionAngleType.MEAN) ? getLMDot() :
-                                              ((type == PositionAngleType.ECCENTRIC) ? getLEDot() :
-                                                                                   getLvDot());
+        return switch (type) {
+            case TRUE -> getLvDot();
+            case MEAN -> getLMDot();
+            case ECCENTRIC -> getLEDot();
+        };
     }
 
     /** {@inheritDoc} */
@@ -683,53 +678,8 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
             return;
         }
 
-        // get equinoctial parameters
-        final T lE = getLE();
-
-        // inclination-related intermediate parameters
-        final T hx2   = hx.square();
-        final T hy2   = hy.square();
-        final T factH = getOne().divide(hx2.add(1.0).add(hy2));
-
-        // reference axes defining the orbital plane
-        final T ux = hx2.add(1.0).subtract(hy2).multiply(factH);
-        final T uy = hx.multiply(hy).multiply(factH).multiply(2);
-        final T uz = hy.multiply(-2).multiply(factH);
-
-        final T vx = uy;
-        final T vy = (hy2.subtract(hx2).add(1)).multiply(factH);
-        final T vz =  hx.multiply(factH).multiply(2);
-
-        // eccentricity-related intermediate parameters
-        final T ex2  = ex.square();
-        final T exey = ex.multiply(ey);
-        final T ey2  = ey.square();
-        final T e2   = ex2.add(ey2);
-        final T eta  = getOne().subtract(e2).sqrt().add(1);
-        final T beta = getOne().divide(eta);
-
-        // eccentric longitude argument
-        final FieldSinCos<T> scLe = FastMath.sinCos(lE);
-        final T cLe    = scLe.cos();
-        final T sLe    = scLe.sin();
-        final T exCeyS = ex.multiply(cLe).add(ey.multiply(sLe));
-
-        // coordinates of position and velocity in the orbital plane
-        final T x      = a.multiply(getOne().subtract(beta.multiply(ey2)).multiply(cLe).add(beta.multiply(exey).multiply(sLe)).subtract(ex));
-        final T y      = a.multiply(getOne().subtract(beta.multiply(ex2)).multiply(sLe).add(beta .multiply(exey).multiply(cLe)).subtract(ey));
-
-        final T factor = getMu().divide(a).sqrt().divide(getOne().subtract(exCeyS));
-        final T xdot   = factor.multiply(sLe.negate().add(beta.multiply(ey).multiply(exCeyS)));
-        final T ydot   = factor.multiply(cLe.subtract(beta.multiply(ex).multiply(exCeyS)));
-
-        final FieldVector3D<T> position =
-                        new FieldVector3D<>(x.multiply(ux).add(y.multiply(vx)),
-                                            x.multiply(uy).add(y.multiply(vy)),
-                                            x.multiply(uz).add(y.multiply(vz)));
-        final FieldVector3D<T> velocity =
-                        new FieldVector3D<>(xdot.multiply(ux).add(ydot.multiply(vx)), xdot.multiply(uy).add(ydot.multiply(vy)), xdot.multiply(uz).add(ydot.multiply(vz)));
-
-        partialPV = new FieldPVCoordinates<>(position, velocity);
+        final FieldEquinoctialParametersConverter<T> converter = new FieldEquinoctialParametersConverter<>(getMu());
+        partialPV = converter.toCartesian(getEquinoctialParameters());
 
     }
 
@@ -1220,8 +1170,7 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
     /** {@inheritDoc} */
     @Override
     public FieldEquinoctialOrbit<T> withKeplerianRates() {
-        return new FieldEquinoctialOrbit<>(getA(), getEquinoctialEx(), getEquinoctialEy(), getHx(), getHy(),
-                cachedL, cachedPositionAngleType, getFrame(), getDate(), getMu());
+        return new FieldEquinoctialOrbit<>(getEquinoctialParameters(), getFrame(), getDate(), getMu());
     }
 
     /** {@inheritDoc} */
@@ -1236,9 +1185,7 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
                                         cachedPositionAngleType, getFrame(),
                                         getDate().toAbsoluteDate(), getMu().getReal());
         } else {
-            return new EquinoctialOrbit(a.getReal(), ex.getReal(), ey.getReal(),
-                                        hx.getReal(), hy.getReal(), cachedPositionAngle,
-                                        cachedPositionAngleType, getFrame(),
+            return new EquinoctialOrbit(getEquinoctialParameters().toEquinoctialElements(), getFrame(),
                                         getDate().toAbsoluteDate(), getMu().getReal());
         }
     }

@@ -765,9 +765,11 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
      * @return latitude argument derivative (rad/s)
      */
     public T getAlphaDot(final PositionAngleType type) {
-        return (type == PositionAngleType.MEAN) ? getAlphaMDot() :
-                                              ((type == PositionAngleType.ECCENTRIC) ? getAlphaEDot() :
-                                                                                   getAlphaVDot());
+        return switch (type) {
+            case TRUE -> getAlphaVDot();
+            case MEAN -> getAlphaMDot();
+            case ECCENTRIC -> getAlphaEDot();
+        };
     }
 
     /** {@inheritDoc} */
@@ -1474,9 +1476,7 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
     /** {@inheritDoc} */
     @Override
     public FieldCircularOrbit<T> withKeplerianRates() {
-        return new FieldCircularOrbit<>(getA(), getCircularEx(), getCircularEy(),
-                getI(), getRightAscensionOfAscendingNode(), cachedAlpha,
-                cachedPositionAngleType, getFrame(), getDate(), getMu());
+        return new FieldCircularOrbit<>(getCircularParameters(), getFrame(), getDate(), getMu());
     }
 
     /** {@inheritDoc} */
