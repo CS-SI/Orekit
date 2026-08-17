@@ -29,6 +29,8 @@ import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.orekit.Utils;
 import org.orekit.data.DataContext;
 import org.orekit.data.PolynomialNutation;
@@ -45,11 +47,10 @@ import org.orekit.utils.PVCoordinates;
 
 public class MODProviderTest {
 
-    @Test
-    public void testKinematicConsistency() {
-        checkKinematicConsistency(IERSConventions.IERS_1996);
-        checkKinematicConsistency(IERSConventions.IERS_2003);
-        checkKinematicConsistency(IERSConventions.IERS_2010);
+    @ParameterizedTest
+    @EnumSource(IERSConventions.class)
+    void testKinematicConsistency(final IERSConventions conventions) {
+        checkKinematicConsistency(conventions);
     }
 
     @Test

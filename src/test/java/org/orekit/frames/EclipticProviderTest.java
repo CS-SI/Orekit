@@ -29,6 +29,8 @@ import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
@@ -46,25 +48,24 @@ import org.orekit.utils.PVCoordinates;
 /** Unit tests for {@link EclipticProvider}. */
 public class EclipticProviderTest {
 
-    @Test
-    public void testKinematicConsistency() {
-        checkKinematicConsistency(IERSConventions.IERS_1996);
-        checkKinematicConsistency(IERSConventions.IERS_2003);
-        checkKinematicConsistency(IERSConventions.IERS_2010);
-    }
-
-    @Test
-    public void testGcrfAndModToEclipticPVAConsistency() {
-        final AbsoluteDate date = new AbsoluteDate(2025, 4, 3, 12, 0, 0.0, TimeScalesFactory.getUTC());
-        final Frame ecliptic = FramesFactory.getEcliptic(IERSConventions.IERS_2010);
-        checkPVAConsistency(FramesFactory.getGCRF(), ecliptic, date);
-        checkPVAConsistency(ecliptic.getParent(), ecliptic, date);
-    }
-
     /** Set the orekit data to include ephemerides. */
     @BeforeAll
     public static void setUpBefore() {
         Utils.setDataRoot("regular-data");
+    }
+
+    @ParameterizedTest
+    @EnumSource(IERSConventions.class)
+    void testKinematicConsistency(final IERSConventions conventions) {
+        checkKinematicConsistency(conventions);
+    }
+
+    @Test
+    void testGcrfAndModToEclipticPVAConsistency() {
+        final AbsoluteDate date = new AbsoluteDate(2025, 4, 3, 12, 0, 0.0, TimeScalesFactory.getUTC());
+        final Frame ecliptic = FramesFactory.getEcliptic(IERSConventions.IERS_2010);
+        checkPVAConsistency(FramesFactory.getGCRF(), ecliptic, date);
+        checkPVAConsistency(ecliptic.getParent(), ecliptic, date);
     }
 
     /**
