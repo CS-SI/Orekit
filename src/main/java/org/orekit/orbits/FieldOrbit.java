@@ -506,6 +506,7 @@ public abstract class FieldOrbit<T extends CalculusFieldElement<T>>
      * @return FieldPVCoordinates in the specified output frame
           * @see #getPVCoordinates()
      */
+    @Override
     public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final Frame outputFrame) {
         if (pvCoordinates == null) {
             pvCoordinates = initPVCoordinates();
@@ -520,14 +521,6 @@ public abstract class FieldOrbit<T extends CalculusFieldElement<T>>
         // Else, PV coordinates are transformed to output frame
         final FieldTransform<T> t = frame.getTransformTo(outputFrame, date);
         return t.transformPVCoordinates(pvCoordinates);
-    }
-
-    /** {@inheritDoc} */
-    public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> otherDate,
-                                                             final Frame otherFrame) {
-        final TimeOffset timeOffset = otherDate.toAbsoluteDate().accurateDurationFrom(getDate().toAbsoluteDate());
-        final T          fieldShift = otherDate.durationFrom(getDate()).subtract(timeOffset.toDouble());
-        return shiftedBy(timeOffset).shiftedBy(fieldShift).getPVCoordinates(otherFrame);
     }
 
     /** {@inheritDoc} */
@@ -553,6 +546,7 @@ public abstract class FieldOrbit<T extends CalculusFieldElement<T>>
      * @see #getPosition()
      * @since 12.0
      */
+    @Override
     public FieldVector3D<T> getPosition(final Frame outputFrame) {
         if (position == null) {
             position = initPosition();

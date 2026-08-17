@@ -26,6 +26,7 @@ import org.orekit.frames.Frame;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.FieldTimeShiftable;
 import org.orekit.time.FieldTimeStamped;
+import org.orekit.time.TimeOffset;
 
 /** Interface for time-shiftable Field PV provider holding themselves PV coordinates.
  * @param <S> type of the field PV coordinates provider
@@ -135,13 +136,9 @@ public interface ShiftableFieldPVCoordinatesHolder<S extends FieldPVCoordinatesP
 
     @Override
     default TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> date, final Frame outputFrame) {
-        final ShiftableFieldPVCoordinatesHolder<S, T> shifted = shiftedBy(date.durationFrom(getDate()));
-        final TimeStampedFieldPVCoordinates<T> pv = shifted.getPVCoordinates();
-        if (outputFrame == getFrame()) {
-            return pv;
-        }
-        final FieldTransform<T> transform = getFrame().getTransformTo(outputFrame, date);
-        return transform.transformPVCoordinates(pv);
+        final TimeOffset timeOffset = date.toAbsoluteDate().accurateDurationFrom(getDate().toAbsoluteDate());
+        final T          fieldShift = date.durationFrom(getDate()).subtract(timeOffset.toDouble());
+        return shiftedBy(timeOffset).shiftedBy(fieldShift).getPVCoordinates(outputFrame);
     }
 
 }
