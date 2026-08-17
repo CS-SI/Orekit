@@ -256,7 +256,7 @@ public abstract class FieldOrbit<T extends CalculusFieldElement<T>>
      * @return corrected position-velocity-acceleration vector
      * @since 14.0
      */
-    protected FieldPVCoordinates<T> shiftNonKeplerian(final FieldPVCoordinates<T> keplerianShifted, final T dt) {
+    protected FieldPVCoordinates<T> shiftPVNonKeplerian(final FieldPVCoordinates<T> keplerianShifted, final T dt) {
         // extract non-Keplerian acceleration from first time derivatives
         final FieldVector3D<T> nonKeplerianAcceleration = nonKeplerianAcceleration();
 
@@ -537,7 +537,30 @@ public abstract class FieldOrbit<T extends CalculusFieldElement<T>>
     /** {@inheritDoc} */
     @Override
     public FieldVector3D<T> getPosition(final FieldAbsoluteDate<T> otherDate, final Frame otherFrame) {
-        return shiftedBy(otherDate.durationFrom(getDate())).getPosition(otherFrame);
+        // Get field and express dt as T
+        final T dt = otherDate.durationFrom(date);
+
+        // use Keplerian-only motion
+        final FieldOrbit<T> keplerianShifted = keplerianShiftedBy(dt);
+
+        // Non-Keplerian acceleration shall be considered
+        if (!dt.isZero() && hasNonKeplerianAcceleration()) {
+            // extract non-Keplerian acceleration from first time derivatives
+            final FieldVector3D<T> nonKeplerianAcceleration = nonKeplerianAcceleration();
+            // add second order effect of non-Keplerian acceleration to Keplerian-only shift
+            final FieldVector3D<T> shiftedPosition = nonKeplerianAcceleration.scalarMultiply(dt.square().divide(2.))
+                    .add(keplerianShifted.getPosition());
+            if (otherFrame == getFrame()) {
+                return shiftedPosition;
+            } else {
+                return getFrame().getStaticTransformTo(otherFrame, otherDate).transformPosition(shiftedPosition);
+            }
+        }
+        // Keplerian-only motion is all we can do
+        else {
+            return keplerianShifted.getPosition(otherFrame);
+        }
+
     }
 
     /** Get the position in a specified frame.
@@ -666,6 +689,13 @@ public abstract class FieldOrbit<T extends CalculusFieldElement<T>>
      * @return a new orbit, shifted with respect to the instance (which is immutable)
      */
     public abstract FieldOrbit<T> shiftedBy(TimeOffset dt);
+
+    /** Get a time-shifted orbit according to Keplerian motion only.
+     * @param dt time shift in seconds
+     * @return a new orbit, shifted with respect to the instance (which is immutable)
+     * @since 14.0
+     */
+    protected abstract FieldOrbit<T> keplerianShiftedBy(T dt);
 
     /** Compute the Jacobian of the orbital parameters with respect to the Cartesian parameters.
      * <p>

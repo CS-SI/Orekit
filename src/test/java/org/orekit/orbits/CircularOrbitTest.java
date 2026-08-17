@@ -1082,6 +1082,38 @@ class CircularOrbitTest {
     }
 
     @Test
+    void testKeplerianShiftedBy() {
+        // GIVEN
+        final CircularOrbit circOrbit = new CircularOrbit(42166712.0, 0.005, -0.025, 0.17, 0.34,
+                0.4, PositionAngleType.MEAN, FramesFactory.getEME2000(), date, mu);
+        final double dt = 1000;
+        // WHEN
+        final CircularOrbit actual = circOrbit.keplerianShiftedBy(dt);
+        // THEN
+        final CircularOrbit expected = circOrbit.shiftedBy(dt);
+        Assertions.assertEquals(expected.getDate(), actual.getDate());
+        Assertions.assertEquals(expected.getFrame(), actual.getFrame());
+        Assertions.assertEquals(expected.getMu(), actual.getMu());
+        Assertions.assertEquals(expected.getType(), actual.getType());
+        Assertions.assertEquals(expected.getCircularParameters(), actual.getCircularParameters());
+    }
+
+    @Test
+    void testGetPosition() {
+        // GIVEN
+        final CircularOrbit circOrbit = new CircularOrbit(42166712.0, 0.005, -0.025, 0.17, 0.34,
+                0.4, PositionAngleType.MEAN, FramesFactory.getEME2000(), date, mu);
+        final double dt = 1000;
+        final Frame frame = FramesFactory.getGTOD(true);
+        final AbsoluteDate shifted = circOrbit.getDate().shiftedBy(dt);
+        // WHEN
+        final Vector3D actual = circOrbit.getPosition(shifted, frame);
+        // THEN
+        final Vector3D expected = circOrbit.keplerianShiftedBy(dt).getPosition(shifted, frame);
+        Assertions.assertArrayEquals(expected.toArray(), actual.toArray(), 1.0e-10);
+    }
+
+    @Test
     void testNormalize() {
         CircularOrbit withoutDerivatives =
                 new CircularOrbit(42166712.0, 0.005, -0.025, 1.6,

@@ -41,6 +41,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
@@ -333,6 +334,38 @@ class FieldKeplerianOrbitTest {
     @Test
     void testNormalize() {
         doTestNormalize(Binary64Field.getInstance());
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void testGetPosition(final boolean withDerivatives) {
+        // GIVEN
+        final ComplexField field = ComplexField.getInstance();
+        final KeplerianOrbit expectedOrbit = createOrbitForTestFromKeplerianOrbit(withDerivatives);
+        final FieldKeplerianOrbit<Complex> fieldOrbit = new FieldKeplerianOrbit<>(field, expectedOrbit);
+        final Frame frame = FramesFactory.getEME2000();
+        final FieldAbsoluteDate<Complex> date = new FieldAbsoluteDate<>(field, expectedOrbit.getDate()).shiftedBy(Complex.I);
+        // WHEN
+        final FieldVector3D<Complex> position = fieldOrbit.getPosition(date, frame);
+        // THEN
+        final FieldKeplerianOrbit<Complex> expected = fieldOrbit.shiftedBy(date.durationFrom(expectedOrbit));
+        Assertions.assertArrayEquals(expected.getPosition(frame).toVector3D().toArray(), position.toVector3D().toArray(), 1e-7);
+    }
+
+    @Test
+    void testKeplerianShiftedBy() {
+        // GIVEN
+        final ComplexField field = ComplexField.getInstance();
+        final KeplerianOrbit expectedOrbit = createOrbitForTestFromKeplerianOrbit(false);
+        final FieldKeplerianOrbit<Complex> fieldOrbit = new FieldKeplerianOrbit<>(field, expectedOrbit);
+        // WHEN
+        final FieldKeplerianOrbit<Complex> actualFieldOrbit = fieldOrbit.keplerianShiftedBy(Complex.ONE);
+        // THEN
+        final FieldKeplerianOrbit<Complex> expected = fieldOrbit.shiftedBy(new TimeOffset(1.));
+        Assertions.assertEquals(expected.getMu(), actualFieldOrbit.getMu());
+        Assertions.assertEquals(expected.getDate(), actualFieldOrbit.getDate());
+        Assertions.assertEquals(expected.getFrame(), actualFieldOrbit.getFrame());
+        Assertions.assertEquals(expected.getKeplerianParameters(), actualFieldOrbit.getKeplerianParameters());
     }
 
     @Test

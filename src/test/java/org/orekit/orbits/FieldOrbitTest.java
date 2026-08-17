@@ -429,6 +429,10 @@ class FieldOrbitTest {
 
         }
 
+        @Override
+        protected FieldOrbit<Complex> keplerianShiftedBy(Complex dt) {
+            return shiftedBy(dt.getReal());
+        }
     }
     
 }

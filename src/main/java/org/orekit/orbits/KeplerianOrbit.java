@@ -924,7 +924,7 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased<Kepleria
         if (dtS != 0. && hasNonKeplerianAcceleration()) {
             // build a new orbit, taking non-Keplerian acceleration into account
             return new KeplerianOrbit(new TimeStampedPVCoordinates(keplerianShifted.getDate(),
-                    shiftNonKeplerian(keplerianShifted.getPVCoordinates(), dt.toDouble())),
+                    shiftPVNonKeplerian(keplerianShifted.getPVCoordinates(), dt.toDouble())),
                     keplerianShifted.getFrame(), keplerianShifted.getMu());
 
         } else {
@@ -932,6 +932,13 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased<Kepleria
             return keplerianShifted;
         }
 
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected KeplerianOrbit keplerianShiftedBy(final double dt) {
+        return new KeplerianOrbit(a, e, i, pa, raan, getMeanAnomaly() + dt * getKeplerianMeanMotion(),
+                PositionAngleType.MEAN, getFrame(), getDate().shiftedBy(dt), getMu());
     }
 
     /** {@inheritDoc} */

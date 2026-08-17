@@ -413,6 +413,15 @@ public class CartesianOrbit extends Orbit {
     }
 
     /** {@inheritDoc} */
+    @Override
+    protected CartesianOrbit keplerianShiftedBy(final double dt) {
+        final PVCoordinates pvCoordinates = getPVCoordinates();
+        final PVCoordinates shiftedPV = KeplerianMotionCartesianUtility.predictPositionVelocity(dt,
+                pvCoordinates.getPosition(), pvCoordinates.getVelocity(), getMu());
+        return new CartesianOrbit(shiftedPV, getFrame(), getDate().shiftedBy(dt), getMu());
+    }
+
+    /** {@inheritDoc} */
     public CartesianOrbit shiftedBy(final double dt) {
         final PVCoordinates shiftedPV = shiftPV(dt);
         return new CartesianOrbit(shiftedPV, getFrame(), getDate().shiftedBy(dt), getMu());
@@ -436,7 +445,7 @@ public class CartesianOrbit extends Orbit {
 
         if (dt != 0. && hasNonKeplerianAcceleration) {
 
-            return shiftNonKeplerian(shiftedPV, dt);
+            return shiftPVNonKeplerian(shiftedPV, dt);
 
         } else {
             // don't include acceleration,

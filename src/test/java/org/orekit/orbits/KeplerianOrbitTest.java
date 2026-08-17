@@ -1089,6 +1089,38 @@ class KeplerianOrbitTest {
      }
 
     @Test
+    void testKeplerianShiftedBy() {
+        // GIVEN
+        final KeplerianOrbit kepOrbit = new KeplerianOrbit(42166712.0, 0.005, 0.025, 0.17, 0.34,
+                0.4, PositionAngleType.MEAN, FramesFactory.getEME2000(), date, mu);
+        final double dt = 1000;
+        // WHEN
+        final KeplerianOrbit actual = kepOrbit.keplerianShiftedBy(dt);
+        // THEN
+        final KeplerianOrbit expected = kepOrbit.shiftedBy(dt);
+        Assertions.assertEquals(expected.getDate(), actual.getDate());
+        Assertions.assertEquals(expected.getFrame(), actual.getFrame());
+        Assertions.assertEquals(expected.getMu(), actual.getMu());
+        Assertions.assertEquals(expected.getType(), actual.getType());
+        Assertions.assertEquals(expected.getKeplerianParameters(), actual.getKeplerianParameters());
+    }
+
+    @Test
+    void testGetPosition() {
+        // GIVEN
+        final KeplerianOrbit kepOrbit = new KeplerianOrbit(42166712.0, 0.005, 0.025, 0.17, 0.34,
+                0.4, PositionAngleType.MEAN, FramesFactory.getEME2000(), date, mu);
+        final double dt = 1000;
+        final Frame frame = FramesFactory.getTOD(true);
+        final AbsoluteDate shifted = kepOrbit.getDate().shiftedBy(dt);
+        // WHEN
+        final Vector3D actual = kepOrbit.getPosition(shifted, frame);
+        // THEN
+        final Vector3D expected = kepOrbit.keplerianShiftedBy(dt).getPosition(shifted, frame);
+        Assertions.assertArrayEquals(expected.toArray(), actual.toArray(), 1.0e-10);
+    }
+
+    @Test
     void testNonKeplerianEllipticDerivatives() {
         final AbsoluteDate date         = new AbsoluteDate("2003-05-01T00:00:20.000", TimeScalesFactory.getUTC());
         final Vector3D     position     = new Vector3D(6896874.444705,  1956581.072644,  -147476.245054);

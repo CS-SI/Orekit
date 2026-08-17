@@ -446,6 +446,15 @@ public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends Fiel
 
     /** {@inheritDoc} */
     @Override
+    protected FieldCartesianOrbit<T> keplerianShiftedBy(final T dt) {
+        final FieldPVCoordinates<T> pvCoordinates = getPVCoordinates();
+        final FieldPVCoordinates<T> shiftedPV = KeplerianMotionCartesianUtility.predictPositionVelocity(dt,
+                pvCoordinates.getPosition(), pvCoordinates.getVelocity(), getMu());
+        return new FieldCartesianOrbit<>(shiftedPV, getFrame(), getDate().shiftedBy(dt), getMu());
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public FieldCartesianOrbit<T> shiftedBy(final TimeOffset dt) {
         final FieldPVCoordinates<T> shiftedPV  = shiftPV(getField().getOne().newInstance(dt.toDouble()));
         return new FieldCartesianOrbit<>(shiftedPV, getFrame(), getDate().shiftedBy(dt), getMu());
@@ -473,7 +482,7 @@ public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends Fiel
 
         if (!dt.isZero() && hasNonKeplerianAcceleration) {
 
-            return shiftNonKeplerian(shiftedPV, dt);
+            return shiftPVNonKeplerian(shiftedPV, dt);
 
         } else {
             // don't include acceleration,

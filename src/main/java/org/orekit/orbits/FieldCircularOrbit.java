@@ -1067,11 +1067,11 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
     public FieldCircularOrbit<T> shiftedBy(final T dt) {
 
         // use Keplerian-only motion
-        final FieldCircularOrbit<T> keplerianShifted = shiftWithKeplerianMotion(dt);
+        final FieldCircularOrbit<T> keplerianShifted = this.keplerianShiftedBy(dt);
 
         // Non-Keplerian acceleration shall be considered
         if (!dt.isZero() && hasNonKeplerianRates()) {
-            return new FieldCircularOrbit<>(shiftNonKeplerian(keplerianShifted.getPVCoordinates(), dt),
+            return new FieldCircularOrbit<>(shiftPVNonKeplerian(keplerianShifted.getPVCoordinates(), dt),
                     getFrame(), getDate().shiftedBy(dt), getMu());
         }
         // Keplerian-only motion is all we can do
@@ -1094,11 +1094,11 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
         final T        dtValue = field.getOne().newInstance(dt.toDouble());
 
         // use Keplerian-only motion
-        final FieldCircularOrbit<T> keplerianShifted = shiftWithKeplerianMotion(dt);
+        final FieldCircularOrbit<T> keplerianShifted = keplerianShiftedBy(dt);
 
         // Non-Keplerian acceleration shall be considered
         if (!dt.isZero() && hasNonKeplerianRates()) {
-            return new FieldCircularOrbit<>(shiftNonKeplerian(keplerianShifted.getPVCoordinates(), dtValue),
+            return new FieldCircularOrbit<>(shiftPVNonKeplerian(keplerianShifted.getPVCoordinates(), dtValue),
                     getFrame(), getDate().shiftedBy(dt), getMu());
         }
         // Keplerian-only motion is all we can do
@@ -1114,7 +1114,7 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
      * @param dt time delta
      * @return shifted orbit
      */
-    private FieldCircularOrbit<T> shiftWithKeplerianMotion(final T dt) {
+    protected FieldCircularOrbit<T> keplerianShiftedBy(final T dt) {
         return new FieldCircularOrbit<>(a, ex, ey, i, raan,
                                         getAlphaM().add(getKeplerianMeanMotion().multiply(dt)),
                                         PositionAngleType.MEAN,
@@ -1131,7 +1131,7 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
      * @param dt time delta
      * @return shifted orbit
      */
-    private FieldCircularOrbit<T> shiftWithKeplerianMotion(final TimeOffset dt) {
+    private FieldCircularOrbit<T> keplerianShiftedBy(final TimeOffset dt) {
         return new FieldCircularOrbit<>(a, ex, ey, i, raan,
                                         getAlphaM().add(getKeplerianMeanMotion().multiply(dt.toDouble())),
                                         PositionAngleType.MEAN,

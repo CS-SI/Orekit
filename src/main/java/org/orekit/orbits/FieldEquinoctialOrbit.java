@@ -831,11 +831,11 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
     public FieldEquinoctialOrbit<T> shiftedBy(final T dt) {
 
         // use Keplerian-only motion
-        final FieldEquinoctialOrbit<T> keplerianShifted = shiftWithKeplerianMotion(dt);
+        final FieldEquinoctialOrbit<T> keplerianShifted = keplerianShiftedBy(dt);
 
         // Non-Keplerian acceleration shall be considered
         if (!dt.isZero() && hasNonKeplerianRates()) {
-            return new FieldEquinoctialOrbit<>(shiftNonKeplerian(keplerianShifted.getPVCoordinates(), dt),
+            return new FieldEquinoctialOrbit<>(shiftPVNonKeplerian(keplerianShifted.getPVCoordinates(), dt),
                     getFrame(), getDate().shiftedBy(dt), getMu());
         }
         // Keplerian-only motion is all we can do
@@ -858,11 +858,11 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
         final T        dtValue = field.getOne().newInstance(dt.toDouble());
 
         // use Keplerian-only motion
-        final FieldEquinoctialOrbit<T> keplerianShifted = shiftWithKeplerianMotion(dt);
+        final FieldEquinoctialOrbit<T> keplerianShifted = keplerianShiftedBy(dt);
 
         // Non-Keplerian acceleration shall be considered
         if (!dtValue.isZero() && hasNonKeplerianRates()) {
-            return new FieldEquinoctialOrbit<>(shiftNonKeplerian(keplerianShifted.getPVCoordinates(), dtValue),
+            return new FieldEquinoctialOrbit<>(shiftPVNonKeplerian(keplerianShifted.getPVCoordinates(), dtValue),
                     getFrame(), getDate().shiftedBy(dt), getMu());
         }
         // Keplerian-only motion is all we can do
@@ -878,7 +878,7 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
      * @param dt time delta
      * @return shifted orbit
      */
-    private FieldEquinoctialOrbit<T> shiftWithKeplerianMotion(final T dt) {
+    protected FieldEquinoctialOrbit<T> keplerianShiftedBy(final T dt) {
         return new FieldEquinoctialOrbit<>(a, ex, ey, hx, hy,
                                            getLM().add(getKeplerianMeanMotion().multiply(dt)),
                                            PositionAngleType.MEAN,
@@ -896,7 +896,7 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
      * @param dt time offset
      * @return shifted orbit
      */
-    private FieldEquinoctialOrbit<T> shiftWithKeplerianMotion(final TimeOffset dt) {
+    private FieldEquinoctialOrbit<T> keplerianShiftedBy(final TimeOffset dt) {
         return new FieldEquinoctialOrbit<>(a, ex, ey, hx, hy,
                                            getLM().add(getKeplerianMeanMotion().multiply(dt.toDouble())),
                                            PositionAngleType.MEAN,

@@ -1045,7 +1045,7 @@ public class CircularOrbit extends Orbit implements PositionAngleBased<CircularO
                                                                  getFrame(), getDate().shiftedBy(dt), getMu());
 
         if (dtS != 0. && hasNonKeplerianRates()) {
-            final PVCoordinates pvCoordinates = shiftNonKeplerian(keplerianShifted.getPVCoordinates(), dtS);
+            final PVCoordinates pvCoordinates = shiftPVNonKeplerian(keplerianShifted.getPVCoordinates(), dtS);
 
             // build a new orbit, taking non-Keplerian acceleration into account
             return new CircularOrbit(new TimeStampedPVCoordinates(keplerianShifted.getDate(), pvCoordinates),
@@ -1056,6 +1056,13 @@ public class CircularOrbit extends Orbit implements PositionAngleBased<CircularO
             return keplerianShifted;
         }
 
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected CircularOrbit keplerianShiftedBy(final double dt) {
+        return new CircularOrbit(a, ex, ey, i, raan, getAlphaM() + dt * getKeplerianMeanMotion(),
+                PositionAngleType.MEAN, getFrame(), getDate().shiftedBy(dt), getMu());
     }
 
     /** {@inheritDoc} */

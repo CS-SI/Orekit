@@ -33,6 +33,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.orekit.Utils;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -406,6 +408,40 @@ public class CartesianOrbitTest {
             Assertions.assertEquals(0, vTested.subtract(vReference).getNorm(), threshold * vReference.getNorm());
 
         }
+    }
+
+    @Test
+    void testKeplerianShiftedBy() {
+        // GIVEN
+        final CartesianOrbit cartOrbit = new CartesianOrbit(new PVCoordinates(Vector3D.PLUS_K, Vector3D.PLUS_I.scalarMultiply(0.1)),
+                FramesFactory.getEME2000(), date, 1.);
+        final double dt = 10;
+        // WHEN
+        final Orbit actual = cartOrbit.keplerianShiftedBy(dt);
+        // THEN
+        final Orbit expected = cartOrbit.shiftedBy(dt);
+        Assertions.assertEquals(expected.getPosition(), actual.getPosition());
+        Assertions.assertEquals(expected.getVelocity(), actual.getVelocity());
+        Assertions.assertEquals(expected.getPVCoordinates().getAcceleration(), actual.getPVCoordinates().getAcceleration());
+        Assertions.assertEquals(expected.getFrame(), actual.getFrame());
+        Assertions.assertEquals(expected.getDate(), actual.getDate());
+        Assertions.assertEquals(expected.getMu(), actual.getMu());
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void testGetPosition(final boolean keplerian) {
+        // GIVEN
+        final CartesianOrbit cartOrbit = new CartesianOrbit(new PVCoordinates(Vector3D.PLUS_K, Vector3D.PLUS_I.scalarMultiply(0.1),
+                keplerian ? Vector3D.ZERO : Vector3D.PLUS_J), FramesFactory.getEME2000(), date, 1.);
+        final Frame frame = cartOrbit.getFrame();
+        final double dt = 10;
+        final AbsoluteDate shiftedDate = cartOrbit.getDate().shiftedBy(dt);
+        // WHEN
+        final Vector3D position = cartOrbit.getPosition(shiftedDate, frame);
+        // THEN
+        final Orbit expected = cartOrbit.shiftedBy(dt);
+        Assertions.assertArrayEquals(expected.getPosition(frame).toArray(), position.toArray(), 1e-7);
     }
 
     @Test

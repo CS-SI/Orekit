@@ -215,7 +215,7 @@ public abstract class Orbit
      * @return corrected position-velocity-acceleration vector
      * @since 14.0
      */
-    protected PVCoordinates shiftNonKeplerian(final PVCoordinates keplerianShifted, final double dt) {
+    protected PVCoordinates shiftPVNonKeplerian(final PVCoordinates keplerianShifted, final double dt) {
         // extract non-Keplerian acceleration from first time derivatives
         final Vector3D nonKeplerianAcceleration = nonKeplerianAcceleration();
 
@@ -477,6 +477,31 @@ public abstract class Orbit
         return date;
     }
 
+    @Override
+    public Vector3D getPosition(final AbsoluteDate otherDate, final Frame outputFrame) {
+        // use Keplerian-only motion
+        final double dt = otherDate.durationFrom(date);
+        final Orbit keplerianShifted = keplerianShiftedBy(dt);
+
+        // Non-Keplerian acceleration shall be considered
+        if (hasNonKeplerianAcceleration()) {
+            // extract non-Keplerian acceleration from first time derivatives
+            final Vector3D nonKeplerianAcceleration = nonKeplerianAcceleration();
+            // add second order effect of non-Keplerian acceleration to Keplerian-only shift
+            final Vector3D shiftedPosition = nonKeplerianAcceleration.scalarMultiply(dt * dt / 2.)
+                    .add(keplerianShifted.getPosition());
+            if (outputFrame == getFrame()) {
+                return shiftedPosition;
+            } else {
+                return getFrame().getStaticTransformTo(outputFrame, otherDate).transformPosition(shiftedPosition);
+            }
+        }
+        // Keplerian-only motion is all we can do
+        else {
+            return keplerianShifted.getPosition(outputFrame);
+        }
+    }
+
     /** Get the position in definition frame.
      * @return position in the definition frame
      * @see #getPVCoordinates()
@@ -552,6 +577,13 @@ public abstract class Orbit
      */
     @Override
     public abstract Orbit shiftedBy(TimeOffset dt);
+
+    /** Get a time-shifted orbit assuming pure Keplerian motion.
+     * @param dt time shift
+     * @return a new orbit, shifted with respect to the instance (which is immutable)
+     * @since 14.0
+     */
+    protected abstract Orbit keplerianShiftedBy(double dt);
 
     /** Compute the Jacobian of the orbital parameters with respect to the Cartesian parameters.
      * <p>
