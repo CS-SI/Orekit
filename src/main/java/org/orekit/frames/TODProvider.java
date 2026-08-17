@@ -17,8 +17,13 @@
 package org.orekit.frames;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative1;
+import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative2;
+import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
+import org.hipparchus.analysis.differentiation.UnivariateDerivative1Field;
+import org.hipparchus.analysis.differentiation.UnivariateDerivative2;
+import org.hipparchus.analysis.differentiation.UnivariateDerivative2Field;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
-import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.orekit.time.AbsoluteDate;
@@ -26,6 +31,8 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalarFunction;
 import org.orekit.time.TimeScales;
 import org.orekit.time.TimeVectorFunction;
+import org.orekit.utils.AngularCoordinates;
+import org.orekit.utils.FieldAngularCoordinates;
 import org.orekit.utils.IERSConventions;
 
 /** Provider for True of Date (ToD) frame.
@@ -100,30 +107,30 @@ class TODProvider implements EOPBasedTransformProvider {
     @Override
     public Transform getTransform(final AbsoluteDate date) {
 
-        // compute nutation angles
-        final double[] angles = nutationFunction.value(date);
-
-        // compute the mean obliquity of the ecliptic
-        final double moe = obliquityFunction.value(date);
-
-        double dpsi = angles[0];
-        double deps = angles[1];
-        if (eopHistory != null) {
-            // apply the corrections for the nutation parameters
-            final double[] correction = eopHistory.getEquinoxNutationCorrection(date);
-            dpsi += correction[0];
-            deps += correction[1];
-        }
-
-        // compute the true obliquity of the ecliptic
-        final double toe = moe + deps;
-
-        // complete nutation
-        final Rotation nutation = new Rotation(RotationOrder.XZX, RotationConvention.FRAME_TRANSFORM,
-                                               moe, -dpsi, -toe);
+        // use automatic differentiation to compute the rotation derivatives
+        final UnivariateDerivative2Field field = UnivariateDerivative2Field.getInstance();
+        final UnivariateDerivative2 dt = new UnivariateDerivative2(0, 1, 0);
+        final FieldAbsoluteDate<UnivariateDerivative2> ud2Date =
+                        new FieldAbsoluteDate<>(field, date).shiftedBy(dt);
 
         // set up the transform from parent MOD
-        return new Transform(date, nutation);
+        return new Transform(date, new AngularCoordinates(getRotation(ud2Date)));
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public KinematicTransform getKinematicTransform(final AbsoluteDate date) {
+
+        // use automatic differentiation to compute the rotation rate
+        final UnivariateDerivative1Field field = UnivariateDerivative1Field.getInstance();
+        final UnivariateDerivative1 dt = new UnivariateDerivative1(0, 1);
+        final FieldAbsoluteDate<UnivariateDerivative1> ud1Date =
+                        new FieldAbsoluteDate<>(field, date).shiftedBy(dt);
+        final AngularCoordinates derivatives = new AngularCoordinates(getRotation(ud1Date));
+
+        // set up the kinematic transform from parent MOD
+        return KinematicTransform.of(date, derivatives.getRotation(), derivatives.getRotationRate());
 
     }
 
@@ -131,6 +138,44 @@ class TODProvider implements EOPBasedTransformProvider {
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
+
+        // compute the rotation while preserving the derivatives already present in the field date
+        final FieldRotation<T> rotation = getRotation(date);
+
+        // use automatic differentiation to compute the rotation derivatives
+        final FieldAbsoluteDate<FieldUnivariateDerivative2<T>> fud2Date = date.toFUD2Field();
+        final FieldAngularCoordinates<T> derivatives = new FieldAngularCoordinates<>(getRotation(fud2Date));
+
+        // set up the transform from parent MOD
+        return new FieldTransform<>(date,
+                                    new FieldAngularCoordinates<>(rotation,
+                                                                  derivatives.getRotationRate(),
+                                                                  derivatives.getRotationAcceleration()));
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends CalculusFieldElement<T>> FieldKinematicTransform<T> getKinematicTransform(final FieldAbsoluteDate<T> date) {
+
+        // compute the rotation while preserving the derivatives already present in the field date
+        final FieldRotation<T> rotation = getRotation(date);
+
+        // use automatic differentiation to compute the rotation rate
+        final FieldAbsoluteDate<FieldUnivariateDerivative1<T>> fud1Date = date.toFUD1Field();
+        final FieldAngularCoordinates<T> derivatives = new FieldAngularCoordinates<>(getRotation(fud1Date));
+
+        // set up the kinematic transform from parent MOD
+        return FieldKinematicTransform.of(date, rotation, derivatives.getRotationRate());
+
+    }
+
+    /** Compute the complete nutation rotation.
+     * @param date current date
+     * @param <T> type of the field elements
+     * @return complete nutation rotation
+     */
+    private <T extends CalculusFieldElement<T>> FieldRotation<T> getRotation(final FieldAbsoluteDate<T> date) {
 
         // compute nutation angles
         final T[] angles = nutationFunction.value(date);
@@ -151,11 +196,8 @@ class TODProvider implements EOPBasedTransformProvider {
         final T toe = moe.add(deps);
 
         // complete nutation
-        final FieldRotation<T> nutation = new FieldRotation<>(RotationOrder.XZX, RotationConvention.FRAME_TRANSFORM,
-                                                              moe, dpsi.negate(), toe.negate());
-
-        // set up the transform from parent MOD
-        return new FieldTransform<>(date, nutation);
+        return new FieldRotation<>(RotationOrder.XZX, RotationConvention.FRAME_TRANSFORM,
+                                   moe, dpsi.negate(), toe.negate());
 
     }
 

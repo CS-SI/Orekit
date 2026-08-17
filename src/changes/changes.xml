@@ -20,6 +20,10 @@
   </properties>
   <body>
     <release version="13.1.8" date="TBD" description="TBD">
+        <action dev="DDega" type="fix" issue="1996">
+            Added angular derivatives to MOD, TOD and Ecliptic scalar and field transforms
+            and optimized their kinematic transforms.
+        </action>
         <action dev="ltafur" type="fix" issue="1993">
             Fixed NRLMSISE00 local solar time to be computed in the Earth-fixed body frame.
         </action>

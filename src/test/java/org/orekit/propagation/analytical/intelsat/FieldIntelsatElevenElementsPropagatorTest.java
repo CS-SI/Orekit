@@ -87,12 +87,12 @@ public class FieldIntelsatElevenElementsPropagatorTest {
         Assertions.assertEquals(-1.01044e-7, propagator.getGeocentricLatitudeDegrees().getFirstDerivative().getReal(), 1.0e-12);
         Assertions.assertEquals(42172456.005, propagator.getOrbitRadius().getValue().getReal(), 1.0e-3);
         Assertions.assertEquals(0.797, propagator.getOrbitRadius().getFirstDerivative().getReal(), 1.0e-3);
-        Assertions.assertEquals(42166413.453, orbit.getA(), 4.0e-2);
+        Assertions.assertEquals(42166421.617, orbit.getA(), 4.0e-2);
         Assertions.assertEquals(0.000296, orbit.getE(), 1.0e-6);
         Assertions.assertEquals(0.037825, FastMath.toDegrees(orbit.getI()), 1.0e-6);
         Assertions.assertEquals(282.488, FastMath.toDegrees(MathUtils.normalizeAngle(orbit.getRightAscensionOfAscendingNode(), FastMath.PI)), 4.0e-3);
-        Assertions.assertEquals(333.151, FastMath.toDegrees(MathUtils.normalizeAngle(orbit.getPerigeeArgument(), FastMath.PI)), 4.0e-3);
-        Assertions.assertEquals(118.919, FastMath.toDegrees(MathUtils.normalizeAngle(orbit.getAnomaly(PositionAngleType.MEAN), FastMath.PI)), 1.0e-3);
+        Assertions.assertEquals(333.184, FastMath.toDegrees(MathUtils.normalizeAngle(orbit.getPerigeeArgument(), FastMath.PI)), 4.0e-3);
+        Assertions.assertEquals(118.887, FastMath.toDegrees(MathUtils.normalizeAngle(orbit.getAnomaly(PositionAngleType.MEAN), FastMath.PI)), 1.0e-3);
     }
 
     @BeforeAll
