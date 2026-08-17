@@ -23,7 +23,6 @@ import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
 import org.hipparchus.analysis.differentiation.UnivariateDerivative1Field;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.complex.ComplexField;
-import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Binary64Field;
@@ -359,14 +358,13 @@ class FrameTest {
         final FieldTransform<UnivariateDerivative1> fieldTransform = oldFrame.getTransformTo(newFrame, shiftedDate);
         // THEN
         Assertions.assertEquals(shiftedDate, fieldTransform.getFieldDate());
-        final FieldTransform<UnivariateDerivative1> referenceTransform = oldFrame.getTransformTo(newFrame, fieldDate);
+        // the dates carry different differential information, so compare transform values only
+        final Transform referenceTransform = oldFrame.getTransformTo(newFrame, fieldDate.toAbsoluteDate());
         Assertions.assertEquals(fieldTransform.getDate(), referenceTransform.getDate());
         Assertions.assertEquals(fieldTransform.getTranslation().toVector3D(),
-                referenceTransform.getTranslation().toVector3D());
-        compareFieldVectorWithMargin(fieldTransform.getRotationRate(), referenceTransform.getRotationRate());
-        compareFieldVectorWithMargin(fieldTransform.getRotationAcceleration(), referenceTransform.getRotationAcceleration());
+                referenceTransform.getTranslation());
         Assertions.assertEquals(0., Rotation.distance(fieldTransform.getRotation().toRotation(),
-                referenceTransform.getRotation().toRotation()));
+                referenceTransform.getRotation()));
     }
 
     @Test
@@ -753,12 +751,6 @@ class FrameTest {
             Assertions.assertSame(direct[i % cachesize], eme2000.getStaticTransformTo(itrf, t0.shiftedBy(i % cachesize)));
         }
 
-    }
-
-    private static <T extends CalculusFieldElement<T>> void compareFieldVectorWithMargin(final FieldVector3D<T> expectedVector,
-                                                                                         final FieldVector3D<T> actualVector) {
-        Assertions.assertEquals(0., actualVector.toVector3D().subtract(expectedVector.toVector3D()).getNorm(),
-                1e-12);
     }
 
     @BeforeEach

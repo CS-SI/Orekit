@@ -21,6 +21,12 @@ import java.util.Map;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
+import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative1;
+import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative2;
+import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
+import org.hipparchus.analysis.differentiation.UnivariateDerivative1Field;
+import org.hipparchus.analysis.differentiation.UnivariateDerivative2;
+import org.hipparchus.analysis.differentiation.UnivariateDerivative2Field;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
@@ -31,6 +37,8 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalarFunction;
 import org.orekit.time.TimeScales;
 import org.orekit.time.TimeVectorFunction;
+import org.orekit.utils.AngularCoordinates;
+import org.orekit.utils.FieldAngularCoordinates;
 import org.orekit.utils.IERSConventions;
 
 /** Mean Equator, Mean Equinox Frame.
@@ -72,43 +80,99 @@ class MODProvider implements TransformProvider {
     @Override
     public Transform getTransform(final AbsoluteDate date) {
 
-        // compute the precession angles phiA, omegaA, chiA
-        final double[] angles = precessionFunction.value(date);
+        // use automatic differentiation to compute the rotation derivatives
+        final UnivariateDerivative2Field field = UnivariateDerivative2Field.getInstance();
+        final UnivariateDerivative2 dt = new UnivariateDerivative2(0, 1, 0);
+        final FieldAbsoluteDate<UnivariateDerivative2> ud2Date =
+                        new FieldAbsoluteDate<>(field, date).shiftedBy(dt);
 
         // complete precession
-        final Rotation precession = r4.compose(new Rotation(RotationOrder.ZXZ, RotationConvention.FRAME_TRANSFORM,
-                                                            -angles[0], -angles[1], angles[2]),
-                                               RotationConvention.FRAME_TRANSFORM);
+        final FieldRotation<UnivariateDerivative2> precession = getRotation(ud2Date);
 
         // set up the transform from parent GCRF
-        return new Transform(date, precession);
+        return new Transform(date, new AngularCoordinates(precession));
 
     }
 
     /** {@inheritDoc} */
-    @SuppressWarnings("unchecked")
+    @Override
+    public KinematicTransform getKinematicTransform(final AbsoluteDate date) {
+
+        // use automatic differentiation to compute the rotation rate
+        final UnivariateDerivative1Field field = UnivariateDerivative1Field.getInstance();
+        final UnivariateDerivative1 dt = new UnivariateDerivative1(0, 1);
+        final FieldAbsoluteDate<UnivariateDerivative1> ud1Date =
+                        new FieldAbsoluteDate<>(field, date).shiftedBy(dt);
+        final AngularCoordinates derivatives = new AngularCoordinates(getRotation(ud1Date));
+
+        // set up the kinematic transform from parent GCRF
+        return KinematicTransform.of(date, derivatives.getRotation(), derivatives.getRotationRate());
+
+    }
+
+    /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
+
+        // compute the rotation while preserving the derivatives already present in the field date
+        final FieldRotation<T> rotation = getRotation(date);
+
+        // use automatic differentiation to compute the rotation derivatives
+        final FieldAbsoluteDate<FieldUnivariateDerivative2<T>> fud2Date = date.toFUD2Field();
+        final FieldAngularCoordinates<T> derivatives = new FieldAngularCoordinates<>(getRotation(fud2Date));
+
+        // set up the transform from parent GCRF, preserving both field and time derivatives
+        return new FieldTransform<>(date,
+                                    new FieldAngularCoordinates<>(rotation,
+                                                                  derivatives.getRotationRate(),
+                                                                  derivatives.getRotationAcceleration()));
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends CalculusFieldElement<T>> FieldKinematicTransform<T> getKinematicTransform(final FieldAbsoluteDate<T> date) {
+
+        // compute the rotation while preserving the derivatives already present in the field date
+        final FieldRotation<T> rotation = getRotation(date);
+
+        // use automatic differentiation to compute the rotation rate
+        final FieldAbsoluteDate<FieldUnivariateDerivative1<T>> fud1Date = date.toFUD1Field();
+        final FieldAngularCoordinates<T> derivatives = new FieldAngularCoordinates<>(getRotation(fud1Date));
+
+        // set up the kinematic transform from parent GCRF
+        return FieldKinematicTransform.of(date, rotation, derivatives.getRotationRate());
+
+    }
+
+    /** Compute the complete precession rotation.
+     * @param date current date
+     * @param <T> type of the field elements
+     * @return complete precession rotation
+     */
+    private <T extends CalculusFieldElement<T>> FieldRotation<T> getRotation(final FieldAbsoluteDate<T> date) {
 
         // compute the precession angles phiA, omegaA, chiA
         final T[] angles = precessionFunction.value(date);
 
-        final FieldRotation<T> fR4;
-        synchronized (fieldR4) {
-            fR4 = (FieldRotation<T>) fieldR4.computeIfAbsent(date.getField(),
-                                                             f -> new FieldRotation<>((Field<T>) f, r4));
-        }
-
         // complete precession
-        final FieldRotation<T> precession = fR4.compose(new FieldRotation<>(RotationOrder.ZXZ, RotationConvention.FRAME_TRANSFORM,
-                                                                            angles[0].negate(),
-                                                                            angles[1].negate(),
-                                                                            angles[2]),
-                                                        RotationConvention.FRAME_TRANSFORM);
+        return getR4(date.getField()).compose(
+                        new FieldRotation<>(RotationOrder.ZXZ, RotationConvention.FRAME_TRANSFORM,
+                                            angles[0].negate(), angles[1].negate(), angles[2]),
+                        RotationConvention.FRAME_TRANSFORM);
 
-        // set up the transform from parent GCRF
-        return new FieldTransform<>(date, precession);
+    }
 
+    /** Get the constant rotation converted to the specified field.
+     * @param field field to which the elements belong
+     * @param <T> type of the field elements
+     * @return constant rotation converted to the specified field
+     */
+    @SuppressWarnings("unchecked")
+    private <T extends CalculusFieldElement<T>> FieldRotation<T> getR4(final Field<T> field) {
+        synchronized (fieldR4) {
+            return (FieldRotation<T>) fieldR4.computeIfAbsent(field, f -> new FieldRotation<>(field, r4));
+        }
     }
 
 }

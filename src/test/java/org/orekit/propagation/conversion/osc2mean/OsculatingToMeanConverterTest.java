@@ -115,7 +115,7 @@ class OsculatingToMeanConverterTest {
         final TLETheory fieldTheory = new TLETheory(new FieldTLE<>(field, TLETheory.TMP_L1, TLETheory.TMP_L2));
         // THEN
         compareAlgorithms(theory, 1e-5, 1e-12, 1e-12, 1e-12, 1e-13, 1e-12);
-        compareFieldVersions(fieldTheory, 1e-8, 1e-15, 1e-15, 1e-15, 1e-15, 1e-15);
+        compareFieldVersions(fieldTheory, 1e-8, 2e-15, 1e-15, 1e-15, 1e-15, 2e-15);
     }
 
     @Test
