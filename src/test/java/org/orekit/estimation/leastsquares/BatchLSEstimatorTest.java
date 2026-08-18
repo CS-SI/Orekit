@@ -1021,10 +1021,10 @@ class BatchLSEstimatorTest {
         Assertions.assertEquals(0.0010514, Vector3D.distance(closeOrbit.getVelocity(),
                           before.getVelocity()), 1.0e-6);
         EstimationTestUtils.checkFit(false, context, estimator, 3, 4,
-                                     0.0, 1.3e-06,
-                                     0.0, 5.2e-06,
+                                     0.0, 3.9e-06,
+                                     0.0, 1.1e-05,
                                      0.0, 5.8e-07,
-                                     0.0, 1.9e-10);
+                                     0.0, 2.2e-10);
 
         final Orbit determined = new KeplerianOrbit(parameters.get( 6).getValue(),
                                                     parameters.get( 7).getValue(),

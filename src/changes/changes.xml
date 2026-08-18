@@ -23,6 +23,9 @@
           <action dev="evan" type="update">
               Fix generics in TimeInterpolator so it can be used without casts.
           </action>
+          <action dev="serrof" type="update" issue="1998">
+              Improve performance of getPosition(date, frame) in (Field)Orbit.
+          </action>
           <action dev="serrof" type="add" issue="1997">
               Added Record for two-body problem orbital elements.
           </action>

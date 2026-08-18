@@ -24,6 +24,8 @@ import org.hipparchus.Field;
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
+import org.hipparchus.analysis.differentiation.Gradient;
+import org.hipparchus.analysis.differentiation.GradientField;
 import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.complex.ComplexField;
@@ -46,6 +48,7 @@ import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.Predefined;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -268,6 +271,41 @@ class FieldEquinoctialOrbitTest {
     @Test
     void testNormalize() {
         doTestNormalize(Binary64Field.getInstance());
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = Predefined.class, names = {"GCRF", "EME2000", "TEME", "ICRF", "ECLIPTIC_CONVENTIONS_2010"})
+    void testGetPosition(final Predefined predefined) {
+        // GIVEN
+        final GradientField field = GradientField.getField(1);
+        final EquinoctialOrbit expectedOrbit = createOrbitTestFromEquinoctialOrbit(true);
+        final FieldEquinoctialOrbit<Gradient> fieldOrbit = new FieldEquinoctialOrbit<>(field, expectedOrbit);
+        final Frame frame = FramesFactory.getFrame(predefined);
+        final FieldAbsoluteDate<Gradient> date = new FieldAbsoluteDate<>(field, expectedOrbit.getDate()).shiftedBy(Gradient.variable(1, 0, 1e2));
+        // WHEN
+        final FieldVector3D<Gradient> position = fieldOrbit.getPosition(date, frame);
+        // THEN
+        final FieldEquinoctialOrbit<Gradient> expected = fieldOrbit.shiftedBy(date.durationFrom(expectedOrbit));
+        Assertions.assertArrayEquals(expected.getPosition(frame).toVector3D().toArray(), position.toVector3D().toArray(), 1e-7);
+        Assertions.assertArrayEquals(expected.getPosition(frame).getX().getGradient(), position.getX().getGradient(), 1e-7);
+        Assertions.assertArrayEquals(expected.getPosition(frame).getY().getGradient(), position.getY().getGradient(), 1e-7);
+        Assertions.assertArrayEquals(expected.getPosition(frame).getZ().getGradient(), position.getZ().getGradient(), 1e-7);
+    }
+
+    @Test
+    void testKeplerianShiftedBy() {
+        // GIVEN
+        final ComplexField field = ComplexField.getInstance();
+        final EquinoctialOrbit expectedOrbit = createOrbitTestFromEquinoctialOrbit(false);
+        final FieldEquinoctialOrbit<Complex> fieldOrbit = new FieldEquinoctialOrbit<>(field, expectedOrbit);
+        // WHEN
+        final FieldEquinoctialOrbit<Complex> actualFieldOrbit = fieldOrbit.keplerianShiftedBy(Complex.ONE);
+        // THEN
+        final FieldEquinoctialOrbit<Complex> expected = fieldOrbit.shiftedBy(new TimeOffset(1.));
+        Assertions.assertEquals(expected.getMu(), actualFieldOrbit.getMu());
+        Assertions.assertEquals(expected.getDate(), actualFieldOrbit.getDate());
+        Assertions.assertEquals(expected.getFrame(), actualFieldOrbit.getFrame());
+        Assertions.assertEquals(expected.getEquinoctialParameters(), actualFieldOrbit.getEquinoctialParameters());
     }
 
     @Test

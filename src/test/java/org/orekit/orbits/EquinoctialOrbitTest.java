@@ -39,6 +39,7 @@ import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.Predefined;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -981,6 +982,39 @@ public class EquinoctialOrbitTest {
         EquinoctialOrbit orbit = new EquinoctialOrbit(pvCoordinates, FramesFactory.getEME2000(), date, mu);
         Assertions.assertEquals("equinoctial parameters: {a: 4.225517000282565E7; ex: 5.927324978565528E-4; ey: -0.002062743969643666; hx: 6.401103130239252E-5; hy: -0.0017606836670756732; lv: 134.24111947709974;}",
                             orbit.toString());
+    }
+
+    @Test
+    void testKeplerianShiftedBy() {
+        // GIVEN
+        final EquinoctialOrbit equinoctialOrbit = new EquinoctialOrbit(42166712.0, 0.005, -0.025, 0.17, 0.34,
+                0.4, PositionAngleType.MEAN, FramesFactory.getEME2000(), date, mu);
+        final double dt = 1000;
+        // WHEN
+        final EquinoctialOrbit actual = equinoctialOrbit.keplerianShiftedBy(dt);
+        // THEN
+        final EquinoctialOrbit expected = equinoctialOrbit.shiftedBy(dt);
+        Assertions.assertEquals(expected.getDate(), actual.getDate());
+        Assertions.assertEquals(expected.getFrame(), actual.getFrame());
+        Assertions.assertEquals(expected.getMu(), actual.getMu());
+        Assertions.assertEquals(expected.getType(), actual.getType());
+        Assertions.assertEquals(expected.getEquinoctialParameters(), actual.getEquinoctialParameters());
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = Predefined.class, names = {"GCRF", "EME2000", "ICRF"})
+    void testGetPosition(final Predefined predefined) {
+        // GIVEN
+        final EquinoctialOrbit equinoctialOrbit = new EquinoctialOrbit(42166712.0, 0.005, -0.025, 0.17, 0.34,
+                0.4, PositionAngleType.MEAN, FramesFactory.getEME2000(), date, mu);
+        final Frame frame = FramesFactory.getFrame(predefined);
+        final double dt = 1000;
+        final AbsoluteDate shiftedDate = equinoctialOrbit.getDate().shiftedBy(dt);
+        // WHEN
+        final Vector3D position = equinoctialOrbit.getPosition(shiftedDate, frame);
+        // THEN
+        final Orbit expected = equinoctialOrbit.shiftedBy(dt);
+        Assertions.assertArrayEquals(expected.getPosition(frame).toArray(), position.toArray(), 1e-7);
     }
 
     @Test

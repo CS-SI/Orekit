@@ -794,7 +794,7 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased<Equino
                                                                        getDate().shiftedBy(dt), getMu());
 
         if (dtS != 0. && hasNonKeplerianRates()) {
-            final PVCoordinates pvCoordinates = shiftNonKeplerian(keplerianShifted.getPVCoordinates(), dtS);
+            final PVCoordinates pvCoordinates = shiftPVNonKeplerian(keplerianShifted.getPVCoordinates(), dtS);
 
             // build a new orbit, taking non-Keplerian acceleration into account
             return new EquinoctialOrbit(new TimeStampedPVCoordinates(keplerianShifted.getDate(), pvCoordinates),
@@ -805,6 +805,13 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased<Equino
             return keplerianShifted;
         }
 
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected EquinoctialOrbit keplerianShiftedBy(final double dt) {
+        return new EquinoctialOrbit(a, ex, ey, hx, hy, getLM() + dt * getKeplerianMeanMotion(),
+                PositionAngleType.MEAN, getFrame(), getDate().shiftedBy(dt), getMu());
     }
 
     /** {@inheritDoc} */

@@ -16,6 +16,8 @@
  */
 package org.orekit.orbits;
 
+import java.util.function.Function;
+
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.MathUtils;
 import org.junit.jupiter.api.Assertions;
@@ -31,8 +33,6 @@ import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
-
-import java.util.function.Function;
 
 
 class OrbitTest {
@@ -291,6 +291,11 @@ class OrbitTest {
 
         @Override
         public Orbit shiftedBy(TimeOffset dt) {
+            return new TestOrbit(a);
+        }
+
+        @Override
+        protected Orbit keplerianShiftedBy(double dt) {
             return new TestOrbit(a);
         }
 

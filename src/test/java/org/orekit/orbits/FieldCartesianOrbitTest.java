@@ -41,6 +41,8 @@ import org.hipparchus.util.MathUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.orekit.Utils;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -868,6 +870,22 @@ public class FieldCartesianOrbitTest {
         Assertions.assertEquals(dt, p2.getDate().durationFrom(p.getDate()).getReal());
         Assertions.assertEquals(-dt, p.durationFrom(p2).getReal());
 
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void testGetPosition(final boolean withDerivatives) {
+        // GIVEN
+        final ComplexField field = ComplexField.getInstance();
+        final CartesianOrbit expectedOrbit = createOrbitTestFromCartesianOrbit(withDerivatives);
+        final FieldCartesianOrbit<Complex> fieldOrbit = new FieldCartesianOrbit<>(field, expectedOrbit);
+        final Frame frame = FramesFactory.getEME2000();
+        final FieldAbsoluteDate<Complex> date = new FieldAbsoluteDate<>(field, expectedOrbit.getDate()).shiftedBy(Complex.ONE);
+        // WHEN
+        final FieldVector3D<Complex> position = fieldOrbit.getPosition(date, frame);
+        // THEN
+        final FieldCartesianOrbit<Complex> expected = fieldOrbit.shiftedBy(date.durationFrom(expectedOrbit));
+        Assertions.assertArrayEquals(expected.getPosition(frame).toVector3D().toArray(), position.toVector3D().toArray(), 1e-7);
     }
 
     @Test

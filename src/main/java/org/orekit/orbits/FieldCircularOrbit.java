@@ -1067,11 +1067,12 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
     public FieldCircularOrbit<T> shiftedBy(final T dt) {
 
         // use Keplerian-only motion
-        final FieldCircularOrbit<T> keplerianShifted = shiftWithKeplerianMotion(dt);
+        final FieldCircularOrbit<T> keplerianShifted = this.keplerianShiftedBy(dt);
 
         // Non-Keplerian acceleration shall be considered
         if (!dt.isZero() && hasNonKeplerianRates()) {
-            return keplerianShifted.applyNonKeplerianAcceleration(nonKeplerianAcceleration(), dt);
+            return new FieldCircularOrbit<>(shiftPVNonKeplerian(keplerianShifted.getPVCoordinates(), dt),
+                    getFrame(), getDate().shiftedBy(dt), getMu());
         }
         // Keplerian-only motion is all we can do
         else {
@@ -1093,11 +1094,12 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
         final T        dtValue = field.getOne().newInstance(dt.toDouble());
 
         // use Keplerian-only motion
-        final FieldCircularOrbit<T> keplerianShifted = shiftWithKeplerianMotion(dt);
+        final FieldCircularOrbit<T> keplerianShifted = keplerianShiftedBy(dt);
 
         // Non-Keplerian acceleration shall be considered
         if (!dt.isZero() && hasNonKeplerianRates()) {
-            return keplerianShifted.applyNonKeplerianAcceleration(nonKeplerianAcceleration(), dtValue);
+            return new FieldCircularOrbit<>(shiftPVNonKeplerian(keplerianShifted.getPVCoordinates(), dtValue),
+                    getFrame(), getDate().shiftedBy(dt), getMu());
         }
         // Keplerian-only motion is all we can do
         else {
@@ -1112,7 +1114,7 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
      * @param dt time delta
      * @return shifted orbit
      */
-    private FieldCircularOrbit<T> shiftWithKeplerianMotion(final T dt) {
+    protected FieldCircularOrbit<T> keplerianShiftedBy(final T dt) {
         return new FieldCircularOrbit<>(a, ex, ey, i, raan,
                                         getAlphaM().add(getKeplerianMeanMotion().multiply(dt)),
                                         PositionAngleType.MEAN,
@@ -1129,7 +1131,7 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
      * @param dt time delta
      * @return shifted orbit
      */
-    private FieldCircularOrbit<T> shiftWithKeplerianMotion(final TimeOffset dt) {
+    private FieldCircularOrbit<T> keplerianShiftedBy(final TimeOffset dt) {
         return new FieldCircularOrbit<>(a, ex, ey, i, raan,
                                         getAlphaM().add(getKeplerianMeanMotion().multiply(dt.toDouble())),
                                         PositionAngleType.MEAN,
@@ -1137,38 +1139,6 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
                                         getFrame(),
                                         getDate().shiftedBy(dt),
                                         getMu());
-    }
-
-    /**
-     * Shifts the current orbit with consideration of non-Keplerian acceleration by including the quadratic effects of
-     * the acceleration into the position, velocity, and acceleration calculations.
-     *
-     * @param nonKeplerianAcceleration non-Keplerian acceleration vector to apply
-     * @param dt                       the time shift in seconds for which the orbit is to be shifted.
-     * @return a new {@link FieldCircularOrbit} representing the shifted orbit, factoring in non-Keplerian acceleration
-     * effects.
-     */
-    private FieldCircularOrbit<T> applyNonKeplerianAcceleration(final FieldVector3D<T> nonKeplerianAcceleration,
-                                                                final T dt) {
-        // extract non-Keplerian acceleration from first time derivatives
-
-        // add quadratic effect of non-Keplerian acceleration to Keplerian-only shift
-        this.computePVWithoutA();
-        final FieldVector3D<T> fixedP = new FieldVector3D<>(getOne(), this.partialPV.getPosition(),
-                                                            dt.square().multiply(0.5), nonKeplerianAcceleration);
-        final T fixedR2 = fixedP.getNorm2Sq();
-        final T fixedR  = fixedR2.sqrt();
-        final FieldVector3D<T> fixedV = new FieldVector3D<>(getOne(), this.partialPV.getVelocity(),
-                                                            dt, nonKeplerianAcceleration);
-        final FieldVector3D<T> fixedA =
-                new FieldVector3D<>(fixedR2.multiply(fixedR).reciprocal().multiply(getMu().negate()),
-                                    this.partialPV.getPosition(),
-                                    getOne(), nonKeplerianAcceleration);
-
-        // build a new orbit, taking non-Keplerian acceleration into account
-        return new FieldCircularOrbit<>(new TimeStampedFieldPVCoordinates<>(this.getDate(),
-                                                                            fixedP, fixedV, fixedA),
-                                        this.getFrame(), this.getMu());
     }
 
     /** {@inheritDoc} */
