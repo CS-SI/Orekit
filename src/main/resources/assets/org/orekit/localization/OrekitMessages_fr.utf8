@@ -762,8 +762,11 @@ NON_COPLANAR_POINTS=les observations ne sont pas dans le même plan
 # invalid parameter {0}: {1} not in range [{2}, {3}]
 INVALID_PARAMETER_RANGE=paramètre invalide {0} : {1} n''est pas dans l''intervalle [{2}, {3}]
 
-# The parameter {0} should not be null in {1}
-PARAMETER_NOT_SET=Le paramètre {0} de {1} est null
+# the drag coefficient has not been set
+DRAG_COEFFICIENT_NOT_SET=le coefficient de frottement n''a pas été initialisé
+
+# missing drag coefficient from {0} to {1}
+MISSING_DRAG_COEFFICIENT=coefficient de frottement manquant entre {0} et {1}
 
 # {0} is not implemented
 FUNCTION_NOT_IMPLEMENTED={0} n''est pas implémenté

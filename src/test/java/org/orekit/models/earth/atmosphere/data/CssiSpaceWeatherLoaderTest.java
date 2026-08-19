@@ -51,6 +51,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.drag.DragForce;
 import org.orekit.forces.drag.IsotropicDrag;
+import org.orekit.forces.drag.IsotropicDragBuilder;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.models.earth.atmosphere.Atmosphere;
@@ -483,7 +484,7 @@ public class CssiSpaceWeatherLoaderTest {
         NumericalPropagator propagator = new NumericalPropagator(integrator);
         DTM2000InputParameters flux = loadCswl();
         final Atmosphere atmosphere = new DTM2000(flux, sun, earth);
-        final IsotropicDrag satellite = new IsotropicDrag(1, 3.2);
+        final IsotropicDrag satellite = new IsotropicDragBuilder(1).addDragCoeff(3.2).build();
         propagator.addForceModel(new DragForce(atmosphere, satellite));
 
         propagator.setInitialState(ic);
@@ -507,7 +508,7 @@ public class CssiSpaceWeatherLoaderTest {
         NumericalPropagator propagator = new NumericalPropagator(integrator);
         NRLMSISE00InputParameters flux = loadCswl();
         final Atmosphere atmosphere = new NRLMSISE00(flux, sun, earth);
-        final IsotropicDrag satellite = new IsotropicDrag(1, 3.2);
+        final IsotropicDrag satellite = new IsotropicDragBuilder(1).addDragCoeff(3.2).build();
         propagator.addForceModel(new DragForce(atmosphere, satellite));
 
         propagator.setInitialState(ic);

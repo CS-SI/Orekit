@@ -42,7 +42,7 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.drag.DragForce;
 import org.orekit.forces.drag.DragSensitive;
-import org.orekit.forces.drag.IsotropicDrag;
+import org.orekit.forces.drag.IsotropicDragBuilder;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
 import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
@@ -231,7 +231,8 @@ public class JacobianPropagatorConverterTest {
         atmosphere = new SimpleExponentialAtmosphere(earth, 0.0004, 42000.0, 7500.0);
         final double dragCoef = 2.0;
         crossSection = 25.0;
-        drag = new DragForce(atmosphere, new IsotropicDrag(crossSection, dragCoef));
+        drag = new DragForce(atmosphere,
+                             new IsotropicDragBuilder(crossSection).addDragCoeff(dragCoef).build());
 
     }
 

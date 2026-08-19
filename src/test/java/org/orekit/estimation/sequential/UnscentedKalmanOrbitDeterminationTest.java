@@ -55,7 +55,7 @@ import org.orekit.files.ilrs.CPFParser;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.drag.DragForce;
 import org.orekit.forces.drag.DragSensitive;
-import org.orekit.forces.drag.IsotropicDrag;
+import org.orekit.forces.drag.IsotropicDragBuilder;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
 import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.forces.gravity.SolidTides;
@@ -203,7 +203,7 @@ public class UnscentedKalmanOrbitDeterminationTest {
      * @throws IOException if observations file cannot be read properly
      * @throws URISyntaxException if URI syntax is wrong
      */
-    private CPFEphemeris initializeObservations(final String fileName) throws URISyntaxException, IOException {
+    private CPFEphemeris initializeObservations(final String fileName) throws URISyntaxException {
 
         // Input in tutorial resources directory
         final String inputPath = UnscentedKalmanOrbitDeterminationTest.class.getClassLoader().
@@ -381,7 +381,8 @@ public class UnscentedKalmanOrbitDeterminationTest {
 
             // Drag force
             // Assuming spherical satellite
-            final ForceModel drag = new DragForce(atmosphere, new IsotropicDrag(surface, 1.0));
+            final ForceModel drag = new DragForce(atmosphere,
+                                                  new IsotropicDragBuilder(surface).addDragCoeff(1.0).build());
             for (final ParameterDriver driver : drag.getParametersDrivers()) {
                 if (driver.getName().equals(DragSensitive.DRAG_COEFFICIENT)) {
                     driver.setSelected(true);
@@ -480,11 +481,11 @@ public class UnscentedKalmanOrbitDeterminationTest {
 
     /**
      * Initialize the estimator used for the orbit determination and run the estimation.
-     * @param propagator orbit propagator
+     * @param propagatorBuilder orbit propagator builder
      * @param measurements list of measurements
      * @param provider covariance matrix provider
      */
-    private static Observer initializeEstimator(final PropagatorBuilder propagator,
+    private static Observer initializeEstimator(final PropagatorBuilder propagatorBuilder,
                                                 final List<ObservedMeasurement<?>> measurements,
                                                 final CovarianceMatrixProvider provider) {
 
@@ -492,10 +493,10 @@ public class UnscentedKalmanOrbitDeterminationTest {
         final UnscentedKalmanEstimatorBuilder builder = new UnscentedKalmanEstimatorBuilder();
 
         // Add the propagation configuration
-        builder.addPropagationConfiguration((NumericalPropagatorBuilder) propagator, provider);
+        builder.addPropagationConfiguration(propagatorBuilder, provider);
 
         // Unscented transform provider
-        builder.unscentedTransformProvider(new MerweUnscentedTransform(propagator.getSelectedNormalizedParameters().length));
+        builder.unscentedTransformProvider(new MerweUnscentedTransform(propagatorBuilder.getSelectedNormalizedParameters().length));
 
         // Build filter
         final UnscentedKalmanEstimator estimator = builder.build();

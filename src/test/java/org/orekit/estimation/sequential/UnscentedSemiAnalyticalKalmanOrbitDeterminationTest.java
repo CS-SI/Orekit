@@ -18,7 +18,6 @@ package org.orekit.estimation.sequential;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -53,7 +52,7 @@ import org.orekit.files.ilrs.CPFParser;
 import org.orekit.files.rinex.HatanakaCompressFilter;
 import org.orekit.forces.drag.DragForce;
 import org.orekit.forces.drag.DragSensitive;
-import org.orekit.forces.drag.IsotropicDrag;
+import org.orekit.forces.drag.IsotropicDragBuilder;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.ICGEMFormatReader;
 import org.orekit.forces.gravity.potential.SphericalHarmonicsProvider;
@@ -108,7 +107,7 @@ public class UnscentedSemiAnalyticalKalmanOrbitDeterminationTest {
      * </p>
      */
     @Test
-    public void testLageos() throws URISyntaxException, IOException {
+    public void testLageos() throws URISyntaxException {
 
         // Print
         print = false;
@@ -362,7 +361,9 @@ public class UnscentedSemiAnalyticalKalmanOrbitDeterminationTest {
 
             // Drag force
             // Assuming spherical satellite
-            final DSSTForceModel drag = new DSSTAtmosphericDrag(new DragForce(atmosphere, new IsotropicDrag(surface, 1.0)), gravityField.getMu());
+            final DSSTForceModel drag = new DSSTAtmosphericDrag(new DragForce(atmosphere,
+                                                                              new IsotropicDragBuilder(surface).addDragCoeff(1.0).build()),
+                                                                              gravityField.getMu());
             for (final ParameterDriver driver : drag.getParametersDrivers()) {
                 if (driver.getName().equals(DragSensitive.DRAG_COEFFICIENT)) {
                     driver.setSelected(true);

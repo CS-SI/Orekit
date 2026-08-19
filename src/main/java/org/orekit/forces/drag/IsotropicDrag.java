@@ -26,13 +26,20 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TimeSpanMap;
 
 /** This class models isotropic drag effects.
- * <p>The model of this spacecraft is a simple spherical model, this
+ * <p>
+ * The model of this spacecraft is a simple spherical model, this
  * means that all coefficients are constant and do not depend on
- * the direction.</p>
- *
+ * the direction.
+ * </p>
+ * <p>
+ * Since 14.0, this model needs to be built using {@link IsotropicDragBuilder}
+ * </p>
+ * @see IsotropicDragBuilder
  * @see org.orekit.forces.BoxAndSolarArraySpacecraft
  * @see org.orekit.forces.radiation.IsotropicRadiationCNES95Convention
  * @author Luc Maisonobe
@@ -46,44 +53,37 @@ public class IsotropicDrag implements DragSensitive {
      * in the multiplications/divisions sequences.
      * </p>
      */
-    private final double SCALE = FastMath.scalb(1.0, -3);
-
-    /** Drivers for drag coefficient parameter. */
-    private final List<ParameterDriver> dragParametersDrivers;
+    private static final double SCALE = FastMath.scalb(1.0, -3);
 
     /** Cross section (m²). */
     private final double crossSection;
 
-    /** Constructor with drag coefficient min/max set to ±∞.
-     * @param crossSection Surface (m²)
-     * @param dragCoeff drag coefficient
-     */
-    public IsotropicDrag(final double crossSection, final double dragCoeff) {
-        this(crossSection, dragCoeff, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
-    }
+    /** Drivers for drag coefficients valid on specified time spans. */
+    final TimeSpanMap<ParameterDriver> timeSpanDrivers;
 
-    /** Constructor with drag coefficient min/max set by user.
+    /** Drivers for drag coefficient parameter. */
+    private final List<ParameterDriver> dragParametersDrivers;
+
+    /** Simple constructor.
      * @param crossSection Surface (m²)
-     * @param dragCoeff drag coefficient
-     * @param dragCoeffMin Minimum value of drag coefficient
-     * @param dragCoeffMax Maximum value of drag coefficient
+     * @param timeSpanDrivers drivers for drag coefficients valid on specified time spans
      */
-    public IsotropicDrag(final double crossSection, final double dragCoeff,
-                         final double dragCoeffMin, final double dragCoeffMax) {
-        // in some corner cases (unknown spacecraft, fuel leaks, active piloting ...)
-        // the single coefficient may be arbitrary, and even negative
-        // the DRAG_COEFFICIENT parameter should be sufficient, but GLOBAL_DRAG_FACTOR
-        // was added as of 12.0 for consistency with BoxAndSolarArraySpacecraft
-        // that only has a global multiplication factor, hence allowing this name
-        // to be used for both models
-        this.dragParametersDrivers = new ArrayList<>(2);
+    IsotropicDrag(final double crossSection, final TimeSpanMap<ParameterDriver> timeSpanDrivers) {
+
+        this.crossSection    = crossSection;
+        this.timeSpanDrivers = timeSpanDrivers;
+
+        // prepare drivers, one for the global coefficient and one for each time span
+        dragParametersDrivers = new ArrayList<>(1 + timeSpanDrivers.getSpansNumber());
+
+        // global driver
         dragParametersDrivers.add(new ParameterDriver(DragSensitive.GLOBAL_DRAG_FACTOR,
                                                       1.0, SCALE,
                                                       0.0, Double.POSITIVE_INFINITY));
-        dragParametersDrivers.add(new ParameterDriver(DragSensitive.DRAG_COEFFICIENT,
-                                                      dragCoeff, SCALE,
-                                                      dragCoeffMin, dragCoeffMax));
-        this.crossSection = crossSection;
+
+        // time span drivers
+        timeSpanDrivers.forEach(dragParametersDrivers::add);
+
     }
 
     /** {@inheritDoc} */
@@ -92,12 +92,22 @@ public class IsotropicDrag implements DragSensitive {
         return Collections.unmodifiableList(dragParametersDrivers);
     }
 
+    /** Get the drag coefficient driver that is active at date.
+     * @param date date to check
+     * @return drag coefficient driver active at this date
+     * @since 14.0
+     */
+    public ParameterDriver getActiveDriver(final AbsoluteDate date) {
+        return timeSpanDrivers.get(date);
+    }
+
     /** {@inheritDoc} */
     @Override
     public Vector3D dragAcceleration(final SpacecraftState state,
                                      final double density, final Vector3D relativeVelocity,
                                      final double[] parameters) {
-        final double dragCoeff = parameters[0] * parameters[1];
+        final int index = 1 + timeSpanDrivers.getSpan(state.getDate()).getIndex();
+        final double dragCoeff = parameters[0] * parameters[index];
         return new Vector3D(relativeVelocity.getNorm() * density * dragCoeff * crossSection / (2 * state.getMass()),
                             relativeVelocity);
     }
@@ -108,7 +118,8 @@ public class IsotropicDrag implements DragSensitive {
         dragAcceleration(final FieldSpacecraftState<T> state, final T density,
                          final FieldVector3D<T> relativeVelocity,
                          final T[] parameters) {
-        final T dragCoeff = parameters[0].multiply(parameters[1]);
+        final int index = 1 + timeSpanDrivers.getSpan(state.getDate().toAbsoluteDate()).getIndex();
+        final T dragCoeff = parameters[0].multiply(parameters[index]);
         return new FieldVector3D<>(relativeVelocity.getNorm().
                                    multiply(density.multiply(dragCoeff).multiply(crossSection / 2)).
                                    divide(state.getMass()),

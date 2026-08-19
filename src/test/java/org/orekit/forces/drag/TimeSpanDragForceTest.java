@@ -217,7 +217,7 @@ class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         // -----------------------
         double dragArea = 2.;
         double dragCd0 = 0.;
-        TimeSpanDragForce forceModel = new TimeSpanDragForce(atmosphere, new IsotropicDrag(dragArea, dragCd0));
+        TimeSpanDragForce forceModel = new TimeSpanDragForce(atmosphere, new IsotropicDragBuilder(dragArea).addDragCoeff(dragCd0).build());
         Assertions.assertFalse(forceModel.dependsOnPositionOnly());
         List<ParameterDriver> drivers = forceModel.getParametersDrivers();
         Assertions.assertEquals(2,  drivers.size());
@@ -241,9 +241,9 @@ class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         double dragCd2 = 2.;
         double dt = 120.;
         // Build the force model
-        isoDrag = new IsotropicDrag(dragArea, dragCd0);
-        IsotropicDrag isoDrag1 = new IsotropicDrag(dragArea, dragCd1);
-        IsotropicDrag isoDrag2 = new IsotropicDrag(dragArea, dragCd2);
+        isoDrag = new IsotropicDragBuilder(dragArea).addDragCoeff(dragCd0).build();
+        IsotropicDrag isoDrag1 = new IsotropicDragBuilder(dragArea).addDragCoeff(dragCd1).build();
+        IsotropicDrag isoDrag2 = new IsotropicDragBuilder(dragArea).addDragCoeff(dragCd2).build();
         forceModel = new TimeSpanDragForce(atmosphere, isoDrag);
         forceModel.addDragSensitiveValidAfter(isoDrag1, date.shiftedBy(dt));
         forceModel.addDragSensitiveValidBefore(isoDrag2, date.shiftedBy(-dt));
@@ -284,7 +284,7 @@ class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         // Add a custom-named driver
         // ------------
         double dragCd3 = 3.;
-        IsotropicDrag isoDrag3 = new IsotropicDrag(dragArea, dragCd3);
+        IsotropicDrag isoDrag3 = new IsotropicDragBuilder(dragArea).addDragCoeff(dragCd3).build();
         isoDrag3.getDragParametersDrivers().getFirst().setName("custom-fact");
         isoDrag3.getDragParametersDrivers().get(1).setName("custom-Cd");
         forceModel.addDragSensitiveValidAfter(isoDrag3, date.shiftedBy(2. * dt));
@@ -336,7 +336,7 @@ class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
 
         // Initialize force model (first coef is valid at all epochs)
         final double dragCd  = 1.2;
-        final IsotropicDrag isotropicDrag = new IsotropicDrag(dragArea, dragCd);
+        final IsotropicDrag isotropicDrag = new IsotropicDragBuilder(dragArea).addDragCoeff(dragCd).build();
         isotropicDrag.getDragParametersDrivers().getFirst().setName("Cd");
         final TimeSpanDragForce forceModel = new TimeSpanDragForce(atmosphere, isotropicDrag, TimeScalesFactory.getUTC());
 
@@ -345,7 +345,7 @@ class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         final double dragCd2 = 3.;
         final double dt2 = 4 * 3600.;
         final AbsoluteDate date2 = date.shiftedBy(dt2);
-        final IsotropicDrag isotropicDrag2 = new IsotropicDrag(dragArea, dragCd2);
+        final IsotropicDrag isotropicDrag2 = new IsotropicDragBuilder(dragArea).addDragCoeff(dragCd2).build();
         isotropicDrag2.getDragParametersDrivers().getFirst().setName("Cd2");
         forceModel.addDragSensitiveValidAfter(isotropicDrag2, date2);
 
@@ -353,7 +353,7 @@ class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         final double dragCd3 = 3.;
         final double dt3 = -86400.;
         final AbsoluteDate date3 = date.shiftedBy(dt3);
-        final IsotropicDrag isotropicDrag3 = new IsotropicDrag(dragArea, dragCd3);
+        final IsotropicDrag isotropicDrag3 = new IsotropicDragBuilder(dragArea).addDragCoeff(dragCd3).build();
         isotropicDrag3.getDragParametersDrivers().getFirst().setName("Cd3");
         forceModel.addDragSensitiveValidBefore(isotropicDrag3, date3);
 
@@ -402,7 +402,7 @@ class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
 
         // Initialize force model (first coef is valid at all epochs)
         final double dragCd  = 1.2;
-        final IsotropicDrag isotropicDrag = new IsotropicDrag(dragArea, dragCd);
+        final IsotropicDrag isotropicDrag = new IsotropicDragBuilder(dragArea).addDragCoeff(dragCd).build();
         isotropicDrag.getDragParametersDrivers().getFirst().setName("Cd");
         final TimeSpanDragForce forceModel = new TimeSpanDragForce(atmosphere, isotropicDrag, TimeScalesFactory.getUTC());
 
@@ -411,7 +411,7 @@ class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         final double dragCd2 = 3.;
         final double dt2 = 4 * 3600.;
         final AbsoluteDate date2 = date.shiftedBy(dt2);
-        final IsotropicDrag isotropicDrag2 = new IsotropicDrag(dragArea, dragCd2);
+        final IsotropicDrag isotropicDrag2 = new IsotropicDragBuilder(dragArea).addDragCoeff(dragCd2).build();
         isotropicDrag2.getDragParametersDrivers().getFirst().setName("Cd2");
         forceModel.addDragSensitiveValidAfter(isotropicDrag2, date2);
 
@@ -419,7 +419,7 @@ class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         final double dragCd3 = 3.;
         final double dt3 = -86400.;
         final AbsoluteDate date3 = date.shiftedBy(dt3);
-        final IsotropicDrag isotropicDrag3 = new IsotropicDrag(dragArea, dragCd3);
+        final IsotropicDrag isotropicDrag3 = new IsotropicDragBuilder(dragArea).addDragCoeff(dragCd3).build();
         isotropicDrag3.getDragParametersDrivers().getFirst().setName("Cd3");
         forceModel.addDragSensitiveValidBefore(isotropicDrag3, date3);
 
@@ -448,7 +448,7 @@ class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         {
 
         // Initialization
-        AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 3, 1),
                                              new TimeComponents(13, 59, 27.816),
                                              TimeScalesFactory.getUTC());
         double i     = FastMath.toRadians(98.7);
@@ -472,9 +472,9 @@ class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         double dragCd2 = 3.;
         double dt = 1. * 3600.;
         // Build the force model
-        IsotropicDrag isoDrag0 = new IsotropicDrag(dragArea, dragCd0);
-        IsotropicDrag isoDrag1 = new IsotropicDrag(dragArea, dragCd1);
-        IsotropicDrag isoDrag2 = new IsotropicDrag(dragArea, dragCd2);
+        IsotropicDrag isoDrag0 = new IsotropicDragBuilder(dragArea).addDragCoeff(dragCd0).build();
+        IsotropicDrag isoDrag1 = new IsotropicDragBuilder(dragArea).addDragCoeff(dragCd1).build();
+        IsotropicDrag isoDrag2 = new IsotropicDragBuilder(dragArea).addDragCoeff(dragCd2).build();
         TimeSpanDragForce forceModel = new TimeSpanDragForce(atmosphere, isoDrag0);
         forceModel.addDragSensitiveValidAfter(isoDrag1, date.shiftedBy(dt));
         forceModel.addDragSensitiveValidBefore(isoDrag2, date.shiftedBy(-dt));
@@ -861,7 +861,7 @@ class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         {
 
         // initialization
-        AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 3, 1),
                                              new TimeComponents(13, 59, 27.816),
                                              TimeScalesFactory.getUTC());
         double i     = FastMath.toRadians(98.7);
@@ -928,7 +928,7 @@ class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         {
 
         // initialization
-        AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 3, 1),
                                              new TimeComponents(13, 59, 27.816),
                                              TimeScalesFactory.getUTC());
         double i     = FastMath.toRadians(98.7);
@@ -996,7 +996,7 @@ class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         {
 
         // initialization
-        AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 3, 1),
                                              new TimeComponents(13, 59, 27.816),
                                              TimeScalesFactory.getUTC());
         double i     = FastMath.toRadians(98.7);
@@ -1058,7 +1058,7 @@ class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         {
 
         // initialization
-        AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 3, 1),
                                              new TimeComponents(13, 59, 27.816),
                                              TimeScalesFactory.getUTC());
         double i     = FastMath.toRadians(98.7);
@@ -1119,7 +1119,7 @@ class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         {
 
         // Initialization
-        AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 3, 1),
                                              new TimeComponents(13, 59, 27.816),
                                              TimeScalesFactory.getUTC());
         double i     = FastMath.toRadians(98.7);

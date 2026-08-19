@@ -43,10 +43,7 @@ import org.orekit.utils.TimeSpanMap.Span;
  * be propagated to the other pair, but attempting to select drivers in both
  * pairs at the same time will trigger an exception. Changing the value of a driver
  * that is not selected should be avoided as it leads to inconsistencies between the pairs.
- * </p>. Warning, startDate driver, stopDate driver, duration driver and medianDate driver
- * must all have the same number of values to estimate (same number of span in valueSpanMap), that is is to
- * say that the {@link org.orekit.utils.ParameterDriver#addSpans(AbsoluteDate, AbsoluteDate, double)}
- * should be called with same arguments.
+ * </p>.
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @author Luc Maisonobe
  * @since 11.1

@@ -26,7 +26,7 @@ import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
 import org.orekit.forces.drag.DragForce;
 import org.orekit.forces.drag.DragSensitive;
-import org.orekit.forces.drag.IsotropicDrag;
+import org.orekit.forces.drag.IsotropicDragBuilder;
 import org.orekit.models.earth.atmosphere.Atmosphere;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
@@ -81,7 +81,9 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
      */
     public DSSTAtmosphericDrag(final Atmosphere atmosphere, final double cd,
                                final double area, final double mu) {
-        this(atmosphere, new IsotropicDrag(area, cd), mu);
+        this(atmosphere,
+             new IsotropicDragBuilder(area).addDragCoeff(cd).build(),
+             mu);
     }
 
     /** Simple constructor with custom spacecraft.

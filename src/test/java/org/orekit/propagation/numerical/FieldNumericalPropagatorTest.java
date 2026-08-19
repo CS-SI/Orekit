@@ -61,7 +61,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.ForceModelModifier;
 import org.orekit.forces.drag.DragForce;
-import org.orekit.forces.drag.IsotropicDrag;
+import org.orekit.forces.drag.IsotropicDragBuilder;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
 import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.forces.gravity.ThirdBodyAttraction;
@@ -246,7 +246,7 @@ class FieldNumericalPropagatorTest {
         FieldSpacecraftState<T> actual = ephemeris.propagate(end);
 
         //verify
-        Assertions.assertEquals(actual.getDate().durationFrom(end).getReal(), 0.0, 0.0);
+        Assertions.assertEquals(0.0, actual.getDate().durationFrom(end).getReal(), 0.0);
         Assertions.assertEquals(1, handler.eventCount);
     }
 
@@ -281,9 +281,9 @@ class FieldNumericalPropagatorTest {
 
         // action + verify
         // propagate forward
-        Assertions.assertEquals(ephemeris.propagate(end).getDate().durationFrom(end).getReal(), 0.0, 0.0);
+        Assertions.assertEquals(0.0, ephemeris.propagate(end).getDate().durationFrom(end).getReal(), 0.0);
         // propagate backward
-        Assertions.assertEquals(ephemeris.propagate(initDate).getDate().durationFrom(initDate).getReal(), 0.0, 0.0);
+        Assertions.assertEquals(0.0, ephemeris.propagate(initDate).getDate().durationFrom(initDate).getReal(), 0.0);
         Assertions.assertEquals(2, handler.eventCount);
     }
 
@@ -340,7 +340,7 @@ class FieldNumericalPropagatorTest {
         FieldSpacecraftState<T> actual = propagator.propagate(end);
 
         //verify
-        Assertions.assertEquals(actual.getDate().durationFrom(end).getReal(), 0.0, 0.0);
+        Assertions.assertEquals(0.0, actual.getDate().durationFrom(end).getReal(), 0.0);
     }
 
     @Test
@@ -385,8 +385,7 @@ class FieldNumericalPropagatorTest {
                 OrekitMatchers.closeTo(0, 0));
         //test date
         FieldAbsoluteDate<T> date = endDate.shiftedBy(-0.11);
-        Assertions.assertEquals(
-                ephemeris.propagate(date).getDate().durationFrom(date).getReal(), 0, 0);
+        Assertions.assertEquals(0, ephemeris.propagate(date).getDate().durationFrom(date).getReal(), 0);
 
         Assertions.assertTrue(prop.getAdditionalDerivativesProviders().isEmpty());
 
@@ -432,8 +431,7 @@ class FieldNumericalPropagatorTest {
                 OrekitMatchers.closeTo(0, 0));
         //test date
         FieldAbsoluteDate<T> date = endDate.shiftedBy(-0.11);
-        Assertions.assertEquals(
-                ephemeris.propagate(date).getDate().durationFrom(date).getReal(), 0, 0);
+        Assertions.assertEquals(0, ephemeris.propagate(date).getDate().durationFrom(date).getReal(), 0);
     }
 
     @Test
@@ -765,7 +763,7 @@ class FieldNumericalPropagatorTest {
         propagator.setOrbitParamsType(type);
         propagator.setInitialState(initialState);
 
-        propagator.setStepHandler(new FieldOrekitStepHandler<T>() {
+        propagator.setStepHandler(new FieldOrekitStepHandler<>() {
             private int countDown = 3;
             public void handleStep(FieldOrekitStepInterpolator<T> interpolator) {
                 if (--countDown == 0) {
@@ -843,7 +841,7 @@ class FieldNumericalPropagatorTest {
         propagator.setOrbitParamsType(type);
         propagator.setInitialState(initialState);
         final FieldAbsoluteDate<T> resetDate = initDate.shiftedBy(1000);
-        CheckingHandler<T> checking = new CheckingHandler<T>(Action.RESET_STATE) {
+        CheckingHandler<T> checking = new CheckingHandler<>(Action.RESET_STATE) {
             public FieldSpacecraftState<T> resetState(FieldEventDetector<T> detector, FieldSpacecraftState<T> oldState) {
                 return new FieldSpacecraftState<>(oldState.getOrbit(), oldState.getAttitude()).withMass(oldState.getMass().subtract(200.0));
             }
@@ -983,7 +981,7 @@ class FieldNumericalPropagatorTest {
         propagator.setOrbitParamsType(type);
         propagator.setInitialState(initialState);
 
-        propagator.addAdditionalDerivativesProvider(new FieldAdditionalDerivativesProvider<T>() {
+        propagator.addAdditionalDerivativesProvider(new FieldAdditionalDerivativesProvider<>() {
 
             public String getName() {
                 return "linear";
@@ -1000,7 +998,7 @@ class FieldNumericalPropagatorTest {
             }
         });
         try {
-            propagator.addAdditionalDerivativesProvider(new FieldAdditionalDerivativesProvider<T>() {
+            propagator.addAdditionalDerivativesProvider(new FieldAdditionalDerivativesProvider<>() {
 
                 public String getName() {
                     return "linear";
@@ -1018,7 +1016,7 @@ class FieldNumericalPropagatorTest {
             });
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE);
+            Assertions.assertEquals(OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE, oe.getSpecifier());
         }
         try {
             propagator.addAdditionalDataProvider(new FieldAdditionalDataProvider<T[], T>() {
@@ -1032,7 +1030,7 @@ class FieldNumericalPropagatorTest {
             });
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE);
+            Assertions.assertEquals(OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE, oe.getSpecifier());
         }
         propagator.addAdditionalDataProvider(new FieldAdditionalDataProvider<T[], T>() {
             public String getName() {
@@ -1112,7 +1110,7 @@ class FieldNumericalPropagatorTest {
         FieldNumericalPropagator<T> propagator = createPropagator(field);
 
 
-        propagator.addAdditionalDerivativesProvider(new FieldAdditionalDerivativesProvider<T>() {
+        propagator.addAdditionalDerivativesProvider(new FieldAdditionalDerivativesProvider<>() {
 
             public String getName() {
                 return "linear";
@@ -1131,7 +1129,7 @@ class FieldNumericalPropagatorTest {
         propagator.setInitialState(propagator.getInitialState().addAdditionalData("linear",
                                                                                    field.getZero().add(1.5)));
 
-        CheckingHandler<T> checking = new CheckingHandler<T>(Action.RESET_STATE) {
+        CheckingHandler<T> checking = new CheckingHandler<>(Action.RESET_STATE) {
             public FieldSpacecraftState<T> resetState(FieldEventDetector<T> detector, FieldSpacecraftState<T> oldState)
                 {
                 return oldState.addAdditionalData("linear", oldState.getAdditionalState("linear")[0].multiply(2));
@@ -1276,7 +1274,7 @@ class FieldNumericalPropagatorTest {
                 return a;
             }
         });
-        propagator.addAdditionalDerivativesProvider(new FieldAdditionalDerivativesProvider<T>() {
+        propagator.addAdditionalDerivativesProvider(new FieldAdditionalDerivativesProvider<>() {
             public String getName() {
                 return "extra";
             }
@@ -2096,7 +2094,8 @@ class FieldNumericalPropagatorTest {
                         new MarshallSolarActivityFutureEstimation("Jan2000F10-edited-data\\.txt",
                                                                   MarshallSolarActivityFutureEstimation.StrengthLevel.AVERAGE);
         DTM2000 atmosphere = new DTM2000(msafe, CelestialBodyFactory.getSun(), earth);
-        np.addForceModel(new DragForce(atmosphere, new IsotropicDrag(spacecraftArea, spacecraftDragCoefficient)));
+        np.addForceModel(new DragForce(atmosphere,
+                                       new IsotropicDragBuilder(spacecraftArea).addDragCoeff(spacecraftDragCoefficient).build()));
 
         // solar radiation pressure
         np.addForceModel(new SolarRadiationPressure(CelestialBodyFactory.getSun(), earth,

@@ -762,8 +762,11 @@ NON_COPLANAR_POINTS=
 # invalid parameter {0}: {1} not in range [{2}, {3}]
 INVALID_PARAMETER_RANGE=
 
-# The parameter {0} should not be null in {1}
-PARAMETER_NOT_SET=
+# the drag coefficient has not been set
+DRAG_COEFFICIENT_NOT_SET=
+
+# missing drag coefficient from {0} to {1}
+MISSING_DRAG_COEFFICIENT=
 
 # {0} is not implemented
 FUNCTION_NOT_IMPLEMENTED=
