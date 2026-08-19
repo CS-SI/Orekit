@@ -1165,7 +1165,10 @@ public enum OrekitMessages implements Localizable {
     ORBEX_WRONG_COLUMNS("wrong number of columns at line {0}, file {1}; {2} columns is not allowed for {3} record"),
 
     /** DUPLICATED_SATELLITE. */
-    DUPLICATED_SATELLITE("duplicated satellite {0} (line {1}, file {2})");
+    DUPLICATED_SATELLITE("duplicated satellite {0} (line {1}, file {2})"),
+
+    /** INVALID_INDEX. */
+    INVALID_INDEX("out of range index: {0} is not in [{1}, {2}]");
 
     /** Base name of the resource bundle in classpath. */
     private static final String RESOURCE_BASE_NAME = "assets/org/orekit/localization/OrekitMessages";

@@ -1124,3 +1124,6 @@ ORBEX_WRONG_COLUMNS=
 
 # duplicated satellite {0} (line {1}, file {2})
 DUPLICATED_SATELLITE=
+
+# out of range index: {0} is not in [{1}, {2}]
+INVALID_INDEX=

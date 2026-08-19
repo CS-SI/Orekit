@@ -48,12 +48,13 @@ import org.orekit.time.TimeStamped;
  * transition dates, in order to build up the complete map. The transition dates
  * can be either the start of validity (when calling {@link #addValidAfter(Object,
  * AbsoluteDate, boolean)}), or the end of the validity (when calling {@link
- * #addValidBefore(Object, AbsoluteDate, boolean)}). Entries are often added at one
- * end only (and mainly in chronological order), but this is not required. It is
- * possible for example to first set up a map that covers a large range (say one day),
- * and then to insert intermediate dates using for example propagation and event
- * detectors to carve out some parts. This is akin to the way Binary Space Partitioning
- * Trees work.
+ * #addValidBefore(Object, AbsoluteDate, boolean)}), or both (when calling
+ * {@link #addValidBetween(Object, AbsoluteDate, AbsoluteDate)}). Entries are
+ * often added at one end only (and mainly in chronological order), but this is
+ * not required. It is possible for example to first set up a map that covers a
+ * large range (say one day), and then to insert intermediate dates using for
+ * example propagation and event detectors to carve out some parts. This is akin
+ * to the way Binary Space Partitioning Trees work.
  * </p>
  * <p>
  * Since 11.1, this class is thread-safe
@@ -87,9 +88,6 @@ public class TimeSpanMap<T> {
      */
     private AbsoluteDate expungedLate;
 
-    /** Number of time spans. */
-    private int nbSpans;
-
     /** Maximum number of time spans.
      * @since 13.1
      */
@@ -120,10 +118,9 @@ public class TimeSpanMap<T> {
      * @param entry entry (initially valid throughout the timeline)
      */
     public TimeSpanMap(final T entry) {
-        this.current   = new Span<>(entry);
+        this.current   = new Span<>(entry); // automatically get index 0 here
         this.firstSpan = current;
         this.lastSpan  = current;
-        this.nbSpans   = 1;
         configureExpunge(Integer.MAX_VALUE, Double.POSITIVE_INFINITY, ExpungePolicy.EXPUNGE_FARTHEST);
     }
 
@@ -139,14 +136,16 @@ public class TimeSpanMap<T> {
      * Note that as the policy depends on the date at which new entries are added, the policy will be enforced
      * only for the <em>next</em> calls to {@link #addValidBefore(Object, AbsoluteDate, boolean)},
      * {@link #addValidBetween(Object, AbsoluteDate, AbsoluteDate)}, and {@link #addValidAfter(Object,
-     * AbsoluteDate, boolean)}, it is <em>not</em> enforce immediately.
+     * AbsoluteDate, boolean)}, it is <em>not</em> enforced immediately.
      * </p>
      * @param newMaxNbSpans maximum number of time spans
      * @param newMaxRange maximum time range between the earliest and the latest transitions
      * @param newExpungePolicy expunge policy to apply when capacity is exceeded
      * @since 13.1
      */
-    public synchronized void configureExpunge(final int newMaxNbSpans, final double newMaxRange, final ExpungePolicy newExpungePolicy) {
+    public synchronized void configureExpunge(final int newMaxNbSpans,
+                                              final double newMaxRange,
+                                              final ExpungePolicy newExpungePolicy) {
         this.maxNbSpans    = newMaxNbSpans;
         this.maxRange      = newMaxRange;
         this.expungePolicy = newExpungePolicy;
@@ -163,7 +162,7 @@ public class TimeSpanMap<T> {
      * @since 11.1
      */
     public synchronized int getSpansNumber() {
-        return nbSpans;
+        return lastSpan.index + 1;
     }
 
     /** Add an entry valid before a limit date.
@@ -207,11 +206,9 @@ public class TimeSpanMap<T> {
             // drop everything before date
             current.start = null;
 
-            // update count
-            nbSpans = 0;
-            for (Span<T> span = current; span != null; span = span.next()) {
-                ++nbSpans;
-            }
+            // fix counts
+            current.index = 0;
+            fixCounts(current);
 
         }
 
@@ -221,6 +218,7 @@ public class TimeSpanMap<T> {
         if (start != null && start.getDate().equals(latestValidityDate)) {
             // the transition at the start of the current span is at the exact same date
             // we update it, without adding a new transition
+            span.index = current.index - 1;
             if (start.previous() != null) {
                 start.previous().setAfter(span);
             }
@@ -228,12 +226,14 @@ public class TimeSpanMap<T> {
             updateFirstIfNeeded(span);
         } else {
 
-            if (current.getStartTransition() != null) {
-                current.getStartTransition().setAfter(span);
+            span.index = current.index;
+            if (start != null) {
+                start.setAfter(span);
             }
 
             // we need to add a new transition somewhere inside the current span
             insertTransition(latestValidityDate, span, current);
+            updateFirstIfNeeded(span);
 
         }
 
@@ -283,16 +283,8 @@ public class TimeSpanMap<T> {
         locate(earliestValidityDate);
 
         if (erasesLater) {
-
             // drop everything after date
             current.end = null;
-
-            // update count
-            nbSpans = 0;
-            for (Span<T> span = current; span != null; span = span.previous()) {
-                ++nbSpans;
-            }
-
         }
 
         final Span<T> span = new Span<>(entry);
@@ -304,11 +296,13 @@ public class TimeSpanMap<T> {
         if (start != null && start.getDate().equals(earliestValidityDate)) {
             // the transition at the start of the current span is at the exact same date
             // we update it, without adding a new transition
+            span.index = current.index;
             start.setAfter(span);
             updateLastIfNeeded(span);
         } else {
             // we need to add a new transition somewhere inside the current span
             insertTransition(earliestValidityDate, current, span);
+            updateLastIfNeeded(span);
         }
 
         // we consider the last added transition as the new current one
@@ -356,7 +350,6 @@ public class TimeSpanMap<T> {
             Span<T> latest = current;
             while (latest.getEndTransition() != null && latest.getEnd().isBeforeOrEqualTo(latestValidityDate)) {
                 latest = latest.next();
-                --nbSpans;
             }
             if (latest == current) {
                 // the interval splits one transition in the middle, we need to duplicate the instance
@@ -364,6 +357,7 @@ public class TimeSpanMap<T> {
                 if (current.getEndTransition() != null) {
                     current.getEndTransition().setBefore(latest);
                 }
+                updateLastIfNeeded(latest);
             }
 
             final Span<T> span = new Span<>(entry);
@@ -373,8 +367,8 @@ public class TimeSpanMap<T> {
             if (start != null && start.getDate().equals(earliestValidityDate)) {
                 // the transition at the start of the current span is at the exact same date
                 // we update it, without adding a new transition
+                span.index = current.index;
                 start.setAfter(span);
-                updateLastIfNeeded(span);
             } else {
                 // we need to add a new transition somewhere inside the current span
                 insertTransition(earliestValidityDate, current, span);
@@ -431,6 +425,65 @@ public class TimeSpanMap<T> {
         return current;
     }
 
+    /** Get the entry with a specified index.
+     * <p>
+     * The expected complexity is O(1) for successive calls with
+     * neighboring indices, which is the more frequent use in propagation
+     * or orbit determination applications, and O(n) for random calls.
+     * </p>
+     * <p>
+     * Beware the index of a span is <em>not</em> fixed. It is updated as
+     * other spans are inserted or expunged from the map or if transition
+     * dates are {@link Transition#resetDate(AbsoluteDate, boolean) reset}
+     * with {@code eraseOverridden} set to {@code true}.
+     * </p>
+     * @param index index of the entry
+     * @return entry with the specified index
+     * @see #getSpan(int)
+     * @since 14.0
+     */
+    public synchronized T get(final int index) {
+        return getSpan(index).getData();
+    }
+
+    /** Get the time span containing a specified date.
+     * <p>
+     * The expected complexity is O(1) for successive calls with
+     * neighboring indices, which is the more frequent use in propagation
+     * or orbit determination applications, and O(n) for random calls.
+     * </p>
+     * <p>
+     * Beware the index of a span is <em>not</em> fixed. It is updated as
+     * other spans are inserted or expunged from the map or if transition
+     * dates are {@link Transition#resetDate(AbsoluteDate, boolean) reset}
+     * with {@code eraseOverridden} set to {@code true}.
+     * </p>
+     * @param index index of the entry
+     * @return entry with the specified index
+     * @since 14.0
+     */
+    public synchronized Span<T> getSpan(final int index) {
+
+        // safety check
+        if (index < firstSpan.index || index > lastSpan.index) {
+            throw new OrekitException(OrekitMessages.INVALID_INDEX,
+                                      index, firstSpan.index, lastSpan.index);
+        }
+
+        // forward loop
+        while (index > current.index) {
+            current = current.next();
+        }
+
+        // backward loop
+        while (index < current.index) {
+            current = current.previous();
+        }
+
+        return current;
+
+    }
+
     /** Locate the time span containing a specified date.
      * <p>
      * The {@code current} field is updated to the located span.
@@ -472,9 +525,17 @@ public class TimeSpanMap<T> {
         final Transition<T> transition = new Transition<>(this, date);
         transition.setBefore(before);
         transition.setAfter(after);
-        updateFirstIfNeeded(before);
-        updateLastIfNeeded(after);
-        ++nbSpans;
+        fixCounts(before);
+    }
+
+    /** Fix counts.
+     * @param correct span with correct index
+     */
+    private void fixCounts(final Span<T> correct) {
+        int index = correct.index;
+        for (Span<T> span = correct; span != null; span = span.next()) {
+            span.index = index++;
+        }
     }
 
     /** Get the first (earliest) transition.
@@ -596,12 +657,12 @@ public class TimeSpanMap<T> {
      */
     private synchronized void expungeOldData(final AbsoluteDate date) {
 
-        while (nbSpans > maxNbSpans || lastSpan.getStart().durationFrom(firstSpan.getEnd()) > maxRange) {
+        while (getSpansNumber() > maxNbSpans || lastSpan.getStart().durationFrom(firstSpan.getEnd()) > maxRange) {
             // capacity exceeded, we need to purge old data
             if (expungePolicy.expungeEarliest(date, firstSpan.getEnd(), lastSpan.getStart())) {
                 // we need to purge the earliest data
                 if (firstSpan.getEnd().isAfter(expungedEarly)) {
-                    expungedEarly  = firstSpan.getEnd();
+                    expungedEarly = firstSpan.getEnd();
                 }
                 firstSpan       = firstSpan.next();
                 firstSpan.start = null;
@@ -610,6 +671,11 @@ public class TimeSpanMap<T> {
                     // we need to update it
                     current = firstSpan;
                 }
+
+                // fix counts
+                firstSpan.index--;
+                fixCounts(firstSpan);
+
             } else {
                 // we need to purge the latest data
                 if (lastSpan.getStart().isBefore(expungedLate)) {
@@ -623,7 +689,6 @@ public class TimeSpanMap<T> {
                     current = lastSpan;
                 }
             }
-            --nbSpans;
         }
 
     }
@@ -711,7 +776,7 @@ public class TimeSpanMap<T> {
          * <p>
          * When moving a transition to past or future infinity, it will be disconnected
          * from the time span it initially belonged to as the next or previous time
-         * span validity will be extends to infinity.
+         * span validity will be extended to infinity.
          * </p>
          * @param newDate new transition date
          * @param eraseOverridden if true, spans that are entirely between current
@@ -727,9 +792,7 @@ public class TimeSpanMap<T> {
                 Span<S> newAfter = after;
                 while (newAfter.getEndTransition() != null &&
                        newAfter.getEndTransition().getDate().isBeforeOrEqualTo(newDate)) {
-                    if (eraseOverridden) {
-                        map.nbSpans--;
-                    } else {
+                    if (!eraseOverridden) {
                         // forbidden collision detected
                         throw new OrekitException(OrekitMessages.TRANSITION_DATES_COLLISION,
                                                   date, newDate, newAfter.getEndTransition().getDate());
@@ -738,15 +801,16 @@ public class TimeSpanMap<T> {
                 }
 
                 synchronized (map) {
-                    // perform update
+
+                    // update links
                     date = newDate;
                     after = newAfter;
                     after.start = this;
                     map.current = before;
+                    map.fixCounts(before);
 
                     if (newDate.isInfinite()) {
                         // we have just moved the transition to future infinity, it should really disappear
-                        map.nbSpans--;
                         map.lastSpan = before;
                         before.end   = null;
                     }
@@ -759,9 +823,7 @@ public class TimeSpanMap<T> {
                 Span<S> newBefore = before;
                 while (newBefore.getStartTransition() != null &&
                        newBefore.getStartTransition().getDate().isAfterOrEqualTo(newDate)) {
-                    if (eraseOverridden) {
-                        map.nbSpans--;
-                    } else {
+                    if (!eraseOverridden) {
                         // forbidden collision detected
                         throw new OrekitException(OrekitMessages.TRANSITION_DATES_COLLISION,
                                                   date, newDate, newBefore.getStartTransition().getDate());
@@ -770,7 +832,8 @@ public class TimeSpanMap<T> {
                 }
 
                 synchronized (map) {
-                    // perform update
+
+                    // update links
                     date = newDate;
                     before = newBefore;
                     before.end = this;
@@ -778,9 +841,12 @@ public class TimeSpanMap<T> {
 
                     if (newDate.isInfinite()) {
                         // we have just moved the transition to past infinity, it should really disappear
-                        map.nbSpans--;
+                        after.start = null;
+                        after.index = 0;
+                        map.fixCounts(after);
                         map.firstSpan = after;
-                        after.start   = null;
+                    } else {
+                        map.fixCounts(before);
                     }
                 }
 
@@ -853,6 +919,11 @@ public class TimeSpanMap<T> {
         /** Valid data. */
         private final S data;
 
+        /** Index of the span within the map (can change as other spans are added/expunged).
+         * @since 14.0
+         */
+        private int index;
+
         /** Start of validity for the data (null if span extends to past infinity). */
         private Transition<S> start;
 
@@ -863,7 +934,8 @@ public class TimeSpanMap<T> {
          * @param data valid data
          */
         private Span(final S data) {
-            this.data = data;
+            this.data  = data;
+            this.index = 0;
         }
 
         /** Get the data valid during this time span.
@@ -923,6 +995,20 @@ public class TimeSpanMap<T> {
          */
         public Transition<S> getEndTransition() {
             return end;
+        }
+
+        /** Get the current index of the span.
+         * <p>
+         * Beware the index of a span is <em>not</em> fixed. It is updated as
+         * other spans are inserted or expunged from the map or if transition
+         * dates are {@link Transition#resetDate(AbsoluteDate, boolean) reset}
+         * with {@code eraseOverridden} set to {@code true}.
+         * </p>
+         * @return current index of the span
+         * @since 14.0
+         */
+        public int getIndex() {
+            return index;
         }
 
     }
