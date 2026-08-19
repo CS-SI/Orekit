@@ -20,6 +20,9 @@
   </properties>
   <body>
       <release version="14.0" date="TBD" description="TBD">
+          <action dev="luc" type="add" issue="2002">
+              Added index-based access to spans in TimeSpanMap.
+          </action>
           <action dev="evan" type="update">
               Fix generics in TimeInterpolator so it can be used without casts.
           </action>
