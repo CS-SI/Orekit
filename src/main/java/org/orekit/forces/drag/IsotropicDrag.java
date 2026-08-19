@@ -59,7 +59,7 @@ public class IsotropicDrag implements DragSensitive {
     private final double crossSection;
 
     /** Drivers for drag coefficients valid on specified time spans. */
-    final TimeSpanMap<ParameterDriver> timeSpanDrivers;
+    private final TimeSpanMap<ParameterDriver> timeSpanDrivers;
 
     /** Drivers for drag coefficient parameter. */
     private final List<ParameterDriver> dragParametersDrivers;
