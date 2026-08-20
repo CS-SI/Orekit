@@ -256,7 +256,11 @@ class NRLMSISE00Test {
      * therefore be invariant to the frame in which the (physically identical) position
      * is expressed. Before the fix, passing the position in an inertial frame — as
      * {@code DragForce} does when propagating in GCRF/EME2000 — computed the hour angle
-     * about the celestial pole instead of the true pole, biasing the density. */
+     * about the celestial pole instead of the true pole, biasing the density.
+     * <p>
+     * Exercised in {@link NRLMSISE00.LocalSolarTimeMode#APPARENT} mode: that is the path
+     * that reduces the position/Sun geometry to the body frame. Mean local solar time is
+     * frame-independent by construction, so it would pass this test trivially. */
     @Test
     void testIssue1993FrameInvariance() {
         // Build the model
@@ -266,7 +270,8 @@ class NRLMSISE00Test {
         final Frame gcrf = FramesFactory.getGCRF();
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                             Constants.WGS84_EARTH_FLATTENING, itrf);
-        final NRLMSISE00 atm = new NRLMSISE00(ip, sun, earth);
+        final NRLMSISE00 atm = new NRLMSISE00(ip, sun, earth)
+                .withLocalSolarTimeMode(NRLMSISE00.LocalSolarTimeMode.APPARENT);
 
         // Build the date (within the InputParams validity range)
         final AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 172),
@@ -292,6 +297,77 @@ class NRLMSISE00Test {
         final Binary64 rhoGcrf64 = atm.getDensity(new FieldAbsoluteDate<>(field, date),
                                                   new FieldVector3D<>(field, pGcrf), gcrf);
         Assertions.assertEquals(rhoItrf64.getReal(), rhoGcrf64.getReal(), rhoItrf64.getReal() * 1.0e-10);
+    }
+
+    /** The NRLMSISE-00 coefficients were fitted with <em>mean</em> local solar time
+     * (the reference driver defines it as {@code stl = sec/3600 + glong/15}), so mean
+     * must be the default and must drive the diurnal terms — not apparent solar time,
+     * which additionally carries the equation of time. */
+    @Test
+    void testMeanVsApparentLocalSolarTime() throws
+        InstantiationException, IllegalAccessException,
+        IllegalArgumentException, InvocationTargetException,
+        NoSuchMethodException, SecurityException {
+
+        final InputParams ip = new InputParams();
+        final CelestialBody sun = CelestialBodyFactory.getSun();
+        final Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+        final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                            Constants.WGS84_EARTH_FLATTENING, itrf);
+
+        // the default convention is mean local solar time
+        final NRLMSISE00 meanAtm = new NRLMSISE00(ip, sun, earth).withSwitch(9, -1);
+        Assertions.assertEquals(NRLMSISE00.LocalSolarTimeMode.MEAN, meanAtm.getLocalSolarTimeMode());
+
+        // withLocalSolarTimeMode is immutable (leaves the original untouched) and
+        // preserves the switches already set
+        final NRLMSISE00 apparentAtm =
+            meanAtm.withLocalSolarTimeMode(NRLMSISE00.LocalSolarTimeMode.APPARENT);
+        Assertions.assertEquals(NRLMSISE00.LocalSolarTimeMode.APPARENT, apparentAtm.getLocalSolarTimeMode());
+        Assertions.assertEquals(NRLMSISE00.LocalSolarTimeMode.MEAN, meanAtm.getLocalSolarTimeMode());
+
+        // early November, where the equation of time is near its seasonal maximum (~+16 min);
+        // 14:40 UT at 70°W puts the mean local solar time at ~10 h, on a steep part of the
+        // diurnal density curve so the two conventions are clearly distinguishable
+        final double sec = 52800.;
+        final double lat = 60.;
+        final double lon = -70.;
+        final AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 307),
+                                                   new TimeComponents(sec),
+                                                   TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true));
+        final GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(lat),
+                                                      FastMath.toRadians(lon),
+                                                      400. * 1000.);
+        final Vector3D pos = earth.transform(point);
+
+        final double rhoMean     = meanAtm.getDensity(date, pos, itrf);
+        final double rhoApparent = apparentAtm.getDensity(date, pos, itrf);
+
+        // mean density must reproduce the reference driver value (stl = sec/3600 + glong/15)
+        final double lst = sec / 3600. + lon / 15.;
+        final double[] ap = {4., 100., 100., 100., 100., 100., 100.};
+        final Method gtd7d = getOutputClass().getDeclaredMethod("gtd7d", Double.TYPE);
+        gtd7d.setAccessible(true);
+        final Method getDensity = getOutputClass().getDeclaredMethod("getDensity", Integer.TYPE);
+        getDensity.setAccessible(true);
+        final Object refOut = createOutput(meanAtm, 307, sec, lat, lon, lst, 150., 150., ap);
+        gtd7d.invoke(refOut, 400.0);
+        final double rhoRef = ((Double) getDensity.invoke(refOut, 5)).doubleValue();
+        Assertions.assertEquals(rhoRef, rhoMean, rhoRef * 1.0e-6);
+
+        // apparent solar time carries the equation of time, so it differs from mean
+        Assertions.assertTrue(FastMath.abs(rhoApparent / rhoMean - 1.) > 1.0e-4,
+                              "apparent local solar time should differ from mean when the " +
+                              "equation of time is large");
+
+        // the field path must agree with the double path in both conventions
+        final Field<Binary64> field = Binary64Field.getInstance();
+        final Binary64 rhoMean64 = meanAtm.getDensity(new FieldAbsoluteDate<>(field, date),
+                                                      new FieldVector3D<>(field, pos), itrf);
+        final Binary64 rhoApparent64 = apparentAtm.getDensity(new FieldAbsoluteDate<>(field, date),
+                                                              new FieldVector3D<>(field, pos), itrf);
+        Assertions.assertEquals(rhoMean, rhoMean64.getReal(), rhoMean * 1.0e-9);
+        Assertions.assertEquals(rhoApparent, rhoApparent64.getReal(), rhoApparent * 1.0e-9);
     }
 
     /** Switch value 2 means "main effect off, cross terms on" in the reference

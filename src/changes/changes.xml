@@ -23,6 +23,9 @@
         <action dev="ltafur" type="fix" issue="2003">
             Fixed NRLMSISE00 withSwitch overwriting the main switches with the cross-terms array, and made the helium and oxygen turbopause cutoffs inclusive.
         </action>
+        <action dev="ltafur" type="fix" issue="2003">
+            Fixed NRLMSISE00 withSwitch overwriting the main switches with the cross-terms array, and made the helium and oxygen turbopause cutoffs inclusive.
+        </action>
         <action dev="serrof" type="fix" issue="2004">
             Added angular derivatives to JPL inertial frames.
         </action>
