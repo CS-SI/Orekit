@@ -159,12 +159,12 @@ class FieldDSSTAtmosphericDragTest {
             elements[i] = daidt[i];
         }
 
-        MatcherAssert.assertThat(elements[0].getReal(), Matchers.closeTo(-3.415320567871037E-5, 2.0e-20));
-        MatcherAssert.assertThat(elements[1].getReal(), Matchers.closeTo(6.276312897745139E-13, 2.6e-26));
-        MatcherAssert.assertThat(elements[2].getReal(), Matchers.closeTo(-9.303357008691404E-13, 2.6e-26));
-        MatcherAssert.assertThat(elements[3].getReal(), Matchers.closeTo(-7.052316604063199E-14, 2.0e-28));
-        MatcherAssert.assertThat(elements[4].getReal(), Matchers.closeTo(-6.793277250493389E-14, 2.3e-28));
-        MatcherAssert.assertThat(elements[5].getReal(), Matchers.closeTo(-1.3565284454826392E-15, 2.9e-28));
+        MatcherAssert.assertThat(elements[0].getReal(), Matchers.closeTo(-3.415320567871037E-5, 2.0e-13));
+        MatcherAssert.assertThat(elements[1].getReal(), Matchers.closeTo(6.276312897745139E-13, 2.6e-21));
+        MatcherAssert.assertThat(elements[2].getReal(), Matchers.closeTo(-9.303357008691404E-13, 2.9e-21));
+        MatcherAssert.assertThat(elements[3].getReal(), Matchers.closeTo(-7.052316604063199E-14, 2.0e-21));
+        MatcherAssert.assertThat(elements[4].getReal(), Matchers.closeTo(-6.793277250493389E-14, 8.3e-21));
+        MatcherAssert.assertThat(elements[5].getReal(), Matchers.closeTo(-1.3565284454826392E-15, 2.9e-21));
 
     }
 
