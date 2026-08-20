@@ -59,7 +59,9 @@ public class PolynomialClockModel implements ClockModel {
     public PolynomialClockModel(final AbsoluteDate referenceDate) {
         this.terms =  new ArrayList<>();
         final ParameterDriver parameterTerm = new ParameterDriver("-clock-bias", 0.0, CLOCK_OFFSET_SCALE,
-                Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                                                                  Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                                                  AbsoluteDate.PAST_INFINITY,
+                                                                  AbsoluteDate.FUTURE_INFINITY);
         parameterTerm.setValue(0);
         parameterTerm.setReferenceDate(referenceDate);
         this.terms.add(parameterTerm);
@@ -78,7 +80,9 @@ public class PolynomialClockModel implements ClockModel {
         for (double term : terms) {
             final String name = getAcceptedTermName(ii);
             final ParameterDriver parameterTerm = new ParameterDriver(name, 0.0, CLOCK_OFFSET_SCALE,
-                    Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                                                                      Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                                                      AbsoluteDate.PAST_INFINITY,
+                                                                      AbsoluteDate.FUTURE_INFINITY);
             parameterTerm.setValue(term);
             parameterTerm.setReferenceDate(referenceDate);
             convertedTerms.add(parameterTerm);
@@ -151,7 +155,8 @@ public class PolynomialClockModel implements ClockModel {
         } else if (parameters.size() == index && driver == null) {
             // Create empty parameter with correct name for this index
             final ParameterDriver empty = new ParameterDriver(getAcceptedTermName(index), 0.0, CLOCK_OFFSET_SCALE,
-                    Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                                                              Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                                              AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY);
             empty.setReferenceDate(AbsoluteDate.ARBITRARY_EPOCH);
             parameters.add(empty);
         }

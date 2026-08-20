@@ -394,7 +394,12 @@ class DSSTPropagatorTest {
 
     @Test
     void testImpulseManeuver() {
-        final Orbit initialOrbit = new KeplerianOrbit(24532000.0, 0.72, 0.3, FastMath.PI, 0.4, 2.0, PositionAngleType.MEAN, FramesFactory.getEME2000(), new AbsoluteDate(new DateComponents(2008, 06, 23), new TimeComponents(14, 18, 37), TimeScalesFactory.getUTC()), 3.986004415e14);
+        final Orbit initialOrbit = new KeplerianOrbit(24532000.0, 0.72, 0.3, FastMath.PI, 0.4, 2.0,
+                                                      PositionAngleType.MEAN, FramesFactory.getEME2000(),
+                                                      new AbsoluteDate(new DateComponents(2008, 6, 23),
+                                                                       new TimeComponents(14, 18, 37),
+                                                                       TimeScalesFactory.getUTC()),
+                                                      3.986004415e14);
         final double a = initialOrbit.getA();
         final double e = initialOrbit.getE();
         final double i = initialOrbit.getI();
@@ -414,7 +419,7 @@ class DSSTPropagatorTest {
     }
 
     @Test
-    void testPropagationWithCentralBody() throws Exception {
+    void testPropagationWithCentralBody() {
 
         // Central Body geopotential 4x4
         final UnnormalizedSphericalHarmonicsProvider provider =
@@ -463,7 +468,7 @@ class DSSTPropagatorTest {
     }
 
     @Test
-    void testPropagationWithThirdBody() throws IOException {
+    void testPropagationWithThirdBody() {
 
         // Central Body geopotential 2x0
         final UnnormalizedSphericalHarmonicsProvider provider =
@@ -602,10 +607,11 @@ class DSSTPropagatorTest {
                                 2.e-3);
         //Assertions.assertEquals(((DSSTAtmosphericDrag)drag).getCd(), cd, 1e-9);
         //Assertions.assertEquals(((DSSTAtmosphericDrag)drag).getArea(), area, 1e-9);
-        Assertions.assertEquals(((DSSTAtmosphericDrag)drag).getAtmosphere(), atm);
+        Assertions.assertEquals(atm, ((DSSTAtmosphericDrag)drag).getAtmosphere());
 
         final double atmosphericMaxConstant = 1000000.0; //DSSTAtmosphericDrag.ATMOSPHERE_ALTITUDE_MAX
-        Assertions.assertEquals(((DSSTAtmosphericDrag)drag).getRbar(), atmosphericMaxConstant + Constants.WGS84_EARTH_EQUATORIAL_RADIUS, 1e-9);
+        Assertions.assertEquals(atmosphericMaxConstant + Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                ((DSSTAtmosphericDrag)drag).getRbar(), 1e-9);
     }
 
     @Test
@@ -1527,14 +1533,16 @@ class DSSTPropagatorTest {
 
         /** Mean Anomaly Rate */
         private final ParameterDriver mDot = new ParameterDriver(
-                "MDot",
-                // this seems to be needed to ensure the name is "MDot"
-                new TimeSpanMap<>("MDot"),
-                new TimeSpanMap<>(0.0),
-                0,
-                1,
-                Double.NEGATIVE_INFINITY,
-                Double.POSITIVE_INFINITY);
+            "MDot",
+            // this seems to be needed to ensure the name is "MDot"
+            new TimeSpanMap<>("MDot"),
+            new TimeSpanMap<>(0.0),
+            0,
+            1,
+            Double.NEGATIVE_INFINITY,
+            Double.POSITIVE_INFINITY,
+            AbsoluteDate.PAST_INFINITY,
+            AbsoluteDate.FUTURE_INFINITY);
 
         @Override
         public List<ParameterDriver> getParametersDrivers() {
@@ -1603,7 +1611,7 @@ class DSSTPropagatorTest {
 
     private SpacecraftState getGEOState() throws IllegalArgumentException, OrekitException {
         // No shadow at this date
-        final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2003, 05, 21), new TimeComponents(1, 0, 0.),
+        final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2003, 5, 21), new TimeComponents(1, 0, 0.),
                                                        TimeScalesFactory.getUTC());
         final Orbit orbit = new EquinoctialOrbit(42164000,
                                                  10e-3,
@@ -1621,7 +1629,7 @@ class DSSTPropagatorTest {
         final Vector3D position = new Vector3D(-6142438.668, 3492467.560, -25767.25680);
         final Vector3D velocity = new Vector3D(505.8479685, 942.7809215, 7435.922231);
         // Spring equinoxe 21st mars 2003 1h00m
-        final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2003, 03, 21), new TimeComponents(1, 0, 0.), TimeScalesFactory.getUTC());
+        final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2003, 3, 21), new TimeComponents(1, 0, 0.), TimeScalesFactory.getUTC());
         return new SpacecraftState(new EquinoctialOrbit(new PVCoordinates(position, velocity),
                                                         FramesFactory.getEME2000(),
                                                         initDate,
@@ -1661,7 +1669,7 @@ class DSSTPropagatorTest {
     }
 
     /** This class is based on the example given by Orekit user kris06 in https://gitlab.orekit.org/orekit/orekit/-/issues/670. */
-    private class DSSTForce extends AbstractGaussianContribution {
+    private static class DSSTForce extends AbstractGaussianContribution {
 
         DSSTForce(ForceModel contribution, double mu) {
             super("DSST mock -", 6.0e-10, contribution, mu);
@@ -1766,7 +1774,7 @@ class DSSTPropagatorTest {
         final Vector3D position = new Vector3D(-6142438.668, 3492467.560, -25767.25680);
         final Vector3D velocity = new Vector3D(505.8479685, 942.7809215, 7435.922231);
         // Spring equinoxe 21st mars 2003 1h00m
-        final AbsoluteDate initialDate = new AbsoluteDate(new DateComponents(2003, 03, 21), new TimeComponents(1, 0, 0.), TimeScalesFactory.getUTC());
+        final AbsoluteDate initialDate = new AbsoluteDate(new DateComponents(2003, 3, 21), new TimeComponents(1, 0, 0.), TimeScalesFactory.getUTC());
         final CartesianOrbit osculatingOrbit = new CartesianOrbit(new PVCoordinates(position, velocity), FramesFactory.getTOD(IERSConventions.IERS_1996, false),
                                                                   initialDate, Constants.WGS84_EARTH_MU);
         // Adaptive step integrator

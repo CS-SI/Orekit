@@ -68,7 +68,8 @@ public abstract class AbstractBodyAttraction implements ForceModel {
         this.positionProvider = positionProvider;
         this.name = name;
         this.gmParameterDriver = new ParameterDriver(name + ATTRACTION_COEFFICIENT_SUFFIX, FastMath.abs(mu),
-            MU_SCALE, 0.0, Double.POSITIVE_INFINITY);
+                                                     MU_SCALE, 0.0, Double.POSITIVE_INFINITY,
+                                                     AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY);
     }
 
     /** Getter for the body's name.

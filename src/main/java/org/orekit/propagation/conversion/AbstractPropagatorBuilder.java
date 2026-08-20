@@ -158,7 +158,9 @@ public abstract class AbstractPropagatorBuilder<T extends AbstractPropagator,
             factory.getNonKeplerianParametersDrivers().getDrivers().forEach(propagationDrivers::add);
 
             final ParameterDriver muDriver = new ParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
-                                                                 factory.getMu(), MU_SCALE, 0, Double.POSITIVE_INFINITY);
+                                                                 factory.getMu(), MU_SCALE, 0, Double.POSITIVE_INFINITY,
+                                                                 AbsoluteDate.PAST_INFINITY,
+                                                                 AbsoluteDate.FUTURE_INFINITY);
             muDriver.addObserver(new ParameterObserver() {
                 /** {@inheritDoc} */
                 @Override

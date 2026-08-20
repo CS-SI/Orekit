@@ -77,9 +77,15 @@ public class EventDetectorsProviderTest {
         // When: multiple drivers with no time-span
         // ----
 
-        final ParameterDriver param1 = new ParameterDriver("param-1", 0., 1., -1., 1.);
-        final ParameterDriver param2 = new ParameterDriver("param-2", 0., 1., -1., 1.);
-        final ParameterDriver param3 = new ParameterDriver("param-3", 0., 1., -1., 1.);
+        final ParameterDriver param1 = new ParameterDriver("param-1", 0., 1., -1., 1.,
+                                                           AbsoluteDate.PAST_INFINITY,
+                                                           AbsoluteDate.FUTURE_INFINITY);
+        final ParameterDriver param2 = new ParameterDriver("param-2", 0., 1., -1., 1.,
+                                                           AbsoluteDate.PAST_INFINITY,
+                                                           AbsoluteDate.FUTURE_INFINITY);
+        final ParameterDriver param3 = new ParameterDriver("param-3", 0., 1., -1., 1.,
+                                                           AbsoluteDate.PAST_INFINITY,
+                                                           AbsoluteDate.FUTURE_INFINITY);
         
         drivers.add(param1);
         drivers.add(param2);

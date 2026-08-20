@@ -24,6 +24,7 @@ import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.ObservedMeasurement;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeSpanMap.Span;
 
@@ -52,7 +53,9 @@ public class Bias<T extends ObservedMeasurement<T>> implements EstimationModifie
 
         drivers = new ArrayList<>(bias.length);
         for (int i = 0; i < bias.length; ++i) {
-            drivers.add(new ParameterDriver(name[i], bias[i], scale[i], min[i], max[i]));
+            drivers.add(new ParameterDriver(name[i], bias[i], scale[i], min[i], max[i],
+                                            AbsoluteDate.PAST_INFINITY,
+                                            AbsoluteDate.FUTURE_INFINITY));
         }
 
         derivatives = new double[bias.length][bias.length];

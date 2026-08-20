@@ -89,9 +89,13 @@ public class BasicConstantThrustPropulsionModel extends AbstractConstantThrustPr
 
         // Build the parameter drivers, using maneuver name as prefix
         this.thrustDriver   = new ParameterDriver(name + THRUST, thrust, THRUST_SCALE,
-                                                  0.0, Double.POSITIVE_INFINITY);
+                                                  0.0, Double.POSITIVE_INFINITY,
+                                                  AbsoluteDate.PAST_INFINITY,
+                                                  AbsoluteDate.FUTURE_INFINITY);
         this.flowRateDriver = new ParameterDriver(name + FLOW_RATE, initialFlowRate, FLOW_RATE_SCALE,
-                                                  Double.NEGATIVE_INFINITY, 0.0 );
+                                                  Double.NEGATIVE_INFINITY, 0.0,
+                                                  AbsoluteDate.PAST_INFINITY,
+                                                  AbsoluteDate.FUTURE_INFINITY);
     }
 
     /** Simple constructor.

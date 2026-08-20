@@ -230,7 +230,8 @@ public class ParameterDriversList {
         DelegatingDriver(final ParameterDriversList owner, final ParameterDriver driver) {
             super(driver.getName(), driver.getNamesSpanMap(),
                   driver.getValueSpanMap(), driver.getReferenceValue(),
-                  driver.getScale(), driver.getMinValue(), driver.getMaxValue());
+                  driver.getScale(), driver.getMinValue(), driver.getMaxValue(),
+                  driver.getValidityStart(), driver.getValidityEnd());
 
             owners = new ArrayList<>();
             addOwner(owner);

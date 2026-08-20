@@ -82,15 +82,15 @@ public class ParameterDriversSequenceBuilder {
     }
 
     /** Add a reference value valid for a time span.
-     * @param dragCoeff            reference value
+     * @param referenceValue       reference value
      * @param earliestValidityDate date after which the coefficient is valid
      * @param latestValidityDate   date before which the coefficient is valid
      * @return the instance itself, allowing use of the fluent interface pattern
      */
-    public ParameterDriversSequenceBuilder addReferenceValue(final double dragCoeff,
+    public ParameterDriversSequenceBuilder addReferenceValue(final double referenceValue,
                                                              final AbsoluteDate earliestValidityDate,
                                                              final AbsoluteDate latestValidityDate) {
-        spans.addValidBetween(dragCoeff, earliestValidityDate, latestValidityDate);
+        spans.addValidBetween(referenceValue, earliestValidityDate, latestValidityDate);
         return this;
     }
 
@@ -138,7 +138,8 @@ public class ParameterDriversSequenceBuilder {
             final String name = oneValueOnly ? baseName : SPAN_PREFIX + baseName + "-" + index++;
 
             // create the driver
-            final ParameterDriver driver = new ParameterDriver(name, current.getData(), scale, minValue, maxValue);
+            final ParameterDriver driver = new ParameterDriver(name, current.getData(), scale, minValue, maxValue,
+                                                               current.getStart(), current.getEnd());
 
             // add it to the map
             drivers.addValidBetween(driver, current.getStart(), current.getEnd());

@@ -180,7 +180,10 @@ public class IonoModifierTest {
             eval.setStatus(evalNoMod.getStatus());
 
             try {
-                eval.getParameterDerivatives(new ParameterDriver("extra", 0, 1, -1, +1), new AbsoluteDate());
+                eval.getParameterDerivatives(new ParameterDriver("extra", 0, 1, -1, +1,
+                                                                 AbsoluteDate.PAST_INFINITY,
+                                                                 AbsoluteDate.FUTURE_INFINITY),
+                                             new AbsoluteDate());
                 Assertions.fail("an exception should have been thrown");
             } catch (OrekitIllegalArgumentException oiae) {
                 Assertions.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, oiae.getSpecifier());
@@ -257,7 +260,9 @@ public class IonoModifierTest {
             eval.setStatus(evalNoMod.getStatus());
 
             try {
-                eval.getParameterDerivatives(new ParameterDriver("extra", 0, 1, -1, +1), new AbsoluteDate());
+                eval.getParameterDerivatives(new ParameterDriver("extra", 0, 1, -1, +1,
+                                                                 AbsoluteDate.PAST_INFINITY,
+                                                                 AbsoluteDate.FUTURE_INFINITY), new AbsoluteDate());
                 Assertions.fail("an exception should have been thrown");
             } catch (OrekitIllegalArgumentException oiae) {
                 Assertions.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, oiae.getSpecifier());
@@ -321,7 +326,8 @@ public class IonoModifierTest {
             eval.setStatus(evalNoMod.getStatus());
 
             try {
-                eval.getParameterDerivatives(new ParameterDriver("extra", 0, 1, -1, +1), new AbsoluteDate());
+                eval.getParameterDerivatives(new ParameterDriver("extra", 0, 1, -1, +1, AbsoluteDate.PAST_INFINITY,
+                                                                 AbsoluteDate.FUTURE_INFINITY), new AbsoluteDate());
                 Assertions.fail("an exception should have been thrown");
             } catch (OrekitIllegalArgumentException oiae) {
                 Assertions.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, oiae.getSpecifier());
@@ -403,7 +409,10 @@ public class IonoModifierTest {
             eval.setStatus(evalNoMod.getStatus());
 
             try {
-                eval.getParameterDerivatives(new ParameterDriver("extra", 0, 1, -1, +1), new AbsoluteDate());
+                eval.getParameterDerivatives(new ParameterDriver("extra", 0, 1, -1, +1,
+                                                                 AbsoluteDate.PAST_INFINITY,
+                                                                 AbsoluteDate.FUTURE_INFINITY),
+                                             new AbsoluteDate());
                 Assertions.fail("an exception should have been thrown");
             } catch (OrekitIllegalArgumentException oiae) {
                 Assertions.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, oiae.getSpecifier());
@@ -524,7 +533,9 @@ public class IonoModifierTest {
             eval.setStatus(evalNoMod.getStatus());
 
             try {
-                eval.getParameterDerivatives(new ParameterDriver("extra", 0, 1, -1, +1));
+                eval.getParameterDerivatives(new ParameterDriver("extra", 0, 1, -1, +1,
+                                                                 AbsoluteDate.PAST_INFINITY,
+                                                                 AbsoluteDate.FUTURE_INFINITY));
                 Assertions.fail("an exception should have been thrown");
             } catch (OrekitIllegalArgumentException oiae) {
                 Assertions.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, oiae.getSpecifier());
@@ -787,7 +798,8 @@ public class IonoModifierTest {
         public MockIonosphericModel(final OneAxisEllipsoid body, final double delay) {
             super(body);
             ionoDelay = new ParameterDriver("ionospheric delay",
-                                            delay, FastMath.scalb(1.0, 0), 0.0, Double.POSITIVE_INFINITY);
+                                            delay, FastMath.scalb(1.0, 0), 0.0, Double.POSITIVE_INFINITY,
+                                            AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY);
         }
 
         @Override

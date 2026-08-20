@@ -224,7 +224,9 @@ public class DSSTZonal implements DSSTForceModel {
 
         gmParameterDriver = new ParameterDriver(DSSTNewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
                                                 provider.getMu(), MU_SCALE,
-                                                0.0, Double.POSITIVE_INFINITY);
+                                                0.0, Double.POSITIVE_INFINITY,
+                                                AbsoluteDate.PAST_INFINITY,
+                                                AbsoluteDate.FUTURE_INFINITY);
 
         // Central body rotating frame
         this.bodyFixedFrame = bodyFixedFrame;

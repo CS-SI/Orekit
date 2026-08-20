@@ -560,7 +560,9 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator imple
         // initialize M2 driver
         this.M2Driver = new ParameterDriver(M2_NAME, m2Value, SCALE,
                                             Double.NEGATIVE_INFINITY,
-                                            Double.POSITIVE_INFINITY);
+                                            Double.POSITIVE_INFINITY,
+                                            AbsoluteDate.PAST_INFINITY,
+                                            AbsoluteDate.FUTURE_INFINITY);
 
         // compute mean parameters if needed
         resetInitialState(new SpacecraftState(initialOrbit,

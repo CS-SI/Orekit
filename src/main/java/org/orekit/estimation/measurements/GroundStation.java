@@ -127,15 +127,18 @@ public class GroundStation extends AbstractParticipant implements GroundObserver
 
         this.eastOffsetDriver = new ParameterDriver(baseFrame.getName() + OFFSET_SUFFIX + "-East",
                                                     0.0, POSITION_OFFSET_SCALE,
-                                                    Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                                                    Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                                    AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY);
 
         this.northOffsetDriver = new ParameterDriver(baseFrame.getName() + OFFSET_SUFFIX + "-North",
                                                      0.0, POSITION_OFFSET_SCALE,
-                                                     Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                                                     Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                                     AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY);
 
         this.zenithOffsetDriver = new ParameterDriver(baseFrame.getName() + OFFSET_SUFFIX + "-Zenith",
                                                       0.0, POSITION_OFFSET_SCALE,
-                                                      Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                                                      Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                                      AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY);
 
         // Add the ground station parameters to the master list.
         addParameterDriver(this.eastOffsetDriver);

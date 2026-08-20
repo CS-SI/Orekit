@@ -259,7 +259,9 @@ public class DSSTTesseral implements DSSTForceModel {
 
         gmParameterDriver = new ParameterDriver(DSSTNewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
                                                 provider.getMu(), MU_SCALE,
-                                                0.0, Double.POSITIVE_INFINITY);
+                                                0.0, Double.POSITIVE_INFINITY,
+                                                AbsoluteDate.PAST_INFINITY,
+                                                AbsoluteDate.FUTURE_INFINITY);
 
         // Central body rotating frame
         this.bodyFrame = centralBodyFrame;

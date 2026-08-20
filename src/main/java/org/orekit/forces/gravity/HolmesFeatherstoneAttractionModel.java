@@ -117,7 +117,8 @@ public class HolmesFeatherstoneAttractionModel implements ForceModel, TideSystem
                                              final NormalizedSphericalHarmonicsProvider provider) {
 
         gmParameterDriver = new ParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
-                                                provider.getMu(), MU_SCALE, 0.0, Double.POSITIVE_INFINITY);
+                                                provider.getMu(), MU_SCALE, 0.0, Double.POSITIVE_INFINITY,
+                                                AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY);
 
         this.provider  = provider;
         this.bodyFrame = centralBodyFrame;

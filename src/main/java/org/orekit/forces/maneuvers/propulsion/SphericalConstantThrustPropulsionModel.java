@@ -81,11 +81,15 @@ public class SphericalConstantThrustPropulsionModel extends AbstractConstantThru
 
         // Build the parameter drivers, using maneuver name as prefix
         this.thrustMagnitude   = new ParameterDriver(name + THRUST_MAGNITUDE, thrustMagnitude, THRUST_SCALE,
-                0.0, Double.POSITIVE_INFINITY);
+                                                     0.0, Double.POSITIVE_INFINITY,
+                                                     AbsoluteDate.PAST_INFINITY,
+                                                     AbsoluteDate.FUTURE_INFINITY);
         this.thrustRightAscension   = new ParameterDriver(name + THRUST_RIGHT_ASCENSION, thrustDirection.getAlpha(), 1.,
-                Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                                                          Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                                          AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY);
         this.thrustDeclination   = new ParameterDriver(name + THRUST_DECLINATION, thrustDirection.getDelta(), 1.,
-                -MathUtils.SEMI_PI, MathUtils.SEMI_PI);
+                                                       -MathUtils.SEMI_PI, MathUtils.SEMI_PI,
+                                                       AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY);
     }
 
     /** Constructor with thrust vector.

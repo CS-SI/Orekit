@@ -31,6 +31,7 @@ import org.orekit.bodies.CR3BPSystem;
 import org.orekit.forces.ForceModel;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 
 /** Class calculating the acceleration induced by CR3BP model.
@@ -61,7 +62,9 @@ public class CR3BPForceModel implements ForceModel {
     public CR3BPForceModel(final CR3BPSystem cr3bp) {
         muParameterDriver = new ParameterDriver(cr3bp.getName() + MASS_RATIO_SUFFIX,
                                                 cr3bp.getMassRatio(), MU_SCALE, 0.0,
-                                                Double.POSITIVE_INFINITY);
+                                                Double.POSITIVE_INFINITY,
+                                                AbsoluteDate.PAST_INFINITY,
+                                                AbsoluteDate.FUTURE_INFINITY);
     }
 
     /** {@inheritDoc} */

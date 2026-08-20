@@ -130,6 +130,16 @@ public class ParameterDriver {
      */
     private AbsoluteDate referenceDate;
 
+    /** Validity start date.
+     * @since 14.0
+     */
+    private AbsoluteDate validityStart;
+
+    /** Validity end date.
+     * @since 14.0
+     */
+    private AbsoluteDate validityEnd;
+
     /** Flag to choose estimation method. If estimationContinuous
      * is true then when a value wants to be known an interpolation
      * is performed between given date span start and end (start of
@@ -154,27 +164,28 @@ public class ParameterDriver {
     /** Observers observing this driver. */
     private final List<ParameterObserver> observers;
 
-    /** Create a new instance from another parameterDriver informations
-     * for example (useful for {@link ParameterDriversList.DelegatingDriver}))
-     * At construction, the parameter new is configured as <em>not</em> selected,
-     * the reference date is set to {@code null}. validityPeriod, namesSpanMap and
-     * valueSpanMap.
-     * @param name general name of the parameter
-     * @param namesSpanMap name time span map. WARNING, number of Span must be coherent with
-     * validityPeriod and valueSpanMap (same number of Span with same transitions
-     * dates)
-     * @param valuesSpanMap values time span map
+    /**
+     * Create a new instance from another parameterDriver informations for example (useful for
+     * {@link ParameterDriversList.DelegatingDriver})) At construction, the parameter new is configured as <em>not</em>
+     * selected, the reference date is set to {@code null}. validityPeriod, namesSpanMap and valueSpanMap.
+     *
+     * @param name           general name of the parameter
+     * @param namesSpanMap   name time span map. WARNING, number of Span must be coherent with validityPeriod and
+     *                       valueSpanMap (same number of Span with same transitions dates)
+     * @param valuesSpanMap  values time span map
      * @param referenceValue reference value of the parameter
-     * @param scale scaling factor to convert the parameters value to
-     * non-dimensional (typically set to the expected standard deviation of the
-     * parameter), it must be non-zero
-     * @param minValue minimum value allowed
-     * @param maxValue maximum value allowed
-     * @since 12.0
+     * @param scale          scaling factor to convert the parameters value to non-dimensional (typically set to the
+     *                       expected standard deviation of the parameter), it must be non-zero
+     * @param minValue       minimum value allowed
+     * @param maxValue       maximum value allowed
+     * @param validityStart  validity start date
+     * @param validityEnd    validity end date
+     * @since 14.0
      */
     public ParameterDriver(final String name, final TimeSpanMap<String> namesSpanMap,
                            final TimeSpanMap<Double> valuesSpanMap, final double referenceValue,
-                           final double scale, final double minValue, final double maxValue) {
+                           final double scale, final double minValue, final double maxValue,
+                           final AbsoluteDate validityStart, final AbsoluteDate validityEnd) {
         if (FastMath.abs(scale) <= Precision.SAFE_MIN) {
             throw new OrekitException(OrekitMessages.TOO_SMALL_SCALE_FOR_PARAMETER,
                                       name, scale);
@@ -185,34 +196,40 @@ public class ParameterDriver {
         this.scale                  = scale;
         this.minValue               = minValue;
         this.maxValue               = maxValue;
+        this.validityStart          = validityStart;
+        this.validityEnd            = validityEnd;
         this.referenceDate          = null;
         this.valueSpanMap           = valuesSpanMap;
         this.selected               = false;
         this.observers              = new ArrayList<>();
         this.isEstimationContinuous = false;
+
+        checkValidityInterval();
+
     }
 
-    /** Simple constructor.
+    /**
+     * Simple constructor.
      * <p>
-     * At construction, the parameter is configured as <em>not</em> selected,
-     * the reference date is set to {@code null}, the value is set to the
-     * {@code referenceValue}, the validity period is set to 0 so by default
-     * the parameterDriver will be estimated on only 1 interval from -INF to
-     * +INF. To change the validity period the
-     * {@link ParameterDriver#addSpans(AbsoluteDate, AbsoluteDate, double)}
-     * method must be called.
+     * At construction, the parameter is configured as <em>not</em> selected, the reference date is set to {@code null},
+     * the value is set to the {@code referenceValue}, the validity period is set to 0 so by default the parameterDriver
+     * will be estimated on only 1 interval from -INF to +INF. To change the validity period the
+     * {@link ParameterDriver#addSpans(AbsoluteDate, AbsoluteDate, double)} method must be called.
      * </p>
-     * @param name name of the parameter
+     *
+     * @param name           name of the parameter
      * @param referenceValue reference value of the parameter
-     * @param scale scaling factor to convert the parameters value to
-     * non-dimensional (typically set to the expected standard deviation of the
-     * parameter), it must be non-zero
-     * @param minValue minimum value allowed
-     * @param maxValue maximum value allowed
+     * @param scale          scaling factor to convert the parameters value to non-dimensional (typically set to the
+     *                       expected standard deviation of the parameter), it must be non-zero
+     * @param minValue       minimum value allowed
+     * @param maxValue       maximum value allowed
+     * @param validityStart  validity start date
+     * @param validityEnd    validity end date
      */
     public ParameterDriver(final String name,
                            final double referenceValue, final double scale,
-                           final double minValue, final double maxValue) {
+                           final double minValue, final double maxValue,
+                           final AbsoluteDate validityStart, final AbsoluteDate validityEnd) {
         if (FastMath.abs(scale) <= Precision.SAFE_MIN) {
             throw new OrekitException(OrekitMessages.TOO_SMALL_SCALE_FOR_PARAMETER,
                                       name, scale);
@@ -223,6 +240,8 @@ public class ParameterDriver {
         this.scale                  = scale;
         this.minValue               = minValue;
         this.maxValue               = maxValue;
+        this.validityStart          = validityStart;
+        this.validityEnd            = validityEnd;
         this.referenceDate          = null;
         // at construction the parameter driver
         // will be consider with only 1 estimated value over the all orbit
@@ -231,6 +250,9 @@ public class ParameterDriver {
         this.selected               = false;
         this.observers              = new ArrayList<>();
         this.isEstimationContinuous = false;
+
+        checkValidityInterval();
+
     }
 
     /** Get current name span map of the parameterDriver, cut in interval
@@ -821,6 +843,48 @@ public class ParameterDriver {
         }
     }
 
+    /** Get the validity start date.
+     * @return validity start date
+     * @since 14.0
+     */
+    public AbsoluteDate getValidityStart() {
+        return validityStart;
+    }
+
+    /** Set the validity start date.
+     * @param validityStart validity start date
+     * @since 14.0
+     */
+    public void setValidityStart(final AbsoluteDate validityStart) {
+        final AbsoluteDate previousValidityStart = getValidityStart();
+        this.validityStart = validityStart;
+        checkValidityInterval();
+        for (final ParameterObserver observer : observers) {
+            observer.validityStartChanged(previousValidityStart, this);
+        }
+    }
+
+    /** Get the validity end date.
+     * @return validity end date
+     * @since 14.0
+     */
+    public AbsoluteDate getValidityEnd() {
+        return validityEnd;
+    }
+
+    /** Set the validity end date.
+     * @param validityEnd validity end date
+     * @since 14.0
+     */
+    public void setValidityEnd(final AbsoluteDate validityEnd) {
+        final AbsoluteDate previousValidityEnd = getValidityEnd();
+        this.validityEnd = validityEnd;
+        checkValidityInterval();
+        for (final ParameterObserver observer : observers) {
+            observer.validityEndChanged(previousValidityEnd, this);
+        }
+    }
+
     /** Configure a parameter selection status.
      * <p>
      * Selection is used for estimated parameters in orbit determination,
@@ -888,6 +952,17 @@ public class ParameterDriver {
      */
     public String toString() {
         return name + " = " + valueSpanMap.get(AbsoluteDate.ARBITRARY_EPOCH);
+    }
+
+    /** Check validity interval.
+     * @since 14.0
+     */
+    private void checkValidityInterval() {
+        if (validityEnd.isBefore(validityStart)) {
+            throw new OrekitException(OrekitMessages.NON_CHRONOLOGICALLY_SORTED_ENTRIES,
+                                      validityStart, validityEnd,
+                                      validityStart.durationFrom(validityEnd));
+        }
     }
 
 }

@@ -29,6 +29,7 @@ import org.orekit.data.DataContext;
 import org.orekit.forces.ForceModel;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ExtendedPositionProvider;
 import org.orekit.utils.FieldPVCoordinates;
@@ -86,7 +87,9 @@ public class DeSitterRelativity implements ForceModel {
     public DeSitterRelativity(final CelestialBody earth, final CelestialBody sun) {
         gmParameterDriver = new ParameterDriver(sun.getName() + ATTRACTION_COEFFICIENT_SUFFIX,
                                                 sun.getGM(), MU_SCALE,
-                                                0.0, Double.POSITIVE_INFINITY);
+                                                0.0, Double.POSITIVE_INFINITY,
+                                                AbsoluteDate.PAST_INFINITY,
+                                                AbsoluteDate.FUTURE_INFINITY);
         this.earth = earth;
         this.sun   = sun;
     }

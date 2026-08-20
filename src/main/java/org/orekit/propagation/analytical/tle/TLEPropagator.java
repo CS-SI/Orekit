@@ -228,7 +228,9 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator impleme
                                                  initialTLE.getBStar(),
                                                  TleGenerationAlgorithm.B_STAR_SCALE,
                                                  Double.NEGATIVE_INFINITY,
-                                                 Double.POSITIVE_INFINITY);
+                                                 Double.POSITIVE_INFINITY,
+                                                 AbsoluteDate.PAST_INFINITY,
+                                                 AbsoluteDate.FUTURE_INFINITY);
         bStarDriver.addObserver(new ParameterObserver() {
 
             @Override

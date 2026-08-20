@@ -82,9 +82,11 @@ public class HarmonicAccelerationModel implements AccelerationModel {
         this.omega         = harmonicMultiplier * MathUtils.TWO_PI / fundamentalPeriod;
         this.drivers       = new ArrayList<>(2);
         drivers.add(new ParameterDriver(prefix + " γ",
-                                        0.0, AMPLITUDE_SCALE, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY));
+                                        0.0, AMPLITUDE_SCALE, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                        AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY));
         drivers.add(new ParameterDriver(prefix + " φ",
-                                        0.0, PHASE_SCALE, -MathUtils.TWO_PI, MathUtils.TWO_PI));
+                                        0.0, PHASE_SCALE, -MathUtils.TWO_PI, MathUtils.TWO_PI,
+                                        AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY));
     }
 
     /** {@inheritDoc} */

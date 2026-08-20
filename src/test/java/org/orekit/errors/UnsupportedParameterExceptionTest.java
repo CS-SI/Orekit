@@ -56,7 +56,9 @@ public class UnsupportedParameterExceptionTest {
 
         // Given one parameter list
         final List<ParameterDriver> drivers = new ArrayList<>();
-        final ParameterDriver param1 = new ParameterDriver("param-1", 0., 1., -1., 1.);
+        final ParameterDriver param1 = new ParameterDriver("param-1", 0., 1., -1., 1.,
+                                                           AbsoluteDate.PAST_INFINITY,
+                                                           AbsoluteDate.FUTURE_INFINITY);
         drivers.add(param1);
 
         // When
@@ -74,9 +76,15 @@ public class UnsupportedParameterExceptionTest {
 
         // Given multiple parameter list
         final List<ParameterDriver> drivers = new ArrayList<>();
-        final ParameterDriver param1 = new ParameterDriver("param-1", 0., 1., -1., 1.);
-        final ParameterDriver param2 = new ParameterDriver("param-2", 0., 1., -1., 1.);
-        final ParameterDriver param3 = new ParameterDriver("param-3", 0., 1., -1., 1.);
+        final ParameterDriver param1 = new ParameterDriver("param-1", 0., 1., -1., 1.,
+                                                           AbsoluteDate.PAST_INFINITY,
+                                                           AbsoluteDate.FUTURE_INFINITY);
+        final ParameterDriver param2 = new ParameterDriver("param-2", 0., 1., -1., 1.,
+                                                           AbsoluteDate.PAST_INFINITY,
+                                                           AbsoluteDate.FUTURE_INFINITY);
+        final ParameterDriver param3 = new ParameterDriver("param-3", 0., 1., -1., 1.,
+                                                           AbsoluteDate.PAST_INFINITY,
+                                                           AbsoluteDate.FUTURE_INFINITY);
         // Add some time spans to param3 to check message
         param3.addSpans(AbsoluteDate.ARBITRARY_EPOCH, AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(Constants.JULIAN_DAY), 3600.);
         drivers.add(param1);

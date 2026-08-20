@@ -84,9 +84,8 @@ public abstract class AbstractParticipant implements MeasurementParticipant {
         this.name = name;
         this.clockModel = clock;
 
-        for (ParameterDriver parameter: clock.getParametersDrivers()) {
-            parameterDrivers.add(parameter);
-        }
+        parameterDrivers.addAll(clock.getParametersDrivers());
+
     }
 
     /** Get the MeasurementObject name.
@@ -103,14 +102,17 @@ public abstract class AbstractParticipant implements MeasurementParticipant {
      */
     protected static PolynomialClockModel createEmptyPolynomialClock(final String name) {
         return new PolynomialClockModel(new ParameterDriver(name + CLOCK_STRING + BIAS_SUFFIX,
-                                                    0.0, CLOCK_OFFSET_SCALE,
-                                                    Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY),
+                                                            0.0, CLOCK_OFFSET_SCALE,
+                                                            Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                                            AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY),
                                            new ParameterDriver(name + CLOCK_STRING + DRIFT_SUFFIX,
-                                                    0.0, CLOCK_OFFSET_SCALE,
-                                                    Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY),
+                                                               0.0, CLOCK_OFFSET_SCALE,
+                                                               Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                                               AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY),
                                            new ParameterDriver(name + CLOCK_STRING + ACCELERATION_SUFFIX,
-                                                    0.0, CLOCK_OFFSET_SCALE,
-                                                    Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY));
+                                                               0.0, CLOCK_OFFSET_SCALE,
+                                                               Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                                               AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY));
     }
 
     /** Get the clock model valid at some date.

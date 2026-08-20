@@ -66,7 +66,8 @@ public class PolynomialAccelerationModel implements AccelerationModel {
         drivers = new ArrayList<>();
         for (int i = 0; i < degree + 1; ++i) {
             drivers.add(new ParameterDriver(prefix + "[" + i + "]", 0.0, ACCELERATION_SCALE,
-                                            Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY));
+                                            Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                            AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY));
         }
     }
 

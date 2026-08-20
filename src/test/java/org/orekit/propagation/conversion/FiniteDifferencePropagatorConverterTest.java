@@ -62,8 +62,9 @@ public class FiniteDifferencePropagatorConverterTest {
         PropagatorBuilder builder = Mockito.mock(PropagatorBuilder.class);
         OrbitalStateFactory factory = Mockito.mock(OrbitalStateFactory.class);
         ParameterDriversList list = new ParameterDriversList();
-        list.add(new ParameterDriver("p1", 0, 1e-3, Double.NEGATIVE_INFINITY,
-                Double.POSITIVE_INFINITY));
+        list.add(new ParameterDriver("p1", 0, 1e-3,
+                                     Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                     AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY));
         Mockito.when(builder.getOrbitalStateFactory()).thenReturn(factory);
         Mockito.when(factory.getOrbitalParametersDrivers()).thenReturn(list);
         Mockito.when(builder.getPropagationParametersDrivers())

@@ -110,7 +110,9 @@ class KalmanEstimatorUtilTest {
 	}
 
 	private ParameterDriver createDriver(final String name, final boolean estimated) {
-		final ParameterDriver driver = new ParameterDriver(name, 1.0, 1.0, 0.0, 2.0);
+		final ParameterDriver driver = new ParameterDriver(name, 1.0, 1.0, 0.0, 2.0,
+														   AbsoluteDate.PAST_INFINITY,
+                                                           AbsoluteDate.FUTURE_INFINITY);
 		driver.setSelected(estimated);
 		return driver;
 	}

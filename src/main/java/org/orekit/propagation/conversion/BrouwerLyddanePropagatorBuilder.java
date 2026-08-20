@@ -28,6 +28,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.BrouwerLyddanePropagator;
 import org.orekit.propagation.analytical.tle.TLE;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
@@ -164,7 +165,9 @@ public class BrouwerLyddanePropagatorBuilder
         // initialize M2 driver
         final ParameterDriver M2Driver = new ParameterDriver(BrouwerLyddanePropagator.M2_NAME, M2, SCALE,
                                                              Double.NEGATIVE_INFINITY,
-                                                             Double.POSITIVE_INFINITY);
+                                                             Double.POSITIVE_INFINITY,
+                                                             AbsoluteDate.PAST_INFINITY,
+                                                             AbsoluteDate.FUTURE_INFINITY);
         addPropagationParameters(Collections.singletonList(M2Driver));
     }
 

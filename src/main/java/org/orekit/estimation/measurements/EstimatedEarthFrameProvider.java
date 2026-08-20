@@ -112,27 +112,36 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
 
         this.primeMeridianOffsetDriver = new ParameterDriver("prime-meridian-offset",
                                                              0.0, ANGULAR_SCALE,
-                                                            -FastMath.PI, FastMath.PI);
+                                                             -FastMath.PI, FastMath.PI,
+                                                             AbsoluteDate.PAST_INFINITY,
+                                                             AbsoluteDate.FUTURE_INFINITY);
 
         this.primeMeridianDriftDriver = new ParameterDriver("prime-meridian-drift",
                                                             0.0, ANGULAR_SCALE,
-                                                            Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                                                            Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                                            AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY);
 
         this.polarOffsetXDriver = new ParameterDriver("polar-offset-X",
                                                       0.0, ANGULAR_SCALE,
-                                                      -FastMath.PI, FastMath.PI);
+                                                      -FastMath.PI, FastMath.PI,
+                                                      AbsoluteDate.PAST_INFINITY,
+                                                      AbsoluteDate.FUTURE_INFINITY);
 
         this.polarDriftXDriver = new ParameterDriver("polar-drift-X",
                                                      0.0, ANGULAR_SCALE,
-                                                     Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                                                     Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                                     AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY);
 
         this.polarOffsetYDriver = new ParameterDriver("polar-offset-Y",
                                                       0.0, ANGULAR_SCALE,
-                                                      -FastMath.PI, FastMath.PI);
+                                                      -FastMath.PI, FastMath.PI,
+                                                      AbsoluteDate.PAST_INFINITY,
+                                                      AbsoluteDate.FUTURE_INFINITY);
 
         this.polarDriftYDriver = new ParameterDriver("polar-drift-Y",
                                                      0.0, ANGULAR_SCALE,
-                                                     Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                                                     Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                                     AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY);
 
         this.baseUT1      = baseUT1;
         this.estimatedUT1 = new EstimatedUT1Scale();

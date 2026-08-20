@@ -125,11 +125,14 @@ class PolynomialClockModelTest {
     @Test
     void testSafeReferenceDate() {
         final ParameterDriver a0 = new ParameterDriver("-clock-bias", 0.0, 1.0,
-                                                       Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                                                       Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                                       AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY);
         final ParameterDriver a1 = new ParameterDriver("-clock-drift", 0.0, 1.0,
-                                                       Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                                                       Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                                       AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY);
         final ParameterDriver a2 = new ParameterDriver("-clock-acceleration", 0.0, 1.0,
-                                                       Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                                                       Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                                       AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY);
         final PolynomialClockModel clock = new PolynomialClockModel(List.of(a0, a1, a2));
 
         // not OK to have no reference date
@@ -163,11 +166,14 @@ class PolynomialClockModelTest {
     void testGradient() {
         final AbsoluteDate    t0 = AbsoluteDate.GALILEO_EPOCH;
         final ParameterDriver a0 = new ParameterDriver("-clock-bias", 0.0, 1.0,
-                                                       Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                                                       Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                                       AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY);
         final ParameterDriver a1 = new ParameterDriver("-clock-drift", 0.0, 1.0,
-                                                       Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                                                       Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                                       AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY);
         final ParameterDriver a2 = new ParameterDriver("-clock-acceleration", 0.0, 1.0,
-                                                       Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                                                       Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                                       AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY);
         final PolynomialClockModel clock = new PolynomialClockModel(a0, a1, a2);
 
         int nbParams = 0;
@@ -450,7 +456,8 @@ class PolynomialClockModelTest {
 
         // Add a drift parameter at index 1
         final ParameterDriver drift = new ParameterDriver("-clock-drift", 0.0, 1.0,
-                Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                                                          Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                                          AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY);
         drift.setValue(1.0e-9);
         drift.setReferenceDate(t0);
         clock.addParameterDriver(1, drift);
@@ -476,7 +483,8 @@ class PolynomialClockModelTest {
 
         // Add acceleration at index 2 (should auto-create drift at index 1)
         final ParameterDriver accel = new ParameterDriver("-clock-acceleration", 0.0, 1.0,
-                Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                                                          Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                                          AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY);
         accel.setValue(2.0e-10);
         accel.setReferenceDate(t0);
         clock.addParameterDriver(2, accel);
@@ -529,7 +537,8 @@ class PolynomialClockModelTest {
 
         // Add term at index 4 (should auto-create indices 1, 2, 3)
         final ParameterDriver term4 = new ParameterDriver("-clock-term-4", 0.0, 1.0,
-                Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                                                          Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                                          AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY);
         term4.setValue(5.0e-12);
         term4.setReferenceDate(t0);
         clock.addParameterDriver(4, term4);
@@ -568,7 +577,8 @@ class PolynomialClockModelTest {
 
         // Add drift parameter
         final ParameterDriver drift = new ParameterDriver("-clock-drift", 0.0, 1.0,
-                Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                                                          Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                                          AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY);
         drift.setValue(2.0e-9);
         drift.setReferenceDate(t0);
         clock.addParameterDriver(1, drift);
@@ -588,7 +598,8 @@ class PolynomialClockModelTest {
 
         // Add acceleration
         final ParameterDriver accel = new ParameterDriver("-clock-acceleration", 0.0, 1.0,
-                Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                                                          Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                                          AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY);
         accel.setValue(3.0e-10);
         accel.setReferenceDate(t0);
         clock.addParameterDriver(2, accel);
@@ -612,7 +623,8 @@ class PolynomialClockModelTest {
 
         // Add drift parameter
         final ParameterDriver drift = new ParameterDriver("-clock-drift", 0.0, 1.0,
-                Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                                                          Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                                          AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY);
         drift.setValue(1.5e-9);
         drift.setReferenceDate(t0);
         clock.addParameterDriver(1, drift);
@@ -625,7 +637,8 @@ class PolynomialClockModelTest {
 
         // Add acceleration with gap (should create intermediate drift if needed)
         final ParameterDriver accel = new ParameterDriver("-clock-acceleration", 0.0, 1.0,
-                Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                                                          Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                                          AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY);
         accel.setValue(2.5e-10);
         accel.setReferenceDate(t0);
         clock.addParameterDriver(2, accel);

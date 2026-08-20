@@ -103,7 +103,8 @@ public class EstimatedModel implements TroposphericModel {
                           final double totalDelay) {
 
         totalZenithDelay = new ParameterDriver(EstimatedModel.TOTAL_ZENITH_DELAY,
-                                               totalDelay, FastMath.scalb(1.0, 0), 0.0, Double.POSITIVE_INFINITY);
+                                               totalDelay, FastMath.scalb(1.0, 0), 0.0, Double.POSITIVE_INFINITY,
+                                               AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY);
 
         this.hydrostatic = hydrostatic;
         this.model = model;

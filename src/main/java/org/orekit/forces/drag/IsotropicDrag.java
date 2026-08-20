@@ -79,7 +79,9 @@ public class IsotropicDrag implements DragSensitive {
         // global driver
         dragParametersDrivers.add(new ParameterDriver(DragSensitive.GLOBAL_DRAG_FACTOR,
                                                       1.0, SCALE,
-                                                      0.0, Double.POSITIVE_INFINITY));
+                                                      0.0, Double.POSITIVE_INFINITY,
+                                                      AbsoluteDate.PAST_INFINITY,
+                                                      AbsoluteDate.FUTURE_INFINITY));
 
         // time span drivers
         dragParametersDrivers.addAll(timeSpanDrivers.getParametersDrivers());

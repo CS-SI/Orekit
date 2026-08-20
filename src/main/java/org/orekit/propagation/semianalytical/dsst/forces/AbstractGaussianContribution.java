@@ -176,7 +176,9 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             final ForceModel contribution, final double mu) {
 
         gmParameterDriver = new ParameterDriver(DSSTNewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT, mu, MU_SCALE,
-                0.0, Double.POSITIVE_INFINITY);
+                                                0.0, Double.POSITIVE_INFINITY,
+                                                AbsoluteDate.PAST_INFINITY,
+                                                AbsoluteDate.FUTURE_INFINITY);
 
         this.coefficientsKeyPrefix = coefficientsKeyPrefix;
         this.contribution = contribution;

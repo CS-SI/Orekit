@@ -73,11 +73,14 @@ public class ScaledConstantThrustPropulsionModel extends AbstractConstantThrustP
 
         // Build the parameter drivers, using maneuver name as prefix
         this.scaleFactorThrustXDriver   = new ParameterDriver(name + THRUSTX_SCALE_FACTOR, 1., THRUST_SCALE,
-                                                              Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                                                              Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                                              AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY);
         this.scaleFactorThrustYDriver   = new ParameterDriver(name + THRUSTY_SCALE_FACTOR, 1., THRUST_SCALE,
-                                                              Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                                                              Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                                              AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY);
         this.scaleFactorThrustZDriver   = new ParameterDriver(name + THRUSTZ_SCALE_FACTOR, 1., THRUST_SCALE,
-                                                              Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                                                              Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                                              AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY);
     }
 
     /** Get the thrust vector in S/C frame from scale factors (N).

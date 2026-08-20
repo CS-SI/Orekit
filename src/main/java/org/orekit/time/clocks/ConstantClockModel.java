@@ -17,6 +17,8 @@
 package org.orekit.time.clocks;
 
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -45,7 +47,8 @@ public class ConstantClockModel implements ClockModel {
      */
     public ConstantClockModel(final double offset) {
         this.offset = new ParameterDriver("a0", 0.0, FastMath.scalb(1.0, -10),
-                    Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                                          Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                          AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY);
         this.offset.setValue(offset);
     }
 
@@ -65,7 +68,7 @@ public class ConstantClockModel implements ClockModel {
     /** {@inheritDoc} */
     @Override
     public List<ParameterDriver> getParametersDrivers() {
-        return Arrays.asList(offset);
+        return Collections.singletonList(offset);
     }
 
     /** {@inheritDoc} */

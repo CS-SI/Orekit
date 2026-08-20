@@ -64,7 +64,9 @@ public class DSSTNewtonianAttraction implements DSSTForceModel {
     public DSSTNewtonianAttraction(final double mu) {
         gmParameterDriver = new ParameterDriver(DSSTNewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
                                                 mu, MU_SCALE,
-                                                0.0, Double.POSITIVE_INFINITY);
+                                                0.0, Double.POSITIVE_INFINITY,
+                                                AbsoluteDate.PAST_INFINITY,
+                                                AbsoluteDate.FUTURE_INFINITY);
     }
 
     /** Get the central attraction coefficient μ at specific date.

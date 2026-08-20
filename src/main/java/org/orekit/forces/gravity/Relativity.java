@@ -26,6 +26,7 @@ import org.hipparchus.util.FastMath;
 import org.orekit.forces.ForceModel;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
@@ -63,7 +64,8 @@ public class Relativity implements ForceModel {
     public Relativity(final double gm) {
         gmParameterDriver = new ParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
                                                 gm, MU_SCALE,
-                                                0.0, Double.POSITIVE_INFINITY);
+                                                0.0, Double.POSITIVE_INFINITY,
+                                                AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY);
     }
 
     /** {@inheritDoc} */
