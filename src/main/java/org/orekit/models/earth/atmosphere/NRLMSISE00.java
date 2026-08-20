@@ -1120,10 +1120,11 @@ public class NRLMSISE00 extends AbstractSunInfluencedAtmosphere {
             } else {
                 newSw[number] = 0;
             }
-            newSwc[number] = newSw[number];
+            // cross-terms flag follows the reference TSELEC: 1 for |value| of 1 or 2
+            newSwc[number] = (value == -1 || value == 1 || value == 2) ? 1 : 0;
         }
 
-        return new NRLMSISE00(inputParams, getSun(), earth, newSwc, newSwc, ut);
+        return new NRLMSISE00(inputParams, getSun(), earth, newSw, newSwc, ut);
 
     }
 
@@ -1596,7 +1597,7 @@ public class NRLMSISE00 extends AbstractSunInfluencedAtmosphere {
             /*  Diffusive density at Alt */
             diffusiveDensity = densu(alt, db04, tinf, tlb, HE_MASS, alpha[0], PTM[5], s);
             setDensity(HELIUM, diffusiveDensity);
-            if (sw[15] != 0 && alt < altl[0]) {
+            if (sw[15] != 0 && alt <= altl[0]) {
                 /*  Turbopause */
                 final double zh04 = PDM[0][2];
                 /*  Mixed density at Zlb */
@@ -1622,7 +1623,7 @@ public class NRLMSISE00 extends AbstractSunInfluencedAtmosphere {
             /* Diffusive density at Alt */
             diffusiveDensity = densu(alt, db16, tinf, tlb, O_MASS, alpha[1], PTM[5], s);
             setDensity(ATOMIC_OXYGEN, diffusiveDensity);
-            if (sw[15] != 0 && alt < altl[1]) {
+            if (sw[15] != 0 && alt <= altl[1]) {
                 /* Turbopause */
                 final double zh16 = PDM[1][2];
                 /* Mixed density at Zlb */
@@ -3010,7 +3011,7 @@ public class NRLMSISE00 extends AbstractSunInfluencedAtmosphere {
             /*  Diffusive density at Alt */
             diffusiveDensity = densu(alt, db04, tinf, tlb, HE_MASS, alpha[0], PTM[5], s);
             setDensity(HELIUM, diffusiveDensity);
-            if (sw[15] != 0 && alt.getReal() < altl[0]) {
+            if (sw[15] != 0 && alt.getReal() <= altl[0]) {
                 /*  Turbopause */
                 final double zh04 = PDM[0][2];
                 /*  Mixed density at Zlb */
@@ -3036,7 +3037,7 @@ public class NRLMSISE00 extends AbstractSunInfluencedAtmosphere {
             /* Diffusive density at Alt */
             diffusiveDensity = densu(alt, db16, tinf, tlb, O_MASS, alpha[1], PTM[5], s);
             setDensity(ATOMIC_OXYGEN, diffusiveDensity);
-            if (sw[15] != 0 && alt.getReal() < altl[1]) {
+            if (sw[15] != 0 && alt.getReal() <= altl[1]) {
                 /* Turbopause */
                 final double zh16 = PDM[1][2];
                 /* Mixed density at Zlb */
