@@ -294,6 +294,82 @@ class NRLMSISE00Test {
         Assertions.assertEquals(rhoItrf64.getReal(), rhoGcrf64.getReal(), rhoItrf64.getReal() * 1.0e-10);
     }
 
+    /** Switch value 2 means "main effect off, cross terms on" in the reference
+     * TSELEC routine. A bug in {@code withSwitch} installed the cross-terms array
+     * as both sw and swc, so value 2 behaved exactly like the default (both on).
+     * Densities for values 0, 1 and 2 of switch 5 (annual variation, whose cross
+     * flag swc[5] feeds the diurnal/semidiurnal terms) must therefore be three
+     * different values. */
+    @Test
+    void testWithSwitchCrossTermsOnly() throws
+    IllegalAccessException, IllegalArgumentException, InvocationTargetException,
+    NoSuchMethodException, SecurityException {
+        final NRLMSISE00 atmDefault  = new NRLMSISE00(null, null, null);
+        final NRLMSISE00 atmMainOff  = atmDefault.withSwitch(5, 0);
+        final NRLMSISE00 atmCrossOnly = atmDefault.withSwitch(5, 2);
+
+        final Method gtd7d = getOutputClass().getDeclaredMethod("gtd7d", Double.TYPE);
+        gtd7d.setAccessible(true);
+        final Method getDensity = getOutputClass().getDeclaredMethod("getDensity", Integer.TYPE);
+        getDensity.setAccessible(true);
+
+        final double[] ap = {4., 4., 4., 4., 4., 4., 4.};
+        final double[] rho = new double[3];
+        final NRLMSISE00[] atms = {atmDefault, atmMainOff, atmCrossOnly};
+        for (int i = 0; i < atms.length; i++) {
+            final Object out = createOutput(atms[i], 172, 29000., 60., -70., 16., 150., 150., ap);
+            gtd7d.invoke(out, 400.0);
+            rho[i] = ((Double) getDensity.invoke(out, 5)).doubleValue();
+        }
+
+        // cross-terms-only must differ from both "all on" and "all off"
+        Assertions.assertNotEquals(rho[0], rho[2]);
+        Assertions.assertNotEquals(rho[1], rho[2]);
+    }
+
+    /** The turbopause mixing correction applies up to and INCLUDING the ALTL cutoff
+     * altitude in the reference implementation ({@code IF(Z.GT.ALTL(I)) GO TO ...}).
+     * The helium (200 km) and atomic oxygen (300 km) branches used a strict
+     * comparison, so the correction was wrongly skipped exactly at the cutoff.
+     * Switch 15 gates the whole correction block and nothing else in the species
+     * densities, so toggling it detects whether the block executed: it must change
+     * the density at the cutoff and leave it untouched just above. (Continuity from
+     * below cannot be asserted instead: the reference has an independent strict
+     * {@code ALT.LT.300} temperature-node gate, so oxygen genuinely steps at 300 km.) */
+    @Test
+    void testTurbopauseBoundaryInclusive() throws
+    IllegalAccessException, IllegalArgumentException, InvocationTargetException,
+    NoSuchMethodException, SecurityException {
+        final NRLMSISE00 mixingOn  = new NRLMSISE00(null, null, null);
+        final NRLMSISE00 mixingOff = mixingOn.withSwitch(15, 0);
+        final Method gtd7 = getOutputClass().getDeclaredMethod("gtd7", Double.TYPE);
+        gtd7.setAccessible(true);
+        final Method getDensity = getOutputClass().getDeclaredMethod("getDensity", Integer.TYPE);
+        getDensity.setAccessible(true);
+        final double[] ap = {4., 4., 4., 4., 4., 4., 4.};
+
+        // {species index, ALTL cutoff altitude in km}
+        final double[][] cases = {{0, 200.0}, {1, 300.0}};
+        for (final double[] c : cases) {
+            final int species = (int) c[0];
+            final double cutoff = c[1];
+            final NRLMSISE00[] atms = {mixingOn, mixingOff};
+            final double[] alts = {cutoff, cutoff + 1.0e-9};
+            final double[][] rho = new double[2][2];
+            for (int i = 0; i < atms.length; i++) {
+                for (int j = 0; j < alts.length; j++) {
+                    final Object out = createOutput(atms[i], 172, 29000., 60., -70., 16., 150., 150., ap);
+                    gtd7.invoke(out, alts[j]);
+                    rho[i][j] = ((Double) getDensity.invoke(out, species)).doubleValue();
+                }
+            }
+            // correction active exactly at the cutoff...
+            Assertions.assertNotEquals(rho[0][0], rho[1][0]);
+            // ...and inactive everywhere above it
+            Assertions.assertEquals(rho[0][1], rho[1][1]);
+        }
+    }
+
     @Test
     void testDensityField() {
         // Build the input params provider
