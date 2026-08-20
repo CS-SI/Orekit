@@ -796,11 +796,11 @@ public enum OrekitMessages implements Localizable {
     /** INVALID_PARAMETER_RANGE. */
     INVALID_PARAMETER_RANGE("invalid parameter {0}: {1} not in range [{2}, {3}]"),
 
-    /** DRAG_COEFFICIENT_NOT_SET. */
-    DRAG_COEFFICIENT_NOT_SET("the drag coefficient has not been set"),
+    /** NO_REFERENCE_VALUES_SET. */
+    NO_REFERENCE_VALUES_SET("no reference values have been set"),
 
-    /** MISSING_DRAG_COEFFICIENT. */
-    MISSING_DRAG_COEFFICIENT("missing drag coefficient from {0} to {1}"),
+    /** MISSING_REFERENCE_VALUE. */
+    MISSING_REFERENCE_VALUE("missing reference value from {0} to {1}"),
 
     /** FUNCTION_NOT_IMPLEMENTED. */
     FUNCTION_NOT_IMPLEMENTED("{0} is not implemented"),

@@ -762,11 +762,11 @@ NON_COPLANAR_POINTS=le osservazioni non sono sullo stesso piano
 # invalid parameter {0}: {1} not in range [{2}, {3}]
 INVALID_PARAMETER_RANGE=parametro {0} non valido: {1} non appartiene all'' intervallo [{2}, {3}]
 
-# the drag coefficient has not been set
-DRAG_COEFFICIENT_NOT_SET=
+# no reference values have been set
+NO_REFERENCE_VALUES_SET=
 
-# missing drag coefficient from {0} to {1}
-MISSING_DRAG_COEFFICIENT=
+# missing reference value from {0} to {1}
+MISSING_REFERENCE_VALUE=
 
 # {0} is not implemented
 FUNCTION_NOT_IMPLEMENTED={0} non implementato

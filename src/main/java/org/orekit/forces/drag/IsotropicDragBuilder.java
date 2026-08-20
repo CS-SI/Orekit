@@ -17,11 +17,8 @@
 package org.orekit.forces.drag;
 
 import org.hipparchus.util.FastMath;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.TimeSpanMap;
+import org.orekit.utils.ParameterDriversSequenceBuilder;
 
 /** Builder for {@link IsotropicDrag} allowing to set coefficients on different time spans.
  * @author Luc Maisonobe
@@ -29,28 +26,19 @@ import org.orekit.utils.TimeSpanMap;
  */
 public class IsotropicDragBuilder {
 
-    /** Prefix for coefficients limited to one time span. */
-    public static final String SPAN_PREFIX = "Span";
-
-    /** Parameters scaling factor.
+   /** Parameters scaling factor.
      * <p>
      * We use a power of 2 to avoid numeric noise introduction
      * in the multiplications/divisions sequences.
      * </p>
      */
-    private final double SCALE = FastMath.scalb(1.0, -3);
+    private static final double SCALE = FastMath.scalb(1.0, -3);
 
-    /** Drag coefficients. */
-    private final TimeSpanMap<Double> spans;
+    /** Underlying builder. */
+    private final ParameterDriversSequenceBuilder builder;
 
     /** Cross section (m²). */
     private final double crossSection;
-
-    /** Minimum value of drag coefficient. */
-    private final double dragCoeffMin;
-
-    /** Maximum value of drag coefficient. */
-    private final double dragCoeffMax;
 
     /** Constructor for an initially empty builder, with min/max set to ±∞.
      * @param crossSection Surface (m²)
@@ -73,10 +61,9 @@ public class IsotropicDragBuilder {
      * @param dragCoeffMax maximum value of drag coefficient
      */
     public IsotropicDragBuilder(final double crossSection, final double dragCoeffMin, final double dragCoeffMax) {
+        this.builder      = new ParameterDriversSequenceBuilder(DragSensitive.DRAG_COEFFICIENT,
+                                                                SCALE, dragCoeffMin, dragCoeffMax);
         this.crossSection = crossSection;
-        this.dragCoeffMin = dragCoeffMin;
-        this.dragCoeffMax = dragCoeffMax;
-        this.spans        = new TimeSpanMap<>(null);
     }
 
     /** Add a coefficient throughout timeline.
@@ -88,7 +75,8 @@ public class IsotropicDragBuilder {
      * @return the instance itself, allowing use of the fluent interface pattern
      */
     public IsotropicDragBuilder addDragCoeff(final double dragCoeff) {
-        return addDragCoeff(dragCoeff, AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY);
+        builder.addReferenceValue(dragCoeff);
+        return this;
     }
 
     /** Add a coefficient valid for a time span.
@@ -98,8 +86,9 @@ public class IsotropicDragBuilder {
      * @return the instance itself, allowing use of the fluent interface pattern
      */
     public IsotropicDragBuilder addDragCoeff(final double dragCoeff,
-                             final AbsoluteDate earliestValidityDate, final AbsoluteDate latestValidityDate) {
-        spans.addValidBetween(dragCoeff, earliestValidityDate, latestValidityDate);
+                                             final AbsoluteDate earliestValidityDate,
+                                             final AbsoluteDate latestValidityDate) {
+        builder.addReferenceValue(dragCoeff, earliestValidityDate, latestValidityDate);
         return this;
     }
 
@@ -107,55 +96,13 @@ public class IsotropicDragBuilder {
      * <p>
      * If only one coefficient has been set, its name will be {@link DragSensitive#DRAG_COEFFICIENT}.
      * If several coefficients have been set, their names will be built by prepending
-     * {@link #SPAN_PREFIX} to {@link DragSensitive#DRAG_COEFFICIENT} and then appending an
-     * index counting from 0.
+     * {@link ParameterDriversSequenceBuilder#SPAN_PREFIX} to {@link DragSensitive#DRAG_COEFFICIENT}
+     * and then appending an index counting from 1.
      * </p>
      * @return built model
      */
     public IsotropicDrag build() {
-
-        TimeSpanMap.Span<Double> current;
-        try {
-            current = spans.getFirstNonNullSpan();
-        } catch (OrekitException oe) {
-            // user did not call addDragCoeff
-            throw new OrekitException(oe, OrekitMessages.DRAG_COEFFICIENT_NOT_SET);
-        }
-
-        // check if there is one or several coefficients
-        final boolean onlyOneCoeff = current == spans.getLastNonNullSpan();
-
-        final TimeSpanMap<ParameterDriver> drivers = new TimeSpanMap<>(null);
-
-        // build the drivers
-        int index = 1;
-        while (current != null) {
-
-            // safety check
-            if (current.getData() == null) {
-                throw new OrekitException(OrekitMessages.MISSING_DRAG_COEFFICIENT,
-                                          current.getStart(), current.getEnd());
-            }
-
-            // build the name of the driver, using a chronological index if needed
-            final String name = onlyOneCoeff ?
-                                DragSensitive.DRAG_COEFFICIENT :
-                                SPAN_PREFIX + DragSensitive.DRAG_COEFFICIENT + index++;
-
-            // create the driver
-            final ParameterDriver driver =
-                new ParameterDriver(name, current.getData(), SCALE, dragCoeffMin, dragCoeffMax);
-
-            // add it to the map
-            drivers.addValidBetween(driver, current.getStart(), current.getEnd());
-
-            // prepare handling of next coefficient
-            current = current.next();
-
-        }
-
-        return new IsotropicDrag(crossSection, drivers);
-
+        return new IsotropicDrag(crossSection, builder.build());
     }
 
 }

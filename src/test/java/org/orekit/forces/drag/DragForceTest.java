@@ -78,6 +78,7 @@ import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterDriversSequenceBuilder;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 class DragForceTest extends AbstractLegacyForceModelTest {
@@ -823,7 +824,7 @@ class DragForceTest extends AbstractLegacyForceModelTest {
             if (nnb == 0) {
         	  Assertions.assertEquals("global drag factor", driver.getName());
             } else {
-        	  Assertions.assertEquals("Spandrag coefficient" + nnb, driver.getName());
+        	  Assertions.assertEquals("span-drag coefficient-" + (nnb - 1), driver.getName());
             }
             ++nnb;
         }
@@ -895,11 +896,11 @@ class DragForceTest extends AbstractLegacyForceModelTest {
         Assertions.assertEquals(DragSensitive.GLOBAL_DRAG_FACTOR, drivers.getFirst().getName());
 
         // at build time, drivers are sorted chronologically
-        Assertions.assertEquals(IsotropicDragBuilder.SPAN_PREFIX + DragSensitive.DRAG_COEFFICIENT + "1",
+        Assertions.assertEquals(ParameterDriversSequenceBuilder.SPAN_PREFIX + DragSensitive.DRAG_COEFFICIENT + "-0",
                                 drivers.get(1).getName());
-        Assertions.assertEquals(IsotropicDragBuilder.SPAN_PREFIX + DragSensitive.DRAG_COEFFICIENT + "2",
+        Assertions.assertEquals(ParameterDriversSequenceBuilder.SPAN_PREFIX + DragSensitive.DRAG_COEFFICIENT + "-1",
                                 drivers.get(2).getName());
-        Assertions.assertEquals(IsotropicDragBuilder.SPAN_PREFIX + DragSensitive.DRAG_COEFFICIENT + "3",
+        Assertions.assertEquals(ParameterDriversSequenceBuilder.SPAN_PREFIX + DragSensitive.DRAG_COEFFICIENT + "-2",
                                 drivers.get(3).getName());
 
         // rename the drivers arbitrarily
@@ -928,7 +929,7 @@ class DragForceTest extends AbstractLegacyForceModelTest {
             new IsotropicDragBuilder(2.5).build();
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.DRAG_COEFFICIENT_NOT_SET, oe.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.NO_REFERENCE_VALUES_SET, oe.getSpecifier());
         }
     }
 
@@ -948,7 +949,7 @@ class DragForceTest extends AbstractLegacyForceModelTest {
                 build();
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.MISSING_DRAG_COEFFICIENT, oe.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.MISSING_REFERENCE_VALUE, oe.getSpecifier());
         }
 
     }

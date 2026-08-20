@@ -28,7 +28,7 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.TimeSpanMap;
+import org.orekit.utils.ParameterDriversSequence;
 
 /** This class models isotropic drag effects.
  * <p>
@@ -59,7 +59,7 @@ public class IsotropicDrag implements DragSensitive {
     private final double crossSection;
 
     /** Drivers for drag coefficients valid on specified time spans. */
-    private final TimeSpanMap<ParameterDriver> timeSpanDrivers;
+    private final ParameterDriversSequence timeSpanDrivers;
 
     /** Drivers for drag coefficient parameter. */
     private final List<ParameterDriver> dragParametersDrivers;
@@ -68,13 +68,13 @@ public class IsotropicDrag implements DragSensitive {
      * @param crossSection Surface (m²)
      * @param timeSpanDrivers drivers for drag coefficients valid on specified time spans
      */
-    IsotropicDrag(final double crossSection, final TimeSpanMap<ParameterDriver> timeSpanDrivers) {
+    IsotropicDrag(final double crossSection, final ParameterDriversSequence timeSpanDrivers) {
 
         this.crossSection    = crossSection;
         this.timeSpanDrivers = timeSpanDrivers;
 
         // prepare drivers, one for the global coefficient and one for each time span
-        dragParametersDrivers = new ArrayList<>(1 + timeSpanDrivers.getSpansNumber());
+        dragParametersDrivers = new ArrayList<>(1 + timeSpanDrivers.getParametersDrivers().size());
 
         // global driver
         dragParametersDrivers.add(new ParameterDriver(DragSensitive.GLOBAL_DRAG_FACTOR,
@@ -82,7 +82,7 @@ public class IsotropicDrag implements DragSensitive {
                                                       0.0, Double.POSITIVE_INFINITY));
 
         // time span drivers
-        timeSpanDrivers.forEach(dragParametersDrivers::add);
+        dragParametersDrivers.addAll(timeSpanDrivers.getParametersDrivers());
 
     }
 
@@ -98,7 +98,7 @@ public class IsotropicDrag implements DragSensitive {
      * @since 14.0
      */
     public ParameterDriver getActiveDriver(final AbsoluteDate date) {
-        return timeSpanDrivers.get(date);
+        return timeSpanDrivers.getActiveDriver(date);
     }
 
     /** {@inheritDoc} */
@@ -106,7 +106,7 @@ public class IsotropicDrag implements DragSensitive {
     public Vector3D dragAcceleration(final SpacecraftState state,
                                      final double density, final Vector3D relativeVelocity,
                                      final double[] parameters) {
-        final int index = 1 + timeSpanDrivers.getSpan(state.getDate()).getIndex();
+        final int index = 1 + timeSpanDrivers.getActiveDriverIndex(state.getDate());
         final double dragCoeff = parameters[0] * parameters[index];
         return new Vector3D(relativeVelocity.getNorm() * density * dragCoeff * crossSection / (2 * state.getMass()),
                             relativeVelocity);
@@ -118,11 +118,12 @@ public class IsotropicDrag implements DragSensitive {
         dragAcceleration(final FieldSpacecraftState<T> state, final T density,
                          final FieldVector3D<T> relativeVelocity,
                          final T[] parameters) {
-        final int index = 1 + timeSpanDrivers.getSpan(state.getDate().toAbsoluteDate()).getIndex();
+        final int index = 1 + timeSpanDrivers.getActiveDriverIndex(state.getDate().toAbsoluteDate());
         final T dragCoeff = parameters[0].multiply(parameters[index]);
         return new FieldVector3D<>(relativeVelocity.getNorm().
                                    multiply(density.multiply(dragCoeff).multiply(crossSection / 2)).
                                    divide(state.getMass()),
                                    relativeVelocity);
     }
+
 }
