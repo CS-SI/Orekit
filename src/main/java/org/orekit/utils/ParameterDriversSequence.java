@@ -16,6 +16,8 @@
  */
 package org.orekit.utils;
 
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 
 import java.util.ArrayList;
@@ -35,6 +37,9 @@ public class ParameterDriversSequence implements ParameterDriversProvider {
     /** Drivers list. */
     private final List<ParameterDriver> list;
 
+    /** Index of the first non-null driver. */
+    private final int firstNonNull;
+
     /** Simple constructor.
      * <p>
      * The content of the provided map will be <em>copied</em> into the instance.
@@ -49,9 +54,10 @@ public class ParameterDriversSequence implements ParameterDriversProvider {
         this.timeSpanDrivers =
             timeSpanDrivers.extractRange(AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY);
 
-        // convert to a list
+        // convert to a list, ignoring null drivers at start or end
         list = new ArrayList<>(timeSpanDrivers.getSpansNumber());
         timeSpanDrivers.forEach(list::add);
+        firstNonNull = this.timeSpanDrivers.getFirstNonNullSpan().getIndex();
 
     }
 
@@ -74,7 +80,15 @@ public class ParameterDriversSequence implements ParameterDriversProvider {
      * @return driver active at this date
      */
     public int getActiveDriverIndex(final AbsoluteDate date) {
-        return timeSpanDrivers.getSpan(date).getIndex();
+        final int index = timeSpanDrivers.getSpan(date).getIndex() - firstNonNull;
+        if (index < 0 || index >= list.size()) {
+            // the date is outside the covered range
+            throw new OrekitException(OrekitMessages.OUT_OF_RANGE_DATE,
+                                      date,
+                                      timeSpanDrivers.getFirstNonNullSpan().getStart(),
+                                      timeSpanDrivers.getLastNonNullSpan().getEnd());
+        }
+        return index;
     }
 
 }

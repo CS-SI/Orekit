@@ -67,7 +67,7 @@ class ParameterDriversSequenceTest {
             build();
 
         final List<ParameterDriver> drivers = sequence.getParametersDrivers();
-        Assertions.assertEquals(3,                       drivers.size());
+        Assertions.assertEquals(3, drivers.size());
         checkDriver(drivers.get(0), 2.5, -1.0, 1.0, FastMath.scalb(1.0, -6), "span-base-0");
         checkDriver(drivers.get(1), 3.5, -1.0, 1.0, FastMath.scalb(1.0, -6), "span-base-1");
         checkDriver(drivers.get(2), 4.5, -1.0, 1.0, FastMath.scalb(1.0, -6), "span-base-2");
@@ -84,17 +84,17 @@ class ParameterDriversSequenceTest {
         Assertions.assertNull(sequence.getActiveDriver(t4.shiftedBy(TimeOffset.ATTOSECOND)));
         Assertions.assertNull(sequence.getActiveDriver(AbsoluteDate.FUTURE_INFINITY));
 
-        Assertions.assertNull(sequence.getActiveDriver(AbsoluteDate.PAST_INFINITY));
-        Assertions.assertNull(sequence.getActiveDriver(t0));
-        Assertions.assertNull(sequence.getActiveDriver(t1.shiftedBy(TimeOffset.ATTOSECOND.negate())));
-        Assertions.assertSame(drivers.getFirst(), sequence.getActiveDriver(t1.shiftedBy(TimeOffset.ATTOSECOND)));
-        Assertions.assertSame(drivers.getFirst(), sequence.getActiveDriver(t2.shiftedBy(TimeOffset.ATTOSECOND.negate())));
-        Assertions.assertSame(drivers.get(1),     sequence.getActiveDriver(t2.shiftedBy(TimeOffset.ATTOSECOND)));
-        Assertions.assertSame(drivers.get(1),     sequence.getActiveDriver(t3.shiftedBy(TimeOffset.ATTOSECOND.negate())));
-        Assertions.assertSame(drivers.get(2),     sequence.getActiveDriver(t3.shiftedBy(TimeOffset.ATTOSECOND)));
-        Assertions.assertSame(drivers.get(2),     sequence.getActiveDriver(t4.shiftedBy(TimeOffset.ATTOSECOND.negate())));
-        Assertions.assertNull(sequence.getActiveDriver(t4.shiftedBy(TimeOffset.ATTOSECOND)));
-        Assertions.assertNull(sequence.getActiveDriver(AbsoluteDate.FUTURE_INFINITY));
+        checkOutOfRange(sequence, AbsoluteDate.PAST_INFINITY);
+        checkOutOfRange(sequence, t0);
+        checkOutOfRange(sequence, t1.shiftedBy(TimeOffset.ATTOSECOND.negate()));
+        Assertions.assertEquals( 0, sequence.getActiveDriverIndex(t1.shiftedBy(TimeOffset.ATTOSECOND)));
+        Assertions.assertEquals( 0, sequence.getActiveDriverIndex(t2.shiftedBy(TimeOffset.ATTOSECOND.negate())));
+        Assertions.assertEquals( 1, sequence.getActiveDriverIndex(t2.shiftedBy(TimeOffset.ATTOSECOND)));
+        Assertions.assertEquals( 1, sequence.getActiveDriverIndex(t3.shiftedBy(TimeOffset.ATTOSECOND.negate())));
+        Assertions.assertEquals( 2, sequence.getActiveDriverIndex(t3.shiftedBy(TimeOffset.ATTOSECOND)));
+        Assertions.assertEquals( 2, sequence.getActiveDriverIndex(t4.shiftedBy(TimeOffset.ATTOSECOND.negate())));
+        checkOutOfRange(sequence, t4.shiftedBy(TimeOffset.ATTOSECOND));
+        checkOutOfRange(sequence, AbsoluteDate.FUTURE_INFINITY);
 
     }
 
@@ -106,6 +106,18 @@ class ParameterDriversSequenceTest {
         Assertions.assertEquals(max,   driver.getMaxValue(), 1.0e-15);
         Assertions.assertEquals(scale, driver.getScale(),    1.0e-17);
         Assertions.assertEquals(name,  driver.getName());
+    }
+
+    private void checkOutOfRange(final ParameterDriversSequence sequence,
+                                 final AbsoluteDate date) {
+        try {
+            sequence.getActiveDriverIndex(date);
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.OUT_OF_RANGE_DATE, oe.getSpecifier());
+            Assertions.assertEquals(date, oe.getParts()[0]);
+        }
+
     }
 
     @Test
