@@ -126,7 +126,7 @@ class FieldNumericalPropagatorTest {
         // Initialize propagator
         final FieldNumericalPropagator<Binary64> numerical = new FieldNumericalPropagator<>(new ClassicalRungeKuttaFieldIntegrator<>(field, zero.add(60.0)));
         numerical.addForceModel(new Maneuver(null,
-                                             TimeIntervalsManeuverTrigger.of(TimeInterval.of(maneuverStart.toAbsoluteDate(), maneuverEnd.toAbsoluteDate())),
+                                             TimeIntervalsManeuverTrigger.of(TimeInterval.of(maneuverStart.toAbsoluteDate(), maneuverEnd.toAbsoluteDate(), true)),
                                              new BasicConstantThrustPropulsionModel(0.02, 1160, Vector3D.PLUS_I, "tangential")));
         numerical.setInitialState(new FieldSpacecraftState<>(cartesian));
 

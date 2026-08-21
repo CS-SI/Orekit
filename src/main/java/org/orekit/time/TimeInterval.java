@@ -16,6 +16,9 @@
  */
 package org.orekit.time;
 
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
+
 /**
  * Interface representing a closed time interval i.e. [a, b], possibly of infinite length.
  *
@@ -74,27 +77,53 @@ public interface TimeInterval {
     }
 
     /**
-     * Create instance from two dates in arbitrary order.
-     * @param date date
-     * @param otherDate other date
+     * Create instance from two dates.
+     *
+     * @param date                  date
+     * @param otherDate             other date
+     * @param allowNonChronological if true, the two dates can be in arbitrary order,
+     *                              they will be sorted internally. If false and {@code otherDate}
+     *                              is before {@code date}, then an exception is triggered
      * @return time interval
+     * @since 14.0
      */
-    static TimeInterval of(final AbsoluteDate date, final AbsoluteDate otherDate) {
+    static TimeInterval of(final AbsoluteDate date, final AbsoluteDate otherDate,
+                           final boolean allowNonChronological) {
+
+        // check order
+        final AbsoluteDate start;
+        final AbsoluteDate end;
         if (otherDate.isBefore(date)) {
-            return of(otherDate, date);
+            if (allowNonChronological) {
+                // reorder dates
+                start = otherDate;
+                end   = date;
+            } else {
+                throw new OrekitException(OrekitMessages.NON_CHRONOLOGICALLY_SORTED_ENTRIES,
+                                          date, otherDate, date.durationFrom(otherDate));
+            }
+        } else {
+            start = date;
+            end   = otherDate;
         }
+
+        // create instance
         return new TimeInterval() {
 
+            /** {@inheritDoc} */
             @Override
             public AbsoluteDate getStartDate() {
-                return date;
+                return start;
             }
 
+            /** {@inheritDoc} */
             @Override
             public AbsoluteDate getEndDate() {
-                return otherDate;
+                return end;
             }
+
         };
+
     }
 
     /**
@@ -106,9 +135,7 @@ public interface TimeInterval {
      * @since 14.0
      */
     static TimeInterval of(final AbsoluteDate date, final double duration) {
-        if (duration < 0.0) {
-            return of(date.shiftedBy(duration), date);
-        }
-        return of(date, date.shiftedBy(duration));
+        return of(date, date.shiftedBy(duration), true);
     }
+
 }
