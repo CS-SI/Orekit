@@ -36,64 +36,31 @@ import org.orekit.utils.TimeSpanMap.Transition;
 
 /** Class allowing to drive the value of a parameter.
  * <p>
- * This class is typically used as a bridge between an estimation
- * algorithm (typically orbit determination or optimizer) and an
- * internal parameter in a physical model that needs to be tuned,
- * or a bridge between a finite differences algorithm and an
- * internal parameter in a physical model that needs to be slightly
- * offset. The physical model will expose to the algorithm a
- * set of instances of this class so the algorithm can call the
- * {@link #setValue(double, AbsoluteDate)} method to update the
- * parameter value at a given date. Some parameters driver only have 1 value estimated/driven
- * over the all period (constructor by default). Some others have several
- * values estimated/driven on several periods/intervals. For example if the time period is 3 days
- * for a drag parameter estimated all days then 3 values would be estimated, one for
- * each time period. In order to allow several values to be estimated, the PDriver has
- * a name and a value {@link TimeSpanMap} as attribute. In order,
- * to cut the time span map there are 2 options :
+ * This class is typically used as a bridge between an estimation algorithm
+ * (typically orbit determination or optimizer) and an internal parameter in
+ * a physical model that needs to be tuned. The physical model will expose to
+ * the algorithm a set of instances of this class so the algorithm can call the
+ * {@link #setValue(double)} method to update the parameter value.
  * </p>
- * <ul>
- * <li>Passive cut calling the {@link #addSpans(AbsoluteDate, AbsoluteDate, double)} method.
- * Given a start date, an end date and and a validity period (in sec)
- * for the driver, the {@link #addSpans} method will cut the interval of name and value time span map
- * from start date to date end in several interval of validity period duration. This method should not
- * be called on orbital drivers and must be called only once at beginning of the process (for example
- * beginning of orbit determination). <b>WARNING : In order to ensure convergence for orbit determination,
- * the start, end date and driver periodicity must be wisely chosen </b>. There must be enough measurements
- * on each interval or convergence won't reach or singular matrices will appear.  </li>
- * <li> Active cut calling the {@link #addSpanAtDate(AbsoluteDate)} method.
- * Given a date, the method will cut the value and name time span name, in order to have a new span starting at
- * the given date. Can be called several time to cut the time map as wished. <b>WARNING : In order to ensure
- * convergence for orbit determination, if the method is called several time, the start date must be wisely chosen </b>.
- * There must be enough measurements on each interval or convergence won't reach or singular matrices will appear.  </li>
- * </ul>
  * <p>
- * Several ways exist in order to get a ParameterDriver value at a certain
- * date for parameters having several values on several intervals.
+ * Any object can be notified when any of value, name, selection status… are changed.
+ * This is done by {@link #addObserver(ParameterObserver)}  registering} a
+ * {@link ParameterObserver ParameterObserver} to the parameter driver.
+ * <p>
+ * This design has two major goals. First, it allows an external algorithm to drive
+ * internal parameters blindly, as it only needs to get a list of instances of this
+ * class, without knowing what they really drive. Second, it allows the physical
+ * model to not expose directly setters methods for its parameters. In order to be
+ * able to modify the parameter value, the algorithm <em>must</em> retrieve a
+ * parameter driver.
  * </p>
- * <ul>
- * <li>First of all, the step estimation, that is to say, if a value wants
- * to be known at a certain date, the value returned is the one of span
- * beginning corresponding to the date. With this definition a value
- * will be kept constant all along the span duration and will be the value at span
- * start.</li>
- * <li> The continuous estimation, that is to say, when a value wants be to
- * known at a date t, the value returned would be a linear interpolation between
- * the value at the beginning of the span corresponding to date t and end this span
- * (which is also the beginning of next span). NOT IMPLEMENTED FOR NOW
- * </li>
- * </ul>
- * Each time the value is set, the physical model
- * will be notified as it will register a {@link ParameterObserver
- * ParameterObserver} for this purpose.
  * <p>
- * This design has two major goals. First, it allows an external
- * algorithm to drive internal parameters blindly, as it only
- * needs to get a list of instances of this class, without knowing
- * what they really drive. Second, it allows the physical model to
- * not expose directly setters methods for its parameters. In order
- * to be able to modify the parameter value, the algorithm
- * <em>must</em> retrieve a parameter driver.
+ * As of versions 12.X and 13.X, it was possible to set up time-dependent values
+ * within a single {@code ParameterDriver}. This feature has been replaced by
+ * {@link ParameterDriversSequence} as of 14.0, which is simpler and also allows
+ * finer selection, making it possible to select only a subset of the parameters
+ * along a timeline. Starting with version 14.0, {@code ParameterDriver} instances
+ * only hold one value, which can have a restricted validity range.
  * </p>
  * @see ParameterObserver
  * @author Luc Maisonobe
