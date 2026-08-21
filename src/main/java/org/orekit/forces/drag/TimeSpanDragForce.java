@@ -362,7 +362,7 @@ public class TimeSpanDragForce extends AbstractDragForceModel {
      * @return the parameters given the date
      */
     public <T extends CalculusFieldElement<T>> T[] extractParameters(final T[] parameters,
-                                                                 final FieldAbsoluteDate<T> date) {
+                                                                     final FieldAbsoluteDate<T> date) {
 
         // Get the drag parameter drivers of the date
         final List<ParameterDriver> dragPD = getDragSensitive(date.toAbsoluteDate()).getDragParametersDrivers();
@@ -400,7 +400,9 @@ public class TimeSpanDragForce extends AbstractDragForceModel {
         final List<AbsoluteDate> listDates = new ArrayList<>();
 
         // Extract all the transitions' dates
-        for (Transition<DragSensitive> transition = getFirstSpan().getEndTransition(); transition != null; transition = transition.next()) {
+        for (Transition<DragSensitive> transition = getFirstSpan().getEndTransition();
+             transition != null;
+             transition = transition.next()) {
             listDates.add(transition.getDate());
         }
         // Return the array of transition dates
@@ -410,7 +412,7 @@ public class TimeSpanDragForce extends AbstractDragForceModel {
     /** Change the parameter drivers names of a {@link DragSensitive} model, if needed.
      * <p>
      * This is done to avoid that several parameter drivers have the same name.<br>
-     * It is done only if the user hasn't modify the DragSensitive parameter drivers default names.
+     * It is done only if the user hasn't modified the DragSensitive parameter drivers default names.
      * </p>
      * @param dragSensitive the DragSensitive model
      * @param date the date used in the parameter driver's name
