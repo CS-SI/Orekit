@@ -50,7 +50,7 @@ class TimeIntervalsManeuverTriggerTest {
     @Test
     void testOfDetectors() {
         // GIVEN
-        final TimeInterval timeInterval = TimeInterval.of(AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY);
+        final TimeInterval timeInterval = TimeInterval.of(AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY, true);
         final TimeIntervalDetector intervalDetector = new TimeIntervalDetector(new ContinueOnEvent(), timeInterval);
         // WHEN
         final TimeIntervalsManeuverTrigger trigger = TimeIntervalsManeuverTrigger.of(intervalDetector);
@@ -68,7 +68,7 @@ class TimeIntervalsManeuverTriggerTest {
     @Test
     void testOfTimeIntervals() {
         // GIVEN
-        final TimeInterval timeInterval = TimeInterval.of(AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY);
+        final TimeInterval timeInterval = TimeInterval.of(AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY, true);
         // WHEN
         final TimeIntervalsManeuverTrigger trigger = TimeIntervalsManeuverTrigger.of(timeInterval, timeInterval);
         // THEN
@@ -85,9 +85,9 @@ class TimeIntervalsManeuverTriggerTest {
         final AbsoluteDate epoch = AbsoluteDate.ARBITRARY_EPOCH;
         final AbsoluteDate startFiring = epoch.shiftedBy(100.);
         final double duration = 10;
-        final TimeInterval firstTimeInterval = TimeInterval.of(startFiring, startFiring.shiftedBy(duration));
+        final TimeInterval firstTimeInterval = TimeInterval.of(startFiring, startFiring.shiftedBy(duration), true);
         final AbsoluteDate secondFiring = firstTimeInterval.getEndDate().shiftedBy(30.);
-        final TimeInterval secondTimeInterval = TimeInterval.of(secondFiring, secondFiring.shiftedBy(duration));
+        final TimeInterval secondTimeInterval = TimeInterval.of(secondFiring, secondFiring.shiftedBy(duration), true);
         final TimeIntervalsManeuverTrigger trigger = TimeIntervalsManeuverTrigger.of(Arrays.asList(firstTimeInterval, secondTimeInterval));
         final Orbit initialOrbit = TestUtils.getDefaultOrbit(epoch);
         final SpacecraftState initialState = new SpacecraftState(initialOrbit);
@@ -108,7 +108,7 @@ class TimeIntervalsManeuverTriggerTest {
         final AbsoluteDate epoch = AbsoluteDate.ARBITRARY_EPOCH;
         final AbsoluteDate startFiring = epoch.shiftedBy(100.);
         final double duration = 60;
-        final TimeInterval timeInterval = TimeInterval.of(startFiring, startFiring.shiftedBy(duration));
+        final TimeInterval timeInterval = TimeInterval.of(startFiring, startFiring.shiftedBy(duration), true);
         final TimeIntervalsManeuverTrigger trigger = TimeIntervalsManeuverTrigger.of(new TimeIntervalDetector(new ContinueOnEvent(),
                 timeInterval));
         final Orbit initialOrbit = TestUtils.getDefaultOrbit(epoch);
@@ -137,7 +137,7 @@ class TimeIntervalsManeuverTriggerTest {
     @Test
     void testGetParametersDrivers() {
         // GIVEN
-        final TimeInterval timeInterval = TimeInterval.of(AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY);
+        final TimeInterval timeInterval = TimeInterval.of(AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY, true);
         // WHEN
         final TimeIntervalsManeuverTrigger trigger = TimeIntervalsManeuverTrigger.of(timeInterval);
         // THEN
@@ -147,7 +147,7 @@ class TimeIntervalsManeuverTriggerTest {
     @Test
     void testConvertIntervalDetector() {
         // GIVEN
-        final TimeInterval timeInterval = TimeInterval.of(AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY);
+        final TimeInterval timeInterval = TimeInterval.of(AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY, true);
         final TimeIntervalsManeuverTrigger trigger = TimeIntervalsManeuverTrigger.of(timeInterval);
         final Binary64Field field = Binary64Field.getInstance();
         // WHEN

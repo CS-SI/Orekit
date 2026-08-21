@@ -37,7 +37,7 @@ class TimeIntervalEventFunctionTest {
     void testValue() {
         // GIVEN
         final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
-        final TimeInterval timeInterval = TimeInterval.of(date, date.shiftedBy(1));
+        final TimeInterval timeInterval = TimeInterval.of(date, date.shiftedBy(1), true);
         final SpacecraftState state = mock();
         when(state.getDate()).thenReturn(date);
         final TimeIntervalEventFunction eventFunction = new TimeIntervalEventFunction(timeInterval);
@@ -55,7 +55,7 @@ class TimeIntervalEventFunctionTest {
         final Orbit orbit = TestUtils.getDefaultOrbit(date.shiftedBy(-1.));
         final SpacecraftState state = new SpacecraftState(orbit);
         final FieldSpacecraftState<Binary64> fieldState = new FieldSpacecraftState<>(field, state);
-        final TimeInterval timeInterval = TimeInterval.of(date, date.shiftedBy(1));
+        final TimeInterval timeInterval = TimeInterval.of(date, date.shiftedBy(1), true);
         final TimeIntervalEventFunction eventFunction = new TimeIntervalEventFunction(timeInterval);
         // WHEN
         final Binary64 value = eventFunction.value(fieldState);

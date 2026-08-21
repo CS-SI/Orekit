@@ -16,7 +16,10 @@
  */
 package org.orekit.time;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -25,15 +28,42 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 class TimeIntervalTest {
 
     @Test
-    void testOf() {
+    void testOfChronological() {
         // GIVEN
         final AbsoluteDate minDate = AbsoluteDate.ARBITRARY_EPOCH;
         final AbsoluteDate maxDate = minDate.shiftedBy(1);
         // WHEN
-        final TimeInterval timeInterval = TimeInterval.of(maxDate, minDate);
+        final TimeInterval timeInterval = TimeInterval.of(maxDate, minDate, true);
         // THEN
         assertEquals(minDate, timeInterval.getStartDate());
         assertEquals(maxDate, timeInterval.getEndDate());
+    }
+
+    @Test
+    void testOfNonChronological() {
+        // GIVEN
+        final AbsoluteDate minDate = AbsoluteDate.ARBITRARY_EPOCH;
+        final AbsoluteDate maxDate = minDate.shiftedBy(1);
+        // WHEN
+        final TimeInterval timeInterval = TimeInterval.of(minDate, maxDate, true);
+        // THEN
+        assertEquals(minDate, timeInterval.getStartDate());
+        assertEquals(maxDate, timeInterval.getEndDate());
+    }
+
+    @Test
+    void testOfForbiddenNonChronological() {
+        try {
+            TimeInterval.of(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(TimeOffset.ATTOSECOND),
+                            AbsoluteDate.ARBITRARY_EPOCH,
+                            false);
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.NON_CHRONOLOGICALLY_SORTED_ENTRIES, oe.getSpecifier());
+            Assertions.assertEquals(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(TimeOffset.ATTOSECOND), oe.getParts()[0]);
+            Assertions.assertEquals(AbsoluteDate.ARBITRARY_EPOCH, oe.getParts()[1]);
+            Assertions.assertEquals(TimeOffset.ATTOSECOND.toDouble(), (Double) oe.getParts()[2], 1.0e-30);
+        }
     }
 
     @Test
@@ -41,7 +71,7 @@ class TimeIntervalTest {
         // GIVEN
         final AbsoluteDate minDate = AbsoluteDate.ARBITRARY_EPOCH;
         final AbsoluteDate maxDate = minDate.shiftedBy(1);
-        final TimeInterval timeInterval = TimeInterval.of(maxDate, minDate);
+        final TimeInterval timeInterval = TimeInterval.of(maxDate, minDate, true);
         // WHEN & THEN
         assertFalse(timeInterval.contains(minDate.shiftedBy(-1)));
         assertTrue(timeInterval.contains(minDate));
@@ -55,20 +85,20 @@ class TimeIntervalTest {
         // GIVEN
         final AbsoluteDate minDate = AbsoluteDate.ARBITRARY_EPOCH;
         final AbsoluteDate maxDate = minDate.shiftedBy(1);
-        final TimeInterval timeInterval = TimeInterval.of(maxDate, minDate);
-        final TimeInterval allTimes = TimeInterval.of(AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY);
+        final TimeInterval timeInterval = TimeInterval.of(maxDate, minDate, true);
+        final TimeInterval allTimes = TimeInterval.of(AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY, true);
         // WHEN & THEN
-        assertFalse(timeInterval.contains(TimeInterval.of(maxDate.shiftedBy(1), maxDate.shiftedBy(10))));
+        assertFalse(timeInterval.contains(TimeInterval.of(maxDate.shiftedBy(1), maxDate.shiftedBy(10), true)));
         assertFalse(timeInterval.contains(allTimes));
-        assertFalse(timeInterval.contains(TimeInterval.of(AbsoluteDate.PAST_INFINITY, maxDate)));
-        assertFalse(timeInterval.contains(TimeInterval.of(minDate, AbsoluteDate.FUTURE_INFINITY)));
-        assertTrue(TimeInterval.of(AbsoluteDate.PAST_INFINITY, maxDate).contains(timeInterval));
-        assertTrue(TimeInterval.of(minDate, AbsoluteDate.FUTURE_INFINITY).contains(timeInterval));
+        assertFalse(timeInterval.contains(TimeInterval.of(AbsoluteDate.PAST_INFINITY, maxDate, true)));
+        assertFalse(timeInterval.contains(TimeInterval.of(minDate, AbsoluteDate.FUTURE_INFINITY, true)));
+        assertTrue(TimeInterval.of(AbsoluteDate.PAST_INFINITY, maxDate, true).contains(timeInterval));
+        assertTrue(TimeInterval.of(minDate, AbsoluteDate.FUTURE_INFINITY, true).contains(timeInterval));
         assertTrue(allTimes.contains(timeInterval));
-        assertTrue(timeInterval.contains(TimeInterval.of(minDate, minDate)));
-        assertTrue(timeInterval.contains(TimeInterval.of(maxDate, maxDate)));
+        assertTrue(timeInterval.contains(TimeInterval.of(minDate, minDate, true)));
+        assertTrue(timeInterval.contains(TimeInterval.of(maxDate, maxDate, true)));
         assertTrue(timeInterval.contains(timeInterval));
-        assertTrue(timeInterval.contains(TimeInterval.of(minDate.shiftedBy(0.5), maxDate.shiftedBy(-0.1))));
+        assertTrue(timeInterval.contains(TimeInterval.of(minDate.shiftedBy(0.5), maxDate.shiftedBy(-0.1), true)));
     }
 
     @Test
@@ -76,17 +106,17 @@ class TimeIntervalTest {
         // GIVEN
         final AbsoluteDate minDate = AbsoluteDate.ARBITRARY_EPOCH;
         final AbsoluteDate maxDate = minDate.shiftedBy(1);
-        final TimeInterval timeInterval = TimeInterval.of(maxDate, minDate);
-        final TimeInterval allTimes = TimeInterval.of(AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY);
+        final TimeInterval timeInterval = TimeInterval.of(maxDate, minDate, true);
+        final TimeInterval allTimes = TimeInterval.of(AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY, true);
         // WHEN & THEN
-        assertFalse(timeInterval.intersects(TimeInterval.of(minDate.shiftedBy(-10), minDate.shiftedBy(-1))));
-        assertFalse(timeInterval.intersects(TimeInterval.of(maxDate.shiftedBy(1), maxDate.shiftedBy(10))));
+        assertFalse(timeInterval.intersects(TimeInterval.of(minDate.shiftedBy(-10), minDate.shiftedBy(-1), true)));
+        assertFalse(timeInterval.intersects(TimeInterval.of(maxDate.shiftedBy(1), maxDate.shiftedBy(10), true)));
         assertTrue(timeInterval.intersects(allTimes));
         assertTrue(allTimes.intersects(timeInterval));
         assertTrue(timeInterval.intersects(timeInterval));
-        assertTrue(timeInterval.intersects(TimeInterval.of(minDate, minDate)));
-        assertTrue(timeInterval.intersects(TimeInterval.of(maxDate, maxDate)));
-        assertTrue(timeInterval.intersects(TimeInterval.of(minDate.shiftedBy(0.1), maxDate.shiftedBy(-0.5))));
+        assertTrue(timeInterval.intersects(TimeInterval.of(minDate, minDate, true)));
+        assertTrue(timeInterval.intersects(TimeInterval.of(maxDate, maxDate, true)));
+        assertTrue(timeInterval.intersects(TimeInterval.of(minDate.shiftedBy(0.1), maxDate.shiftedBy(-0.5), true)));
     }
 
     @Test
@@ -95,7 +125,7 @@ class TimeIntervalTest {
         final AbsoluteDate minDate = AbsoluteDate.ARBITRARY_EPOCH;
         final double expectedDuration = 42;
         final AbsoluteDate maxDate = minDate.shiftedBy(expectedDuration);
-        final TimeInterval timeInterval = TimeInterval.of(minDate, maxDate);
+        final TimeInterval timeInterval = TimeInterval.of(minDate, maxDate, true);
         // WHEN
         final double actualDuration = timeInterval.duration();
         // THEN
