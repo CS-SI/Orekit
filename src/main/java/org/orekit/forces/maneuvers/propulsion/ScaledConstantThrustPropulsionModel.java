@@ -26,6 +26,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeInterval;
 import org.orekit.utils.ParameterDriver;
 
 /** Thrust propulsion model with parameters (for estimation) represented by scale factors
@@ -74,13 +75,13 @@ public class ScaledConstantThrustPropulsionModel extends AbstractConstantThrustP
         // Build the parameter drivers, using maneuver name as prefix
         this.scaleFactorThrustXDriver   = new ParameterDriver(name + THRUSTX_SCALE_FACTOR, 1., THRUST_SCALE,
                                                               Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
-                                                              AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY);
+                                                              TimeInterval.UNLIMITED);
         this.scaleFactorThrustYDriver   = new ParameterDriver(name + THRUSTY_SCALE_FACTOR, 1., THRUST_SCALE,
                                                               Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
-                                                              AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY);
+                                                              TimeInterval.UNLIMITED);
         this.scaleFactorThrustZDriver   = new ParameterDriver(name + THRUSTZ_SCALE_FACTOR, 1., THRUST_SCALE,
                                                               Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
-                                                              AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY);
+                                                              TimeInterval.UNLIMITED);
     }
 
     /** Get the thrust vector in S/C frame from scale factors (N).

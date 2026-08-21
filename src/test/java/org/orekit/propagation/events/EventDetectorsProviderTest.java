@@ -35,6 +35,7 @@ import org.orekit.propagation.events.intervals.AdaptableInterval;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.FieldTimeStamped;
+import org.orekit.time.TimeInterval;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
@@ -77,15 +78,9 @@ public class EventDetectorsProviderTest {
         // When: multiple drivers with no time-span
         // ----
 
-        final ParameterDriver param1 = new ParameterDriver("param-1", 0., 1., -1., 1.,
-                                                           AbsoluteDate.PAST_INFINITY,
-                                                           AbsoluteDate.FUTURE_INFINITY);
-        final ParameterDriver param2 = new ParameterDriver("param-2", 0., 1., -1., 1.,
-                                                           AbsoluteDate.PAST_INFINITY,
-                                                           AbsoluteDate.FUTURE_INFINITY);
-        final ParameterDriver param3 = new ParameterDriver("param-3", 0., 1., -1., 1.,
-                                                           AbsoluteDate.PAST_INFINITY,
-                                                           AbsoluteDate.FUTURE_INFINITY);
+        final ParameterDriver param1 = new ParameterDriver("param-1", 0., 1., -1., 1., TimeInterval.UNLIMITED);
+        final ParameterDriver param2 = new ParameterDriver("param-2", 0., 1., -1., 1., TimeInterval.UNLIMITED);
+        final ParameterDriver param3 = new ParameterDriver("param-3", 0., 1., -1., 1., TimeInterval.UNLIMITED);
         
         drivers.add(param1);
         drivers.add(param2);
@@ -106,10 +101,12 @@ public class EventDetectorsProviderTest {
 
         // Add validity intervals with different dates and
         final AbsoluteDate t0 = AbsoluteDate.ARBITRARY_EPOCH;
-        param2.setValidityStart(t0);
-        param2.setValidityEnd(t0.shiftedBy(Constants.JULIAN_DAY));
-        param3.setValidityStart(t0.shiftedBy(-2. * Constants.JULIAN_DAY));
-        param3.setValidityEnd(t0.shiftedBy(-Constants.JULIAN_DAY));
+        param2.setValidity(TimeInterval.of(t0,
+                                           t0.shiftedBy(Constants.JULIAN_DAY),
+                                           false));
+        param3.setValidity(TimeInterval.of(t0.shiftedBy(-2. * Constants.JULIAN_DAY),
+                                           t0.shiftedBy(-Constants.JULIAN_DAY),
+                                           false));
 
         detectors      = provider.getEventDetectors().collect(Collectors.toList());
         fieldDetectors = provider.getFieldEventDetectors(Binary64Field.getInstance()).collect(Collectors.toList());

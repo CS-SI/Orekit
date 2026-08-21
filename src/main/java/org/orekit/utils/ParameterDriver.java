@@ -30,6 +30,7 @@ import org.orekit.errors.OrekitIllegalStateException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.events.ParameterDrivenDateIntervalDetector;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeInterval;
 import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.TimeSpanMap.Transition;
 
@@ -97,15 +98,10 @@ public class ParameterDriver {
      */
     private AbsoluteDate referenceDate;
 
-    /** Validity start date.
+    /** Validity interval.
      * @since 14.0
      */
-    private AbsoluteDate validityStart;
-
-    /** Validity end date.
-     * @since 14.0
-     */
-    private AbsoluteDate validityEnd;
+    private TimeInterval validity;
 
     /** Flag to choose estimation method. If estimationContinuous
      * is true then when a value wants to be known an interpolation
@@ -145,14 +141,13 @@ public class ParameterDriver {
      *                       expected standard deviation of the parameter), it must be non-zero
      * @param minValue       minimum value allowed
      * @param maxValue       maximum value allowed
-     * @param validityStart  validity start date
-     * @param validityEnd    validity end date
+     * @param validity       validity interval
      * @since 14.0
      */
     public ParameterDriver(final String name, final TimeSpanMap<String> namesSpanMap,
                            final TimeSpanMap<Double> valuesSpanMap, final double referenceValue,
                            final double scale, final double minValue, final double maxValue,
-                           final AbsoluteDate validityStart, final AbsoluteDate validityEnd) {
+                           final TimeInterval validity) {
         if (FastMath.abs(scale) <= Precision.SAFE_MIN) {
             throw new OrekitException(OrekitMessages.TOO_SMALL_SCALE_FOR_PARAMETER,
                                       name, scale);
@@ -163,15 +158,12 @@ public class ParameterDriver {
         this.scale                  = scale;
         this.minValue               = minValue;
         this.maxValue               = maxValue;
-        this.validityStart          = validityStart;
-        this.validityEnd            = validityEnd;
+        this.validity               = validity;
         this.referenceDate          = null;
         this.valueSpanMap           = valuesSpanMap;
         this.selected               = false;
         this.observers              = new ArrayList<>();
         this.isEstimationContinuous = false;
-
-        checkValidityInterval();
 
     }
 
@@ -190,13 +182,12 @@ public class ParameterDriver {
      *                       expected standard deviation of the parameter), it must be non-zero
      * @param minValue       minimum value allowed
      * @param maxValue       maximum value allowed
-     * @param validityStart  validity start date
-     * @param validityEnd    validity end date
+     * @param validity       validity interval
      */
     public ParameterDriver(final String name,
                            final double referenceValue, final double scale,
                            final double minValue, final double maxValue,
-                           final AbsoluteDate validityStart, final AbsoluteDate validityEnd) {
+                           final TimeInterval validity) {
         if (FastMath.abs(scale) <= Precision.SAFE_MIN) {
             throw new OrekitException(OrekitMessages.TOO_SMALL_SCALE_FOR_PARAMETER,
                                       name, scale);
@@ -207,8 +198,7 @@ public class ParameterDriver {
         this.scale                  = scale;
         this.minValue               = minValue;
         this.maxValue               = maxValue;
-        this.validityStart          = validityStart;
-        this.validityEnd            = validityEnd;
+        this.validity               = validity;
         this.referenceDate          = null;
         // at construction the parameter driver
         // will be consider with only 1 estimated value over the all orbit
@@ -217,8 +207,6 @@ public class ParameterDriver {
         this.selected               = false;
         this.observers              = new ArrayList<>();
         this.isEstimationContinuous = false;
-
-        checkValidityInterval();
 
     }
 
@@ -810,45 +798,23 @@ public class ParameterDriver {
         }
     }
 
-    /** Get the validity start date.
-     * @return validity start date
+    /** Get the validity interval.
+     * @return validity interval
      * @since 14.0
      */
-    public AbsoluteDate getValidityStart() {
-        return validityStart;
+    public TimeInterval getValidity() {
+        return validity;
     }
 
-    /** Set the validity start date.
-     * @param validityStart validity start date
+    /** Set the validity interval.
+     * @param validity validity interval
      * @since 14.0
      */
-    public void setValidityStart(final AbsoluteDate validityStart) {
-        final AbsoluteDate previousValidityStart = getValidityStart();
-        this.validityStart = validityStart;
-        checkValidityInterval();
+    public void setValidity(final TimeInterval validity) {
+        final TimeInterval previousValidity = getValidity();
+        this.validity = validity;
         for (final ParameterObserver observer : observers) {
-            observer.validityStartChanged(previousValidityStart, this);
-        }
-    }
-
-    /** Get the validity end date.
-     * @return validity end date
-     * @since 14.0
-     */
-    public AbsoluteDate getValidityEnd() {
-        return validityEnd;
-    }
-
-    /** Set the validity end date.
-     * @param validityEnd validity end date
-     * @since 14.0
-     */
-    public void setValidityEnd(final AbsoluteDate validityEnd) {
-        final AbsoluteDate previousValidityEnd = getValidityEnd();
-        this.validityEnd = validityEnd;
-        checkValidityInterval();
-        for (final ParameterObserver observer : observers) {
-            observer.validityEndChanged(previousValidityEnd, this);
+            observer.validityChanged(previousValidity, this);
         }
     }
 
@@ -919,17 +885,6 @@ public class ParameterDriver {
      */
     public String toString() {
         return name + " = " + valueSpanMap.get(AbsoluteDate.ARBITRARY_EPOCH);
-    }
-
-    /** Check validity interval.
-     * @since 14.0
-     */
-    private void checkValidityInterval() {
-        if (validityEnd.isBefore(validityStart)) {
-            throw new OrekitException(OrekitMessages.NON_CHRONOLOGICALLY_SORTED_ENTRIES,
-                                      validityStart, validityEnd,
-                                      validityStart.durationFrom(validityEnd));
-        }
     }
 
 }

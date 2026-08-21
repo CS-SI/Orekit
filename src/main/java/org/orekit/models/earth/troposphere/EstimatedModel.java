@@ -28,6 +28,7 @@ import org.orekit.models.earth.weather.ConstantPressureTemperatureHumidityProvid
 import org.orekit.models.earth.weather.PressureTemperatureHumidity;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeInterval;
 import org.orekit.utils.FieldTrackingCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TrackingCoordinates;
@@ -103,8 +104,8 @@ public class EstimatedModel implements TroposphericModel {
                           final double totalDelay) {
 
         totalZenithDelay = new ParameterDriver(EstimatedModel.TOTAL_ZENITH_DELAY,
-                                               totalDelay, FastMath.scalb(1.0, 0), 0.0, Double.POSITIVE_INFINITY,
-                                               AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY);
+                                               totalDelay, FastMath.scalb(1.0, 0),
+                                               0.0, Double.POSITIVE_INFINITY, TimeInterval.UNLIMITED);
 
         this.hydrostatic = hydrostatic;
         this.model = model;

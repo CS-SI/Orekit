@@ -27,6 +27,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeInterval;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
@@ -165,18 +166,18 @@ public enum OrbitParamsType {
             final double[] array = new double[6];
             mapOrbitToArray(orbit, type, array, null);
             final double[] scale = scale(dP, orbit);
-            drivers.add(new ParameterDriver(POS_X, array[0], scale[0], Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
-                                            AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY));
-            drivers.add(new ParameterDriver(POS_Y, array[1], scale[1], Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
-                                            AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY));
-            drivers.add(new ParameterDriver(POS_Z, array[2], scale[2], Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
-                                            AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY));
-            drivers.add(new ParameterDriver(VEL_X, array[3], scale[3], Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
-                                            AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY));
-            drivers.add(new ParameterDriver(VEL_Y, array[4], scale[4], Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
-                                            AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY));
-            drivers.add(new ParameterDriver(VEL_Z, array[5], scale[5], Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
-                                            AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY));
+            drivers.add(new ParameterDriver(POS_X, array[0], scale[0],
+                                            Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, TimeInterval.UNLIMITED));
+            drivers.add(new ParameterDriver(POS_Y, array[1], scale[1],
+                                            Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, TimeInterval.UNLIMITED));
+            drivers.add(new ParameterDriver(POS_Z, array[2], scale[2],
+                                            Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, TimeInterval.UNLIMITED));
+            drivers.add(new ParameterDriver(VEL_X, array[3], scale[3],
+                                            Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, TimeInterval.UNLIMITED));
+            drivers.add(new ParameterDriver(VEL_Y, array[4], scale[4],
+                                            Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, TimeInterval.UNLIMITED));
+            drivers.add(new ParameterDriver(VEL_Z, array[5], scale[5],
+                                            Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, TimeInterval.UNLIMITED));
             return drivers;
         }
 
@@ -327,17 +328,16 @@ public enum OrbitParamsType {
                                     MEAN_LAT_ARG :
                                     type == PositionAngleType.ECCENTRIC ? ECC_LAT_ARG : TRUE_LAT_ARG;
             drivers.add(new ParameterDriver(A, array[0], scale[0], 0.0, Double.POSITIVE_INFINITY,
-                                            AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY));
-            drivers.add(new ParameterDriver(E_X, array[1], scale[1], -1.0, 1.0, AbsoluteDate.PAST_INFINITY,
-                                            AbsoluteDate.FUTURE_INFINITY));
-            drivers.add(new ParameterDriver(E_Y, array[2], scale[2], -1.0, 1.0, AbsoluteDate.PAST_INFINITY,
-                                            AbsoluteDate.FUTURE_INFINITY));
-            drivers.add(new ParameterDriver(INC, array[3], scale[3], 0.0, FastMath.PI, AbsoluteDate.PAST_INFINITY,
-                                            AbsoluteDate.FUTURE_INFINITY));
-            drivers.add(new ParameterDriver(RAAN, array[4], scale[4], Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
-                                            AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY));
-            drivers.add(new ParameterDriver(name, array[5], scale[5], Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
-                                            AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY));
+                                            TimeInterval.UNLIMITED));
+            drivers.add(new ParameterDriver(E_X, array[1], scale[1], -1.0, 1.0, TimeInterval.UNLIMITED));
+            drivers.add(new ParameterDriver(E_Y, array[2], scale[2], -1.0, 1.0, TimeInterval.UNLIMITED));
+            drivers.add(new ParameterDriver(INC, array[3], scale[3], 0.0, FastMath.PI, TimeInterval.UNLIMITED));
+            drivers.add(new ParameterDriver(RAAN, array[4], scale[4],
+                                            Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                            TimeInterval.UNLIMITED));
+            drivers.add(new ParameterDriver(name, array[5], scale[5],
+                                            Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                            TimeInterval.UNLIMITED));
             return drivers;
         }
 
@@ -554,19 +554,18 @@ public enum OrbitParamsType {
                                     MEAN_LON_ARG :
                                     type == PositionAngleType.ECCENTRIC ? ECC_LON_ARG : TRUE_LON_ARG;
             drivers.add(new ParameterDriver(A, array[0], scale[0], 0.0, Double.POSITIVE_INFINITY,
-                                            AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY));
-            drivers.add(new ParameterDriver(E_X, array[1], scale[1], -1.0, 1.0,
-                                            AbsoluteDate.PAST_INFINITY,
-                                            AbsoluteDate.FUTURE_INFINITY));
-            drivers.add(new ParameterDriver(E_Y, array[2], scale[2], -1.0, 1.0,
-                                            AbsoluteDate.PAST_INFINITY,
-                                            AbsoluteDate.FUTURE_INFINITY));
-            drivers.add(new ParameterDriver(H_X, array[3], scale[3], Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
-                                            AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY));
-            drivers.add(new ParameterDriver(H_Y, array[4], scale[4], Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
-                                            AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY));
-            drivers.add(new ParameterDriver(name, array[5], scale[5], Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
-                                            AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY));
+                                            TimeInterval.UNLIMITED));
+            drivers.add(new ParameterDriver(E_X, array[1], scale[1], -1.0, 1.0, TimeInterval.UNLIMITED));
+            drivers.add(new ParameterDriver(E_Y, array[2], scale[2], -1.0, 1.0, TimeInterval.UNLIMITED));
+            drivers.add(new ParameterDriver(H_X, array[3], scale[3],
+                                            Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                            TimeInterval.UNLIMITED));
+            drivers.add(new ParameterDriver(H_Y, array[4], scale[4],
+                                            Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                            TimeInterval.UNLIMITED));
+            drivers.add(new ParameterDriver(name, array[5], scale[5],
+                                            Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                            TimeInterval.UNLIMITED));
             return drivers;
         }
 
@@ -779,19 +778,18 @@ public enum OrbitParamsType {
                                     MEAN_ANOM :
                                     type == PositionAngleType.ECCENTRIC ? ECC_ANOM : TRUE_ANOM;
             drivers.add(new ParameterDriver(A, array[0], scale[0], 0.0, Double.POSITIVE_INFINITY,
-                                            AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY));
-            drivers.add(new ParameterDriver(ECC, array[1], scale[1], 0.0, 1.0,
-                                            AbsoluteDate.PAST_INFINITY,
-                                            AbsoluteDate.FUTURE_INFINITY));
-            drivers.add(new ParameterDriver(INC, array[2], scale[2], 0.0, FastMath.PI,
-                                            AbsoluteDate.PAST_INFINITY,
-                                            AbsoluteDate.FUTURE_INFINITY));
-            drivers.add(new ParameterDriver(PA, array[3], scale[3], Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
-                                            AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY));
-            drivers.add(new ParameterDriver(RAAN, array[4], scale[4], Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
-                                            AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY));
-            drivers.add(new ParameterDriver(name, array[5], scale[5], Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
-                                            AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY));
+                                            TimeInterval.UNLIMITED));
+            drivers.add(new ParameterDriver(ECC, array[1], scale[1], 0.0, 1.0, TimeInterval.UNLIMITED));
+            drivers.add(new ParameterDriver(INC, array[2], scale[2], 0.0, FastMath.PI, TimeInterval.UNLIMITED));
+            drivers.add(new ParameterDriver(PA, array[3], scale[3],
+                                            Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                            TimeInterval.UNLIMITED));
+            drivers.add(new ParameterDriver(RAAN, array[4], scale[4],
+                                            Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                            TimeInterval.UNLIMITED));
+            drivers.add(new ParameterDriver(name, array[5], scale[5],
+                                            Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                            TimeInterval.UNLIMITED));
             return drivers;
         }
 

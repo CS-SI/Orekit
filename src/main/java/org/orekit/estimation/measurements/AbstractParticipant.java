@@ -28,6 +28,7 @@ import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeInterval;
 import org.orekit.time.clocks.ClockModel;
 import org.orekit.time.clocks.PolynomialClockModel;
 import org.orekit.utils.AbsolutePVCoordinates;
@@ -104,15 +105,15 @@ public abstract class AbstractParticipant implements MeasurementParticipant {
         return new PolynomialClockModel(new ParameterDriver(name + CLOCK_STRING + BIAS_SUFFIX,
                                                             0.0, CLOCK_OFFSET_SCALE,
                                                             Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
-                                                            AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY),
+                                                            TimeInterval.UNLIMITED),
                                            new ParameterDriver(name + CLOCK_STRING + DRIFT_SUFFIX,
                                                                0.0, CLOCK_OFFSET_SCALE,
                                                                Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
-                                                               AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY),
+                                                               TimeInterval.UNLIMITED),
                                            new ParameterDriver(name + CLOCK_STRING + ACCELERATION_SUFFIX,
                                                                0.0, CLOCK_OFFSET_SCALE,
                                                                Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
-                                                               AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY));
+                                                               TimeInterval.UNLIMITED));
     }
 
     /** Get the clock model valid at some date.

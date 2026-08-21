@@ -45,6 +45,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.hansen.FieldHansenTh
 import org.orekit.propagation.semianalytical.dsst.utilities.hansen.HansenThirdBodyLinear;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeInterval;
 import org.orekit.utils.FieldTimeSpanMap;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeSpanMap;
@@ -148,14 +149,10 @@ public class DSSTThirdBody implements DSSTForceModel {
         parameterDrivers = new ArrayList<>(2);
         parameterDrivers.add(new ParameterDriver(body.getName() + DSSTThirdBody.ATTRACTION_COEFFICIENT,
                                                  body.getGM(), MU_SCALE,
-                                                 0.0, Double.POSITIVE_INFINITY,
-                                                 AbsoluteDate.PAST_INFINITY,
-                                                 AbsoluteDate.FUTURE_INFINITY));
+                                                 0.0, Double.POSITIVE_INFINITY, TimeInterval.UNLIMITED));
         parameterDrivers.add(new ParameterDriver(DSSTNewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
                                                  mu, MU_SCALE,
-                                                 0.0, Double.POSITIVE_INFINITY,
-                                                 AbsoluteDate.PAST_INFINITY,
-                                                 AbsoluteDate.FUTURE_INFINITY));
+                                                 0.0, Double.POSITIVE_INFINITY, TimeInterval.UNLIMITED));
 
         this.body = body;
         this.Vns  = CoefficientsFactory.computeVns(MAX_POWER);

@@ -192,8 +192,7 @@ public abstract class AbstractOrbitalStateFactory<P extends OrbitalState>
                 final ParameterDriver newDriver =
                     new ParameterDriver(oldDriver.getName(), oldDriver.getValue(), oldDriver.getScale(),
                                         oldDriver.getMinValue(), oldDriver.getMaxValue(),
-                                        AbsoluteDate.PAST_INFINITY,
-                                        AbsoluteDate.FUTURE_INFINITY);
+                                        oldDriver.getValidity());
                 newDriver.setSelected(oldDriver.isSelected());
                 newDrivers.add(newDriver);
             }

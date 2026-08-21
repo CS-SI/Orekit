@@ -17,6 +17,7 @@
 package org.orekit.utils;
 
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeInterval;
 import org.orekit.time.TimeStamped;
 
 
@@ -44,8 +45,7 @@ public class DateDriver extends ParameterDriver implements TimeStamped {
      * @param start if true, the driver corresponds to a start date
      */
     public DateDriver(final AbsoluteDate base, final String name, final boolean start) {
-        super(name, 0.0, 1.0, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
-              AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY);
+        super(name, 0.0, 1.0, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, TimeInterval.UNLIMITED);
         this.base  = base;
         this.start = start;
     }

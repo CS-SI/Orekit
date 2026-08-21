@@ -26,6 +26,7 @@ import org.hipparchus.util.MathUtils;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeInterval;
 import org.orekit.utils.ParameterDriver;
 
 /** Harmonic acceleration model.
@@ -82,11 +83,11 @@ public class HarmonicAccelerationModel implements AccelerationModel {
         this.omega         = harmonicMultiplier * MathUtils.TWO_PI / fundamentalPeriod;
         this.drivers       = new ArrayList<>(2);
         drivers.add(new ParameterDriver(prefix + " γ",
-                                        0.0, AMPLITUDE_SCALE, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
-                                        AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY));
+                                        0.0, AMPLITUDE_SCALE,
+                                        Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, TimeInterval.UNLIMITED));
         drivers.add(new ParameterDriver(prefix + " φ",
-                                        0.0, PHASE_SCALE, -MathUtils.TWO_PI, MathUtils.TWO_PI,
-                                        AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY));
+                                        0.0, PHASE_SCALE,
+                                        -MathUtils.TWO_PI, MathUtils.TWO_PI, TimeInterval.UNLIMITED));
     }
 
     /** {@inheritDoc} */

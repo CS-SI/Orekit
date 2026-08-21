@@ -62,6 +62,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.hansen.FieldHansenZo
 import org.orekit.propagation.semianalytical.dsst.utilities.hansen.HansenZonalLinear;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeInterval;
 import org.orekit.utils.FieldTimeSpanMap;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeSpanMap;
@@ -224,9 +225,7 @@ public class DSSTZonal implements DSSTForceModel {
 
         gmParameterDriver = new ParameterDriver(DSSTNewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
                                                 provider.getMu(), MU_SCALE,
-                                                0.0, Double.POSITIVE_INFINITY,
-                                                AbsoluteDate.PAST_INFINITY,
-                                                AbsoluteDate.FUTURE_INFINITY);
+                                                0.0, Double.POSITIVE_INFINITY, TimeInterval.UNLIMITED);
 
         // Central body rotating frame
         this.bodyFixedFrame = bodyFixedFrame;

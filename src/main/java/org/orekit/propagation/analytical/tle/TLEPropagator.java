@@ -43,6 +43,7 @@ import org.orekit.propagation.analytical.AbstractAnalyticalPropagator;
 import org.orekit.propagation.analytical.tle.generation.FixedPointTleGenerationAlgorithm;
 import org.orekit.propagation.analytical.tle.generation.TleGenerationAlgorithm;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeInterval;
 import org.orekit.time.TimeScale;
 import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.PVCoordinates;
@@ -227,10 +228,8 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator impleme
         this.bStarDriver   = new ParameterDriver(TleGenerationAlgorithm.B_STAR,
                                                  initialTLE.getBStar(),
                                                  TleGenerationAlgorithm.B_STAR_SCALE,
-                                                 Double.NEGATIVE_INFINITY,
-                                                 Double.POSITIVE_INFINITY,
-                                                 AbsoluteDate.PAST_INFINITY,
-                                                 AbsoluteDate.FUTURE_INFINITY);
+                                                 Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                                 TimeInterval.UNLIMITED);
         bStarDriver.addObserver(new ParameterObserver() {
 
             @Override

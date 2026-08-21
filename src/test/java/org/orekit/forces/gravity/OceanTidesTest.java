@@ -58,6 +58,7 @@ import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeInterval;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.time.TimeStamped;
@@ -318,7 +319,7 @@ public class OceanTidesTest {
         final List<ParameterDriver> drivers = oceanTidesModel.getParametersDrivers();
         
         for (final ParameterDriver driver : drivers) {
-            driver.setValidityEnd(t0);
+            driver.setValidity(TimeInterval.of(t0, AbsoluteDate.FUTURE_INFINITY, false));
         }
         
         detectors      = oceanTidesModel.getEventDetectors().toList();

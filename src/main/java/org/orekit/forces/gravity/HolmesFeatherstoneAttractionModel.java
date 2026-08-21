@@ -41,6 +41,7 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeInterval;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.ParameterDriver;
 
@@ -117,8 +118,8 @@ public class HolmesFeatherstoneAttractionModel implements ForceModel, TideSystem
                                              final NormalizedSphericalHarmonicsProvider provider) {
 
         gmParameterDriver = new ParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
-                                                provider.getMu(), MU_SCALE, 0.0, Double.POSITIVE_INFINITY,
-                                                AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY);
+                                                provider.getMu(), MU_SCALE,
+                                                0.0, Double.POSITIVE_INFINITY, TimeInterval.UNLIMITED);
 
         this.provider  = provider;
         this.bodyFrame = centralBodyFrame;

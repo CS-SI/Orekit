@@ -19,6 +19,7 @@ package org.orekit.utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeInterval;
 
 /** Builder for {@link ParameterDriversSequence}.
  * @author Luc Maisonobe
@@ -138,8 +139,11 @@ public class ParameterDriversSequenceBuilder {
             final String name = oneValueOnly ? baseName : SPAN_PREFIX + baseName + "-" + index++;
 
             // create the driver
-            final ParameterDriver driver = new ParameterDriver(name, current.getData(), scale, minValue, maxValue,
-                                                               current.getStart(), current.getEnd());
+            final ParameterDriver driver = new ParameterDriver(name, current.getData(), scale,
+                                                               minValue, maxValue,
+                                                               TimeInterval.of(current.getStart(),
+                                                                               current.getEnd(),
+                                                                               false));
 
             // add it to the map
             drivers.addValidBetween(driver, current.getStart(), current.getEnd());

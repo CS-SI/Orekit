@@ -32,7 +32,7 @@ import org.orekit.data.DataContext;
 import org.orekit.frames.Frames;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeInterval;
 import org.orekit.utils.ExtendedPositionProvider;
 import org.orekit.utils.ParameterDriver;
 
@@ -138,30 +138,30 @@ public class ECOM2 extends AbstractRadiationForceModel {
         // Parameters scaling factor
         final double scale = FastMath.scalb(1.0, -22);
         // Add parameter along eB axis in alphabetical order
-        coefficients.add(new ParameterDriver(ECOM_COEFFICIENT + " B0", value, scale, MIN_VALUE, MAX_VALUE,
-                                             AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY));
+        coefficients.add(new ParameterDriver(ECOM_COEFFICIENT + " B0", value, scale,
+                                             MIN_VALUE, MAX_VALUE, TimeInterval.UNLIMITED));
         for (int i = 1; i < nB + 1; i++) {
-            coefficients.add(new ParameterDriver(ECOM_COEFFICIENT + " Bcos" + (i - 1), value, scale, MIN_VALUE, MAX_VALUE,
-                                                 AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY));
+            coefficients.add(new ParameterDriver(ECOM_COEFFICIENT + " Bcos" + (i - 1), value, scale,
+                                                 MIN_VALUE, MAX_VALUE, TimeInterval.UNLIMITED));
         }
         for (int i = nB + 1; i < 2 * nB + 1; i++) {
-            coefficients.add(new ParameterDriver(ECOM_COEFFICIENT + " Bsin" + (i - (nB + 1)), value, scale, MIN_VALUE, MAX_VALUE,
-                                                 AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY));
+            coefficients.add(new ParameterDriver(ECOM_COEFFICIENT + " Bsin" + (i - (nB + 1)), value, scale,
+                                                 MIN_VALUE, MAX_VALUE, TimeInterval.UNLIMITED));
         }
         // Add driver along eD axis in alphabetical order
-        coefficients.add(2 * nB + 1, new ParameterDriver(ECOM_COEFFICIENT + " D0", value, scale, MIN_VALUE, MAX_VALUE,
-                                                         AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY));
+        coefficients.add(2 * nB + 1, new ParameterDriver(ECOM_COEFFICIENT + " D0", value, scale,
+                                                         MIN_VALUE, MAX_VALUE, TimeInterval.UNLIMITED));
         for (int i = 2 * nB + 2; i < 2 * nB + 2 + nD; i++) {
-            coefficients.add(new ParameterDriver(ECOM_COEFFICIENT + " Dcos" + (i - (2 * nB + 2)), value, scale, MIN_VALUE, MAX_VALUE,
-                                                 AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY));
+            coefficients.add(new ParameterDriver(ECOM_COEFFICIENT + " Dcos" + (i - (2 * nB + 2)), value, scale,
+                                                 MIN_VALUE, MAX_VALUE, TimeInterval.UNLIMITED));
         }
         for (int i = 2 * nB + 2 + nD; i < 2 * (nB + nD) + 2; i++) {
-            coefficients.add(new ParameterDriver(ECOM_COEFFICIENT + " Dsin" + (i - (2 * nB + nD + 2)), value, scale, MIN_VALUE, MAX_VALUE,
-                                                 AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY));
+            coefficients.add(new ParameterDriver(ECOM_COEFFICIENT + " Dsin" + (i - (2 * nB + nD + 2)), value, scale,
+                                                 MIN_VALUE, MAX_VALUE, TimeInterval.UNLIMITED));
         }
         // Add Y0
-        coefficients.add(new ParameterDriver(ECOM_COEFFICIENT + " Y0", value, scale, MIN_VALUE, MAX_VALUE,
-                                             AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY));
+        coefficients.add(new ParameterDriver(ECOM_COEFFICIENT + " Y0", value, scale,
+                                             MIN_VALUE, MAX_VALUE, TimeInterval.UNLIMITED));
 
         // For ECOM2 model, all parameters are estimated
         coefficients.forEach(parameter -> parameter.setSelected(true));

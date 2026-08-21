@@ -65,6 +65,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.hansen.FieldHansenTe
 import org.orekit.propagation.semianalytical.dsst.utilities.hansen.HansenTesseralLinear;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeInterval;
 import org.orekit.utils.FieldTimeSpanMap;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeSpanMap;
@@ -259,9 +260,7 @@ public class DSSTTesseral implements DSSTForceModel {
 
         gmParameterDriver = new ParameterDriver(DSSTNewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
                                                 provider.getMu(), MU_SCALE,
-                                                0.0, Double.POSITIVE_INFINITY,
-                                                AbsoluteDate.PAST_INFINITY,
-                                                AbsoluteDate.FUTURE_INFINITY);
+                                                0.0, Double.POSITIVE_INFINITY, TimeInterval.UNLIMITED);
 
         // Central body rotating frame
         this.bodyFrame = centralBodyFrame;

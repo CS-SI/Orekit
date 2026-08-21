@@ -33,6 +33,7 @@ import org.orekit.estimation.measurements.Range;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.signal.SignalTravelTimeModel;
+import org.orekit.time.TimeInterval;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.TimeStampedPVCoordinates;
@@ -110,9 +111,7 @@ class KalmanEstimatorUtilTest {
 	}
 
 	private ParameterDriver createDriver(final String name, final boolean estimated) {
-		final ParameterDriver driver = new ParameterDriver(name, 1.0, 1.0, 0.0, 2.0,
-														   AbsoluteDate.PAST_INFINITY,
-                                                           AbsoluteDate.FUTURE_INFINITY);
+		final ParameterDriver driver = new ParameterDriver(name, 1.0, 1.0, 0.0, 2.0, TimeInterval.UNLIMITED);
 		driver.setSelected(estimated);
 		return driver;
 	}

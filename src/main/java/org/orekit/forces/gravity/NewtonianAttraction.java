@@ -31,6 +31,7 @@ import org.orekit.propagation.numerical.FieldTimeDerivativesEquations;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeInterval;
 import org.orekit.utils.ParameterDriver;
 
 /** Force model for Newtonian central body attraction.
@@ -58,9 +59,7 @@ public class NewtonianAttraction implements ForceModel {
     public NewtonianAttraction(final double mu) {
         gmParameterDriver = new ParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
                                                 mu, MU_SCALE,
-                                                0.0, Double.POSITIVE_INFINITY,
-                                                AbsoluteDate.PAST_INFINITY,
-                                                AbsoluteDate.FUTURE_INFINITY);
+                                                0.0, Double.POSITIVE_INFINITY, TimeInterval.UNLIMITED);
     }
 
     /** {@inheritDoc} */

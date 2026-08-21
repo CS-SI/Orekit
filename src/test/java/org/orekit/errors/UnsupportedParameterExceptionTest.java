@@ -23,6 +23,7 @@ import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeInterval;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
 
@@ -56,9 +57,7 @@ public class UnsupportedParameterExceptionTest {
 
         // Given one parameter list
         final List<ParameterDriver> drivers = new ArrayList<>();
-        final ParameterDriver param1 = new ParameterDriver("param-1", 0., 1., -1., 1.,
-                                                           AbsoluteDate.PAST_INFINITY,
-                                                           AbsoluteDate.FUTURE_INFINITY);
+        final ParameterDriver param1 = new ParameterDriver("param-1", 0., 1., -1., 1., TimeInterval.UNLIMITED);
         drivers.add(param1);
 
         // When
@@ -76,15 +75,9 @@ public class UnsupportedParameterExceptionTest {
 
         // Given multiple parameter list
         final List<ParameterDriver> drivers = new ArrayList<>();
-        final ParameterDriver param1 = new ParameterDriver("param-1", 0., 1., -1., 1.,
-                                                           AbsoluteDate.PAST_INFINITY,
-                                                           AbsoluteDate.FUTURE_INFINITY);
-        final ParameterDriver param2 = new ParameterDriver("param-2", 0., 1., -1., 1.,
-                                                           AbsoluteDate.PAST_INFINITY,
-                                                           AbsoluteDate.FUTURE_INFINITY);
-        final ParameterDriver param3 = new ParameterDriver("param-3", 0., 1., -1., 1.,
-                                                           AbsoluteDate.PAST_INFINITY,
-                                                           AbsoluteDate.FUTURE_INFINITY);
+        final ParameterDriver param1 = new ParameterDriver("param-1", 0., 1., -1., 1., TimeInterval.UNLIMITED);
+        final ParameterDriver param2 = new ParameterDriver("param-2", 0., 1., -1., 1., TimeInterval.UNLIMITED);
+        final ParameterDriver param3 = new ParameterDriver("param-3", 0., 1., -1., 1., TimeInterval.UNLIMITED);
         // Add some time spans to param3 to check message
         param3.addSpans(AbsoluteDate.ARBITRARY_EPOCH, AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(Constants.JULIAN_DAY), 3600.);
         drivers.add(param1);

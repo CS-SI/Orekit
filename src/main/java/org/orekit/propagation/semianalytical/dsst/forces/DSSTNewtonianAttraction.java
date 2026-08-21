@@ -35,6 +35,7 @@ import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeInterval;
 import org.orekit.utils.ParameterDriver;
 
 /** Force model for Newtonian central body attraction for the {@link DSSTPropagator DSST propagator}.
@@ -64,9 +65,7 @@ public class DSSTNewtonianAttraction implements DSSTForceModel {
     public DSSTNewtonianAttraction(final double mu) {
         gmParameterDriver = new ParameterDriver(DSSTNewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
                                                 mu, MU_SCALE,
-                                                0.0, Double.POSITIVE_INFINITY,
-                                                AbsoluteDate.PAST_INFINITY,
-                                                AbsoluteDate.FUTURE_INFINITY);
+                                                0.0, Double.POSITIVE_INFINITY, TimeInterval.UNLIMITED);
     }
 
     /** Get the central attraction coefficient μ at specific date.

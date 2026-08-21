@@ -231,7 +231,7 @@ public class ParameterDriversList {
             super(driver.getName(), driver.getNamesSpanMap(),
                   driver.getValueSpanMap(), driver.getReferenceValue(),
                   driver.getScale(), driver.getMinValue(), driver.getMaxValue(),
-                  driver.getValidityStart(), driver.getValidityEnd());
+                  driver.getValidity());
 
             owners = new ArrayList<>();
             addOwner(owner);

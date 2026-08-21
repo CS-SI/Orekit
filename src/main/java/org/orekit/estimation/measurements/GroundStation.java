@@ -40,6 +40,7 @@ import org.orekit.frames.Transform;
 import org.orekit.models.earth.displacement.StationDisplacement;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeInterval;
 import org.orekit.time.clocks.ClockModel;
 import org.orekit.utils.AngularCoordinates;
 import org.orekit.utils.FieldAngularCoordinates;
@@ -128,17 +129,17 @@ public class GroundStation extends AbstractParticipant implements GroundObserver
         this.eastOffsetDriver = new ParameterDriver(baseFrame.getName() + OFFSET_SUFFIX + "-East",
                                                     0.0, POSITION_OFFSET_SCALE,
                                                     Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
-                                                    AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY);
+                                                    TimeInterval.UNLIMITED);
 
         this.northOffsetDriver = new ParameterDriver(baseFrame.getName() + OFFSET_SUFFIX + "-North",
                                                      0.0, POSITION_OFFSET_SCALE,
                                                      Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
-                                                     AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY);
+                                                     TimeInterval.UNLIMITED);
 
         this.zenithOffsetDriver = new ParameterDriver(baseFrame.getName() + OFFSET_SUFFIX + "-Zenith",
                                                       0.0, POSITION_OFFSET_SCALE,
                                                       Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
-                                                      AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY);
+                                                      TimeInterval.UNLIMITED);
 
         // Add the ground station parameters to the master list.
         addParameterDriver(this.eastOffsetDriver);

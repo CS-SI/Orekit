@@ -25,6 +25,7 @@ import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.util.FastMath;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeInterval;
 import org.orekit.utils.ParameterDriver;
 
 /**
@@ -46,7 +47,7 @@ public class ConstantClockModel implements ClockModel {
     public ConstantClockModel(final double offset) {
         this.offset = new ParameterDriver("a0", 0.0, FastMath.scalb(1.0, -10),
                                           Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
-                                          AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY);
+                                          TimeInterval.UNLIMITED);
         this.offset.setValue(offset);
     }
 

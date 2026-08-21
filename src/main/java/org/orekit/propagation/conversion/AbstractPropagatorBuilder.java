@@ -34,6 +34,7 @@ import org.orekit.propagation.AbstractPropagator;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeInterval;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterObserver;
@@ -159,8 +160,7 @@ public abstract class AbstractPropagatorBuilder<T extends AbstractPropagator,
 
             final ParameterDriver muDriver = new ParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
                                                                  factory.getMu(), MU_SCALE, 0, Double.POSITIVE_INFINITY,
-                                                                 AbsoluteDate.PAST_INFINITY,
-                                                                 AbsoluteDate.FUTURE_INFINITY);
+                                                                 TimeInterval.UNLIMITED);
             muDriver.addObserver(new ParameterObserver() {
                 /** {@inheritDoc} */
                 @Override

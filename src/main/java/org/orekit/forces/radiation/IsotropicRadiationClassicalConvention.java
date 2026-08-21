@@ -26,7 +26,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeInterval;
 import org.orekit.utils.ParameterDriver;
 
 /** This class represents the features of a simplified spacecraft.
@@ -69,12 +69,12 @@ public class IsotropicRadiationClassicalConvention implements RadiationSensitive
      */
     public IsotropicRadiationClassicalConvention(final double crossSection, final double ca, final double cs) {
         this.parameterDrivers = new ArrayList<>(3);
-        parameterDrivers.add(new ParameterDriver(RadiationSensitive.GLOBAL_RADIATION_FACTOR, 1.0, SCALE, 0.0, Double.POSITIVE_INFINITY,
-                                                 AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY));
-        parameterDrivers.add(new ParameterDriver(RadiationSensitive.ABSORPTION_COEFFICIENT, ca, SCALE, 0.0, 1.0,
-                                                 AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY));
-        parameterDrivers.add(new ParameterDriver(RadiationSensitive.REFLECTION_COEFFICIENT, cs, SCALE, 0.0, 1.0,
-                                                 AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY));
+        parameterDrivers.add(new ParameterDriver(RadiationSensitive.GLOBAL_RADIATION_FACTOR, 1.0, SCALE,
+                                                 0.0, Double.POSITIVE_INFINITY, TimeInterval.UNLIMITED));
+        parameterDrivers.add(new ParameterDriver(RadiationSensitive.ABSORPTION_COEFFICIENT, ca, SCALE,
+                                                 0.0, 1.0, TimeInterval.UNLIMITED));
+        parameterDrivers.add(new ParameterDriver(RadiationSensitive.REFLECTION_COEFFICIENT, cs, SCALE,
+                                                 0.0, 1.0, TimeInterval.UNLIMITED));
         this.crossSection = crossSection;
     }
 

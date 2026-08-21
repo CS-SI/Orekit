@@ -27,6 +27,7 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeInterval;
 import org.orekit.utils.ParameterDriver;
 
 /**
@@ -73,8 +74,7 @@ public class EstimatedIonosphericModel extends AbstractIonosphericModel {
         super(earth);
         this.model = model;
         this.vtec  = new ParameterDriver(EstimatedIonosphericModel.VERTICAL_TOTAL_ELECTRON_CONTENT,
-                                         vtecValue, FastMath.scalb(1.0, 3), 0.0, 1000.0,
-                                         AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY);
+                                         vtecValue, FastMath.scalb(1.0, 3), 0.0, 1000.0, TimeInterval.UNLIMITED);
     }
 
     /** {@inheritDoc} */

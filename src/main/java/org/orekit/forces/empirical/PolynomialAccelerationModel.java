@@ -25,6 +25,7 @@ import org.hipparchus.util.FastMath;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeInterval;
 import org.orekit.utils.ParameterDriver;
 
 /** Polynomial acceleration model.
@@ -67,7 +68,7 @@ public class PolynomialAccelerationModel implements AccelerationModel {
         for (int i = 0; i < degree + 1; ++i) {
             drivers.add(new ParameterDriver(prefix + "[" + i + "]", 0.0, ACCELERATION_SCALE,
                                             Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
-                                            AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY));
+                                            TimeInterval.UNLIMITED));
         }
     }
 

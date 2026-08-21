@@ -46,6 +46,7 @@ import org.orekit.propagation.conversion.osc2mean.MeanTheory;
 import org.orekit.propagation.conversion.osc2mean.OsculatingToMeanConverter;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeInterval;
 import org.orekit.utils.FieldTimeSpanMap;
 import org.orekit.utils.ParameterDriver;
 
@@ -582,10 +583,8 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
 
         // initialize M2 driver
         this.M2Driver = new ParameterDriver(BrouwerLyddanePropagator.M2_NAME, m2Value, SCALE,
-                                            Double.NEGATIVE_INFINITY,
-                                            Double.POSITIVE_INFINITY,
-                                            AbsoluteDate.PAST_INFINITY,
-                                            AbsoluteDate.FUTURE_INFINITY);
+                                            Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                            TimeInterval.UNLIMITED);
 
         // compute mean parameters if needed
         resetInitialState(new FieldSpacecraftState<>(initialOrbit,

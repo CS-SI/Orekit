@@ -29,6 +29,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeInterval;
 import org.orekit.utils.ParameterDriver;
 
 /** Polynomial clock model.
@@ -60,8 +61,7 @@ public class PolynomialClockModel implements ClockModel {
         this.terms =  new ArrayList<>();
         final ParameterDriver parameterTerm = new ParameterDriver("-clock-bias", 0.0, CLOCK_OFFSET_SCALE,
                                                                   Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
-                                                                  AbsoluteDate.PAST_INFINITY,
-                                                                  AbsoluteDate.FUTURE_INFINITY);
+                                                                  TimeInterval.UNLIMITED);
         parameterTerm.setValue(0);
         parameterTerm.setReferenceDate(referenceDate);
         this.terms.add(parameterTerm);
@@ -81,8 +81,7 @@ public class PolynomialClockModel implements ClockModel {
             final String name = getAcceptedTermName(ii);
             final ParameterDriver parameterTerm = new ParameterDriver(name, 0.0, CLOCK_OFFSET_SCALE,
                                                                       Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
-                                                                      AbsoluteDate.PAST_INFINITY,
-                                                                      AbsoluteDate.FUTURE_INFINITY);
+                                                                      TimeInterval.UNLIMITED);
             parameterTerm.setValue(term);
             parameterTerm.setReferenceDate(referenceDate);
             convertedTerms.add(parameterTerm);
@@ -156,7 +155,7 @@ public class PolynomialClockModel implements ClockModel {
             // Create empty parameter with correct name for this index
             final ParameterDriver empty = new ParameterDriver(getAcceptedTermName(index), 0.0, CLOCK_OFFSET_SCALE,
                                                               Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
-                                                              AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY);
+                                                              TimeInterval.UNLIMITED);
             empty.setReferenceDate(AbsoluteDate.ARBITRARY_EPOCH);
             parameters.add(empty);
         }

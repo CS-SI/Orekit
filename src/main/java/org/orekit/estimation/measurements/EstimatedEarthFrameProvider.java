@@ -35,6 +35,7 @@ import org.orekit.frames.Transform;
 import org.orekit.frames.TransformProvider;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeInterval;
 import org.orekit.time.TimeOffset;
 import org.orekit.time.UT1Scale;
 import org.orekit.utils.IERSConventions;
@@ -113,35 +114,32 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
         this.primeMeridianOffsetDriver = new ParameterDriver("prime-meridian-offset",
                                                              0.0, ANGULAR_SCALE,
                                                              -FastMath.PI, FastMath.PI,
-                                                             AbsoluteDate.PAST_INFINITY,
-                                                             AbsoluteDate.FUTURE_INFINITY);
+                                                             TimeInterval.UNLIMITED);
 
         this.primeMeridianDriftDriver = new ParameterDriver("prime-meridian-drift",
                                                             0.0, ANGULAR_SCALE,
                                                             Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
-                                                            AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY);
+                                                            TimeInterval.UNLIMITED);
 
         this.polarOffsetXDriver = new ParameterDriver("polar-offset-X",
                                                       0.0, ANGULAR_SCALE,
                                                       -FastMath.PI, FastMath.PI,
-                                                      AbsoluteDate.PAST_INFINITY,
-                                                      AbsoluteDate.FUTURE_INFINITY);
+                                                      TimeInterval.UNLIMITED);
 
         this.polarDriftXDriver = new ParameterDriver("polar-drift-X",
                                                      0.0, ANGULAR_SCALE,
                                                      Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
-                                                     AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY);
+                                                     TimeInterval.UNLIMITED);
 
         this.polarOffsetYDriver = new ParameterDriver("polar-offset-Y",
                                                       0.0, ANGULAR_SCALE,
                                                       -FastMath.PI, FastMath.PI,
-                                                      AbsoluteDate.PAST_INFINITY,
-                                                      AbsoluteDate.FUTURE_INFINITY);
+                                                      TimeInterval.UNLIMITED);
 
         this.polarDriftYDriver = new ParameterDriver("polar-drift-Y",
                                                      0.0, ANGULAR_SCALE,
                                                      Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
-                                                     AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY);
+                                                     TimeInterval.UNLIMITED);
 
         this.baseUT1      = baseUT1;
         this.estimatedUT1 = new EstimatedUT1Scale();

@@ -79,6 +79,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeInterval;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ParameterDriver;
@@ -180,9 +181,7 @@ public class IonoModifierTest {
             eval.setStatus(evalNoMod.getStatus());
 
             try {
-                eval.getParameterDerivatives(new ParameterDriver("extra", 0, 1, -1, +1,
-                                                                 AbsoluteDate.PAST_INFINITY,
-                                                                 AbsoluteDate.FUTURE_INFINITY),
+                eval.getParameterDerivatives(new ParameterDriver("extra", 0, 1, -1, +1, TimeInterval.UNLIMITED),
                                              new AbsoluteDate());
                 Assertions.fail("an exception should have been thrown");
             } catch (OrekitIllegalArgumentException oiae) {
@@ -260,9 +259,8 @@ public class IonoModifierTest {
             eval.setStatus(evalNoMod.getStatus());
 
             try {
-                eval.getParameterDerivatives(new ParameterDriver("extra", 0, 1, -1, +1,
-                                                                 AbsoluteDate.PAST_INFINITY,
-                                                                 AbsoluteDate.FUTURE_INFINITY), new AbsoluteDate());
+                eval.getParameterDerivatives(new ParameterDriver("extra", 0, 1, -1, +1, TimeInterval.UNLIMITED),
+                                             new AbsoluteDate());
                 Assertions.fail("an exception should have been thrown");
             } catch (OrekitIllegalArgumentException oiae) {
                 Assertions.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, oiae.getSpecifier());
@@ -326,8 +324,8 @@ public class IonoModifierTest {
             eval.setStatus(evalNoMod.getStatus());
 
             try {
-                eval.getParameterDerivatives(new ParameterDriver("extra", 0, 1, -1, +1, AbsoluteDate.PAST_INFINITY,
-                                                                 AbsoluteDate.FUTURE_INFINITY), new AbsoluteDate());
+                eval.getParameterDerivatives(new ParameterDriver("extra", 0, 1, -1, +1, TimeInterval.UNLIMITED),
+                                             new AbsoluteDate());
                 Assertions.fail("an exception should have been thrown");
             } catch (OrekitIllegalArgumentException oiae) {
                 Assertions.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, oiae.getSpecifier());
@@ -409,9 +407,7 @@ public class IonoModifierTest {
             eval.setStatus(evalNoMod.getStatus());
 
             try {
-                eval.getParameterDerivatives(new ParameterDriver("extra", 0, 1, -1, +1,
-                                                                 AbsoluteDate.PAST_INFINITY,
-                                                                 AbsoluteDate.FUTURE_INFINITY),
+                eval.getParameterDerivatives(new ParameterDriver("extra", 0, 1, -1, +1, TimeInterval.UNLIMITED),
                                              new AbsoluteDate());
                 Assertions.fail("an exception should have been thrown");
             } catch (OrekitIllegalArgumentException oiae) {
@@ -533,9 +529,7 @@ public class IonoModifierTest {
             eval.setStatus(evalNoMod.getStatus());
 
             try {
-                eval.getParameterDerivatives(new ParameterDriver("extra", 0, 1, -1, +1,
-                                                                 AbsoluteDate.PAST_INFINITY,
-                                                                 AbsoluteDate.FUTURE_INFINITY));
+                eval.getParameterDerivatives(new ParameterDriver("extra", 0, 1, -1, +1, TimeInterval.UNLIMITED));
                 Assertions.fail("an exception should have been thrown");
             } catch (OrekitIllegalArgumentException oiae) {
                 Assertions.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, oiae.getSpecifier());
@@ -798,8 +792,8 @@ public class IonoModifierTest {
         public MockIonosphericModel(final OneAxisEllipsoid body, final double delay) {
             super(body);
             ionoDelay = new ParameterDriver("ionospheric delay",
-                                            delay, FastMath.scalb(1.0, 0), 0.0, Double.POSITIVE_INFINITY,
-                                            AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY);
+                                            delay, FastMath.scalb(1.0, 0),
+                                            0.0, Double.POSITIVE_INFINITY, TimeInterval.UNLIMITED);
         }
 
         @Override

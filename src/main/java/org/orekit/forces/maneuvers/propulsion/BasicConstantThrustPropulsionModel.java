@@ -27,6 +27,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.forces.maneuvers.Control3DVectorCostType;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeInterval;
 import org.orekit.utils.ParameterDriver;
 
 /** Constant thrust propulsion model with:
@@ -89,13 +90,9 @@ public class BasicConstantThrustPropulsionModel extends AbstractConstantThrustPr
 
         // Build the parameter drivers, using maneuver name as prefix
         this.thrustDriver   = new ParameterDriver(name + THRUST, thrust, THRUST_SCALE,
-                                                  0.0, Double.POSITIVE_INFINITY,
-                                                  AbsoluteDate.PAST_INFINITY,
-                                                  AbsoluteDate.FUTURE_INFINITY);
+                                                  0.0, Double.POSITIVE_INFINITY, TimeInterval.UNLIMITED);
         this.flowRateDriver = new ParameterDriver(name + FLOW_RATE, initialFlowRate, FLOW_RATE_SCALE,
-                                                  Double.NEGATIVE_INFINITY, 0.0,
-                                                  AbsoluteDate.PAST_INFINITY,
-                                                  AbsoluteDate.FUTURE_INFINITY);
+                                                  Double.NEGATIVE_INFINITY, 0.0, TimeInterval.UNLIMITED);
     }
 
     /** Simple constructor.

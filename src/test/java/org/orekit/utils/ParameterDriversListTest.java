@@ -22,6 +22,7 @@ import org.junit.jupiter.api.Test;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeInterval;
 
 public class ParameterDriversListTest {
 
@@ -29,18 +30,10 @@ public class ParameterDriversListTest {
     public void testDownwardAndUpwardSettings() {
 
         // this test used to generate an infinite recursion ending with StackOverFlowError
-        ParameterDriver p1A = new ParameterDriver("p1", 0.0, 1.0, -1.0, +1.0,
-                                                  AbsoluteDate.PAST_INFINITY,
-                                                  AbsoluteDate.FUTURE_INFINITY);
-        ParameterDriver p1B = new ParameterDriver("p1", 0.0, 1.0, -1.0, +1.0,
-                                                  AbsoluteDate.PAST_INFINITY,
-                                                  AbsoluteDate.FUTURE_INFINITY);
-        ParameterDriver p2A = new ParameterDriver("p2", 0.0, 1.0, -1.0, +1.0,
-                                                  AbsoluteDate.PAST_INFINITY,
-                                                  AbsoluteDate.FUTURE_INFINITY);
-        ParameterDriver p2B = new ParameterDriver("p2", 0.0, 1.0, -1.0, +1.0,
-                                                  AbsoluteDate.PAST_INFINITY,
-                                                  AbsoluteDate.FUTURE_INFINITY);
+        ParameterDriver p1A = new ParameterDriver("p1", 0.0, 1.0, -1.0, +1.0, TimeInterval.UNLIMITED);
+        ParameterDriver p1B = new ParameterDriver("p1", 0.0, 1.0, -1.0, +1.0, TimeInterval.UNLIMITED);
+        ParameterDriver p2A = new ParameterDriver("p2", 0.0, 1.0, -1.0, +1.0, TimeInterval.UNLIMITED);
+        ParameterDriver p2B = new ParameterDriver("p2", 0.0, 1.0, -1.0, +1.0, TimeInterval.UNLIMITED);
 
         ParameterDriversList list1 = new ParameterDriversList();
         list1.add(p1A);
@@ -141,21 +134,11 @@ public class ParameterDriversListTest {
 
     @Test
     public void testEmbeddedList() {
-        ParameterDriver pA1 = new ParameterDriver("p", 0.0, 1.0, -1.0, +1.0,
-                                                  AbsoluteDate.PAST_INFINITY,
-                                                  AbsoluteDate.FUTURE_INFINITY);
-        ParameterDriver pA2 = new ParameterDriver("p", 0.0, 1.0, -1.0, +1.0,
-                                                  AbsoluteDate.PAST_INFINITY,
-                                                  AbsoluteDate.FUTURE_INFINITY);
-        ParameterDriver pA3 = new ParameterDriver("p", 0.0, 1.0, -1.0, +1.0,
-                                                  AbsoluteDate.PAST_INFINITY,
-                                                  AbsoluteDate.FUTURE_INFINITY);
-        ParameterDriver pB1 = new ParameterDriver("p", 0.0, 1.0, -1.0, +1.0,
-                                                  AbsoluteDate.PAST_INFINITY,
-                                                  AbsoluteDate.FUTURE_INFINITY);
-        ParameterDriver pB2 = new ParameterDriver("p", 0.0, 1.0, -1.0, +1.0,
-                                                  AbsoluteDate.PAST_INFINITY,
-                                                  AbsoluteDate.FUTURE_INFINITY);
+        ParameterDriver pA1 = new ParameterDriver("p", 0.0, 1.0, -1.0, +1.0, TimeInterval.UNLIMITED);
+        ParameterDriver pA2 = new ParameterDriver("p", 0.0, 1.0, -1.0, +1.0, TimeInterval.UNLIMITED);
+        ParameterDriver pA3 = new ParameterDriver("p", 0.0, 1.0, -1.0, +1.0, TimeInterval.UNLIMITED);
+        ParameterDriver pB1 = new ParameterDriver("p", 0.0, 1.0, -1.0, +1.0, TimeInterval.UNLIMITED);
+        ParameterDriver pB2 = new ParameterDriver("p", 0.0, 1.0, -1.0, +1.0, TimeInterval.UNLIMITED);
         ParameterDriversList listA = new ParameterDriversList();
         listA.add(pA1);
         pA1.setSelected(true);
@@ -210,33 +193,15 @@ public class ParameterDriversListTest {
 
     @Test
     public void testMerge() {
-        ParameterDriver pA1 = new ParameterDriver("p", 0.0, 1.0, -1.0, +1.0,
-                                                  AbsoluteDate.PAST_INFINITY,
-                                                  AbsoluteDate.FUTURE_INFINITY);
-        ParameterDriver pA2 = new ParameterDriver("p", 0.0, 1.0, -1.0, +1.0,
-                                                  AbsoluteDate.PAST_INFINITY,
-                                                  AbsoluteDate.FUTURE_INFINITY);
-        ParameterDriver pA3 = new ParameterDriver("p", 0.0, 1.0, -1.0, +1.0,
-                                                  AbsoluteDate.PAST_INFINITY,
-                                                  AbsoluteDate.FUTURE_INFINITY);
-        ParameterDriver pB1 = new ParameterDriver("p", 0.0, 1.0, -1.0, +1.0,
-                                                  AbsoluteDate.PAST_INFINITY,
-                                                  AbsoluteDate.FUTURE_INFINITY);
-        ParameterDriver pB2 = new ParameterDriver("p", 0.0, 1.0, -1.0, +1.0,
-                                                  AbsoluteDate.PAST_INFINITY,
-                                                  AbsoluteDate.FUTURE_INFINITY);
-        ParameterDriver pC1 = new ParameterDriver("p", 0.0, 1.0, -1.0, +1.0,
-                                                  AbsoluteDate.PAST_INFINITY,
-                                                  AbsoluteDate.FUTURE_INFINITY);
-        ParameterDriver qA1 = new ParameterDriver("q", 0.0, 1.0, -1.0, +1.0,
-                                                  AbsoluteDate.PAST_INFINITY,
-                                                  AbsoluteDate.FUTURE_INFINITY);
-        ParameterDriver qA2 = new ParameterDriver("q", 0.0, 1.0, -1.0, +1.0,
-                                                  AbsoluteDate.PAST_INFINITY,
-                                                  AbsoluteDate.FUTURE_INFINITY);
-        ParameterDriver qB1 = new ParameterDriver("q", 0.0, 1.0, -1.0, +1.0,
-                                                  AbsoluteDate.PAST_INFINITY,
-                                                  AbsoluteDate.FUTURE_INFINITY);
+        ParameterDriver pA1 = new ParameterDriver("p", 0.0, 1.0, -1.0, +1.0, TimeInterval.UNLIMITED);
+        ParameterDriver pA2 = new ParameterDriver("p", 0.0, 1.0, -1.0, +1.0, TimeInterval.UNLIMITED);
+        ParameterDriver pA3 = new ParameterDriver("p", 0.0, 1.0, -1.0, +1.0, TimeInterval.UNLIMITED);
+        ParameterDriver pB1 = new ParameterDriver("p", 0.0, 1.0, -1.0, +1.0, TimeInterval.UNLIMITED);
+        ParameterDriver pB2 = new ParameterDriver("p", 0.0, 1.0, -1.0, +1.0, TimeInterval.UNLIMITED);
+        ParameterDriver pC1 = new ParameterDriver("p", 0.0, 1.0, -1.0, +1.0, TimeInterval.UNLIMITED);
+        ParameterDriver qA1 = new ParameterDriver("q", 0.0, 1.0, -1.0, +1.0, TimeInterval.UNLIMITED);
+        ParameterDriver qA2 = new ParameterDriver("q", 0.0, 1.0, -1.0, +1.0, TimeInterval.UNLIMITED);
+        ParameterDriver qB1 = new ParameterDriver("q", 0.0, 1.0, -1.0, +1.0, TimeInterval.UNLIMITED);
         final AtomicBoolean called = new AtomicBoolean(false);
         qB1.addObserver(new ParameterObserver() {
             /** {@inheritDoc} */
@@ -315,15 +280,9 @@ public class ParameterDriversListTest {
 
     @Test
     public void testAddSameDriver() {
-        ParameterDriver p = new ParameterDriver("p", 0.0, 1.0, -1.0, +1.0,
-                                                AbsoluteDate.PAST_INFINITY,
-                                                AbsoluteDate.FUTURE_INFINITY);
-        ParameterDriver q = new ParameterDriver("q", 0.0, 1.0, -1.0, +1.0,
-                                                AbsoluteDate.PAST_INFINITY,
-                                                AbsoluteDate.FUTURE_INFINITY);
-        ParameterDriver r = new ParameterDriver("r", 0.0, 1.0, -1.0, +1.0,
-                                                AbsoluteDate.PAST_INFINITY,
-                                                AbsoluteDate.FUTURE_INFINITY);
+        ParameterDriver p = new ParameterDriver("p", 0.0, 1.0, -1.0, +1.0, TimeInterval.UNLIMITED);
+        ParameterDriver q = new ParameterDriver("q", 0.0, 1.0, -1.0, +1.0, TimeInterval.UNLIMITED);
+        ParameterDriver r = new ParameterDriver("r", 0.0, 1.0, -1.0, +1.0, TimeInterval.UNLIMITED);
         ParameterDriversList list = new ParameterDriversList();
 
         // first add the drivers once each
@@ -357,9 +316,7 @@ public class ParameterDriversListTest {
         Assertions.assertSame(r, list.getDrivers().get(2).getRawDrivers().getFirst());
 
         // then add a new driver for the second parameter
-        ParameterDriver newQ = new ParameterDriver("q", 0.0, 1.0, -1.0, +1.0,
-                                                   AbsoluteDate.PAST_INFINITY,
-                                                   AbsoluteDate.FUTURE_INFINITY);
+        ParameterDriver newQ = new ParameterDriver("q", 0.0, 1.0, -1.0, +1.0, TimeInterval.UNLIMITED);
         list.add(newQ);
         Assertions.assertEquals(3, list.getDrivers().size());
         Assertions.assertEquals(1, list.getDrivers().getFirst().getRawDrivers().size());

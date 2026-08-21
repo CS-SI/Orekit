@@ -59,6 +59,7 @@ import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeInterval;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.time.TimeStamped;
@@ -463,7 +464,7 @@ class SolidTidesTest extends AbstractLegacyForceModelTest {
         final List<ParameterDriver> drivers = solidTidesModel.getParametersDrivers();
         
         for (final ParameterDriver driver : drivers) {
-            driver.setValidityStart(t0);
+            driver.setValidity(TimeInterval.of(t0, AbsoluteDate.FUTURE_INFINITY, true));
         }
         
         detectors      = solidTidesModel.getEventDetectors().toList();

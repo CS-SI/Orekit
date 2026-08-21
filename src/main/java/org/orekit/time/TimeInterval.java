@@ -28,6 +28,12 @@ import org.orekit.errors.OrekitMessages;
  */
 public interface TimeInterval {
 
+    /** Interval covering the entire timeline
+     * from {@link AbsoluteDate#PAST_INFINITY} to {@link AbsoluteDate#FUTURE_INFINITY}.
+     * @since 14.0
+     */
+    TimeInterval UNLIMITED = TimeInterval.of(AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY, true);
+
     /**
      * Getter for the left end of the interval.
      * @return left end

@@ -48,6 +48,7 @@ import org.orekit.propagation.conversion.osc2mean.FixedPointConverter;
 import org.orekit.propagation.conversion.osc2mean.MeanTheory;
 import org.orekit.propagation.conversion.osc2mean.OsculatingToMeanConverter;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeInterval;
 import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversProvider;
@@ -561,8 +562,7 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator imple
         this.M2Driver = new ParameterDriver(M2_NAME, m2Value, SCALE,
                                             Double.NEGATIVE_INFINITY,
                                             Double.POSITIVE_INFINITY,
-                                            AbsoluteDate.PAST_INFINITY,
-                                            AbsoluteDate.FUTURE_INFINITY);
+                                            TimeInterval.UNLIMITED);
 
         // compute mean parameters if needed
         resetInitialState(new SpacecraftState(initialOrbit,

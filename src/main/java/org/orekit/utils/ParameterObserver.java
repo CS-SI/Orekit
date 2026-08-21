@@ -17,7 +17,7 @@
 package org.orekit.utils;
 
 import org.orekit.time.AbsoluteDate;
-
+import org.orekit.time.TimeInterval;
 
 /** Interface for observing parameters changes.
  * @see ParameterDriver
@@ -137,27 +137,15 @@ public interface ParameterObserver {
         // nothing by default
     }
 
-    /** Notify that a parameter validity start date has been changed.
+    /** Notify that a parameter validity interval has been changed.
      * <p>
      * The default implementation does nothing
      * </p>
-     * @param previousValidityStart previous validity start date
+     * @param previousValidity previous validity interval
      * @param driver parameter driver that has been changed
      * @since 14.0
      */
-    default void validityStartChanged(final AbsoluteDate previousValidityStart, final ParameterDriver driver) {
-        // nothing by default
-    }
-
-    /** Notify that a parameter validity end date has been changed.
-     * <p>
-     * The default implementation does nothing
-     * </p>
-     * @param previousValidityEnd previous validity end date
-     * @param driver parameter driver that has been changed
-     * @since 14.0
-     */
-    default void validityEndChanged(final AbsoluteDate previousValidityEnd, final ParameterDriver driver) {
+    default void validityChanged(final TimeInterval previousValidity, final ParameterDriver driver) {
         // nothing by default
     }
 

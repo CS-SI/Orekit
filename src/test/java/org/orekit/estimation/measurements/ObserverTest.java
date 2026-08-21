@@ -22,7 +22,7 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeInterval;
 import org.orekit.utils.ParameterDriver;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -44,9 +44,7 @@ class ObserverTest {
     void testGetParameterIndices() {
         // GIVEN
         final List<ParameterDriver> drivers = new ArrayList<>();
-        final ParameterDriver driver = new ParameterDriver("", 0, 1, 0, 1,
-                                                           AbsoluteDate.PAST_INFINITY,
-                                                           AbsoluteDate.FUTURE_INFINITY);
+        final ParameterDriver driver = new ParameterDriver("", 0, 1, 0, 1, TimeInterval.UNLIMITED);
         driver.setSelected(true);
         drivers.add(driver);
         final SpacecraftState[] states = new SpacecraftState[] {mock(SpacecraftState.class)};

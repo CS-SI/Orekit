@@ -35,6 +35,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.FieldTimeStamped;
+import org.orekit.time.TimeInterval;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.ParameterDriver;
 
@@ -84,11 +85,12 @@ public interface EventDetectorsProvider {
         // If force model does not have parameter Driver, an empty stream is given as results
         final SortedSet<AbsoluteDate> transitionDates = new TreeSet<>(new ChronologicalComparator());
         for (final ParameterDriver driver : parameterDrivers) {
-            if (driver.getValidityStart().isFinite()) {
-                transitionDates.add(driver.getValidityStart());
+            final TimeInterval validity = driver.getValidity();
+            if (validity.getStartDate().isFinite()) {
+                transitionDates.add(validity.getStartDate());
             }
-            if (driver.getValidityEnd().isFinite()) {
-                transitionDates.add(driver.getValidityEnd());
+            if (validity.getEndDate().isFinite()) {
+                transitionDates.add(validity.getEndDate());
             }
         }
         // Either force model does not have any parameter driver or only contains parameter driver with only 1 span
@@ -119,11 +121,12 @@ public interface EventDetectorsProvider {
         // If force model does not have parameter Driver, an empty stream is given as results
         final SortedSet<AbsoluteDate> transitionDates = new TreeSet<>(new ChronologicalComparator());
         for (ParameterDriver driver : parameterDrivers) {
-            if (driver.getValidityStart().isFinite()) {
-                transitionDates.add(driver.getValidityStart());
+            final TimeInterval validity = driver.getValidity();
+            if (validity.getStartDate().isFinite()) {
+                transitionDates.add(validity.getStartDate());
             }
-            if (driver.getValidityEnd().isFinite()) {
-                transitionDates.add(driver.getValidityEnd());
+            if (validity.getEndDate().isFinite()) {
+                transitionDates.add(validity.getEndDate());
             }
         }
         // Either force model does not have any parameter driver or only contains parameter driver with only 1 span

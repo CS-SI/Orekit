@@ -118,6 +118,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElemen
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
+import org.orekit.time.TimeInterval;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
@@ -310,8 +311,7 @@ class DSSTPropagatorTest {
                                  OrekitMatchers.closeTo(0, 0));
         //test date
         AbsoluteDate date = endDate.shiftedBy(-0.11);
-        Assertions.assertEquals(
-                                ephemeris.propagate(date).getDate().durationFrom(date), 0, 0);
+        Assertions.assertEquals(0, ephemeris.propagate(date).getDate().durationFrom(date), 0);
     }
 
     @Test
@@ -526,23 +526,20 @@ class DSSTPropagatorTest {
 
     @Test
     void testTooSmallMaxDegree() {
-        Assertions.assertThrows(OrekitException.class, () -> {
-            new DSSTZonal(GravityFieldFactory.getUnnormalizedProvider(2, 0), 1, 0, 3);
-        });
+        Assertions.assertThrows(OrekitException.class,
+                                () -> new DSSTZonal(GravityFieldFactory.getUnnormalizedProvider(2, 0), 1, 0, 3));
     }
 
     @Test
     void testTooLargeMaxDegree() {
-        Assertions.assertThrows(OrekitException.class, () -> {
-            new DSSTZonal(GravityFieldFactory.getUnnormalizedProvider(2, 0), 8, 0, 8);
-        });
+        Assertions.assertThrows(OrekitException.class,
+                                () -> new DSSTZonal(GravityFieldFactory.getUnnormalizedProvider(2, 0), 8, 0, 8));
     }
 
     @Test
     void testWrongMaxPower() {
-        Assertions.assertThrows(OrekitException.class, () -> {
-            new DSSTZonal(GravityFieldFactory.getUnnormalizedProvider(8, 8), 4, 4, 4);
-        });
+        Assertions.assertThrows(OrekitException.class,
+                                () -> new DSSTZonal(GravityFieldFactory.getUnnormalizedProvider(8, 8), 4, 4, 4));
     }
 
     @Test
@@ -1150,7 +1147,7 @@ class DSSTPropagatorTest {
         final SpacecraftState finalState = propagator.propagate(state.getDate().shiftedBy(86400.0));
 
         // Verify is the propagation is correctly performed
-        Assertions.assertEquals(finalState.getOrbit().getMu(), 3.986004415E14, Double.MIN_VALUE);
+        Assertions.assertEquals(3.986004415E14, finalState.getOrbit().getMu(), Double.MIN_VALUE);
     }
 
     @Test
@@ -1541,8 +1538,7 @@ class DSSTPropagatorTest {
             1,
             Double.NEGATIVE_INFINITY,
             Double.POSITIVE_INFINITY,
-            AbsoluteDate.PAST_INFINITY,
-            AbsoluteDate.FUTURE_INFINITY);
+            TimeInterval.UNLIMITED);
 
         @Override
         public List<ParameterDriver> getParametersDrivers() {
@@ -1704,7 +1700,7 @@ class DSSTPropagatorTest {
     }
 
     /** This class is based on the example given by Orekit user kris06 in https://gitlab.orekit.org/orekit/orekit/-/issues/670. */
-    private class NumericalForce implements ForceModel {
+    private static class NumericalForce implements ForceModel {
 
         private boolean initialized;
         private boolean accComputed;

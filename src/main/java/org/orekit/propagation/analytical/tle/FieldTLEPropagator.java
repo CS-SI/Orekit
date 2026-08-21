@@ -38,8 +38,8 @@ import org.orekit.orbits.FieldOrbit;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.analytical.FieldAbstractAnalyticalPropagator;
 import org.orekit.propagation.analytical.tle.generation.TleGenerationAlgorithm;
-import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeInterval;
 import org.orekit.time.TimeScale;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
@@ -223,10 +223,8 @@ public abstract class FieldTLEPropagator<T extends CalculusFieldElement<T>> exte
         this.bStarDriver   = new ParameterDriver(TleGenerationAlgorithm.B_STAR,
                                                  initialTLE.getBStar().getReal(),
                                                  TleGenerationAlgorithm.B_STAR_SCALE,
-                                                 Double.NEGATIVE_INFINITY,
-                                                 Double.POSITIVE_INFINITY,
-                                                 AbsoluteDate.PAST_INFINITY,
-                                                 AbsoluteDate.FUTURE_INFINITY);
+                                                 Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                                 TimeInterval.UNLIMITED);
         this.generationAlgorithm = TLEPropagator.getDefaultTleGenerationAlgorithm(initialTLE.toTLE(), this.utc, teme);
 
         initializeCommons(tle.getBStar());

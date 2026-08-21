@@ -21,6 +21,7 @@ import org.hipparchus.util.Precision;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeInterval;
 
 public class DifferentiationTest {
 
@@ -45,7 +46,7 @@ public class DifferentiationTest {
     private void doTestScale(final double scale, final double step, final double tolerance) {
         ParameterDriver   driver = new ParameterDriver("", -100.0, scale,
                                                        Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
-                                                       AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY);
+                                                       TimeInterval.UNLIMITED);
         ParameterFunction f0     = (d,t) -> 3 * d.getValue(t) * d.getValue(t) - 2 * d.getValue(t);
         ParameterFunction f1Diff = Differentiation.differentiate(f0, 4, step);
         ParameterFunction f1Ref  = (d,t) -> 6 * d.getValue(t) - 2;

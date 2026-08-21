@@ -98,8 +98,8 @@ public class ParameterDrivenDateIntervalDetector extends AbstractDetector<Parame
              new DateDriver(refStart, prefix + START_SUFFIX, true),
              new DateDriver(refStop, prefix + STOP_SUFFIX, false),
              new DateDriver(refStart.shiftedBy(0.5 * refStop.durationFrom(refStart)), prefix + MEDIAN_SUFFIX, true),
-             new ParameterDriver(prefix + DURATION_SUFFIX, refStop.durationFrom(refStart), 1.0, 0.0, Double.POSITIVE_INFINITY,
-                                 AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY));
+             new ParameterDriver(prefix + DURATION_SUFFIX, refStop.durationFrom(refStart), 1.0,
+                                 0.0, Double.POSITIVE_INFINITY, TimeInterval.UNLIMITED));
     }
 
     /** Protected constructor with full parameters.

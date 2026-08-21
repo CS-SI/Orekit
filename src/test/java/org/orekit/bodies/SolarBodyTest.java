@@ -55,6 +55,7 @@ import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeInterval;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
@@ -426,9 +427,7 @@ public class SolarBodyTest {
         public BodyAttraction(final CelestialBody body) {
             parameterDriver = new ParameterDriver(body.getName() + ATTRACTION_COEFFICIENT_SUFFIX,
                                                   body.getGM(), 1.0e-5 * body.getGM(),
-                                                  0.0, Double.POSITIVE_INFINITY,
-                                                  AbsoluteDate.PAST_INFINITY,
-                                                  AbsoluteDate.FUTURE_INFINITY);
+                                                  0.0, Double.POSITIVE_INFINITY, TimeInterval.UNLIMITED);
             this.body = body;
         }
 
