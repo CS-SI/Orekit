@@ -459,11 +459,11 @@ class SolidTidesTest extends AbstractLegacyForceModelTest {
         Assertions.assertTrue(detectors.isEmpty());
         Assertions.assertTrue(fieldDetectors.isEmpty());
         
-        // When: 1 span added to driver
+        // When: validity date added to driver
         final List<ParameterDriver> drivers = solidTidesModel.getParametersDrivers();
         
         for (final ParameterDriver driver : drivers) {
-            driver.addSpanAtDate(t0);
+            driver.setValidityStart(t0);
         }
         
         detectors      = solidTidesModel.getEventDetectors().toList();

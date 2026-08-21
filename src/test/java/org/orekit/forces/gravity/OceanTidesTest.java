@@ -144,7 +144,7 @@ public class OceanTidesTest {
                 GravityFieldFactory.getNormalizedProvider(5, 5);
 
         // initialization
-        AbsoluteDate date = new AbsoluteDate(1970, 07, 01, 13, 59, 27.816, utc);
+        AbsoluteDate date = new AbsoluteDate(1970, 7, 1, 13, 59, 27.816, utc);
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, FastMath.toRadians(98.7),
                                          FastMath.toRadians(93.0), FastMath.toRadians(15.0 * 22.5),
                                          0, PositionAngleType.MEAN, eme2000, date,
@@ -197,7 +197,7 @@ public class OceanTidesTest {
                 GravityFieldFactory.getNormalizedProvider(5, 5);
 
         // initialization
-        AbsoluteDate date = new AbsoluteDate(2003, 07, 01, 13, 59, 27.816, utc);
+        AbsoluteDate date = new AbsoluteDate(2003, 7, 1, 13, 59, 27.816, utc);
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, FastMath.toRadians(98.7),
                                          FastMath.toRadians(93.0), FastMath.toRadians(15.0 * 22.5),
                                          0, PositionAngleType.MEAN, eme2000, date,
@@ -314,11 +314,11 @@ public class OceanTidesTest {
         Assertions.assertTrue(detectors.isEmpty());
         Assertions.assertTrue(fieldDetectors.isEmpty());
         
-        // When: 1 span added to driver
+        // When: validity end added to driver
         final List<ParameterDriver> drivers = oceanTidesModel.getParametersDrivers();
         
         for (final ParameterDriver driver : drivers) {
-            driver.addSpanAtDate(t0);
+            driver.setValidityEnd(t0);
         }
         
         detectors      = oceanTidesModel.getEventDetectors().toList();
