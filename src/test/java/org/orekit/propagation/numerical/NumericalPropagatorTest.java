@@ -156,7 +156,7 @@ class NumericalPropagatorTest {
         // Initialize propagator
         final NumericalPropagator numerical = new NumericalPropagator(new ClassicalRungeKuttaIntegrator(60.0));
         numerical.addForceModel(new Maneuver(null,
-                                             TimeIntervalsManeuverTrigger.of(TimeInterval.of(maneuverStart, maneuverEnd)),
+                                             TimeIntervalsManeuverTrigger.of(TimeInterval.of(maneuverStart, maneuverEnd, true)),
                                              new BasicConstantThrustPropulsionModel(0.02, 1160, Vector3D.PLUS_I, "tangential")));
         numerical.setInitialState(new SpacecraftState(cartesian));
 

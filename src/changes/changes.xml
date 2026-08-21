@@ -20,6 +20,9 @@
   </properties>
   <body>
       <release version="14.0" date="TBD" description="TBD">
+          <action dev="luc" type="add" issue="2005">
+              Added an allowNonChronological boolean parameter to TimeInterval.of.
+          </action>
           <action dev="luc" type="add" issue="2002">
               Added index-based access to spans in TimeSpanMap.
           </action>
