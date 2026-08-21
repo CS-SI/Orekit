@@ -14,46 +14,56 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.frames;
+package org.orekit.bodies;
 
-import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
 import org.hipparchus.analysis.differentiation.UnivariateDerivative1Field;
-import org.hipparchus.complex.Complex;
-import org.hipparchus.complex.ComplexField;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.orekit.Utils;
+import org.orekit.frames.FieldStaticTransform;
+import org.orekit.frames.FieldTransform;
+import org.orekit.frames.StaticTransform;
+import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.AngularCoordinates;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
-class FieldBasedTransformProviderTest {
+class JPLRotatingTransformProviderTest {
+
+    private static IAUPole iauPole;
 
     @BeforeEach
     void setUp() {
         Utils.setDataRoot("regular-data");
+        iauPole = PredefinedIAUPoles.getIAUPole(JPLEphemeridesLoader.EphemerisType.EARTH, TimeScalesFactory.getTimeScales());
     }
 
     @Test
     void testFieldTransform() {
         // GIVEN
-        final TestProvider provider = new TestProvider();
+        final JPLRotatingTransformProvider provider = new JPLRotatingTransformProvider(iauPole);
         final UnivariateDerivative1Field field = UnivariateDerivative1Field.getInstance();
         final FieldAbsoluteDate<UnivariateDerivative1> fieldAbsoluteDate = FieldAbsoluteDate.getArbitraryEpoch(field)
-                .shiftedBy(new UnivariateDerivative1(0., 1));
+                .shiftedBy(new UnivariateDerivative1(0., 1.));
         // WHEN
         final FieldTransform<UnivariateDerivative1> fieldTransform = provider.getTransform(fieldAbsoluteDate);
         // THEN
-        assertNotEquals(0., fieldTransform.getRotation().getAngle().getFirstDerivative());
         final Transform transform = provider.getTransform(fieldAbsoluteDate.toAbsoluteDate());
+        assertNotEquals(0., fieldTransform.getRotation().getQ0().getFirstDerivative());
         assertEquals(fieldAbsoluteDate, fieldTransform.getFieldDate());
         assertEquals(transform.getCartesian().getPosition(), fieldTransform.getTranslation().toVector3D());
         assertEquals(transform.getCartesian().getVelocity(), fieldTransform.getVelocity().toVector3D());
@@ -61,58 +71,28 @@ class FieldBasedTransformProviderTest {
         assertEquals(transform.getRotationRate(), fieldTransform.getRotationRate().toVector3D());
     }
 
-    @Test
-    void testFieldKinematic() {
+    @ParameterizedTest
+    @EnumSource(value = JPLEphemeridesLoader.EphemerisType.class, names = {"SUN", "MOON", "JUPITER", "VENUS", "MARS"})
+    void testFieldStatic(final JPLEphemeridesLoader.EphemerisType ephemerisType) {
         // GIVEN
-        final TestProvider provider = new TestProvider();
-        final FieldAbsoluteDate<Complex> fieldAbsoluteDate = FieldAbsoluteDate.getArbitraryEpoch(ComplexField.getInstance())
-                .shiftedBy(Complex.I);
-        // WHEN
-        final FieldKinematicTransform<Complex> kinematicTransform = provider.getKinematicTransform(fieldAbsoluteDate);
-        // THEN
-        assertNotEquals(0., kinematicTransform.getRotation().getAngle().getImaginaryPart());
-        final FieldTransform<Complex> transform = provider.getTransform(fieldAbsoluteDate);
-        assertEquals(fieldAbsoluteDate, kinematicTransform.getFieldDate());
-        assertEquals(transform.getCartesian().getPosition(), kinematicTransform.getTranslation());
-        assertEquals(transform.getCartesian().getVelocity(), kinematicTransform.getVelocity());
-        assertEquals(0., Rotation.distance(transform.getRotation().toRotation(), kinematicTransform.getRotation().toRotation()));
-        assertEquals(transform.getRotationRate(), kinematicTransform.getRotationRate());
-    }
-
-    @Test
-    void testFieldStatic() {
-        // GIVEN
-        final TestProvider provider = new TestProvider();
+        final JPLRotatingTransformProvider provider = new JPLRotatingTransformProvider(PredefinedIAUPoles.getIAUPole(ephemerisType,
+                TimeScalesFactory.getTimeScales()));
         final FieldAbsoluteDate<Binary64> fieldAbsoluteDate = FieldAbsoluteDate.getArbitraryEpoch(Binary64Field.getInstance());
         // WHEN
         final FieldStaticTransform<Binary64> staticTransform = provider.getStaticTransform(fieldAbsoluteDate);
         // THEN
         final FieldTransform<Binary64> transform = provider.getTransform(fieldAbsoluteDate);
         assertEquals(fieldAbsoluteDate, staticTransform.getFieldDate());
-        assertEquals(transform.getCartesian().getPosition(), staticTransform.getTranslation());
+        assertArrayEquals(transform.getTranslation().toVector3D().toArray(),
+                staticTransform.getTranslation().toVector3D().toArray(), 1e-14);
+        assertEquals(staticTransform.getRotation().getAngle(), transform.getRotation().getAngle());
         assertEquals(0., Rotation.distance(transform.getRotation().toRotation(), staticTransform.getRotation().toRotation()));
-    }
-
-    @Test
-    void testKinematic() {
-        // GIVEN
-        final TestProvider provider = new TestProvider();
-        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
-        // WHEN
-        final KinematicTransform kinematicTransform = provider.getKinematicTransform(date);
-        // THEN
-        final Transform transform = provider.getTransform(date);
-        assertEquals(date, kinematicTransform.getDate());
-        assertEquals(transform.getCartesian().getPosition(), kinematicTransform.getTranslation());
-        assertEquals(transform.getCartesian().getVelocity(), kinematicTransform.getVelocity());
-        assertEquals(0., Rotation.distance(transform.getRotation(), kinematicTransform.getRotation()));
-        assertEquals(transform.getRotationRate(), kinematicTransform.getRotationRate());
     }
 
     @Test
     void testStatic() {
         // GIVEN
-        final TestProvider provider = new TestProvider();
+        final JPLRotatingTransformProvider provider = new JPLRotatingTransformProvider(iauPole);
         final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
         // WHEN
         final StaticTransform staticTransform = provider.getStaticTransform(date);
@@ -120,15 +100,30 @@ class FieldBasedTransformProviderTest {
         final Transform transform = provider.getTransform(date);
         assertEquals(date, staticTransform.getDate());
         assertEquals(transform.getCartesian().getPosition(), staticTransform.getTranslation());
-        assertEquals(0., Rotation.distance(transform.getRotation(), staticTransform.getRotation()));
+        assertEquals(0., Rotation.distance(transform.getRotation(), staticTransform.getRotation()), 1e-15);
     }
 
-    private static class TestProvider implements FieldBasedTransformProvider {
-
-        @Override
-        public <T extends CalculusFieldElement<T>> FieldRotation<T> getRotation(final FieldAbsoluteDate<T> date) {
-            return new FieldRotation<>(FieldVector3D.getMinusI(date.getField()), date.getMJD(),
-                    RotationConvention.VECTOR_OPERATOR);
-        }
+    @Test
+    void testTransform() {
+        // GIVEN
+        final JPLRotatingTransformProvider provider = new JPLRotatingTransformProvider(iauPole);
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        // WHEN
+        final Transform transform = provider.getTransform(date);
+        // THEN
+        assertEquals(date, transform.getDate());
+        assertEquals(Vector3D.ZERO, transform.getTranslation());
+        assertEquals(Vector3D.ZERO, transform.getVelocity());
+        assertEquals(Vector3D.ZERO, transform.getAcceleration());
+        final double w0 = iauPole.getPrimeMeridianAngle(date);
+        final Rotation rotation = new Rotation(Vector3D.PLUS_K, w0, RotationConvention.FRAME_TRANSFORM);
+        assertEquals(0., Rotation.distance(rotation, transform.getRotation()), 1e-15);
+        final FieldAbsoluteDate<UnivariateDerivative1> fieldDate = new FieldAbsoluteDate<>(UnivariateDerivative1Field.getInstance(), date)
+                .shiftedBy(new UnivariateDerivative1(0., 1.));
+        final UnivariateDerivative1 fieldW0 = iauPole.getPrimeMeridianAngle(fieldDate);
+        final FieldRotation<UnivariateDerivative1> fieldRotation = new FieldRotation<>(FieldVector3D.getPlusK(fieldDate.getField()),
+                fieldW0, RotationConvention.FRAME_TRANSFORM);
+        final AngularCoordinates coordinates = new AngularCoordinates(fieldRotation);
+        assertArrayEquals(coordinates.getRotationRate().toArray(), transform.getRotationRate().toArray(), 1e-12);
     }
 }

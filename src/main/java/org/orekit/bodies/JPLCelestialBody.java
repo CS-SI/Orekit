@@ -17,13 +17,8 @@
 package org.orekit.bodies;
 
 
-import java.util.concurrent.TimeUnit;
-
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.hipparchus.geometry.euclidean.threed.Rotation;
-import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.frames.FieldStaticTransform;
 import org.orekit.frames.FieldTransform;
@@ -31,10 +26,8 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.KinematicTransform;
 import org.orekit.frames.StaticTransform;
 import org.orekit.frames.Transform;
-import org.orekit.frames.TransformProvider;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.time.TimeOffset;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
@@ -100,7 +93,7 @@ class JPLCelestialBody implements CelestialBody {
         this.iauPole        = iauPole;
         this.inertialFrame  = new InertiallyOriented(new JPLInertialTransformProvider(definingFrameAlignedWithICRF, this, iauPole),
                 inertialFrameName);
-        this.bodyFrame      = new BodyOriented(bodyOrientedFrameName);
+        this.bodyFrame      = new BodyOriented(bodyOrientedFrameName, new JPLRotatingTransformProvider(iauPole));
     }
 
     /** {@inheritDoc} */
@@ -218,8 +211,7 @@ class JPLCelestialBody implements CelestialBody {
          * @param frameName name to use (if null a default name will be built)
          */
         InertiallyOriented(final JPLInertialTransformProvider transformProvider, final String frameName) {
-            super(transformProvider.getDefiningFrame(), transformProvider,
-                    frameName == null ? name + INERTIAL_FRAME_SUFFIX : frameName, true);
+            super(transformProvider.getDefiningFrame(), transformProvider, frameName == null ? name + INERTIAL_FRAME_SUFFIX : frameName, true);
         }
 
     }
@@ -236,34 +228,10 @@ class JPLCelestialBody implements CelestialBody {
          * Simple constructor.
          *
          * @param frameName name to use (if null a default name will be built)
+         * @param transformProvider transform provider to body-fixed frame
          */
-        BodyOriented(final String frameName) {
-            super(inertialFrame, new TransformProvider() {
-
-                /** {@inheritDoc} */
-                public Transform getTransform(final AbsoluteDate date) {
-                    final TimeOffset dt = new TimeOffset(10, TimeUnit.SECONDS);
-                    final double w0 = iauPole.getPrimeMeridianAngle(date);
-                    final double w1 = iauPole.getPrimeMeridianAngle(date.shiftedBy(dt));
-                    return new Transform(date,
-                            new Rotation(Vector3D.PLUS_K, w0, RotationConvention.FRAME_TRANSFORM),
-                            new Vector3D((w1 - w0) / dt.toDouble(), Vector3D.PLUS_K));
-                }
-
-                /** {@inheritDoc} */
-                public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
-                    final TimeOffset dt = new TimeOffset(10, TimeUnit.SECONDS);
-                    final T w0 = iauPole.getPrimeMeridianAngle(date);
-                    final T w1 = iauPole.getPrimeMeridianAngle(date.shiftedBy(dt));
-                    return new FieldTransform<>(date,
-                            new FieldRotation<>(FieldVector3D.getPlusK(date.getField()), w0,
-                                    RotationConvention.FRAME_TRANSFORM),
-                            new FieldVector3D<>(
-                                    w1.subtract(w0).divide(dt.toDouble()),
-                                    Vector3D.PLUS_K));
-                }
-
-            }, frameName == null ? name + BODY_FRAME_SUFFIX : frameName, false);
+        BodyOriented(final String frameName, final JPLRotatingTransformProvider transformProvider) {
+            super(inertialFrame, transformProvider, frameName == null ? name + BODY_FRAME_SUFFIX : frameName, false);
         }
     }
 }
