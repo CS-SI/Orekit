@@ -1430,9 +1430,8 @@ class DSSTPropagatorTest {
                 is(PositionAngleType.MEAN));
         MatcherAssert.assertThat(stm,
                 OrekitMatchers.matrixCloseTo(expectedStm, twoParameterAbsTol));
-        // "Spancentral" seems like an odd name, but that's what the code uses.
         MatcherAssert.assertThat(harvester.getJacobiansColumnsNames(),
-                contains("MDot", "Spancentral attraction coefficient0"));
+                contains("MDot", "central attraction coefficient"));
         MatcherAssert.assertThat(stmParameters.getColumn(0), stmMdotMatcherClose);
         MatcherAssert.assertThat(stmParameters.getColumn(1), stmMuMatcherClose);
         MatcherAssert.assertThat(stmParameters.getColumnDimension(), is(2));
@@ -1515,9 +1514,8 @@ class DSSTPropagatorTest {
                 is(PositionAngleType.MEAN));
         MatcherAssert.assertThat(stm,
                 OrekitMatchers.matrixCloseTo(expectedStm, twoParameterAbsTol));
-        // "Spancentral" seems like an odd name, but that's what the code uses.
         MatcherAssert.assertThat(harvester.getJacobiansColumnsNames(),
-                contains("MDot", "Spancentral attraction coefficient0"));
+                contains("MDot", "central attraction coefficient"));
         MatcherAssert.assertThat(stmParameters.getColumn(0), stmMdotMatcherClose);
         MatcherAssert.assertThat(stmParameters.getColumn(1), stmMuMatcherClose);
         MatcherAssert.assertThat(stmParameters.getColumnDimension(), is(2));
