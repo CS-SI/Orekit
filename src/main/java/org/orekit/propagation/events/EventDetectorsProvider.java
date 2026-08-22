@@ -71,7 +71,7 @@ public interface EventDetectorsProvider {
      */
     <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(Field<T> field);
 
-    /** Get the discrete events related to the model from a list of {@link ParameterDriver}
+    /** Get the discrete events related to the model from a list of {@link ParameterDriver}.
      * <p>Date detectors are used to cleanly stop the propagator and reset
      * the state derivatives at transition dates (if any) of the parameter drivers.
      * </p>
@@ -104,7 +104,7 @@ public interface EventDetectorsProvider {
         }
     }
 
-    /** Get the discrete events related to the model from a list of {@link ParameterDriver}
+    /** Get the discrete events related to the model from a list of {@link ParameterDriver}.
      * <p>Date detectors are used to cleanly stop the propagator and reset
      * the state derivatives at transition dates (if any) of the parameter drivers.
      * </p>

@@ -273,7 +273,7 @@ public class DSSTThirdBody implements DSSTForceModel {
      *  @return new force model context
      */
     private <T extends CalculusFieldElement<T>> FieldDSSTThirdBodyDynamicContext<T>
-    initializeStep(final FieldAuxiliaryElements<T> auxiliaryElements, final T[] parameters) {
+        initializeStep(final FieldAuxiliaryElements<T> auxiliaryElements, final T[] parameters) {
         return new FieldDSSTThirdBodyDynamicContext<>(auxiliaryElements, body, parameters);
     }
 

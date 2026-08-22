@@ -206,8 +206,8 @@ public abstract class AbstractBatchLSModel implements MultivariateJacobianFuncti
         }
         // Populate the map of measurement drivers' columns and update the total number of columns
         for (final ParameterDriver parameter : estimatedMeasurementsParameters.getDrivers()) {
-             measurementParameterColumns.put(parameter.getName(), columns);
-             columns++;
+            measurementParameterColumns.put(parameter.getName(), columns);
+            columns++;
         }
 
         // Initialize point and value

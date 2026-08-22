@@ -569,16 +569,15 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
                             names.add(stop.getName());
                         }
                         if (d.getMedianDriver().isSelected()) {
-                            MedianDate median = manageMedianDate(d.getStartDriver().getName(),
-                                                                 d.getStopDriver().getName(),
-                                                                 d.getMedianDriver().getName());
+                            final MedianDate median = manageMedianDate(d.getStartDriver().getName(),
+                                                                       d.getStopDriver().getName(),
+                                                                       d.getMedianDriver().getName());
                             names.add(median.getName());
                         }
                         if (d.getDurationDriver().isSelected()) {
-                            Duration duration =
-                                    manageManeuverDuration(d.getStartDriver().getName(),
-                                                           d.getStopDriver().getName(),
-                                                           d.getDurationDriver().getName());
+                            final Duration duration = manageManeuverDuration(d.getStartDriver().getName(),
+                                                                             d.getStopDriver().getName(),
+                                                                             d.getDurationDriver().getName());
                             names.add(duration.getName());
                         }
                     }

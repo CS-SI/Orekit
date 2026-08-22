@@ -112,8 +112,8 @@ class TDOAModifierUtil {
                 double parameterDerivative = estimated.getParameterDerivatives(driver)[0];
                 parameterDerivative += primeDerivatives[index + converter.getFreeStateParameters()];
                 parameterDerivative -= secondDerivatives[index + converter.getFreeStateParameters()];
-                   estimated.setParameterDerivatives(driver, parameterDerivative);
-                   index += 1;
+                estimated.setParameterDerivatives(driver, parameterDerivative);
+                index += 1;
             }
 
         }

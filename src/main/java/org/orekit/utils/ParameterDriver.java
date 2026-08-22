@@ -366,7 +366,7 @@ public class ParameterDriver {
      * @since 10.2
      */
     public Gradient getValue(final int freeParameters, final Map<String, Integer> indices) {
-        Integer index = indices.get(getName());
+        final Integer index = indices.get(getName());
         return (index == null) ?
                Gradient.constant(freeParameters, getValue()) :
                Gradient.variable(freeParameters, index, getValue());
