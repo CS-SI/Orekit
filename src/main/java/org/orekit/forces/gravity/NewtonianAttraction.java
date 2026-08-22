@@ -73,7 +73,7 @@ public class NewtonianAttraction implements ForceModel {
      * @return mu central attraction coefficient (m³/s²)
      */
     public double getMu(final AbsoluteDate date) {
-        return gmParameterDriver.getValue(date);
+        return gmParameterDriver.getValue();
     }
 
     /** Get the central attraction coefficient μ.
@@ -84,7 +84,7 @@ public class NewtonianAttraction implements ForceModel {
      */
     public <T extends CalculusFieldElement<T>> T getMu(final Field<T> field, final FieldAbsoluteDate<T> date) {
         final T zero = field.getZero();
-        return zero.newInstance(gmParameterDriver.getValue(date.toAbsoluteDate()));
+        return zero.newInstance(gmParameterDriver.getValue());
     }
 
     /** {@inheritDoc} */

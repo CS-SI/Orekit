@@ -169,7 +169,11 @@ public class PolynomialClockModel implements ClockModel {
             return new ClockOffset(date, result);
         }
         final double dt = date.durationFrom(getSafeReference(date));
-        final double[] convertedTerms = terms.stream().map(x -> x.getValue(date)).mapToDouble(Double::doubleValue).toArray();
+        final double[] convertedTerms = terms.
+                                        stream().
+                                        map(ParameterDriver::getValue).
+                                        mapToDouble(Double::doubleValue).
+                                        toArray();
         // Turn the terms into a polynomial function
         PolynomialFunction function = new PolynomialFunction(convertedTerms);
         // Loop over all of the terms in order
@@ -188,7 +192,11 @@ public class PolynomialClockModel implements ClockModel {
         final List<T> result = new ArrayList<>(3);
         // Loop over all of the terms in order
         // Repeat until out of terms
-        final double[] convertedTerms = terms.stream().map(x -> x.getValue(aDate)).mapToDouble(Double::doubleValue).toArray();
+        final double[] convertedTerms = terms.
+                                        stream().
+                                        map(ParameterDriver::getValue).
+                                        mapToDouble(Double::doubleValue).
+                                        toArray();
         // Turn the terms into a polynomial function
         PolynomialFunction function = new PolynomialFunction(convertedTerms);
         for (int ii = 0; ii < 3; ii++) {
@@ -207,7 +215,7 @@ public class PolynomialClockModel implements ClockModel {
         if (terms.isEmpty()) {
             return null;
         }
-        final Gradient[] gradients = terms.stream().map(x -> x.getValue(freeParameters, indices, date))
+        final Gradient[] gradients = terms.stream().map(x -> x.getValue(freeParameters, indices))
                 .toArray(Gradient[]::new);
         final FieldAbsoluteDate<Gradient> referenceDate = new FieldAbsoluteDate<>(gradients[0].getField(),
                 getSafeReference(date));
@@ -235,7 +243,7 @@ public class PolynomialClockModel implements ClockModel {
         if (firstTerm.getReferenceDate() == null) {
             boolean allOtherDatesZero = true;
             for (final ParameterDriver term: terms) {
-                if (FastMath.abs(term.getValue(date)) > EPS) {
+                if (FastMath.abs(term.getValue()) > EPS) {
                     allOtherDatesZero = false;
                 }
             }

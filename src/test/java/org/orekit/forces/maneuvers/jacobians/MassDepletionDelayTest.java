@@ -33,10 +33,7 @@ import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.integration.CombinedDerivatives;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.utils.ParameterDriver;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -68,7 +65,7 @@ class MassDepletionDelayTest {
         final ForceModel mockedForceModel = mock(ForceModel.class);
         final double[] parameters = new double[0];
         when(mockedForceModel.acceleration(state, parameters)).thenReturn(acceleration);
-        when(mockedForceModel.getParameters(state.getDate())).thenReturn(parameters);
+        when(mockedForceModel.getParameters()).thenReturn(parameters);
         final MassDepletionDelay depletionDelay = new MassDepletionDelay("", true, maneuver,
                 mockedForceModel);
         // WHEN
@@ -107,10 +104,6 @@ class MassDepletionDelayTest {
             return Stream.empty();
         }
 
-        @Override
-        public List<ParameterDriver> getParametersDrivers() {
-            return Collections.emptyList();
-        }
     }
 
     private static class DummyPropulsionModel extends BasicConstantThrustPropulsionModel {

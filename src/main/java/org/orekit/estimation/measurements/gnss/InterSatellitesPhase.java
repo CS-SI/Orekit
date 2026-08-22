@@ -28,7 +28,6 @@ import org.orekit.signal.SignalTravelTimeModel;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** Phase measurement between two satellites.
@@ -136,7 +135,7 @@ public class InterSatellitesPhase extends AbstractInterSatellitesMeasurement<Int
 
         // Phase value
         final double cOverLambda = Constants.SPEED_OF_LIGHT / wavelength;
-        final double ambiguity   = ambiguityDriver.getValue(common.getState().getDate());
+        final double ambiguity   = ambiguityDriver.getValue();
         final double phase       = (common.getTauD() + common.getLocalOffset().getBias() -
                                     common.getRemoteOffset().getBias()) * cOverLambda +
                                    ambiguity;
@@ -169,9 +168,11 @@ public class InterSatellitesPhase extends AbstractInterSatellitesMeasurement<Int
 
         // Phase value
         final double   cOverLambda = Constants.SPEED_OF_LIGHT / wavelength;
-        final Gradient ambiguity   = ambiguityDriver.getValue(common.getTauD().getFreeParameters(), common.getIndices(),
-                                                              common.getState().getDate());
-        final Gradient phase       = common.getTauD().add(common.getLocalOffset().getBias()).subtract(common.getRemoteOffset().getBias()).
+        final Gradient ambiguity   = ambiguityDriver.getValue(common.getTauD().getFreeParameters(),
+                                                              common.getIndices());
+        final Gradient phase       = common.getTauD().
+                                     add(common.getLocalOffset().getBias()).
+                                     subtract(common.getRemoteOffset().getBias()).
                                      multiply(cOverLambda).
                                      add(ambiguity);
 
@@ -184,12 +185,9 @@ public class InterSatellitesPhase extends AbstractInterSatellitesMeasurement<Int
 
         // Set first order derivatives with respect to parameters
         for (final ParameterDriver driver : getParametersDrivers()) {
-            for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-
-                final Integer index = common.getIndices().get(span.getData());
-                if (index != null) {
-                    estimatedPhase.setParameterDerivatives(driver, span.getStart(), derivatives[index]);
-                }
+            final Integer index = common.getIndices().get(driver.getName());
+            if (index != null) {
+                estimatedPhase.setParameterDerivatives(driver, derivatives[index]);
             }
         }
 

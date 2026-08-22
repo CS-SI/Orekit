@@ -23,17 +23,13 @@ import java.util.List;
 import java.util.Map;
 
 import org.hipparchus.analysis.differentiation.Gradient;
+import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitIllegalStateException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.propagation.events.ParameterDrivenDateIntervalDetector;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeInterval;
-import org.orekit.utils.TimeSpanMap.Span;
-import org.orekit.utils.TimeSpanMap.Transition;
-
 
 /** Class allowing to drive the value of a parameter.
  * <p>
@@ -70,22 +66,19 @@ import org.orekit.utils.TimeSpanMap.Transition;
  */
 public class ParameterDriver {
 
-    /** Name of the parameter.*/
-    public static final String SPAN = "Span";
-
     /** Name of the parameter. */
     private String name;
-
-    /** TimeSpan for period names.
-     * @since 12.0
-     */
-    private TimeSpanMap<String> nameSpanMap;
 
     /** Reference value. */
     private double referenceValue;
 
     /** Scaling factor. */
     private double scale;
+
+    /** Current value.
+     * @since 14.0
+     */
+    private double value;
 
     /** Minimum value. */
     private double minValue;
@@ -103,19 +96,6 @@ public class ParameterDriver {
      */
     private TimeInterval validity;
 
-    /** Flag to choose estimation method. If estimationContinuous
-     * is true then when a value wants to be known an interpolation
-     * is performed between given date span start and end (start of
-     * next span) otherwise the value returned is the value of span start
-     * @since 12.0
-     */
-    private boolean isEstimationContinuous;
-
-    /** Value time span map.
-     * @since 12.0
-     */
-    private TimeSpanMap<Double> valueSpanMap;
-
     /** Selection status.
      * <p>
      * Selection is used for estimated parameters in orbit determination,
@@ -128,54 +108,11 @@ public class ParameterDriver {
     private final List<ParameterObserver> observers;
 
     /**
-     * Create a new instance from another parameterDriver informations for example (useful for
-     * {@link ParameterDriversList.DelegatingDriver})) At construction, the parameter new is configured as <em>not</em>
-     * selected, the reference date is set to {@code null}. validityPeriod, namesSpanMap and valueSpanMap.
-     *
-     * @param name           general name of the parameter
-     * @param namesSpanMap   name time span map. WARNING, number of Span must be coherent with validityPeriod and
-     *                       valueSpanMap (same number of Span with same transitions dates)
-     * @param valuesSpanMap  values time span map
-     * @param referenceValue reference value of the parameter
-     * @param scale          scaling factor to convert the parameters value to non-dimensional (typically set to the
-     *                       expected standard deviation of the parameter), it must be non-zero
-     * @param minValue       minimum value allowed
-     * @param maxValue       maximum value allowed
-     * @param validity       validity interval
-     * @since 14.0
-     */
-    public ParameterDriver(final String name, final TimeSpanMap<String> namesSpanMap,
-                           final TimeSpanMap<Double> valuesSpanMap, final double referenceValue,
-                           final double scale, final double minValue, final double maxValue,
-                           final TimeInterval validity) {
-        if (FastMath.abs(scale) <= Precision.SAFE_MIN) {
-            throw new OrekitException(OrekitMessages.TOO_SMALL_SCALE_FOR_PARAMETER,
-                                      name, scale);
-        }
-        this.name                   = name;
-        this.nameSpanMap            = namesSpanMap;
-        this.referenceValue         = referenceValue;
-        this.scale                  = scale;
-        this.minValue               = minValue;
-        this.maxValue               = maxValue;
-        this.validity               = validity;
-        this.referenceDate          = null;
-        this.valueSpanMap           = valuesSpanMap;
-        this.selected               = false;
-        this.observers              = new ArrayList<>();
-        this.isEstimationContinuous = false;
-
-    }
-
-    /**
      * Simple constructor.
      * <p>
      * At construction, the parameter is configured as <em>not</em> selected, the reference date is set to {@code null},
-     * the value is set to the {@code referenceValue}, the validity period is set to 0 so by default the parameterDriver
-     * will be estimated on only 1 interval from -INF to +INF. To change the validity period the
-     * {@link ParameterDriver#addSpans(AbsoluteDate, AbsoluteDate, double)} method must be called.
+     * the value is set to the {@code referenceValue}.
      * </p>
-     *
      * @param name           name of the parameter
      * @param referenceValue reference value of the parameter
      * @param scale          scaling factor to convert the parameters value to non-dimensional (typically set to the
@@ -188,125 +125,35 @@ public class ParameterDriver {
                            final double referenceValue, final double scale,
                            final double minValue, final double maxValue,
                            final TimeInterval validity) {
+
         if (FastMath.abs(scale) <= Precision.SAFE_MIN) {
-            throw new OrekitException(OrekitMessages.TOO_SMALL_SCALE_FOR_PARAMETER,
-                                      name, scale);
+            throw new OrekitException(OrekitMessages.TOO_SMALL_SCALE_FOR_PARAMETER, name, scale);
         }
-        this.name                   = name;
-        this.nameSpanMap            = new TimeSpanMap<>(SPAN + name + 0);
-        this.referenceValue         = referenceValue;
-        this.scale                  = scale;
-        this.minValue               = minValue;
-        this.maxValue               = maxValue;
-        this.validity               = validity;
-        this.referenceDate          = null;
-        // at construction the parameter driver
-        // will be consider with only 1 estimated value over the all orbit
-        // determination
-        this.valueSpanMap           = new TimeSpanMap<>(referenceValue);
-        this.selected               = false;
-        this.observers              = new ArrayList<>();
-        this.isEstimationContinuous = false;
+
+        this.name           = name;
+        this.referenceValue = referenceValue;
+        this.scale          = scale;
+        this.value          = referenceValue;
+        this.minValue       = minValue;
+        this.maxValue       = maxValue;
+        this.validity       = validity;
+        this.referenceDate  = null;
+        this.selected       = false;
+        this.observers      = new ArrayList<>();
 
     }
-
-    /** Get current name span map of the parameterDriver, cut in interval
-     * in accordance with value span map and validity period.
-     * <p>
-     * Note that if the expunge policy of the names map is
-     * {@link TimeSpanMap#configureExpunge(int, double, ExpungePolicy) reconfigured},
-     * then the expunge policy of the {@link #getValueSpanMap() values map} should
-     * be reconfigured too with the same settings.
-     * </p>
-     * @return current name span map
-     * @since 12.0
-     */
-    public TimeSpanMap<String> getNamesSpanMap() {
-        return nameSpanMap;
-    }
-
-    /** Get value time span map for parameterDriver.
-     * <p>
-     * Note that if the expunge policy of the values map is
-     * {@link TimeSpanMap#configureExpunge(int, double, ExpungePolicy) reconfigured},
-     * then the expunge policy of the {@link #getNamesSpanMap()} names map} should
-     * be reconfigured too with the same settings.
-     * </p>
-     * @return value time span map
-     * @since 12.0
-     */
-    public TimeSpanMap<Double> getValueSpanMap() {
-        return valueSpanMap;
-    }
-
-    /** Set current parameter value span map to match another driver. In order to keep
-     * consistency, the validity period and name span map are updated.
-     * @param driver for which the value span map wants to be copied for the
-     * current driver
-     * @since 12.0
-     */
-    public void setValueSpanMap(final ParameterDriver driver) {
-        final TimeSpanMap<Double> previousValueSpanMap = driver.getValueSpanMap();
-        valueSpanMap   = driver.getValueSpanMap();
-        nameSpanMap    = driver.getNamesSpanMap();
-        for (final ParameterObserver observer : observers) {
-            observer.valueSpanMapChanged(previousValueSpanMap, this);
-        }
-    }
-
-    /** Get the number of values to estimate that is to say the number.
-     * of Span present in valueSpanMap
-     * @return int the number of values to estimate
-     * @since 12.0
-     */
-    public int getNbOfValues() {
-        return valueSpanMap.getSpansNumber();
-    }
-
-    /** Get the dates of the transitions {@link TimeSpanMap}.
-     * @return dates of the transitions {@link TimeSpanMap}
-     * @since 12.0
-     */
-    public AbsoluteDate[] getTransitionDates() {
-
-        // Get all transitions
-        final List<AbsoluteDate> listDates = new ArrayList<>();
-
-        // Extract all the transitions' dates
-        for (Transition<Double> transition = getValueSpanMap().getFirstSpan().getEndTransition(); transition != null; transition = transition.next()) {
-            listDates.add(transition.getDate());
-        }
-        // Return the array of transition dates
-        return listDates.toArray(new AbsoluteDate[0]);
-    }
-
-    /** Get all values of the valueSpanMap in the chronological order.
-     * @return double[] containing values of the valueSpanMap in the chronological order
-     */
-    public double[] getValues() {
-        final double[] chronologicalValues = new double[getNbOfValues()];
-        Span<Double> currentSpan = valueSpanMap.getFirstSpan();
-        for (int i = 0; i < getNbOfValues() - 1; i++) {
-            chronologicalValues[i] = currentSpan.getData();
-            currentSpan = currentSpan.next();
-        }
-        chronologicalValues[getNbOfValues() - 1 ] = currentSpan.getData();
-        return chronologicalValues;
-    }
-
 
     /** Add an observer for this driver.
      * <p>
-     * The observer {@link ParameterObserver#valueSpanMapChanged(TimeSpanMap, ParameterDriver)
-     * valueSpanMapChanged} method is called once automatically when the
+     * The observer {@link ParameterObserver#valueChanged(double, ParameterDriver)
+     * valueChanged} method is called once automatically when the
      * observer is added, and then called at each value change.
      * </p>
      * @param observer observer to add
-          * while being updated
      */
     public void addObserver(final ParameterObserver observer) {
         observers.add(observer);
-        observer.valueSpanMapChanged(getValueSpanMap(), this);
+        observer.valueChanged(getValue(), this);
     }
 
     /** Remove an observer.
@@ -350,14 +197,6 @@ public class ParameterDriver {
         return name;
     }
 
-    /** Get name of the parameter span for a specific date.
-     * @param date date at which the name of the span wants to be known
-     * @return name data of the name time span map at date
-     */
-    public String getNameSpan(final AbsoluteDate date) {
-        return nameSpanMap.get(date);
-    }
-
     /** Change the general name of this parameter driver.
      * @param name new name
      */
@@ -366,101 +205,6 @@ public class ParameterDriver {
         this.name = name;
         for (final ParameterObserver observer : observers) {
             observer.nameChanged(previousName, this);
-        }
-        // the names time span map must also be updated with the new name
-        if (nameSpanMap.getSpansNumber() > 1) {
-            Span<String> currentNameSpan = nameSpanMap.getFirstSpan();
-            nameSpanMap.addValidBefore(SPAN + name + 0, currentNameSpan.getEnd(), false);
-            for (int spanNumber = 1; spanNumber < nameSpanMap.getSpansNumber(); ++spanNumber) {
-                currentNameSpan = nameSpanMap.getSpan(currentNameSpan.getEnd());
-                nameSpanMap.addValidAfter(SPAN + name + spanNumber, currentNameSpan.getStart(), false);
-            }
-        } else {
-            nameSpanMap = new TimeSpanMap<>(SPAN + name + 0);
-        }
-    }
-
-    /** Cut values and names time span map given orbit determination start and end and driver
-     * periodicity.
-     * <p>
-     * For example for a drag coefficient the validity period would be
-     * 1 days = 86400sec. To be called after constructor to cut the temporal axis with
-     * the wanted parameter driver temporality for estimations on the wanted interval.
-     * </p>
-     * <p>
-     * Must be called only once at the beginning of orbit
-     * determination for example. If called several times, will throw exception. If parameter
-     * estimations intervals must be changed then a new ParameterDriver must be created or the
-     * function {@link #addSpanAtDate} should be used.
-     * </p>
-     * <p>
-     * This function should not be called on {@link DateDriver} and
-     * any of {@link ParameterDrivenDateIntervalDetector} attribute, because there is no sense to
-     * estimate several values for dateDriver.
-     * </p>
-     * <p>
-     * The choice of {@code orbitDeterminationStartDate}, {@code orbitDeterminationEndDate} and
-     * {@code validityPeriodForDriver} in a case of orbit determination must be done carefully,
-     * indeed, enough measurement should be available for each time interval or
-     * the orbit determination won't converge.
-     * </p>
-     * @param orbitDeterminationStartDate start date for which the parameter driver
-     * starts to be estimated.
-     * @param orbitDeterminationEndDate end date for which the parameter driver
-     * stops to be estimated.
-     * @param validityPeriodForDriver validity period for which the parameter value
-     * is effective (for example 1 day for drag coefficient). Warning, validityPeriod
-     * should not be too short or the orbit determination won't converge.
-     * @since 12.0
-     */
-    public void addSpans(final AbsoluteDate orbitDeterminationStartDate,
-                         final AbsoluteDate orbitDeterminationEndDate,
-                         final double validityPeriodForDriver) {
-
-        // by convention 0 is when the parameter needs to be drived only on 1
-        // interval from -INF to +INF time period
-        if (getNbOfValues() != 1) {
-            // throw exception if called several time, must be called only once at the beginning of orbit
-            // determination, if the periods wants to be changed a new parameter must be created
-            throw new OrekitIllegalStateException(OrekitMessages.PARAMETER_PERIODS_HAS_ALREADY_BEEN_SET, name);
-        } else {
-
-            int spanNumber = 1;
-            AbsoluteDate currentDate = orbitDeterminationStartDate.shiftedBy(validityPeriodForDriver);
-            //splitting the names and values span map accordingly with start and end of orbit determination
-            //and validity period. A security is added to avoid having to few measurements point for a span
-            //in order to assure orbit determination convergence
-            while (currentDate.isBefore(orbitDeterminationEndDate) && orbitDeterminationEndDate.durationFrom(currentDate) > validityPeriodForDriver / 3.0) {
-                valueSpanMap.addValidAfter(getValue(currentDate), currentDate, false);
-                nameSpanMap.addValidAfter(SPAN + getName() + spanNumber++, currentDate, false);
-                currentDate = currentDate.shiftedBy(validityPeriodForDriver);
-            }
-        }
-    }
-
-    /** Create a new span in values and names time span map given a start date.
-     * <b> One must be aware of the importance of choosing wise dates if this function is called
-     * several times to create several span at wanted times. Indeed, if orbit determination is performed
-     * it might not converge or find singular matrix if the spans are too short and contains to few measurements.
-     * Must be called before any computation (for example before
-     * orbit determination).</b>
-     * @param spanStartDate wanted start date for parameter value interval
-     * starts to be estimated.
-     * @since 12.0
-     */
-    public void addSpanAtDate(final AbsoluteDate spanStartDate) {
-
-        // Split value span map with new interval having for start date spanStartDate and end
-        // date next span start date of +INF if no span is present after
-        valueSpanMap.addValidAfter(getValue(spanStartDate), spanStartDate, false);
-        nameSpanMap.addValidAfter(name, spanStartDate, false);
-        // Rename spans recursively
-        Span<String> currentNameSpan = nameSpanMap.getFirstSpan();
-        nameSpanMap.addValidBefore(SPAN + name + 0, currentNameSpan.getEnd(), false);
-
-        for (int spanNumber = 1; spanNumber < nameSpanMap.getSpansNumber(); spanNumber++) {
-            currentNameSpan = nameSpanMap.getSpan(currentNameSpan.getEnd());
-            nameSpanMap.addValidAfter(SPAN + name + spanNumber, currentNameSpan.getStart(), false);
         }
     }
 
@@ -495,15 +239,23 @@ public class ParameterDriver {
      * @param minValue the minimum value to set.
      */
     public void setMinValue(final double minValue) {
+
+        // safety check
+        if (minValue > maxValue) {
+            throw new OrekitException(LocalizedCoreFormats.NUMBER_TOO_LARGE, minValue, maxValue);
+        }
+
+        if (value < minValue) {
+            // clip value to minimum
+            setValue(minValue);
+        }
+
         final double previousMinValue = this.minValue;
         this.minValue = minValue;
         for (final ParameterObserver observer : observers) {
             observer.minValueChanged(previousMinValue, this);
         }
-        // Check if all values are still not out of min/max range
-        for (Span<Double> span = valueSpanMap.getFirstSpan(); span != null; span = span.next()) {
-            setValue(getValue(span.getStart()), span.getStart());
-        }
+
     }
 
     /** Get maximum parameter value.
@@ -518,15 +270,23 @@ public class ParameterDriver {
      * @param maxValue the maximum value to set.
      */
     public void setMaxValue(final double maxValue) {
+
+        // safety check
+        if (maxValue < minValue) {
+            throw new OrekitException(LocalizedCoreFormats.NUMBER_TOO_SMALL, maxValue, minValue);
+        }
+
+        if (value > maxValue) {
+            // clip value to maximum
+            setValue(maxValue);
+        }
+
         final double previousMaxValue = this.maxValue;
         this.maxValue = maxValue;
         for (final ParameterObserver observer : observers) {
             observer.maxValueChanged(previousMaxValue, this);
         }
-        // Check if all values are still not out of min/max range
-        for (Span<Double> span = valueSpanMap.getFirstSpan(); span != null; span = span.next()) {
-            setValue(getValue(span.getStart()), span.getStart());
-        }
+
     }
 
     /** Get scale.
@@ -548,23 +308,7 @@ public class ParameterDriver {
         }
     }
 
-    /** Get normalized value at specific date.
-     * <p>
-     * The normalized value is a non-dimensional value
-     * suitable for use as part of a vector in an optimization
-     * process. It is computed as {@code (current - reference)/scale}.
-     * </p>
-     * @param date date for which the normalized value wants to be known
-     * @return normalized value
-     */
-    public double getNormalizedValue(final AbsoluteDate date) {
-        return (getValue(date) - getReferenceValue()) / scale;
-    }
-
-    /** Get normalized value. Only useable on ParameterDriver
-     * which have only 1 span on their TimeSpanMap value (that is
-     * to say for which the setPeriod method wasn't called) otherwise
-     * it will throw an exception.
+    /** Get normalized value.
      * <p>
      * The normalized value is a non-dimensional value
      * suitable for use as part of a vector in an optimization
@@ -573,26 +317,10 @@ public class ParameterDriver {
      * @return normalized value
      */
     public double getNormalizedValue() {
-        return (getValue() - getReferenceValue()) / scale;
+        return (value - referenceValue) / scale;
     }
 
-    /** Set normalized value at specific date.
-     * <p>
-     * The normalized value is a non-dimensional value
-     * suitable for use as part of a vector in an optimization
-     * process. It is computed as {@code (current - reference)/scale}.
-     * </p>
-     * @param date date for which the normalized value wants to be set
-     * @param normalized value
-     */
-    public void setNormalizedValue(final double normalized, final AbsoluteDate date) {
-        setValue(getReferenceValue() + scale * normalized, date);
-    }
-
-    /** Set normalized value at specific date. Only useable on ParameterDriver
-     * which have only 1 span on their TimeSpanMap value (that is
-     * to say for which the setPeriod method wasn't called) otherwise
-     * it will throw an exception.
+    /** Set normalized value.
      * <p>
      * The normalized value is a non-dimensional value
      * suitable for use as part of a vector in an optimization
@@ -601,7 +329,7 @@ public class ParameterDriver {
      * @param normalized value
      */
     public void setNormalizedValue(final double normalized) {
-        setValue(getReferenceValue() + scale * normalized);
+        setValue(referenceValue + scale * normalized);
     }
 
     /** Get current reference date.
@@ -624,159 +352,27 @@ public class ParameterDriver {
         }
     }
 
-    /** Get current parameter value. Only usable on ParameterDriver
-     * which have only 1 span on their TimeSpanMap value (that is
-     * to say for which the setPeriod method wasn't called)
+    /** Get current parameter value.
      * @return current parameter value
      */
     public double getValue() {
-        if (getNbOfValues() > 1) {
-            throw new OrekitIllegalStateException(OrekitMessages.PARAMETER_WITH_SEVERAL_ESTIMATED_VALUES, name, "getValue(date)");
-        }
-        // Attention voir si qlqchose est retourné si une exception est levée
-        return valueSpanMap.getFirstSpan().getData();
+        return value;
     }
 
-    /** Get current parameter value at specific date, depending on isContinuousEstimation
-     * value, the value returned will be obtained by step estimation or continuous estimation.
-     * @param date date for which the value wants to be known. Only if
-     * parameter driver has 1 value estimated over the all orbit determination
-     * period (not validity period intervals for estimation), the date value can
-     * be <em>{@code null}</em> and then the only estimated value will be
-     * returned, in this case the date can also be whatever the value returned would
-     * be the same. Moreover in this particular case one can also call the {@link #getValue()}.
-     * @return current parameter value at date date, or for the all period if
-     * no validity period (= 1 value estimated over the all orbit determination
-     * period)
-     */
-    public double getValue(final AbsoluteDate date) {
-        return isEstimationContinuous ? getValueContinuousEstimation(date) : getValueStepEstimation(date);
-    }
-
-    /** Get current parameter value at specific date with step estimation.
-     * @param date date for which the value wants to be known. Only if
-     * parameter driver has 1 value estimated over the all orbit determination
-     * period (not validity period intervals for estimation), the date value can
-     * be <em>{@code null}</em> and then the only estimated value will be
-     * returned, in this case the date can also be whatever the value returned would
-     * be the same. Moreover in this particular case one can also call the {@link #getValue()}.
-     * @return current parameter value at date date, or for the all period if
-     * no validity period (= 1 value estimated over the all orbit determination
-     * period)
-     */
-    public double getValueStepEstimation(final AbsoluteDate date) {
-        return getNbOfValues() == 1 ? valueSpanMap.getFirstSpan().getData() : valueSpanMap.get(date);
-    }
-
-    /** Get current parameter value at specific date with continuous estimation.
-     * @param date date for which the value wants to be known. Only if
-     * parameter driver has 1 value estimated over the all orbit determination
-     * period (not validity period intervals for estimation), the date value can
-     * be <em>{@code null}</em> and then the only estimated value will be
-     * returned, in this case the date can also be whatever the value returned would
-     * be the same. Moreover in this particular case one can also call the {@link #getValue()}.
-     * @return current parameter value at date date, or for the all period if
-     * no validity period (= 1 value estimated over the all orbit determination
-     * period)
-     * @since 12.0
-     */
-    public double getValueContinuousEstimation(final AbsoluteDate date) {
-        //TODO
-        throw new UnsupportedOperationException();
-    }
-
-    /** Get the value as a gradient at special date.
+    /** Get the value as a gradient.
      * @param freeParameters total number of free parameters in the gradient
      * @param indices indices of the differentiation parameters in derivatives computations
-     * @return value with derivatives, will throw exception if called on a PDriver having
-     * several values driven
-     * @since 10.2
-     */
-    public Gradient getValue(final int freeParameters, final Map<String, Integer> indices) {
-        Integer index = null;
-        for (Span<String> span = nameSpanMap.getFirstSpan(); span != null; span = span.next()) {
-            index = indices.get(span.getData());
-            if (index != null) {
-                break;
-            }
-        }
-        return (index == null) ? Gradient.constant(freeParameters, getValue()) : Gradient.variable(freeParameters, index, getValue());
-    }
-
-    /** Get the value as a gradient at special date.
-     * @param freeParameters total number of free parameters in the gradient
-     * @param indices indices of the differentiation parameters in derivatives computations,
-     * must be span name and not driver name
-     * @param date date for which the value wants to be known. Only if
-     * parameter driver has 1 value estimated over the all orbit determination
-     * period (not validity period intervals for estimation), the date value can
-     * be <em>{@code null}</em> and then the only estimated value will be
-     * returned
      * @return value with derivatives
      * @since 10.2
      */
-    public Gradient getValue(final int freeParameters, final Map<String, Integer> indices, final AbsoluteDate date) {
-        Integer index = null;
-        for (Span<String> span = nameSpanMap.getFirstSpan(); span != null; span = span.next()) {
-            index = indices.get(span.getData());
-            if (index != null) {
-                break;
-            }
-        }
-        return (index == null) ? Gradient.constant(freeParameters, getValue(date)) : Gradient.variable(freeParameters, index, getValue(date));
+    public Gradient getValue(final int freeParameters, final Map<String, Integer> indices) {
+        Integer index = indices.get(getName());
+        return (index == null) ?
+               Gradient.constant(freeParameters, getValue()) :
+               Gradient.variable(freeParameters, index, getValue());
     }
 
-    /** Set parameter value at specific date.
-     * <p>
-     * If {@code newValue} is below {@link #getMinValue()}, it will
-     * be silently set to {@link #getMinValue()}. If {@code newValue} is
-     * above {@link #getMaxValue()}, it will be silently set to {@link
-     * #getMaxValue()}.
-     * </p>
-     * @param date date for which the value wants to be set. Only if
-     * parameter driver has 1 value estimated over the all orbit determination
-     * period (not validity period intervals for estimation), the date value can
-     * be <em>{@code null}</em>
-     * @param newValue new value to set
-     */
-    public void setValue(final double newValue, final AbsoluteDate date) {
-
-        double previousValue = Double.NaN;
-        AbsoluteDate referenceDateSpan = AbsoluteDate.ARBITRARY_EPOCH;
-
-        // if valid for infinity (only 1 value estimation for the orbit determination )
-        if (getNbOfValues() == 1) {
-            previousValue = this.getValue(referenceDateSpan);
-            this.valueSpanMap = new TimeSpanMap<>(FastMath.max(minValue, FastMath.min(maxValue, newValue)));
-        // if needs to be estimated per time range / validity period
-
-        // if several value intervals
-        } else {
-            final Span<Double> valueSpan = valueSpanMap.getSpan(date);
-            previousValue = valueSpan.getData();
-            referenceDateSpan = valueSpan.getStart();
-            // if the Span considered is from past infinity to valueSpanEndDate it is
-            // impossible to addValidAfter past infinity because it is creating a new span that
-            // is why the below trick was set up
-            if (referenceDateSpan.equals(AbsoluteDate.PAST_INFINITY)) {
-                referenceDateSpan = valueSpan.getEnd();
-                this.valueSpanMap.addValidBefore(FastMath.max(minValue, FastMath.min(maxValue, newValue)),
-                                                 referenceDateSpan, false);
-            } else {
-                this.valueSpanMap.addValidAfter(FastMath.max(minValue, FastMath.min(maxValue, newValue)),
-                                                referenceDateSpan, false);
-            }
-        }
-
-        for (final ParameterObserver observer : observers) {
-            observer.valueChanged(previousValue, this, date);
-        }
-    }
-
-
-    /** Set parameter value. Only usable on ParameterDriver
-     * which have only 1 span on their TimeSpanMap value (that is
-     * to say for which the setPeriod method wasn't called)
+    /** Set parameter value.
      * <p>
      * If {@code newValue} is below {@link #getMinValue()}, it will
      * be silently set to {@link #getMinValue()}. If {@code newValue} is
@@ -786,15 +382,10 @@ public class ParameterDriver {
      * @param newValue new value to set
      */
     public void setValue(final double newValue) {
-        if (getNbOfValues() == 1) {
-            final AbsoluteDate referenceDateSpan = AbsoluteDate.ARBITRARY_EPOCH;
-            final double previousValue = this.getValue(referenceDateSpan);
-            this.valueSpanMap = new TimeSpanMap<>(FastMath.max(minValue, FastMath.min(maxValue, newValue)));
-            for (final ParameterObserver observer : observers) {
-                observer.valueChanged(previousValue, this, referenceDateSpan);
-            }
-        } else {
-            throw new OrekitIllegalStateException(OrekitMessages.PARAMETER_WITH_SEVERAL_ESTIMATED_VALUES, name, "setValue(date)");
+        final double previousValue = value;
+        value = FastMath.max(minValue, FastMath.min(maxValue, newValue));
+        for (final ParameterObserver observer : observers) {
+            observer.valueChanged(previousValue, this);
         }
     }
 
@@ -845,46 +436,11 @@ public class ParameterDriver {
         return selected;
     }
 
-    /** Set parameter estimation to continuous, by default step estimation.
-     * <p> Continuous estimation : when a value wants to be known at date
-     * t, the value returned will be an interpolation between start value
-     * of the span corresponding to date t and end value (which corresponds
-     * to the start of the next span).
-     * </p>
-     * <p> Step estimation : when a value wants to be
-     * known at date t, the value returned will be the value of the beginning
-     * of span corresponding to date t, step estimation.
-     * </p>
-     * @param continuous if true the parameter will be estimated
-     * with continuous estimation, if false with step estimation.
-     */
-    public void setContinuousEstimation(final boolean continuous) {
-        final boolean previousEstimation = isContinuousEstimation();
-        this.isEstimationContinuous = continuous;
-        for (final ParameterObserver observer : observers) {
-            observer.estimationTypeChanged(previousEstimation, this);
-        }
-    }
-
-    /** Check if parameter estimation is continuous, that is to say when
-     * a value wants to be known at date t, the value returned
-     * will be an interpolation between start value on span corresponding
-     * for date t and end value (which corresponds to the start of the next
-     * span), continuous estimation. Or not continuous, that is to say when a value wants to be
-     * known at date t, the value returned will be the value of the start
-     * of span corresponding to date t, step estimation.
-     * @return true if continuous estimation/definition, false if step estimation/definition
-     * @since 12.0
-     */
-    public boolean isContinuousEstimation() {
-        return isEstimationContinuous;
-    }
-
     /** Get a text representation of the parameter.
      * @return text representation of the parameter, in the form name = value.
      */
     public String toString() {
-        return name + " = " + valueSpanMap.get(AbsoluteDate.ARBITRARY_EPOCH);
+        return name + " = " + value;
     }
 
 }

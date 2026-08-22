@@ -110,9 +110,7 @@ public class ScaledConstantThrustPropulsionModel extends AbstractConstantThrustP
     /** {@inheritDoc} */
     @Override
     public Vector3D getThrustVector(final AbsoluteDate date) {
-        return getThrustVector(scaleFactorThrustXDriver.getValue(date),
-                               scaleFactorThrustYDriver.getValue(date),
-                               scaleFactorThrustZDriver.getValue(date));
+        return getThrustVector();
     }
 
     /** {@inheritDoc} */

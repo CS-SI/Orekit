@@ -43,7 +43,6 @@ import org.orekit.time.clocks.FieldClockOffset;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -196,9 +195,7 @@ public abstract class AbstractInterSatellitesMeasurement<T extends ObservedMeasu
         final Map<String, Integer> paramIndices = new HashMap<>();
         for (ParameterDriver measurementDriver : getParametersDrivers()) {
             if (measurementDriver.isSelected()) {
-                for (Span<String> span = measurementDriver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                    paramIndices.put(span.getData(), nbParams++);
-                }
+                paramIndices.put(measurementDriver.getName(), nbParams++);
             }
         }
         final FieldAbsoluteDate<Gradient> gDate = new FieldAbsoluteDate<>(GradientField.getField(nbParams),

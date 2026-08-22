@@ -82,7 +82,7 @@ class SolidTidesTest extends AbstractLegacyForceModelTest {
             attractionModelField.setAccessible(true);
             ForceModel attractionModel = (ForceModel) attractionModelField.get(forceModel);
             Field<DerivativeStructure> field = state.getDate().getField();
-            return attractionModel.acceleration(state, attractionModel.getParameters(field, state.getDate()));
+            return attractionModel.acceleration(state, attractionModel.getParameters(field));
 
         } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
             return null;
@@ -99,7 +99,7 @@ class SolidTidesTest extends AbstractLegacyForceModelTest {
             ForceModel attractionModel = (ForceModel) attractionModelField.get(forceModel);
             final int freeParameters = position.getX().getFreeParameters();
             Field<Gradient> field = GradientField.getField(freeParameters);
-            return attractionModel.acceleration(state, attractionModel.getParameters(field, state.getDate()));
+            return attractionModel.acceleration(state, attractionModel.getParameters(field));
 
         } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
             return null;
@@ -591,12 +591,12 @@ class SolidTidesTest extends AbstractLegacyForceModelTest {
         final SpacecraftState state = new SpacecraftState(orbit);
 
         // acceleration without Field
-        final Vector3D acceleration = forceModel.acceleration(state, forceModel.getParameters(date));
+        final Vector3D acceleration = forceModel.acceleration(state, forceModel.getParameters());
 
         // acceleration with Field
         final FieldSpacecraftState<Binary64> fieldState = new FieldSpacecraftState<>(Binary64Field.getInstance(), state);
         final FieldVector3D<Binary64> fieldAcceleration = forceModel.acceleration(fieldState,
-                forceModel.getParameters(Binary64Field.getInstance(), fieldState.getDate()));
+                forceModel.getParameters(Binary64Field.getInstance()));
 
         // verify that Field and non-Field accelerations match
         Assertions.assertEquals(acceleration.getX(), fieldAcceleration.getX().getReal(), 0);

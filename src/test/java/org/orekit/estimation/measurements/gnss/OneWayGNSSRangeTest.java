@@ -47,7 +47,6 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.Differentiation;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterFunction;
-import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class OneWayGNSSRangeTest {
@@ -465,32 +464,28 @@ public class OneWayGNSSRangeTest {
                     };
 
                     for (int i = 0; i < drivers.length; ++i) {
-                        for (Span<String> span = drivers[i].getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
 
-                            final double[] gradient  = measurement.estimate(0, 0, states).getParameterDerivatives(drivers[i], span.getStart());
-                            Assertions.assertEquals(1, measurement.getDimension());
-                            Assertions.assertEquals(1, gradient.length);
+                        final double[] gradient  = measurement.estimate(0, 0, states).getParameterDerivatives(drivers[i]);
+                        Assertions.assertEquals(1, measurement.getDimension());
+                        Assertions.assertEquals(1, gradient.length);
                             
-                            // Compute a reference value using finite differences
-                            final ParameterFunction dMkdP =
-                                            Differentiation.differentiate(new ParameterFunction() {
-                                                /** {@inheritDoc} */
-                                                @Override
-                                                public double value(final ParameterDriver parameterDriver, final AbsoluteDate date) {
-                                                    return measurement.
-                                                           estimateWithoutDerivatives(states).
-                                                           getEstimatedValue()[0];
-                                                }
-                                            }, 5, 10.0 * drivers[i].getScale());
-                            final double ref = dMkdP.value(drivers[i], date);
+                        // Compute a reference value using finite differences
+                        final ParameterFunction dMkdP =
+                            Differentiation.differentiate(new ParameterFunction() {
+                                /** {@inheritDoc} */
+                                @Override
+                                public double value(final ParameterDriver parameterDriver, final AbsoluteDate date) {
+                                    return measurement.estimateWithoutDerivatives(states).getEstimatedValue()[0];
+                                }
+                            }, 5, 10.0 * drivers[i].getScale());
+                        final double ref = dMkdP.value(drivers[i], date);
                             
-                            if (printResults) {
-                                System.out.format(Locale.US, "%10.3e  %10.3e  ", gradient[0]-ref, FastMath.abs((gradient[0]-ref)/ref));
-                            }
-                            
-                            final double relError = FastMath.abs((ref-gradient[0])/ref);
-                            relErrorList.add(relError);
+                        if (printResults) {
+                            System.out.format(Locale.US, "%10.3e  %10.3e  ", gradient[0]-ref, FastMath.abs((gradient[0]-ref)/ref));
                         }
+                            
+                        final double relError = FastMath.abs((ref-gradient[0])/ref);
+                        relErrorList.add(relError);
                     }
                     if (printResults) {
                         System.out.format(Locale.US, "%n");

@@ -106,7 +106,7 @@ class DSSTSolarRadiationPressureTest {
         final AuxiliaryElements auxiliaryElements = new AuxiliaryElements(state.getOrbit(), 1);
 
         // Force model parameters
-        final double[] parameters = srp.getParameters(orbit.getDate());
+        final double[] parameters = srp.getParameters();
         // Initialize force model
         srp.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, parameters);
 
@@ -118,9 +118,7 @@ class DSSTSolarRadiationPressureTest {
         final double[] elements = new double[7];
         Arrays.fill(elements, 0.0);
         final double[] daidt = srp.getMeanElementRate(state, auxiliaryElements, parameters);
-        for (int i = 0; i < daidt.length; i++) {
-            elements[i] = daidt[i];
-        }
+        System.arraycopy(daidt, 0, elements, 0, daidt.length);
 
         MatcherAssert.assertThat(elements[0], Matchers.closeTo(6.840790443922876E-8, 1.e-23));
         MatcherAssert.assertThat(elements[1], Matchers.closeTo(-2.99094362892394E-11, 1.e-26));
@@ -134,7 +132,7 @@ class DSSTSolarRadiationPressureTest {
     @Test
     void testShortPeriodTerms() throws IllegalArgumentException {
 
-        final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2003, 03, 21), new TimeComponents(1, 0, 0.), TimeScalesFactory.getUTC());
+        final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2003, 3, 21), new TimeComponents(1, 0, 0.), TimeScalesFactory.getUTC());
 
         final Orbit orbit = new EquinoctialOrbit(7069219.9806427825,
                                                  -4.5941811292223825E-4,
@@ -172,11 +170,10 @@ class DSSTSolarRadiationPressureTest {
         final AuxiliaryElements aux = new AuxiliaryElements(meanState.getOrbit(), 1);
 
         // Set the force models
-        final List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<>();
-
         srp.registerAttitudeProvider(attitudeProvider);
-        shortPeriodTerms.addAll(srp.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, srp.getParameters(meanState.getDate())));
-        srp.updateShortPeriodTerms(srp.getParametersAllValues(), meanState);
+        final List<ShortPeriodTerms> shortPeriodTerms =
+            new ArrayList<>(srp.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, srp.getParameters()));
+        srp.updateShortPeriodTerms(srp.getParameters(), meanState);
 
         double[] y = new double[6];
         for (final ShortPeriodTerms spt : shortPeriodTerms) {

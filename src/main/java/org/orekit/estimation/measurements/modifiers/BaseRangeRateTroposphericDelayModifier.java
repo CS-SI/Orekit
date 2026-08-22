@@ -98,7 +98,7 @@ public abstract class BaseRangeRateTroposphericDelayModifier {
                 final AbsoluteDate date = state.getDate();
                 final GeodeticPoint point = groundObserver.getOffsetGeodeticPoint(date);
                 final double d1 = tropoModel.pathDelay(trackingCoordinates1, point,
-                        tropoModel.getParameters(date), date).getDelay();
+                                                       tropoModel.getParameters(), date).getDelay();
 
                 // propagate spacecraft state forward by dt
                 final SpacecraftState state2 = state.shiftedBy(dt);
@@ -108,7 +108,7 @@ public abstract class BaseRangeRateTroposphericDelayModifier {
 
                 // tropospheric delay dt after
                 final double d2 = tropoModel.pathDelay(trackingCoordinates2, point,
-                                tropoModel.getParameters(state2.getDate()), state2.getDate()).
+                                                       tropoModel.getParameters(), state2.getDate()).
                         getDelay();
 
                 return (d2 - d1) / dt;

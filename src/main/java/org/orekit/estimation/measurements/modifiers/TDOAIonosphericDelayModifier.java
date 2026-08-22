@@ -77,7 +77,7 @@ public class TDOAIonosphericDelayModifier implements EstimationModifier<TDOA> {
         // base frame associated with the observer
         final PVCoordinatesProvider coordsProvider = observer.getPVCoordinatesProvider();
         // delay in meters
-        final double delay = ionoModel.pathDelay(state, coordsProvider, frequency, ionoModel.getParameters(state.getDate()));
+        final double delay = ionoModel.pathDelay(state, coordsProvider, frequency, ionoModel.getParameters());
         // return delay in seconds
         return delay / Constants.SPEED_OF_LIGHT;
     }

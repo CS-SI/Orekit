@@ -39,7 +39,6 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
-import org.orekit.utils.TimeSpanMap.Span;
 
 /** Propagator converter using the real Jacobian.
  * @author Pascal Parraud
@@ -60,8 +59,7 @@ public class JacobianPropagatorConverter extends AbstractPropagatorConverter {
                                        final double threshold,
                                        final int maxIterations) {
         super(builder, threshold, maxIterations);
-        final AbstractOrbitFactory<Orbit> factory =
-            (AbstractOrbitFactory<Orbit>)  builder.getOrbitalStateFactory();
+        final AbstractOrbitFactory<Orbit> factory = builder.getOrbitalStateFactory();
         if (factory.getOrbitParamsType() != OrbitParamsType.CARTESIAN) {
             throw new OrekitException(OrekitMessages.ORBIT_TYPE_NOT_ALLOWED,
                                       factory.getOrbitParamsType(), OrbitParamsType.CARTESIAN);
@@ -262,11 +260,8 @@ public class JacobianPropagatorConverter extends AbstractPropagatorConverter {
                     for (int j = 0; j < dYdP.getColumnDimension(); ++j) {
                         final String name = harvester.getJacobiansColumnsNames().get(j);
                         for (final ParameterDriver driver : builder.getPropagationParametersDrivers().getDrivers()) {
-
-                            for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                                if (name.equals(span.getData())) {
-                                    jacobian.setEntry(row + k, column++, dYdP.getEntry(k, j) * driver.getScale());
-                                }
+                            if (name.equals(driver.getName())) {
+                                jacobian.setEntry(row + k, column++, dYdP.getEntry(k, j) * driver.getScale());
                             }
                         }
                     }

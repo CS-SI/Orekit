@@ -65,10 +65,11 @@ import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
-import org.orekit.utils.*;
-
-import java.io.FileNotFoundException;
-import java.text.ParseException;
+import org.orekit.utils.Constants;
+import org.orekit.utils.ExtendedPositionProvider;
+import org.orekit.utils.FieldPVCoordinates;
+import org.orekit.utils.IERSConventions;
+import org.orekit.utils.PVCoordinates;
 
 public class ECOM2Test extends AbstractForceModelTest {
 
@@ -168,7 +169,7 @@ public class ECOM2Test extends AbstractForceModelTest {
         final DerivativeStructure                       one     = field.getOne();
         final FieldVector3D<DerivativeStructure>        pos     = new FieldVector3D<>(x, y, z);
         final FieldVector3D<DerivativeStructure>        vel     = new FieldVector3D<>(xDot, yDot, zDot);
-        final FieldPVCoordinates<DerivativeStructure>   dsPV    = new FieldPVCoordinates<>(pos, vel);
+        final FieldPVCoordinates<DerivativeStructure> dsPV    = new FieldPVCoordinates<>(pos, vel);
         final FieldAbsoluteDate<DerivativeStructure>    dsDate  = new FieldAbsoluteDate<>(field, new AbsoluteDate(2003, 2, 13, 2, 31, 30, TimeScalesFactory.getUTC()));
         final DerivativeStructure                       mu      = one.multiply(Constants.EGM96_EARTH_MU);
         final FieldOrbit<DerivativeStructure>           dsOrbit = new FieldCartesianOrbit<>(dsPV, FramesFactory.getEME2000(), dsDate, mu);
@@ -452,7 +453,7 @@ public class ECOM2Test extends AbstractForceModelTest {
     }
 
     @Test
-    void testRoughOrbitalModifs() throws ParseException, OrekitException, FileNotFoundException {
+    void testRoughOrbitalModifs() {
 
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 7, 1),
@@ -522,10 +523,10 @@ public class ECOM2Test extends AbstractForceModelTest {
         final ECOM2 forceModel = new ECOM2(2, 2, 1e-7, CelestialBodyFactory.getSun(), Constants.EGM96_EARTH_EQUATORIAL_RADIUS);
 
         // Field acceleration
-        final FieldVector3D<Gradient> accField = forceModel.acceleration(new FieldSpacecraftState<>(orbit), forceModel.getParameters(field, epoch));
+        final FieldVector3D<Gradient> accField = forceModel.acceleration(new FieldSpacecraftState<>(orbit), forceModel.getParameters(field));
 
         // Real acceleration
-        final Vector3D accReal = forceModel.acceleration(new SpacecraftState(orbit.toOrbit()), forceModel.getParameters(epoch.toAbsoluteDate()));
+        final Vector3D accReal = forceModel.acceleration(new SpacecraftState(orbit.toOrbit()), forceModel.getParameters());
 
         // Verify
         Assertions.assertEquals(0.0, accReal.distance(accField.toVector3D()), 1.0e-20);
@@ -541,7 +542,7 @@ public class ECOM2Test extends AbstractForceModelTest {
                                                Constants.EIGEN5C_EARTH_MU);
         final ECOM2 forceModel = new ECOM2(2, 2, 1e-7, CelestialBodyFactory.getSun(), Constants.EGM96_EARTH_EQUATORIAL_RADIUS, DataContext.getDefault().getFrames());
         // Action
-        Vector3D acceleration = forceModel.acceleration(new SpacecraftState(orbit), forceModel.getParameters(date));
+        Vector3D acceleration = forceModel.acceleration(new SpacecraftState(orbit), forceModel.getParameters());
         // Verify
         Assertions.assertEquals(6.02110E-8, acceleration.getX(), 1.0e-13);
         Assertions.assertEquals(-9.97979E-8, acceleration.getY(), 1.0e-13);

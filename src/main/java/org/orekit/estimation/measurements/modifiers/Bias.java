@@ -26,7 +26,6 @@ import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.time.TimeInterval;
 import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.TimeSpanMap.Span;
 
 /** Class modeling a measurement bias.
  * @param <T> the type of the measurement
@@ -91,10 +90,7 @@ public class Bias<T extends ObservedMeasurement<T>> implements EstimationModifie
         final double[] value = estimated.getEstimatedValue();
         int nb = 0;
         for (final ParameterDriver driver : drivers) {
-            for (Span<String> span = driver.getNamesSpanMap().getFirstSpan();
-                 span != null; span = span.next()) {
-                value[nb++] += driver.getValue(span.getStart());
-            }
+            value[nb++] += driver.getValue();
         }
         estimated.modifyEstimatedValue(this, value);
 
@@ -107,13 +103,9 @@ public class Bias<T extends ObservedMeasurement<T>> implements EstimationModifie
         // apply the bias to the measurement value
         int nb = 0;
         for (final ParameterDriver driver : drivers) {
-            for (Span<String> span = driver.getNamesSpanMap().getFirstSpan();
-                 span != null; span = span.next()) {
-                if (driver.isSelected()) {
-                    // add the partial derivatives
-                    estimated.setParameterDerivatives(driver, span.getStart(),
-                                                      derivatives[nb++]);
-                }
+            if (driver.isSelected()) {
+                // add the partial derivatives
+                estimated.setParameterDerivatives(driver, derivatives[nb++]);
             }
         }
 

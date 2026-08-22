@@ -35,7 +35,6 @@ import org.orekit.utils.Differentiation;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterFunction;
 import org.orekit.utils.PVCoordinatesProvider;
-import org.orekit.utils.TimeSpanMap.Span;
 
 /**
  * Class modifying theoretical phase measurement with ionospheric delay.
@@ -82,7 +81,7 @@ public class PhaseIonosphericDelayModifier implements EstimationModifier<Phase> 
         final PVCoordinatesProvider coordsProvider = observer.getPVCoordinatesProvider();
         final double wavelength  = Constants.SPEED_OF_LIGHT / frequency;
         // delay in meters
-        final double delay = ionoModel.pathDelay(state, coordsProvider, frequency, ionoModel.getParameters(state.getDate()));
+        final double delay = ionoModel.pathDelay(state, coordsProvider, frequency, ionoModel.getParameters());
         return delay / wavelength;
     }
 
@@ -201,14 +200,12 @@ public class PhaseIonosphericDelayModifier implements EstimationModifier<Phase> 
         int index = 0;
         for (final ParameterDriver driver : getParametersDrivers()) {
             if (driver.isSelected()) {
-                for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                    // update estimated derivatives with derivative of the modification wrt ionospheric parameters
-                    double parameterDerivative = estimated.getParameterDerivatives(driver, span.getStart())[0];
-                    final double[] dDelaydP    = phaseErrorParameterDerivative(derivatives, converter.getFreeStateParameters());
-                    parameterDerivative -= dDelaydP[index];
-                    estimated.setParameterDerivatives(driver, span.getStart(), parameterDerivative);
-                    index = index + 1;
-                }
+                // update estimated derivatives with derivative of the modification wrt ionospheric parameters
+                double parameterDerivative = estimated.getParameterDerivatives(driver)[0];
+                final double[] dDelaydP    = phaseErrorParameterDerivative(derivatives, converter.getFreeStateParameters());
+                parameterDerivative -= dDelaydP[index];
+                estimated.setParameterDerivatives(driver, parameterDerivative);
+                index = index + 1;
             }
 
         }
@@ -216,12 +213,10 @@ public class PhaseIonosphericDelayModifier implements EstimationModifier<Phase> 
         // Update observer parameter derivatives
         for (final ParameterDriver driver : observer.getParametersDrivers()) {
             if (driver.isSelected()) {
-                for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                    // update estimated derivatives with derivative of the modification wrt observer parameters
-                    double parameterDerivative = estimated.getParameterDerivatives(driver, span.getStart())[0];
-                    parameterDerivative -= phaseErrorParameterDerivative(observer, driver, state);
-                    estimated.setParameterDerivatives(driver, span.getStart(), parameterDerivative);
-                }
+                // update estimated derivatives with derivative of the modification wrt observer parameters
+                double parameterDerivative = estimated.getParameterDerivatives(driver)[0];
+                parameterDerivative -= phaseErrorParameterDerivative(observer, driver, state);
+                estimated.setParameterDerivatives(driver, parameterDerivative);
             }
         }
 

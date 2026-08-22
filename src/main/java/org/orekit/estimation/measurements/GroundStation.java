@@ -297,9 +297,9 @@ public class GroundStation extends AbstractParticipant implements GroundObserver
         // compute position in topocentric frame
         final int freeParameters = date.getField().getZero().getFreeParameters();
         final AbsoluteDate absoluteDate = date.toAbsoluteDate();
-        final Gradient x          = eastOffsetDriver.getValue(freeParameters, indices, absoluteDate);
-        final Gradient                       y          = northOffsetDriver.getValue(freeParameters, indices, absoluteDate);
-        final Gradient                       z          = zenithOffsetDriver.getValue(freeParameters, indices, absoluteDate);
+        final Gradient x          = eastOffsetDriver.getValue(freeParameters, indices);
+        final Gradient                       y          = northOffsetDriver.getValue(freeParameters, indices);
+        final Gradient                       z          = zenithOffsetDriver.getValue(freeParameters, indices);
         final FieldVector3D<Gradient> position = new FieldVector3D<>(x, y, z);
         // approximate linearly (for performance) static transform from topocentric to body shape frame
         final Frame bodyFrame = baseFrame.getParentShape().getBodyFrame();

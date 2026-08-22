@@ -45,12 +45,10 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.integration.FieldAbstractIntegratedPropagator;
 import org.orekit.propagation.integration.FieldStateMapper;
-import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldAbsolutePVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterObserver;
-import org.orekit.utils.TimeSpanMap;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 /** This class propagates {@link org.orekit.orbits.FieldOrbit orbits} using
@@ -266,13 +264,7 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
                 model.getParametersDrivers().getFirst().addObserver(new ParameterObserver() {
                     /** {@inheritDoc} */
                     @Override
-                    public void valueChanged(final double previousValue, final ParameterDriver driver, final AbsoluteDate date) {
-                        // mu PDriver should have only 1 span
-                        superSetMu(getField().getZero().newInstance(driver.getValue(date)));
-                    }
-                    /** {@inheritDoc} */
-                    @Override
-                    public void valueSpanMapChanged(final TimeSpanMap<Double> previousValue, final ParameterDriver driver) {
+                    public void valueChanged(final double previousValue, final ParameterDriver driver) {
                         // mu PDriver should have only 1 span
                         superSetMu(getField().getZero().newInstance(driver.getValue()));
                     }

@@ -77,7 +77,7 @@ public class SingleBodyRelativeAttractionTest extends AbstractLegacyForceModelTe
             CelestialBody body = (CelestialBody) bodyField.get(forceModel);
             double gm = forceModel.
                         getParameterDriver(body.getName() + SingleBodyRelativeAttraction.ATTRACTION_COEFFICIENT_SUFFIX).
-                        getValue(date);
+                        getValue();
 
             // compute bodies separation vectors and squared norm
             final FieldPVCoordinates<DerivativeStructure> bodyPV = body.getPVCoordinates(state.getDate(), state.getFrame());
@@ -107,7 +107,7 @@ public class SingleBodyRelativeAttractionTest extends AbstractLegacyForceModelTe
             CelestialBody body = (CelestialBody) bodyField.get(forceModel);
             double gm = forceModel.
                         getParameterDriver(body.getName() + SingleBodyRelativeAttraction.ATTRACTION_COEFFICIENT_SUFFIX).
-                        getValue(date);
+                        getValue();
             Gradient gmGrad = state.getDate().getField().getZero().add(gm);
 
             // compute bodies separation vectors and squared norm
@@ -341,7 +341,7 @@ public class SingleBodyRelativeAttractionTest extends AbstractLegacyForceModelTe
     @Test
     void testJacobianVs80Implementation() {
         // initialization
-        AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 3, 1),
                                              new TimeComponents(13, 59, 27.816),
                                              TimeScalesFactory.getUTC());
         double i     = FastMath.toRadians(98.7);
@@ -360,7 +360,7 @@ public class SingleBodyRelativeAttractionTest extends AbstractLegacyForceModelTe
     @Test
     void testJacobianVs80ImplementationGradient() {
         // initialization
-        AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 3, 1),
                                              new TimeComponents(13, 59, 27.816),
                                              TimeScalesFactory.getUTC());
         double i     = FastMath.toRadians(98.7);
@@ -381,7 +381,7 @@ public class SingleBodyRelativeAttractionTest extends AbstractLegacyForceModelTe
         {
 
         // initialization
-        AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 3, 1),
                                              new TimeComponents(13, 59, 27.816),
                                              TimeScalesFactory.getUTC());
         double i     = FastMath.toRadians(98.7);

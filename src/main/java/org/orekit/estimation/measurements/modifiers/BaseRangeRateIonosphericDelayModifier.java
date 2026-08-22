@@ -27,10 +27,11 @@ import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.PVCoordinatesProvider;
 
 /** Base class modifying theoretical range-rate measurement with ionospheric delay.
+ * <p>
  * The effect of ionospheric correction on the range-rate is directly computed
  * through the computation of the ionospheric delay difference with respect to
  * time.
- *
+ * </p>
  * The ionospheric delay depends on the frequency of the signal (GNSS, VLBI, ...).
  * For optical measurements (e.g. SLR), the ray is not affected by ionosphere charged particles.
  * <p>
@@ -83,11 +84,11 @@ public abstract class BaseRangeRateIonosphericDelayModifier {
         // Base frame associated with the station
         final PVCoordinatesProvider coordsProvider = station.getPVCoordinatesProvider();
         // delay in meters
-        final double delay1 = ionoModel.pathDelay(state, coordsProvider, frequency, ionoModel.getParameters(state.getDate()));
+        final double delay1 = ionoModel.pathDelay(state, coordsProvider, frequency, ionoModel.getParameters());
         // propagate spacecraft state forward by dt
         final SpacecraftState state2 = state.shiftedBy(dt);
         // ionospheric delay dt after in meters
-        final double delay2 = ionoModel.pathDelay(state2, coordsProvider, frequency, ionoModel.getParameters(state.getDate()));
+        final double delay2 = ionoModel.pathDelay(state2, coordsProvider, frequency, ionoModel.getParameters());
         // delay in meters
         return (delay2 - delay1) / dt;
     }

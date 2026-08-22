@@ -80,7 +80,7 @@ public class LenseThirringRelativityTest extends AbstractLegacyForceModelTest {
 
             double gm = forceModel.
                         getParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT).
-                        getValue(date);
+                        getValue();
             // Radius
             final DerivativeStructure r  = position.getNorm();
             final DerivativeStructure r2 = r.multiply(r);
@@ -115,7 +115,7 @@ public class LenseThirringRelativityTest extends AbstractLegacyForceModelTest {
             final double c2 = Constants.SPEED_OF_LIGHT * Constants.SPEED_OF_LIGHT;
             double gm = forceModel.
                         getParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT).
-                        getValue(date);
+                        getValue();
             // Radius
             final Gradient r  = position.getNorm();
             final Gradient r2 = r.multiply(r);
@@ -255,7 +255,7 @@ public class LenseThirringRelativityTest extends AbstractLegacyForceModelTest {
         {
 
         // initialization
-        AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 3, 1),
                                              new TimeComponents(13, 59, 27.816),
                                              TimeScalesFactory.getUTC());
         double i     = FastMath.toRadians(98.7);

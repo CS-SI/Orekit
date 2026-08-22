@@ -1008,7 +1008,7 @@ class BatchLSEstimatorTest {
 
         ParameterDriver a1Driver = parameters.get(6);
         Assertions.assertEquals("a[1]", a1Driver.getName());
-        a1Driver.setValue(a1Driver.getValue() - 5.4, null);
+        a1Driver.setValue(a1Driver.getValue() - 5.4);
         a1Driver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
         final Orbit before = new KeplerianOrbit(parameters.get( 6).getValue(),

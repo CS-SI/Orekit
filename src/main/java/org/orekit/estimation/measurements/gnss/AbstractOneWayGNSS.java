@@ -44,7 +44,6 @@ import org.orekit.time.clocks.FieldClockOffset;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -214,12 +213,9 @@ public abstract class AbstractOneWayGNSS<T extends ObservedMeasurement<T>> exten
 
         // Set first order derivatives with respect to parameters
         for (final ParameterDriver measurementDriver : getParametersDrivers()) {
-            for (Span<String> span = measurementDriver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-
-                final Integer index = indices.get(span.getData());
-                if (index != null) {
-                    estimated.setParameterDerivatives(measurementDriver, span.getStart(), derivatives[index]);
-                }
+            final Integer index = indices.get(measurementDriver.getName());
+            if (index != null) {
+                estimated.setParameterDerivatives(measurementDriver, derivatives[index]);
             }
         }
 

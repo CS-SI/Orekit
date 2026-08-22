@@ -256,10 +256,7 @@ public class DSSTThirdBody implements DSSTForceModel {
      *  This method aims at being called before mean elements rates computation.
      *  </p>
      *  @param auxiliaryElements auxiliary elements related to the current orbit
-     *  @param parameters values of the force model parameters  (only 1 values for each parameters corresponding
-     * to state date) obtained by calling the extract parameter method {@link #extractParameters(double[], AbsoluteDate)}
-     * to selected the right value for state date or by getting the parameters for a specific date
-     * {@link #getParameters(AbsoluteDate)}.
+     *  @param parameters values of the force model parameters
      *  @return new force model context
      */
     private DSSTThirdBodyDynamicContext initializeStep(final AuxiliaryElements auxiliaryElements, final double[] parameters) {
@@ -275,8 +272,8 @@ public class DSSTThirdBody implements DSSTForceModel {
      *  @param parameters values of the force model parameters at state date (1 value per parameter driver)
      *  @return new force model context
      */
-    private <T extends CalculusFieldElement<T>> FieldDSSTThirdBodyDynamicContext<T> initializeStep(final FieldAuxiliaryElements<T> auxiliaryElements,
-                                                                                        final T[] parameters) {
+    private <T extends CalculusFieldElement<T>> FieldDSSTThirdBodyDynamicContext<T>
+    initializeStep(final FieldAuxiliaryElements<T> auxiliaryElements, final T[] parameters) {
         return new FieldDSSTThirdBodyDynamicContext<>(auxiliaryElements, body, parameters);
     }
 
@@ -383,20 +380,22 @@ public class DSSTThirdBody implements DSSTForceModel {
             // Auxiliary elements related to the current orbit
             final AuxiliaryElements auxiliaryElements = new AuxiliaryElements(meanState.getOrbit(), I);
 
-            // Extract the proper parameters valid for the corresponding meanState date from the input array
-            final double[] extractedParameters = this.extractParameters(parameters, auxiliaryElements.getDate());
-
             // Container of attributes
-            final DSSTThirdBodyDynamicContext context = initializeStep(auxiliaryElements, extractedParameters);
+            final DSSTThirdBodyDynamicContext context = initializeStep(auxiliaryElements, parameters);
 
             // a / R3 up to power maxAR3Pow
             final double[] aoR3Pow = computeAoR3Pow(context);
 
             // Qns coefficients
-            final double[][] Qns = CoefficientsFactory.computeQns(context.getGamma(), staticContext.getMaxAR3Pow(), FastMath.max(staticContext.getMaxEccPow(), MAX_ECCPOWER_SP));
+            final double[][] Qns = CoefficientsFactory.computeQns(context.getGamma(),
+                                                                  staticContext.getMaxAR3Pow(),
+                                                                  FastMath.max(staticContext.getMaxEccPow(), MAX_ECCPOWER_SP));
 
             final GeneratingFunctionCoefficients gfCoefs =
-                            new GeneratingFunctionCoefficients(staticContext.getMaxAR3Pow(), MAX_ECCPOWER_SP, staticContext.getMaxAR3Pow() + 1, context, hansen, aoR3Pow, Qns);
+                            new GeneratingFunctionCoefficients(staticContext.getMaxAR3Pow(),
+                                                               MAX_ECCPOWER_SP,
+                                                               staticContext.getMaxAR3Pow() + 1,
+                                                               context, hansen, aoR3Pow, Qns);
 
             //Compute additional quantities
             // 2 * a / An
@@ -484,21 +483,24 @@ public class DSSTThirdBody implements DSSTForceModel {
             // Auxiliary elements related to the current orbit
             final FieldAuxiliaryElements<T> auxiliaryElements = new FieldAuxiliaryElements<>(meanState.getOrbit(), I);
 
-            // Extract the proper parameters valid for the corresponding meanState date from the input array
-            final T[] extractedParameters = this.extractParameters(parameters, auxiliaryElements.getDate());
-
             // Container of attributes
-            final FieldDSSTThirdBodyDynamicContext<T> context = initializeStep(auxiliaryElements, extractedParameters);
+            final FieldDSSTThirdBodyDynamicContext<T> context = initializeStep(auxiliaryElements, parameters);
 
             // a / R3 up to power maxAR3Pow
             final T[] aoR3Pow = computeAoR3Pow(context);
 
             // Qns coefficients
-            final T[][] Qns = CoefficientsFactory.computeQns(context.getGamma(), staticContext.getMaxAR3Pow(), FastMath.max(staticContext.getMaxEccPow(), MAX_ECCPOWER_SP));
+            final T[][] Qns = CoefficientsFactory.computeQns(context.getGamma(), staticContext.getMaxAR3Pow(),
+                                                             FastMath.max(staticContext.getMaxEccPow(),
+                                                                          MAX_ECCPOWER_SP));
 
             final FieldGeneratingFunctionCoefficients<T> gfCoefs =
-                            new FieldGeneratingFunctionCoefficients<>(staticContext.getMaxAR3Pow(), MAX_ECCPOWER_SP, staticContext.getMaxAR3Pow() + 1,
-                                                                      context, (FieldHansenObjects<T>) fieldHansen.get(field), field, aoR3Pow, Qns);
+                            new FieldGeneratingFunctionCoefficients<>(staticContext.getMaxAR3Pow(),
+                                                                      MAX_ECCPOWER_SP,
+                                                                      staticContext.getMaxAR3Pow() + 1,
+                                                                      context,
+                                                                      (FieldHansenObjects<T>) fieldHansen.get(field),
+                                                                      field, aoR3Pow, Qns);
 
             //Compute additional quantities
             // 2 * a / An

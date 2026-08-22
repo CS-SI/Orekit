@@ -76,7 +76,7 @@ public class FieldDSSTThirdBodyTest {
         final T zero = field.getZero();
 
         final Frame earthFrame = FramesFactory.getEME2000();
-        final FieldAbsoluteDate<T> initDate = new FieldAbsoluteDate<>(field, 2003, 07, 01, 0, 0, 00.000, TimeScalesFactory.getUTC());
+        final FieldAbsoluteDate<T> initDate = new FieldAbsoluteDate<>(field, 2003, 7, 1, 0, 0, 00.000, TimeScalesFactory.getUTC());
 
         final double mu = 3.986004415E14;
         // a    = 42163393.0 m
@@ -104,7 +104,7 @@ public class FieldDSSTThirdBodyTest {
         final FieldAuxiliaryElements<T> auxiliaryElements = new FieldAuxiliaryElements<>(state.getOrbit(), 1);
 
         // Force model parameters
-        final T[] parameters = moon.getParameters(field, state.getDate());
+        final T[] parameters = moon.getParameters(field);
         // Initialize force model
         moon.initializeShortPeriodTerms(auxiliaryElements,
                         PropagationType.MEAN, parameters);
@@ -113,9 +113,7 @@ public class FieldDSSTThirdBodyTest {
         Arrays.fill(elements, zero);
 
         final T[] daidt = moon.getMeanElementRate(state, auxiliaryElements, parameters);
-        for (int i = 0; i < daidt.length; i++) {
-            elements[i] = daidt[i];
-        }
+        System.arraycopy(daidt, 0, elements, 0, daidt.length);
 
         Assertions.assertEquals(0.0,                    elements[0].getReal(), eps);
         Assertions.assertEquals(4.3466223890867583E-10, elements[1].getReal(), eps);
@@ -150,8 +148,8 @@ public class FieldDSSTThirdBodyTest {
 
         for (final DSSTForceModel force : forces) {
             force.registerAttitudeProvider(null);
-            shortPeriodTerms.addAll(force.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, force.getParameters(field, meanState.getDate())));
-            force.updateShortPeriodTerms(force.getParametersAllValues(field), meanState);
+            shortPeriodTerms.addAll(force.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, force.getParameters(field)));
+            force.updateShortPeriodTerms(force.getParameters(field), meanState);
         }
 
         T[] y = MathArrays.buildArray(field, 6);
@@ -177,7 +175,7 @@ public class FieldDSSTThirdBodyTest {
     public void testShortPeriodTermsStateDerivatives() {
 
         // Initial spacecraft state
-        final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2003, 05, 21), new TimeComponents(1, 0, 0.),
+        final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2003, 5, 21), new TimeComponents(1, 0, 0.),
                                                        TimeScalesFactory.getUTC());
 
         final Orbit orbit = new EquinoctialOrbit(42164000,
@@ -218,9 +216,9 @@ public class FieldDSSTThirdBodyTest {
             final Gradient zero = dsState.getOrbit().getA().getField().getZero();
             Arrays.fill(shortPeriod, zero);
 
-            final List<FieldShortPeriodTerms<Gradient>> shortPeriodTerms = new ArrayList<>();
-            shortPeriodTerms.addAll(force.initializeShortPeriodTerms(fieldAuxiliaryElements, PropagationType.OSCULATING,
-                                    converter.getParametersAtStateDate(dsState, force)));
+            final List<FieldShortPeriodTerms<Gradient>> shortPeriodTerms =
+                new ArrayList<>(force.initializeShortPeriodTerms(fieldAuxiliaryElements, PropagationType.OSCULATING,
+                                                                 converter.getParametersAtStateDate(dsState, force)));
             force.updateShortPeriodTerms(converter.getParameters(dsState, force), dsState);
             
             for (final FieldShortPeriodTerms<Gradient> spt : shortPeriodTerms) {
@@ -297,7 +295,7 @@ public class FieldDSSTThirdBodyTest {
     public void testShortPeriodTermsMuParametersDerivatives() {
 
         // Initial spacecraft state
-        final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2003, 05, 21), new TimeComponents(1, 0, 0.),
+        final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2003, 5, 21), new TimeComponents(1, 0, 0.),
                                                        TimeScalesFactory.getUTC());
 
         final Orbit orbit = new EquinoctialOrbit(42164000,
@@ -344,9 +342,9 @@ public class FieldDSSTThirdBodyTest {
             final Gradient zero = dsState.getDate().getField().getZero();
 
             // Compute Jacobian using directly the method
-            final List<FieldShortPeriodTerms<Gradient>> shortPeriodTerms = new ArrayList<>();
-            shortPeriodTerms.addAll(forceModel.initializeShortPeriodTerms(fieldAuxiliaryElements, PropagationType.OSCULATING,
-                                    converter.getParametersAtStateDate(dsState, forceModel)));
+            final List<FieldShortPeriodTerms<Gradient>> shortPeriodTerms =
+                new ArrayList<>(forceModel.initializeShortPeriodTerms(fieldAuxiliaryElements, PropagationType.OSCULATING,
+                                                                      converter.getParametersAtStateDate(dsState, forceModel)));
             forceModel.updateShortPeriodTerms(converter.getParameters(dsState, forceModel), dsState);
             final Gradient[] shortPeriod = new Gradient[6];
             Arrays.fill(shortPeriod, zero);
@@ -419,7 +417,7 @@ public class FieldDSSTThirdBodyTest {
         parameters[0] = selected.getValue();
         final double[] shortPeriodP3 = computeShortPeriodTerms(meanState, forces);
       
-        selected.setValue(p0 + 4 * h, null);
+        selected.setValue(p0 + 4 * h);
         final double[] shortPeriodP4 = computeShortPeriodTerms(meanState, forces);
 
         fillJacobianColumn(shortPeriodJacobianRef, 0, orbitParamsType, h,
@@ -438,7 +436,7 @@ public class FieldDSSTThirdBodyTest {
 
         final T zero = field.getZero();
         // No shadow at this date
-        final FieldAbsoluteDate<T> initDate = new FieldAbsoluteDate<>(field, new DateComponents(2003, 05, 21), new TimeComponents(1, 0, 0.),
+        final FieldAbsoluteDate<T> initDate = new FieldAbsoluteDate<>(field, new DateComponents(2003, 5, 21), new TimeComponents(1, 0, 0.),
                                                                       TimeScalesFactory.getUTC());
         final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<>(zero.add(42164000),
                                                                 zero.add(10e-3),
@@ -460,8 +458,8 @@ public class FieldDSSTThirdBodyTest {
 
         List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<>();
         for (final DSSTForceModel force : forces) {
-            shortPeriodTerms.addAll(force.initializeShortPeriodTerms(auxiliaryElements, PropagationType.OSCULATING, force.getParameters(state.getDate())));
-            force.updateShortPeriodTerms(force.getParametersAllValues(), state);
+            shortPeriodTerms.addAll(force.initializeShortPeriodTerms(auxiliaryElements, PropagationType.OSCULATING, force.getParameters()));
+            force.updateShortPeriodTerms(force.getParameters(), state);
         }
 
         double[] shortPeriod = new double[6];

@@ -168,10 +168,10 @@ class GnssGradientConverterTest {
         initialJacobianColumns.put(NonKeplerianDriversFactory.RADIUS_COSINE, new double[6]);
         final MatricesHarvester harvester = propagator.setupMatricesComputation("stm", null, initialJacobianColumns);
 
-        // harvester sorts the columns lexicographically, and wraps them as SpanXxx##
+        // harvester sorts the columns lexicographically
         Assertions.assertEquals(2, harvester.getJacobiansColumnsNames().size());
-        Assertions.assertEquals("Span" + NonKeplerianDriversFactory.RADIUS_COSINE + "0", harvester.getJacobiansColumnsNames().get(0));
-        Assertions.assertEquals("Span" + NonKeplerianDriversFactory.RADIUS_SINE   + "0", harvester.getJacobiansColumnsNames().get(1));
+        Assertions.assertEquals(NonKeplerianDriversFactory.RADIUS_COSINE, harvester.getJacobiansColumnsNames().get(0));
+        Assertions.assertEquals(NonKeplerianDriversFactory.RADIUS_SINE,   harvester.getJacobiansColumnsNames().get(1));
 
         // propagate orbit
         final SpacecraftState state = propagator.propagate(factory.getDate().shiftedBy(3600.0));

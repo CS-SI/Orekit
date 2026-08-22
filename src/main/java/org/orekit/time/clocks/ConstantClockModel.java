@@ -73,7 +73,7 @@ public class ConstantClockModel implements ClockModel {
     /** {@inheritDoc} */
     @Override
     public ClockOffset getOffset(final AbsoluteDate date) {
-        return new ClockOffset(date, offset.getValue(date), 0, 0);
+        return new ClockOffset(date, offset.getValue(), 0, 0);
     }
 
     /** {@inheritDoc} */
@@ -81,13 +81,14 @@ public class ConstantClockModel implements ClockModel {
     public <T extends CalculusFieldElement<T>> FieldClockOffset<T> getFieldOffset(final FieldAbsoluteDate<T> date) {
         final AbsoluteDate aDate = date.toAbsoluteDate();
         final T zero = date.getField().getZero();
-        return new FieldClockOffset<>(date, zero.newInstance(offset.getValue(aDate)), zero, zero);
+        return new FieldClockOffset<>(date, zero.newInstance(offset.getValue()), zero, zero);
     }
 
     /** {@inheritDoc} */
     @Override
     public FieldClockModel<Gradient> getFieldModel(final int freeParameters,
         final Map<String, Integer> indices, final AbsoluteDate date) {
-        return new ConstantFieldClockModel<>(null, Gradient.constant(freeParameters, offset.getValue(date)));
+        return new ConstantFieldClockModel<>(null, Gradient.constant(freeParameters, offset.getValue()));
     }
+
 }

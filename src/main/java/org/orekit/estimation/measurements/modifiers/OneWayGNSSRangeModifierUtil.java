@@ -16,8 +16,6 @@
  */
 package org.orekit.estimation.measurements.modifiers;
 
-import java.util.Arrays;
-
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
@@ -30,7 +28,6 @@ import org.orekit.propagation.AbstractGradientConverter;
 import org.orekit.utils.Differentiation;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversProvider;
-import org.orekit.utils.TimeSpanMap.Span;
 
 /** Utility class modifying theoretical range measurement.
  * @author Maxime Journot
@@ -104,26 +101,21 @@ public class OneWayGNSSRangeModifierUtil {
         for (final ParameterDriver driver : parametricModel.getParametersDrivers()) {
             if (driver.isSelected()) {
                 // update estimated derivatives with derivative of the modification wrt modifier parameters
-                for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                    double parameterDerivative = estimated.getParameterDerivatives(driver, span.getStart())[0];
-                    parameterDerivative += derivatives[index + converter.getFreeStateParameters()];
-                    estimated.setParameterDerivatives(driver, span.getStart(), parameterDerivative);
-                    index = index + 1;
-                }
+                double parameterDerivative = estimated.getParameterDerivatives(driver)[0];
+                parameterDerivative += derivatives[index + converter.getFreeStateParameters()];
+                estimated.setParameterDerivatives(driver, parameterDerivative);
+                index = index + 1;
             }
 
         }
 
-        for (final ParameterDriver driver : Arrays.asList(gnssSatellite.getClockModel().getBiasDriver())) {
-            if (driver.isSelected()) {
-                // update estimated derivatives with derivative of the modification wrt station parameters
-                for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                    double parameterDerivative = estimated.getParameterDerivatives(driver, span.getStart())[0];
-                    parameterDerivative += Differentiation.differentiate((d, t) -> modelEffect.evaluate(gnssSatellite, state),
-                                                                     3, 10.0 * driver.getScale()).value(driver, state.getDate());
-                    estimated.setParameterDerivatives(driver, span.getStart(), parameterDerivative);
-                }
-            }
+        final ParameterDriver driver = gnssSatellite.getClockModel().getBiasDriver();
+        if (driver.isSelected()) {
+            // update estimated derivatives with derivative of the modification wrt station parameters
+            double parameterDerivative = estimated.getParameterDerivatives(driver)[0];
+            parameterDerivative += Differentiation.differentiate((d, t) -> modelEffect.evaluate(gnssSatellite, state),
+                                                                 3, 10.0 * driver.getScale()).value(driver, state.getDate());
+            estimated.setParameterDerivatives(driver, parameterDerivative);
         }
 
         // update estimated value taking into account the delay

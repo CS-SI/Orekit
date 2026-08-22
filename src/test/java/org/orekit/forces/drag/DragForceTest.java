@@ -221,8 +221,7 @@ class DragForceTest extends AbstractLegacyForceModelTest {
 
             // compute acceleration with all its partial derivatives
             return spacecraft.dragAcceleration(state, rho, relativeVelocity,
-                                               forceModel.getParameters(GradientField.getField(freeParameters),
-                                                                        state.getDate()));
+                                               forceModel.getParameters(GradientField.getField(freeParameters)));
 
         } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
             return null;
@@ -799,9 +798,9 @@ class DragForceTest extends AbstractLegacyForceModelTest {
         IsotropicDrag isoDrag = (IsotropicDrag) forceModel.getSpacecraft();
         drivers = isoDrag.getDragParametersDrivers();
         Assertions.assertEquals(2, drivers.size());
-        Assertions.assertEquals(1.0,  drivers.getFirst().getValue(new AbsoluteDate()), 0.);
+        Assertions.assertEquals(1.0,  drivers.getFirst().getValue(), 0.);
         Assertions.assertEquals(DragSensitive.GLOBAL_DRAG_FACTOR,  drivers.getFirst().getName());
-        Assertions.assertEquals(dragCd0,  drivers.get(1).getValue(new AbsoluteDate()), 0.);
+        Assertions.assertEquals(dragCd0,  drivers.get(1).getValue(), 0.);
         Assertions.assertEquals(DragSensitive.DRAG_COEFFICIENT,  drivers.get(1).getName());
 
         // 3 IsotropicDrag models added, with one default

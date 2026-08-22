@@ -16,7 +16,6 @@
  */
 package org.orekit.propagation.analytical.tle;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -51,7 +50,6 @@ import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversProvider;
 import org.orekit.utils.ParameterObserver;
 import org.orekit.utils.TimeSpanMap;
-import org.orekit.utils.TimeSpanMap.Span;
 
 /** This class provides elements to propagate TLE's.
  * <p>
@@ -230,20 +228,7 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator impleme
                                                  TleGenerationAlgorithm.B_STAR_SCALE,
                                                  Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
                                                  TimeInterval.UNLIMITED);
-        bStarDriver.addObserver(new ParameterObserver() {
-
-            @Override
-            public void valueChanged(final double previousValue, final ParameterDriver driver,
-                                     final AbsoluteDate date) {
-                resetBStar();
-            }
-
-            @Override
-            public void valueSpanMapChanged(final TimeSpanMap<Double> previousValueSpanMap,
-                                            final ParameterDriver driver) {
-                resetBStar();
-            }
-        });
+        bStarDriver.addObserver((previousValue, driver) -> resetBStar());
         this.generationAlgorithm = getDefaultTleGenerationAlgorithm(initialTLE, utc, teme);
 
         // set the initial state
@@ -716,15 +701,9 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator impleme
      * @return names of the parameters (i.e. columns) of the Jacobian matrix
      */
     protected List<String> getJacobiansColumnsNames() {
-        if (bStarDriver.isSelected()) {
-            final List<String> columnsNames = new ArrayList<>();
-            for (Span<String> span = bStarDriver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                columnsNames.add(span.getData());
-            }
-            return columnsNames;
-        } else {
-            return Collections.emptyList();
-        }
+        return bStarDriver.isSelected() ?
+               Collections.singletonList(bStarDriver.getName()) :
+               Collections.emptyList();
     }
 
     /**

@@ -47,7 +47,6 @@ import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -193,7 +192,7 @@ public class Phase extends SignalBasedMeasurement<Phase> {
 
         // Phase value
         final double cOverLambda = Constants.SPEED_OF_LIGHT / wavelength;
-        final double ambiguity   = ambiguityDriver.getValue(state.getDate());
+        final double ambiguity   = ambiguityDriver.getValue();
         final double phase       = (tauD + dtg - dts) * cOverLambda + ambiguity;
 
         estimated.setEstimatedValue(phase);
@@ -261,7 +260,7 @@ public class Phase extends SignalBasedMeasurement<Phase> {
 
         // Phase value
         final double   cOverLambda = Constants.SPEED_OF_LIGHT / wavelength;
-        final Gradient ambiguity   = ambiguityDriver.getValue(nbParams, paramIndices, state.getDate());
+        final Gradient ambiguity   = ambiguityDriver.getValue(nbParams, paramIndices);
         final Gradient phase       = tauD.add(dtg).subtract(dts).multiply(cOverLambda).add(ambiguity);
 
         estimated.setEstimatedValue(phase.getValue());
@@ -272,12 +271,9 @@ public class Phase extends SignalBasedMeasurement<Phase> {
 
         // Set first order derivatives with respect to parameters
         for (final ParameterDriver driver : getParametersDrivers()) {
-            for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-
-                final Integer index = paramIndices.get(span.getData());
-                if (index != null) {
-                    estimated.setParameterDerivatives(driver, span.getStart(), derivatives[index]);
-                }
+            final Integer index = paramIndices.get(driver.getName());
+            if (index != null) {
+                estimated.setParameterDerivatives(driver, derivatives[index]);
             }
         }
 

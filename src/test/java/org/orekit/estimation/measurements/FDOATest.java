@@ -222,7 +222,7 @@ class FDOATest {
             };
 
             for (ParameterDriver driver : drivers) {
-                final double[] gradient = measurement.estimate(0, 0, new SpacecraftState[]{state}).getParameterDerivatives(driver, new AbsoluteDate());
+                final double[] gradient = measurement.estimate(0, 0, new SpacecraftState[]{state}).getParameterDerivatives(driver);
                 Assertions.assertEquals(1, measurement.getDimension());
                 Assertions.assertEquals(1, gradient.length);
 

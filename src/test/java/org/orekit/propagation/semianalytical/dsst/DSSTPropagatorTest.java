@@ -125,7 +125,6 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.TimeSpanMap;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 class DSSTPropagatorTest {
@@ -1100,7 +1099,7 @@ class DSSTPropagatorTest {
         Assertions.assertDoesNotThrow(() -> propagator.propagate(state.getDate().shiftedBy(3600)));
     }
 
-    public class ApsideHandlerWithResetState implements EventHandler {
+    public static class ApsideHandlerWithResetState implements EventHandler {
         @Override
         public Action eventOccurred(SpacecraftState s, EventDetector detector, boolean increasing) {
             return Action.RESET_STATE;
@@ -1529,16 +1528,9 @@ class DSSTPropagatorTest {
     private static class MDot implements DSSTForceModel {
 
         /** Mean Anomaly Rate */
-        private final ParameterDriver mDot = new ParameterDriver(
-            "MDot",
-            // this seems to be needed to ensure the name is "MDot"
-            new TimeSpanMap<>("MDot"),
-            new TimeSpanMap<>(0.0),
-            0,
-            1,
-            Double.NEGATIVE_INFINITY,
-            Double.POSITIVE_INFINITY,
-            TimeInterval.UNLIMITED);
+        private final ParameterDriver mDot =
+            new ParameterDriver("MDot", 0, 1,
+                                Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, TimeInterval.UNLIMITED);
 
         @Override
         public List<ParameterDriver> getParametersDrivers() {

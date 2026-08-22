@@ -324,12 +324,6 @@ public enum OrekitMessages implements Localizable {
     /** UNSUPPORTED_PARAMETER_NAME. */
     UNSUPPORTED_PARAMETER_NAME("unsupported parameter name {0}, supported names: {1}"),
 
-    /** PARAMETER_WITH_SEVERAL_ESTIMATED_VALUES. */
-    PARAMETER_WITH_SEVERAL_ESTIMATED_VALUES("{0} parameter contains several span in its value TimeSpanMap, the {1} method must be called"),
-
-    /** PARAMETER_PERIODS_HAS_ALREADY_BEEN_SET. */
-    PARAMETER_PERIODS_HAS_ALREADY_BEEN_SET("setPeriod was already called once on {0} parameter, another parameter should be created if the periods have to be changed"),
-
     /** TOO_SMALL_SCALE_FOR_PARAMETER. */
     TOO_SMALL_SCALE_FOR_PARAMETER("scale factor for parameter {0} is too small: {1}"),
 

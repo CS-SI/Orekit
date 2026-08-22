@@ -495,15 +495,14 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
 
             // Container of attributes
             // Extract the proper parameters valid for the corresponding meanState date from the input array
-            final double[] extractedParameters = this.extractParameters(parameters, auxiliaryElements.getDate());
-            final AbstractGaussianContributionContext context = initializeStep(auxiliaryElements, extractedParameters);
+            final AbstractGaussianContributionContext context = initializeStep(auxiliaryElements, parameters);
 
             // Compute rhoj and sigmaj
             final double[][] currentRhoSigmaj = computeRhoSigmaCoefficients(auxiliaryElements);
 
             // Generate the Cij and Sij coefficients
             final FourierCjSjCoefficients fourierCjSj = new FourierCjSjCoefficients(meanState, JMAX, auxiliaryElements,
-                                                                                    extractedParameters);
+                                                                                    parameters);
 
             // Generate the Uij and Vij coefficients
             final UijVijCoefficients uijvij = new UijVijCoefficients(currentRhoSigmaj, fourierCjSj, JMAX);
@@ -534,15 +533,14 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
 
             // Container of attributes
             // Extract the proper parameters valid for the corresponding meanState date from the input array
-            final T[] extractedParameters = this.extractParameters(parameters, auxiliaryElements.getDate());
-            final FieldAbstractGaussianContributionContext<T> context = initializeStep(auxiliaryElements, extractedParameters);
+            final FieldAbstractGaussianContributionContext<T> context = initializeStep(auxiliaryElements, parameters);
 
             // Compute rhoj and sigmaj
             final T[][] currentRhoSigmaj = computeRhoSigmaCoefficients(context, field);
 
             // Generate the Cij and Sij coefficients
-            final FieldFourierCjSjCoefficients<T> fourierCjSj = new FieldFourierCjSjCoefficients<>(meanState, JMAX,
-                    auxiliaryElements, extractedParameters, field);
+            final FieldFourierCjSjCoefficients<T> fourierCjSj =
+                new FieldFourierCjSjCoefficients<>(meanState, JMAX, auxiliaryElements, parameters, field);
 
             // Generate the Uij and Vij coefficients
             final FieldUijVijCoefficients<T> uijvij = new FieldUijVijCoefficients<>(currentRhoSigmaj, fourierCjSj, JMAX,
@@ -664,10 +662,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
          *                   short periodic elements variation
          * @param j          the j index. used only for short periodic variation.
          *                   Ignored for mean elements variation.
-         * @param parameters values of the force model parameters (only 1 values
-         *                   for each parameters corresponding to state date) obtained by
-         *                   calling the extract parameter method {@link #extractParameters(double[], AbsoluteDate)}
-         *                   to selected the right value for state date or by getting the parameters for a specific date
+         * @param parameters values of the force model parameters
          * @param field      field utilized by default
          */
         public FieldIntegrableFunction(final FieldSpacecraftState<T> state, final boolean meanMode, final int j,

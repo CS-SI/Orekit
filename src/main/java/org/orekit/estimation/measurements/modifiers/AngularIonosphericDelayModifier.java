@@ -91,7 +91,7 @@ public class AngularIonosphericDelayModifier implements EstimationModifier<Angul
         final double[] azimuthElevation = computeAzimuthElevation(state, topocentricFrame, measurement);
 
         // Delay is taken into account to shift the spacecraft position
-        final double delay = ionoModel.pathDelay(state, topocentricFrame, frequency, ionoModel.getParameters(state.getDate()));
+        final double delay = ionoModel.pathDelay(state, topocentricFrame, frequency, ionoModel.getParameters());
         final double dt = delay / Constants.SPEED_OF_LIGHT;
         final SpacecraftState transitState = state.shiftedBy(-dt);
 

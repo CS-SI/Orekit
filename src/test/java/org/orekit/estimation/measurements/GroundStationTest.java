@@ -595,7 +595,7 @@ class GroundStationTest {
                 if (allDriver.getName().matches(parameterPattern[k])) {
                     selectedDrivers[k] = allDriver;
                     dFCartesian[k] = differentiatedStationPV(station, eme2000, date, selectedDrivers[k], stepFactor);
-                    indices.put(selectedDrivers[k].getNameSpan(date0), k);
+                    indices.put(selectedDrivers[k].getName(), k);
                 }
             }
         }
@@ -703,7 +703,7 @@ class GroundStationTest {
                 if (allDriver.getName().matches(parameterPattern[k])) {
                     selectedDrivers[k] = allDriver;
                     dFAngular[k] = differentiatedTransformAngular(station, eme2000, date, selectedDrivers[k], stepFactor);
-                    indices.put(selectedDrivers[k].getNameSpan(date0), k);
+                    indices.put(selectedDrivers[k].getName(), k);
                 }
             }
         }
@@ -805,10 +805,10 @@ class GroundStationTest {
         return differentiator.differentiate((UnivariateVectorFunction) x -> {
             final double[] result = new double[6];
             try {
-                final double previouspI = driver.getValue(date);
-                driver.setValue(x, new AbsoluteDate());
+                final double previouspI = driver.getValue();
+                driver.setValue(x);
                 Transform t = station.getOffsetToInertial(eme2000, date, false);
-                driver.setValue(previouspI, date);
+                driver.setValue(previouspI);
                 PVCoordinates stationPV = t.transformPVCoordinates(PVCoordinates.ZERO);
                 result[ 0] = stationPV.getPosition().getX();
                 result[ 1] = stationPV.getPosition().getY();
@@ -841,10 +841,10 @@ class GroundStationTest {
             public double[] value(double x) {
                 final double[] result = new double[7];
                 try {
-                    final double previouspI = driver.getValue(date);
-                    driver.setValue(x, date);
+                    final double previouspI = driver.getValue();
+                    driver.setValue(x);
                     Transform t = station.getOffsetToInertial(eme2000, date, false);
-                    driver.setValue(previouspI, date);
+                    driver.setValue(previouspI);
                     final double sign;
                     if (Double.isNaN(previous0)) {
                         sign = 1;

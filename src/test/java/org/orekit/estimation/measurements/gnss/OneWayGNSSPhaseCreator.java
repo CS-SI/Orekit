@@ -92,8 +92,8 @@ public class OneWayGNSSPhaseCreator extends MeasurementCreator {
     @Override
     public void handleStep(final SpacecraftState currentState) {
         try {
-            final double           n         = ambiguityDriver.getValue(currentState.getDate());
-            final double           localClk  = local.getClockModel().getBiasDriver().getValue(currentState.getDate());
+            final double           n         = ambiguityDriver.getValue();
+            final double           localClk  = local.getClockModel().getBiasDriver().getValue();
             final double           deltaD    = Constants.SPEED_OF_LIGHT * (localClk -
                                                                            remoteClk.getOffset(currentState.getDate()).getBias());
             final AbsoluteDate     date      = currentState.getDate();

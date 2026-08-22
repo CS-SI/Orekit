@@ -669,7 +669,7 @@ class RangeTest {
                     }
 
                     for (int i = 0; i < drivers.length; ++i) {
-                        final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i], new AbsoluteDate());
+                        final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i]);
                         Assertions.assertEquals(1, measurement.getDimension());
                         Assertions.assertEquals(1, gradient.length);
 
@@ -811,7 +811,7 @@ class RangeTest {
                     }
 
                     for (int i = 0; i < 1; ++i) {
-                        final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i], new AbsoluteDate());
+                        final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i]);
                         Assertions.assertEquals(1, measurement.getDimension());
                         Assertions.assertEquals(1, gradient.length);
 

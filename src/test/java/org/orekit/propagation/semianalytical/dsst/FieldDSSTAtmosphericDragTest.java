@@ -16,8 +16,6 @@
  */
 package org.orekit.propagation.semianalytical.dsst;
 
-import java.io.IOException;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -101,7 +99,7 @@ class FieldDSSTAtmosphericDragTest {
                 GravityFieldFactory.getUnnormalizedProvider(2, 0);
 
         final Frame earthFrame = FramesFactory.getEME2000();
-        final FieldAbsoluteDate<T> initDate = new FieldAbsoluteDate<>(field, 2003, 07, 01, 0, 0, 0, TimeScalesFactory.getUTC());
+        final FieldAbsoluteDate<T> initDate = new FieldAbsoluteDate<>(field, 2003, 7, 1, 0, 0, 0, TimeScalesFactory.getUTC());
         final double mu = 3.986004415E14;
         // a  = 7204535.84810944 m
         // ex = -0.001119677138261611
@@ -146,7 +144,7 @@ class FieldDSSTAtmosphericDragTest {
         final FieldAuxiliaryElements<T> auxiliaryElements = new FieldAuxiliaryElements<>(state.getOrbit(), 1);
 
         // Force model parameters
-        final T[] parameters = drag.getParameters(field, state.getDate());
+        final T[] parameters = drag.getParameters(field);
         // Initialize force model
         drag.initializeShortPeriodTerms(auxiliaryElements,
                         PropagationType.MEAN, parameters);
@@ -155,9 +153,7 @@ class FieldDSSTAtmosphericDragTest {
         final T[] elements = MathArrays.buildArray(field, 7);
         Arrays.fill(elements, zero);
         final T[] daidt = drag.getMeanElementRate(state, auxiliaryElements, parameters);
-        for (int i = 0; i < daidt.length; i++) {
-            elements[i] = daidt[i];
-        }
+        System.arraycopy(daidt, 0, elements, 0, daidt.length);
 
         MatcherAssert.assertThat(elements[0].getReal(), Matchers.closeTo(-3.415320567871037E-5, 2.0e-20));
         MatcherAssert.assertThat(elements[1].getReal(), Matchers.closeTo(6.276312897745139E-13, 2.6e-26));
@@ -177,7 +173,10 @@ class FieldDSSTAtmosphericDragTest {
     private <T extends CalculusFieldElement<T>> void doTestShortPeriodTerms(final Field<T> field) {
 
         final T zero = field.getZero();
-        final FieldAbsoluteDate<T> initDate = new FieldAbsoluteDate<>(field, new DateComponents(2003, 03, 21), new TimeComponents(1, 0, 0.), TimeScalesFactory.getUTC());
+        final FieldAbsoluteDate<T> initDate = new FieldAbsoluteDate<>(field,
+                                                                      new DateComponents(2003, 3, 21),
+                                                                      new TimeComponents(1, 0, 0.),
+                                                                      TimeScalesFactory.getUTC());
 
         final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<>(zero.add(7069219.9806427825),
                                                                 zero.add(-4.5941811292223825E-4),
@@ -215,11 +214,11 @@ class FieldDSSTAtmosphericDragTest {
         final FieldAuxiliaryElements<T> aux = new FieldAuxiliaryElements<>(meanState.getOrbit(), 1);
 
         // Set the force models
-        final List<FieldShortPeriodTerms<T>> shortPeriodTerms = new ArrayList<>();
-
         drag.registerAttitudeProvider(attitudeProvider);
-        shortPeriodTerms.addAll(drag.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, drag.getParameters(field, orbit.getDate())));
-        drag.updateShortPeriodTerms(drag.getParametersAllValues(field), meanState);
+        final List<FieldShortPeriodTerms<T>> shortPeriodTerms =
+            new ArrayList<>(drag.initializeShortPeriodTerms(aux, PropagationType.OSCULATING,
+                                                            drag.getParameters(field)));
+        drag.updateShortPeriodTerms(drag.getParameters(field), meanState);
 
         T[] y = MathArrays.buildArray(field, 6);
         Arrays.fill(y, zero);
@@ -245,7 +244,7 @@ class FieldDSSTAtmosphericDragTest {
     void testShortPeriodTermsStateDerivatives() {
 
         // Initial spacecraft state
-        final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2003, 05, 21), new TimeComponents(1, 0, 0.),
+        final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2003, 5, 21), new TimeComponents(1, 0, 0.),
                                                        TimeScalesFactory.getUTC());
 
         final Orbit orbit = new EquinoctialOrbit(7204535.84810944,
@@ -290,9 +289,9 @@ class FieldDSSTAtmosphericDragTest {
         final Gradient zero = dsState.getDate().getField().getZero();
 
         // Compute state Jacobian using directly the method
-        final List<FieldShortPeriodTerms<Gradient>> shortPeriodTerms = new ArrayList<>();
-        shortPeriodTerms.addAll(drag.initializeShortPeriodTerms(fieldAuxiliaryElements, PropagationType.OSCULATING,
-                                converter.getParametersAtStateDate(dsState, drag)));
+        final List<FieldShortPeriodTerms<Gradient>> shortPeriodTerms =
+            new ArrayList<>(drag.initializeShortPeriodTerms(fieldAuxiliaryElements, PropagationType.OSCULATING,
+                                                            converter.getParametersAtStateDate(dsState, drag)));
         drag.updateShortPeriodTerms(converter.getParameters(dsState, drag), dsState);
         final Gradient[] shortPeriod = new Gradient[6];
         Arrays.fill(shortPeriod, zero);
@@ -350,7 +349,7 @@ class FieldDSSTAtmosphericDragTest {
             SpacecraftState stateP4 = shiftState(meanState, orbitParamsType, 4 * steps[i], i);
             double[]  shortPeriodP4 = computeShortPeriodTerms(stateP4, drag);
 
-            fillJacobianColumn(shortPeriodJacobianRef, i, orbitParamsType, steps[i],
+            fillJacobianColumn(shortPeriodJacobianRef, i, steps[i],
                                shortPeriodM4, shortPeriodM3, shortPeriodM2, shortPeriodM1,
                                shortPeriodP1, shortPeriodP2, shortPeriodP3, shortPeriodP4);
 
@@ -366,12 +365,12 @@ class FieldDSSTAtmosphericDragTest {
     }
 
     @Test
-    void testDragParametersDerivatives() throws ParseException, IOException {
+    void testDragParametersDerivatives() {
         doTestShortPeriodTermsParametersDerivatives(DragSensitive.DRAG_COEFFICIENT, 6.0e-14);
     }
 
     @Test
-    void testMuParametersDerivatives() throws ParseException, IOException {
+    void testMuParametersDerivatives() {
         doTestShortPeriodTermsParametersDerivatives(DSSTNewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT, 3.7e-9);
     }
 
@@ -379,7 +378,7 @@ class FieldDSSTAtmosphericDragTest {
     private void doTestShortPeriodTermsParametersDerivatives(String parameterName, double tolerance) {
 
         // Initial spacecraft state
-        final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2003, 05, 21), new TimeComponents(1, 0, 0.),
+        final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2003, 5, 21), new TimeComponents(1, 0, 0.),
                                                        TimeScalesFactory.getUTC());
 
         final Orbit orbit = new EquinoctialOrbit(7204535.84810944,
@@ -429,8 +428,9 @@ class FieldDSSTAtmosphericDragTest {
         final Gradient zero = dsState.getDate().getField().getZero();
 
         // Compute Jacobian using directly the method
-        final List<FieldShortPeriodTerms<Gradient>> shortPeriodTerms = new ArrayList<>();
-        shortPeriodTerms.addAll(drag.initializeShortPeriodTerms(fieldAuxiliaryElements, PropagationType.OSCULATING, converter.getParametersAtStateDate(dsState, drag)));
+        final List<FieldShortPeriodTerms<Gradient>> shortPeriodTerms =
+            new ArrayList<>(drag.initializeShortPeriodTerms(fieldAuxiliaryElements, PropagationType.OSCULATING,
+                                                            converter.getParametersAtStateDate(dsState, drag)));
         drag.updateShortPeriodTerms(converter.getParameters(dsState, drag), dsState);
         final Gradient[] shortPeriod = new Gradient[6];
         Arrays.fill(shortPeriod, zero);
@@ -503,7 +503,7 @@ class FieldDSSTAtmosphericDragTest {
         selected.setValue(p0 + 4 * h);
         final double[] shortPeriodP4 = computeShortPeriodTerms(meanState, drag);
 
-        fillJacobianColumn(shortPeriodJacobianRef, 0, orbitParamsType, h,
+        fillJacobianColumn(shortPeriodJacobianRef, 0, h,
                            shortPeriodM4, shortPeriodM3, shortPeriodM2, shortPeriodM1,
                            shortPeriodP1, shortPeriodP2, shortPeriodP3, shortPeriodP4);
 
@@ -523,9 +523,10 @@ class FieldDSSTAtmosphericDragTest {
 
         AuxiliaryElements auxiliaryElements = new AuxiliaryElements(state.getOrbit(), 1);
 
-        List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<>();
-        shortPeriodTerms.addAll(force.initializeShortPeriodTerms(auxiliaryElements, PropagationType.OSCULATING, force.getParameters(state.getDate())));
-        force.updateShortPeriodTerms(force.getParametersAllValues(), state);
+        List<ShortPeriodTerms> shortPeriodTerms =
+            new ArrayList<>(force.initializeShortPeriodTerms(auxiliaryElements, PropagationType.OSCULATING,
+                                                             force.getParameters()));
+        force.updateShortPeriodTerms(force.getParameters(), state);
         
         double[] shortPeriod = new double[6];
         for (ShortPeriodTerms spt : shortPeriodTerms) {
@@ -539,8 +540,7 @@ class FieldDSSTAtmosphericDragTest {
 
     }
 
-    private void fillJacobianColumn(double[][] jacobian, int column,
-                                    OrbitParamsType orbitParamsType, double h,
+    private void fillJacobianColumn(double[][] jacobian, int column, double h,
                                     double[] M4h, double[] M3h,
                                     double[] M2h, double[] M1h,
                                     double[] P1h, double[] P2h,
@@ -593,7 +593,7 @@ class FieldDSSTAtmosphericDragTest {
     }
 
     @BeforeEach
-    public void setUp() throws IOException, ParseException {
+    public void setUp() {
         Utils.setDataRoot("regular-data:potential/shm-format");
     }
 

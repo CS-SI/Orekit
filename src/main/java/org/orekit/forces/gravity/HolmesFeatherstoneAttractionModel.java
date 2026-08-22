@@ -186,7 +186,7 @@ public class HolmesFeatherstoneAttractionModel implements ForceModel, TideSystem
      * @return mu central attraction coefficient (m³/s²)
      */
     public double getMu(final AbsoluteDate date) {
-        return gmParameterDriver.getValue(date);
+        return gmParameterDriver.getValue();
     }
 
     /** Compute the value of the gravity field.
@@ -1104,8 +1104,7 @@ public class HolmesFeatherstoneAttractionModel implements ForceModel, TideSystem
      * @since 10.2
      */
     private <T extends CalculusFieldElement<T>> boolean isGradientStateDerivative(final FieldSpacecraftState<T> state) {
-        if (state.getMass() instanceof Gradient) {
-            final Gradient gMass = (Gradient) state.getMass();
+        if (state.getMass() instanceof final Gradient gMass) {
             final int p = gMass.getFreeParameters();
             if (p < 3) {
                 return false;

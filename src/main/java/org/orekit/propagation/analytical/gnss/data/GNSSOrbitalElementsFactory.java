@@ -45,7 +45,6 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterObserver;
-import org.orekit.utils.TimeSpanMap;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 /** Factory for {@link AbstractNavigationMessage}.
@@ -150,20 +149,13 @@ public abstract class GNSSOrbitalElementsFactory<O extends GNSSOrbitalElements<O
 
             /** {@inheritDoc} */
             @Override
-            public void valueChanged(final double previousValue, final ParameterDriver driver,
-                                     final AbsoluteDate date) {
-                // the check for null toe allows to set up a dummy week number
+            public void valueChanged(final double previousValue, final ParameterDriver driver) {
+                // the check for non-null toe prevents using a wrong week number
                 // in case secondsInWeek is set *before* week is set
                 // (this can happen when parsing YUMA almanac for example)
-                final int weekNumber = toe == null ? 0 : toe.getWeekNumber();
-                setTimeOfEphemerisNoRecurse(weekNumber, driver.getValue());
-            }
-
-            /** {@inheritDoc} */
-            @Override
-            public void valueSpanMapChanged(final TimeSpanMap<Double> previousValueSpanMap,
-                                            final ParameterDriver driver) {
-                // nothing to do
+                if (toe != null) {
+                    setTimeOfEphemerisNoRecurse(toe.getWeekNumber(), driver.getValue());
+                }
             }
         });
 

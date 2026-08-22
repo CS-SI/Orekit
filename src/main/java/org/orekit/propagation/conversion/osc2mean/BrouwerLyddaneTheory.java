@@ -111,6 +111,6 @@ public class BrouwerLyddaneTheory implements MeanTheory {
 
         final FieldBrouwerLyddanePropagator<T> propagator =
                         new FieldBrouwerLyddanePropagator<>(mean, provider, PropagationType.MEAN, m2Value);
-        return propagator.propagateOrbit(date, propagator.getParameters(field, date));
+        return propagator.propagateOrbit(date, propagator.getParameters(field));
     }
 }

@@ -51,7 +51,6 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
-import org.orekit.utils.TimeSpanMap.Span;
 
 /** Test class for Kalman model.
  * This class is deeply entangled with KalmanEstimator class. Thus it is difficult to test as a stand-alone.
@@ -268,7 +267,7 @@ class KalmanModelTest {
         final RealMatrix dMdCr = dMdY.multiply(MatrixUtils.createRealMatrix(dYdPpTransition));
         expH.setEntry(0, 6, dMdCr.getEntry(0, 0));
         // Sat range bias part
-        expH.setEntry(0, 7, rangeEstimated.getParameterDerivatives(satRangeBiasDriver, new AbsoluteDate())[0]);
+        expH.setEntry(0, 7, rangeEstimated.getParameterDerivatives(satRangeBiasDriver)[0]);
         
         // Add range measurement and check model afterwards
         checkModelAfterMeasurementAdded(2, range, Ppred, orbitPred, expPhi, expH);
@@ -501,27 +500,21 @@ class KalmanModelTest {
         // Orbital parameters
         for (ParameterDriver driver : builder.getOrbitalStateFactory().getOrbitalParametersDrivers().getDrivers()) {
             if (driver.isSelected()) {
-            	for (Span<Double> span = driver.getValueSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                    scaleList.add(driver.getScale());
-            	}
+            	scaleList.add(driver.getScale());
             }
         }
 
         // Propagation parameters
         for (ParameterDriver driver : builder.getPropagationParametersDrivers().getDrivers()) {
             if (driver.isSelected()) {
-            	for (Span<Double> span = driver.getValueSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                    scaleList.add(driver.getScale());
-            	}
+            	scaleList.add(driver.getScale());
             }
         }
 
         // Measurement parameters
         for (ParameterDriver driver : estimatedMeasurementsParameters.getDrivers()) {
             if (driver.isSelected()) {
-            	for (Span<Double> span = driver.getValueSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                    scaleList.add(driver.getScale());
-            	}
+            	scaleList.add(driver.getScale());
             }
         }
 

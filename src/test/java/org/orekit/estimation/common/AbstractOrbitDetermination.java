@@ -174,7 +174,6 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
-import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.units.Unit;
 
 /** Base class for Orekit orbit determination tutorials.
@@ -929,10 +928,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
              for (DelegatingDriver refDriver : refPropagationParameters.getDrivers()) {
                  for (DelegatingDriver driver : propagatorBuilder.getPropagationParametersDrivers().getDrivers()) {
                      if (driver.getName().equals(refDriver.getName())) {
-                         for (Span<Double> span = driver.getValueSpanMap().getFirstSpan(); span != null; span = span.next()) {
-
-                             driver.setValue(refDriver.getValue(initialRefOrbit.getDate()), span.getStart());
-                         }
+                         driver.setValue(refDriver.getValue());
                      }
                  }
              }

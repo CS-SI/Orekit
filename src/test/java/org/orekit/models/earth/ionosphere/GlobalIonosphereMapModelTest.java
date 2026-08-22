@@ -376,7 +376,7 @@ public class GlobalIonosphereMapModelTest {
         try {
             model.pathDelay(state, new TopocentricFrame(earth, point, null),
                             PredefinedGnssSignal.G01.getFrequency(),
-                            model.getParameters(new AbsoluteDate()));
+                            model.getParameters());
             Assertions.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.NO_TEC_DATA_IN_FILES_FOR_DATE, oe.getSpecifier());
@@ -397,7 +397,7 @@ public class GlobalIonosphereMapModelTest {
         try {
             model.pathDelay(new FieldSpacecraftState<>(field, state), new TopocentricFrame(earth, point, null),
                             PredefinedGnssSignal.G01.getFrequency(),
-                            model.getParameters(field, new FieldAbsoluteDate<>(field)));
+                            model.getParameters(field));
             Assertions.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.NO_TEC_DATA_IN_FILES_FOR_DATE, oe.getSpecifier());
@@ -460,13 +460,13 @@ public class GlobalIonosphereMapModelTest {
 
         // at exact sampling dates, all interpolation methods should return the same value
         Assertions.assertEquals(gridValue * factor,
-                                nearest.pathDelay(sSampling, topo, frequency, nearest.getParameters(tSampling)),
+                                nearest.pathDelay(sSampling, topo, frequency, nearest.getParameters()),
                                 1.0e-15);
         Assertions.assertEquals(gridValue * factor,
-                                simple.pathDelay(sSampling, topo, frequency, simple.getParameters(tSampling)),
+                                simple.pathDelay(sSampling, topo, frequency, simple.getParameters()),
                                 1.0e-15);
         Assertions.assertEquals(gridValue * factor,
-                                rotated.pathDelay(sSampling, topo, frequency, rotated.getParameters(tSampling)),
+                                rotated.pathDelay(sSampling, topo, frequency, rotated.getParameters()),
                                 1.0e-15);
 
         // check at midtime between sampling dates and for a vertical line of sight
@@ -481,10 +481,10 @@ public class GlobalIonosphereMapModelTest {
         final double          gridValue1 = 103.0;
         final double          gridValue2 = 101.0;
         Assertions.assertEquals(gridValue1 * factor,
-                                nearest.pathDelay(sInterp, topo, frequency, nearest.getParameters(tInterp)),
+                                nearest.pathDelay(sInterp, topo, frequency, nearest.getParameters()),
                                 1.0e-15);
         Assertions.assertEquals((0.5 * gridValue1 + 0.5 * gridValue2) * factor,
-                                simple.pathDelay(sInterp, topo, frequency, simple.getParameters(tInterp)),
+                                simple.pathDelay(sInterp, topo, frequency, simple.getParameters()),
                                 1.0e-15);
 
         // the half hour offsets is about 7.52 degrees, so maps rotates about 1.504 cell size
@@ -495,7 +495,7 @@ public class GlobalIonosphereMapModelTest {
         final double interpMapA    = ((1 - cellRatio) * 104.0 + cellRatio * 105.0) * factor;
         final double interpMapB    = ((1 - cellRatio) * 101.0 + cellRatio * 100.0) * factor;
         Assertions.assertEquals(0.5 * (interpMapA + interpMapB),
-                                rotated.pathDelay(sInterp, topo, frequency, rotated.getParameters(tInterp)),
+                                rotated.pathDelay(sInterp, topo, frequency, rotated.getParameters()),
                                 1.0e-15);
 
     }
@@ -554,13 +554,13 @@ public class GlobalIonosphereMapModelTest {
 
         // at exact sampling dates, all interpolation methods should return the same value
         Assertions.assertEquals(gridValue * factor,
-                                nearest.pathDelay(sSampling, topo, frequency, nearest.getParameters(field, tSampling)).getReal(),
+                                nearest.pathDelay(sSampling, topo, frequency, nearest.getParameters(field)).getReal(),
                                 1.0e-15);
         Assertions.assertEquals(gridValue * factor,
-                                simple.pathDelay(sSampling, topo, frequency, simple.getParameters(field, tSampling)).getReal(),
+                                simple.pathDelay(sSampling, topo, frequency, simple.getParameters(field)).getReal(),
                                 1.0e-15);
         Assertions.assertEquals(gridValue * factor,
-                                rotated.pathDelay(sSampling, topo, frequency, rotated.getParameters(field, tSampling)).getReal(),
+                                rotated.pathDelay(sSampling, topo, frequency, rotated.getParameters(field)).getReal(),
                                 1.0e-15);
 
         // check at midtime between sampling dates and for a vertical line of sight
@@ -576,10 +576,10 @@ public class GlobalIonosphereMapModelTest {
         final double          gridValue1 = 103.0;
         final double          gridValue2 = 101.0;
         Assertions.assertEquals(gridValue1 * factor,
-                                nearest.pathDelay(sInterp, topo, frequency, nearest.getParameters(field, tInterp)).getReal(),
+                                nearest.pathDelay(sInterp, topo, frequency, nearest.getParameters(field)).getReal(),
                                 1.0e-15);
         Assertions.assertEquals((0.5 * gridValue1 + 0.5 * gridValue2) * factor,
-                                simple.pathDelay(sInterp, topo, frequency, simple.getParameters(field, tInterp)).getReal(),
+                                simple.pathDelay(sInterp, topo, frequency, simple.getParameters(field)).getReal(),
                                 1.0e-15);
 
         // the half hour offsets is about 7.52 degrees, so maps rotates about 1.504 cell size
@@ -590,7 +590,7 @@ public class GlobalIonosphereMapModelTest {
         final double interpMapA    = ((1 - cellRatio) * 104.0 + cellRatio * 105.0) * factor;
         final double interpMapB    = ((1 - cellRatio) * 101.0 + cellRatio * 100.0) * factor;
         Assertions.assertEquals(0.5 * (interpMapA + interpMapB),
-                                rotated.pathDelay(sInterp, topo, frequency, rotated.getParameters(field, tInterp)).getReal(),
+                                rotated.pathDelay(sInterp, topo, frequency, rotated.getParameters(field)).getReal(),
                                 1.0e-15);
 
     }
@@ -664,7 +664,7 @@ public class GlobalIonosphereMapModelTest {
         try {
             model.pathDelay(state, new TopocentricFrame(earth, point, null),
                             PredefinedGnssSignal.G01.getFrequency(),
-                            model.getParameters(new AbsoluteDate()));
+                            model.getParameters());
             Assertions.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.NO_TEC_DATA_IN_FILES_FOR_DATE, oe.getSpecifier());
@@ -685,7 +685,7 @@ public class GlobalIonosphereMapModelTest {
         try {
             model.pathDelay(new FieldSpacecraftState<>(field, state), new TopocentricFrame(earth, point, null),
                             PredefinedGnssSignal.G01.getFrequency(),
-                            model.getParameters(field, new FieldAbsoluteDate<>(field)));
+                            model.getParameters(field));
             Assertions.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.NO_TEC_DATA_IN_FILES_FOR_DATE, oe.getSpecifier());
@@ -706,7 +706,7 @@ public class GlobalIonosphereMapModelTest {
                                                Constants.WGS84_EARTH_MU);
         final double delay = model.pathDelay(new SpacecraftState(orbit), new TopocentricFrame(earth, point, null),
                                              PredefinedGnssSignal.G01.getFrequency(),
-                                             model.getParameters(orbit.getDate()));
+                                             model.getParameters());
         Assertions.assertEquals(3.156, delay, 1.0e-3);
     }
 
@@ -727,7 +727,7 @@ public class GlobalIonosphereMapModelTest {
         final Binary64 delay = model.pathDelay(new FieldSpacecraftState<>(orbit),
                                                new TopocentricFrame(earth, point, null),
                                                PredefinedGnssSignal.G01.getFrequency(),
-                                               model.getParameters(field, orbit.getDate()));
+                                               model.getParameters(field));
         Assertions.assertEquals(3.156, delay.getReal(), 1.0e-3);
     }
 

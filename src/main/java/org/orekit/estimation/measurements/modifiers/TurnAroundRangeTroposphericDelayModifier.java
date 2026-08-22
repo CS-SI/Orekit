@@ -40,7 +40,6 @@ import org.orekit.utils.Differentiation;
 import org.orekit.utils.FieldTrackingCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterFunction;
-import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.TrackingCoordinates;
 
 /**
@@ -99,7 +98,7 @@ public class TurnAroundRangeTroposphericDelayModifier implements EstimationModif
                 // Delay in meters
                 final AbsoluteDate date = state.getDate();
                 return tropoModel.pathDelay(trackingCoordinates, groundObserver.getOffsetGeodeticPoint(date),
-                        tropoModel.getParameters(date), date).getDelay();
+                        tropoModel.getParameters(), date).getDelay();
             }
 
             return 0;
@@ -242,16 +241,13 @@ public class TurnAroundRangeTroposphericDelayModifier implements EstimationModif
         int indexPrimary = 0;
         for (final ParameterDriver driver : getParametersDrivers()) {
             if (driver.isSelected()) {
-                // update estimated derivatives with derivative of the modification wrt
-                // tropospheric parameters
-                for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                    double parameterDerivative = estimated.getParameterDerivatives(driver, span.getStart())[0];
-                    final double[] derivatives = rangeErrorParameterDerivative(primaryDerivatives,
-                            converter.getFreeStateParameters());
-                    parameterDerivative += derivatives[indexPrimary];
-                    estimated.setParameterDerivatives(driver, span.getStart(), parameterDerivative);
-                    indexPrimary += 1;
-                }
+                // update estimated derivatives with derivative of the modification wrt tropospheric parameters
+                double parameterDerivative = estimated.getParameterDerivatives(driver)[0];
+                final double[] derivatives = rangeErrorParameterDerivative(primaryDerivatives,
+                                                                           converter.getFreeStateParameters());
+                parameterDerivative += derivatives[indexPrimary];
+                estimated.setParameterDerivatives(driver, parameterDerivative);
+                indexPrimary += 1;
             }
 
         }
@@ -259,16 +255,13 @@ public class TurnAroundRangeTroposphericDelayModifier implements EstimationModif
         int indexSecondary = 0;
         for (final ParameterDriver driver : getParametersDrivers()) {
             if (driver.isSelected()) {
-                // update estimated derivatives with derivative of the modification wrt
-                // tropospheric parameters
-                for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                    double parameterDerivative = estimated.getParameterDerivatives(driver, span.getStart())[0];
-                    final double[] derivatives = rangeErrorParameterDerivative(secondaryDerivatives,
-                            converter.getFreeStateParameters());
-                    parameterDerivative += derivatives[indexSecondary];
-                    estimated.setParameterDerivatives(driver, span.getStart(), parameterDerivative);
-                    indexSecondary += 1;
-                }
+                // update estimated derivatives with derivative of the modification wrt tropospheric parameters
+                double parameterDerivative = estimated.getParameterDerivatives(driver)[0];
+                final double[] derivatives = rangeErrorParameterDerivative(secondaryDerivatives,
+                                                                           converter.getFreeStateParameters());
+                parameterDerivative += derivatives[indexSecondary];
+                estimated.setParameterDerivatives(driver, parameterDerivative);
+                indexSecondary += 1;
             }
 
         }
@@ -276,24 +269,18 @@ public class TurnAroundRangeTroposphericDelayModifier implements EstimationModif
         // Update derivatives with respect to primary observer position
         for (final ParameterDriver driver : primaryObserver.getParametersDrivers()) {
             if (driver.isSelected()) {
-                for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-
-                    double parameterDerivative = estimated.getParameterDerivatives(driver, span.getStart())[0];
-                    parameterDerivative += rangeErrorParameterDerivative(primaryObserver, driver, state);
-                    estimated.setParameterDerivatives(driver, span.getStart(), parameterDerivative);
-                }
+                double parameterDerivative = estimated.getParameterDerivatives(driver)[0];
+                parameterDerivative += rangeErrorParameterDerivative(primaryObserver, driver, state);
+                estimated.setParameterDerivatives(driver, parameterDerivative);
             }
         }
 
         // Update derivatives with respect to secondary observer position
         for (final ParameterDriver driver : secondaryObserver.getParametersDrivers()) {
             if (driver.isSelected()) {
-                for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-
-                    double parameterDerivative = estimated.getParameterDerivatives(driver, span.getStart())[0];
-                    parameterDerivative += rangeErrorParameterDerivative(secondaryObserver, driver, state);
-                    estimated.setParameterDerivatives(driver, span.getStart(), parameterDerivative);
-                }
+                double parameterDerivative = estimated.getParameterDerivatives(driver)[0];
+                parameterDerivative += rangeErrorParameterDerivative(secondaryObserver, driver, state);
+                estimated.setParameterDerivatives(driver, parameterDerivative);
             }
         }
 

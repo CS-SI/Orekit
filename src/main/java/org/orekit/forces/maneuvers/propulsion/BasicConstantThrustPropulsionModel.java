@@ -112,9 +112,6 @@ public class BasicConstantThrustPropulsionModel extends AbstractConstantThrustPr
     @Override
     public Vector3D getThrustVector() {
         // Thrust vector does not depend on spacecraft state for a constant maneuver.
-        // thrustDriver as only 1 value estimated over the whole time period
-        // by construction thrustDriver has only 1 value estimated over the all period
-        // that is why no argument is acceptable
         return direction.scalarMultiply(thrustDriver.getValue());
     }
 
@@ -122,7 +119,7 @@ public class BasicConstantThrustPropulsionModel extends AbstractConstantThrustPr
     @Override
     public Vector3D getThrustVector(final AbsoluteDate date) {
         // Thrust vector does not depend on spacecraft state for a constant maneuver.
-        return direction.scalarMultiply(thrustDriver.getValue(date));
+        return getThrustVector();
     }
 
     /** {@inheritDoc} */
@@ -138,7 +135,7 @@ public class BasicConstantThrustPropulsionModel extends AbstractConstantThrustPr
     /** {@inheritDoc} */
     @Override
     public double getFlowRate(final AbsoluteDate date) {
-        return flowRateDriver.getValue(date);
+        return getFlowRate();
     }
 
     /** {@inheritDoc} */

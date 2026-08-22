@@ -295,12 +295,6 @@ UNEXPECTED_TWO_ELEVATION_VALUES_FOR_ONE_AZIMUTH=dades inesperades, dos valors d'
 # unsupported parameter name {0}, supported names: {1}
 UNSUPPORTED_PARAMETER_NAME=nombre de paràmetre no conegut {0}, paràmetre conegut {1}
 
-# {0} parameter contains several span in its value TimeSpanMap, the {1} method must be called
-PARAMETER_WITH_SEVERAL_ESTIMATED_VALUES={0} paràmetre conté varis intervals en el seu valor TimeSpanMap, és necessari utiitzar {1}
-
-# setPeriod was already called once on {0} parameter, another parameter should be created if the periods have to be changed
-PARAMETER_PERIODS_HAS_ALREADY_BEEN_SET=la funció setPeriod ja ha sigut utilitzada pel paràmetre {0}, s''ha de crear un nou paràmetre
-
 # scale factor for parameter {0} is too small: {1}
 TOO_SMALL_SCALE_FOR_PARAMETER=el factor d''escala pel paràmetre {0} és massa petit: {1}
 

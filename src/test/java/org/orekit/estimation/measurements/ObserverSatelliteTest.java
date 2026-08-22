@@ -62,7 +62,7 @@ class ObserverSatelliteTest {
         for (ParameterDriver driver : satellite.getParametersDrivers()) {
             driver.setReferenceDate(epoch);
             driver.setSelected(true);
-            indices.put(driver.getNameSpan(epoch), nbParams++);
+            indices.put(driver.getName(), nbParams++);
         }
 
         // Checks to make sure that fieldCoordsProvider is an instance of ExtendedPositionProvider

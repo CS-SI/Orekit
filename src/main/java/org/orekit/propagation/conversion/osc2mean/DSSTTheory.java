@@ -128,8 +128,8 @@ public class DSSTTheory implements MeanTheory {
         final List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<>();
         for (final DSSTForceModel force : forceModels) {
             shortPeriodTerms.addAll(force.initializeShortPeriodTerms(aux, PropagationType.OSCULATING,
-                                                                     force.getParameters(mean.getDate())));
-            force.updateShortPeriodTerms(force.getParametersAllValues(), meanState);
+                                                                     force.getParameters()));
+            force.updateShortPeriodTerms(force.getParameters(), meanState);
         }
 
         // recompute the osculating parameters from the current mean parameters
@@ -198,8 +198,8 @@ public class DSSTTheory implements MeanTheory {
         final List<FieldShortPeriodTerms<T>> shortPeriodTerms = new ArrayList<>();
         for (final DSSTForceModel force : forceModels) {
             shortPeriodTerms.addAll(force.initializeShortPeriodTerms(aux, PropagationType.OSCULATING,
-                                                                     force.getParameters(field, date)));
-            force.updateShortPeriodTerms(force.getParametersAllValues(field), meanState);
+                                                                     force.getParameters(field)));
+            force.updateShortPeriodTerms(force.getParameters(field), meanState);
         }
 
         // recompute the osculating parameters from the current mean parameters

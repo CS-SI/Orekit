@@ -74,7 +74,7 @@ public class DeSitterRelativityTest extends AbstractLegacyForceModelTest {
         final double c2 = c * c;
 
         // Sun's gravitational parameter
-        final double gm = model.getParametersDrivers().getFirst().getValue(state.getDate().toAbsoluteDate());
+        final double gm = model.getParametersDrivers().getFirst().getValue();
 
         // Coordinates of the Earth with respect to the Sun
         final FieldPVCoordinates<DerivativeStructure> pvEarth = model.getEarth().getPVCoordinates(state.getDate(), model.getSun().getInertiallyOrientedFrame());
@@ -101,7 +101,7 @@ public class DeSitterRelativityTest extends AbstractLegacyForceModelTest {
         final double c2 = Constants.SPEED_OF_LIGHT * Constants.SPEED_OF_LIGHT;
 
         // Sun's gravitational parameter
-        final double gm = model.getParametersDrivers().getFirst().getValue(state.getDate().toAbsoluteDate());
+        final double gm = model.getParametersDrivers().getFirst().getValue();
 
         // Coordinates of the Earth with respect to the Sun
         final FieldPVCoordinates<Gradient> pvEarth = model.getEarth().getPVCoordinates(state.getDate(), model.getSun().getInertiallyOrientedFrame());
@@ -119,19 +119,22 @@ public class DeSitterRelativityTest extends AbstractLegacyForceModelTest {
 
     /**
      * Check against prediction in
-     *
+     * <p>
      * "C IUFOLINI, Ignazio, MATZNER, Richard, GURZADYAN, Vahe, et al.
      * A new laser-ranged satellite for General Relativityand space geodesy:
      * III. De Sitter effect and the LARES 2 space experiment.
      * The European Physical Journal C, 2017, vol. 77, no 12, p. 819"
-     *
+     * </p>
+     * <p>
      * They predict a precession of the orbital plane at a rate of the order
      * of -19.2 milliarcsecs per year.
-     *
+     * </p>
+     * <p>
      * As this effect is very small, a propagation of several years is needed to
      * find the same value. However, it takes a lot of time to be performed.
      * As a result, we propose a propagation of 60 days for which the impact is
      * equal to -20.2 milliarcsecs per year.
+     * </p>
      */
     @Test
     void testSmallEffectOnOrbit() {
@@ -170,7 +173,7 @@ public class DeSitterRelativityTest extends AbstractLegacyForceModelTest {
         {
 
         // initialization
-        AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 3, 1),
                                              new TimeComponents(13, 59, 27.816),
                                              TimeScalesFactory.getUTC());
         double i     = FastMath.toRadians(98.7);

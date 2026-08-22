@@ -103,12 +103,12 @@ public class MassDepletionDelay implements AdditionalDerivativesProvider {
         if (forward == manageStart) {
 
             // current acceleration
-            final double[] parameters   = maneuver.getParameters(state.getDate());
+            final double[] parameters   = maneuver.getParameters();
             // for the acceleration method we need all the span values of all the parameters driver
             // as in the acceleration method an exctractParameter method is called
             Vector3D acceleration = maneuver.acceleration(state, parameters);
             for (final ForceModel forceModel: nonGravitationalForces) {
-                acceleration = acceleration.add(forceModel.acceleration(state, forceModel.getParameters(state.getDate())));
+                acceleration = acceleration.add(forceModel.acceleration(state, forceModel.getParameters()));
             }
 
             // it is assumed the non-gravitational accelerations are inversely proportional to the mass

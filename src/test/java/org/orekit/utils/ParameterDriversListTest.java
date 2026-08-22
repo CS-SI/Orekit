@@ -21,7 +21,6 @@ import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeInterval;
 
 public class ParameterDriversListTest {
@@ -203,18 +202,7 @@ public class ParameterDriversListTest {
         ParameterDriver qA2 = new ParameterDriver("q", 0.0, 1.0, -1.0, +1.0, TimeInterval.UNLIMITED);
         ParameterDriver qB1 = new ParameterDriver("q", 0.0, 1.0, -1.0, +1.0, TimeInterval.UNLIMITED);
         final AtomicBoolean called = new AtomicBoolean(false);
-        qB1.addObserver(new ParameterObserver() {
-            /** {@inheritDoc} */
-            @Override
-            public void valueChanged(final double previousValue, final ParameterDriver driver, final AbsoluteDate date) {
-                called.set(true);
-            }
-
-            @Override
-            public void valueSpanMapChanged(final TimeSpanMap<Double> previousValueSpanMap, final ParameterDriver driver) {
-                called.set(true);
-            }
-        });
+        qB1.addObserver((previousValue, driver) -> called.set(true));
         ParameterDriversList listA = new ParameterDriversList();
         listA.add(pA1);
         listA.add(pA2);

@@ -203,7 +203,7 @@ public class AberrationModifierTest {
         for (ParameterDriver driver : parameterDrivers) {
             driver.setReferenceDate(epoch);
             driver.setSelected(true);
-            indices.put(driver.getNameSpan(epoch), nbParams++);
+            indices.put(driver.getName(), nbParams++);
         }
 
         // Station field coordinates
@@ -226,10 +226,10 @@ public class AberrationModifierTest {
 
         // Test derivatives against finite differences
         for (ParameterDriver driver : parameterDrivers) {
-            double raGradient = properDS[0].getGradient()[indices.get(driver.getNameSpan(epoch))];
+            double raGradient = properDS[0].getGradient()[indices.get(driver.getName())];
             checkNaturalToProperDerivative(0, raGradient, raDecDS, observerPVCoords, driver, measurementFrame);
 
-            double decGradient = properDS[1].getGradient()[indices.get(driver.getNameSpan(epoch))];
+            double decGradient = properDS[1].getGradient()[indices.get(driver.getName())];
             checkNaturalToProperDerivative(1, decGradient, raDecDS, observerPVCoords, driver, measurementFrame);
         }
 
@@ -246,10 +246,10 @@ public class AberrationModifierTest {
 
         // Test derivatives against finite differences
         for (ParameterDriver driver : parameterDrivers) {
-            double raGradient = naturalDS[0].getGradient()[indices.get(driver.getNameSpan(epoch))];
+            double raGradient = naturalDS[0].getGradient()[indices.get(driver.getName())];
             checkProperToNaturalDerivative(0, raGradient, expectedDS, observerPVCoords, driver, measurementFrame);
 
-            double decGradient = naturalDS[1].getGradient()[indices.get(driver.getNameSpan(epoch))];
+            double decGradient = naturalDS[1].getGradient()[indices.get(driver.getName())];
             checkProperToNaturalDerivative(1, decGradient, expectedDS, observerPVCoords, driver,
                     measurementFrame);
         }

@@ -104,9 +104,6 @@ public class SphericalConstantThrustPropulsionModel extends AbstractConstantThru
     @Override
     public Vector3D getThrustVector() {
         // Thrust vector does not depend on spacecraft state for a constant maneuver.
-        // thrustDriver as only 1 value estimated over the whole time period
-        // by construction thrustDriver has only 1 value estimated over the all period
-        // that is why no argument is acceptable
         return new Vector3D(thrustRightAscension.getValue(), thrustDeclination.getValue()).scalarMultiply(thrustMagnitude.getValue());
     }
 
@@ -114,7 +111,7 @@ public class SphericalConstantThrustPropulsionModel extends AbstractConstantThru
     @Override
     public Vector3D getThrustVector(final AbsoluteDate date) {
         // Thrust vector does not depend on spacecraft state for a constant maneuver.
-        return new Vector3D(thrustRightAscension.getValue(date), thrustDeclination.getValue(date)).scalarMultiply(thrustMagnitude.getValue(date));
+        return getThrustVector();
     }
 
     /** {@inheritDoc} */

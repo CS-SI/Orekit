@@ -32,7 +32,6 @@ import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElemen
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.TimeSpanMap.Span;
 
 import java.util.HashMap;
 import java.util.List;
@@ -259,23 +258,21 @@ class DSSTStateTransitionMatrixGenerator implements AdditionalDerivativesProvide
             int paramsIndex = converter.getFreeStateParameters();
             for (ParameterDriver driver : forceModel.getParametersDrivers()) {
                 if (driver.isSelected()) {
-                    // for each span (for each estimated value) corresponding name is added
-                    for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
 
-                        // get the partials derivatives for this driver
-                        DoubleArrayDictionary.Entry entry = meanElementsPartials.getEntry(span.getData());
-                        if (entry == null) {
-                            // create an entry filled with zeroes
-                            meanElementsPartials.put(span.getData(), new double[STATE_DIMENSION]);
-                            entry = meanElementsPartials.getEntry(span.getData());
-                        }
-                        // add the contribution of the current force model
-                        entry.increment(new double[] {
-                            derivativesA[paramsIndex], derivativesEx[paramsIndex], derivativesEy[paramsIndex],
-                            derivativesHx[paramsIndex], derivativesHy[paramsIndex], derivativesL[paramsIndex]
-                        });
-                        ++paramsIndex;
+                    // get the partials derivatives for this driver
+                    DoubleArrayDictionary.Entry entry = meanElementsPartials.getEntry(driver.getName());
+                    if (entry == null) {
+                        // create an entry filled with zeroes
+                        meanElementsPartials.put(driver.getName(), new double[STATE_DIMENSION]);
+                        entry = meanElementsPartials.getEntry(driver.getName());
                     }
+
+                    // add the contribution of the current force model
+                    entry.increment(new double[] {
+                        derivativesA[paramsIndex], derivativesEx[paramsIndex], derivativesEy[paramsIndex],
+                        derivativesHx[paramsIndex], derivativesHy[paramsIndex], derivativesL[paramsIndex]
+                    });
+                    ++paramsIndex;
 
                 }
             }

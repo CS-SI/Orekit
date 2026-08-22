@@ -124,10 +124,8 @@ class AbstractGradientConverterTest {
     }
 
     private ParameterDriversProvider mockParameterDriversProvider() {
-        final int nonZeroNumberOfValues = 1;
         final ParameterDriver mockedParameterDriver = Mockito.mock(ParameterDriver.class);
         Mockito.when(mockedParameterDriver.isSelected()).thenReturn(true);
-        Mockito.when(mockedParameterDriver.getNbOfValues()).thenReturn(nonZeroNumberOfValues);
         final ParameterDriversProvider mockedDriversProvider = Mockito.mock(ParameterDriversProvider.class);
         final List<ParameterDriver> parameterDriverList = new ArrayList<>();
         parameterDriverList.add(mockedParameterDriver);

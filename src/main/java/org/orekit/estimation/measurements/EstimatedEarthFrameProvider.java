@@ -336,15 +336,15 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
         final Gradient theta    = linearModel(freeParameters, date,
                                               primeMeridianOffsetDriver, primeMeridianDriftDriver,
                                               indices);
-        final Gradient thetaDot = primeMeridianDriftDriver.getValue(freeParameters, indices, date.toAbsoluteDate());
+        final Gradient thetaDot = primeMeridianDriftDriver.getValue(freeParameters, indices);
 
         // pole shift parameters
         final Gradient xpNeg    = linearModel(freeParameters, date,
                                                          polarOffsetXDriver, polarDriftXDriver, indices).negate();
         final Gradient ypNeg    = linearModel(freeParameters, date,
                                                          polarOffsetYDriver, polarDriftYDriver, indices).negate();
-        final Gradient xpNegDot = polarDriftXDriver.getValue(freeParameters, indices, date.toAbsoluteDate()).negate();
-        final Gradient ypNegDot = polarDriftYDriver.getValue(freeParameters, indices, date.toAbsoluteDate()).negate();
+        final Gradient xpNegDot = polarDriftXDriver.getValue(freeParameters, indices).negate();
+        final Gradient ypNegDot = polarDriftYDriver.getValue(freeParameters, indices).negate();
 
         return getTransform(date, theta, thetaDot, xpNeg, xpNegDot, ypNeg, ypNegDot);
 
@@ -364,15 +364,15 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
         // prime meridian shift parameters
         final Gradient theta    = linearModel(freeParameters, date, primeMeridianOffsetDriver, primeMeridianDriftDriver,
                 indices);
-        final Gradient thetaDot = primeMeridianDriftDriver.getValue(freeParameters, indices, date.toAbsoluteDate());
+        final Gradient thetaDot = primeMeridianDriftDriver.getValue(freeParameters, indices);
 
         // pole shift parameters
         final Gradient xpNeg    = linearModel(freeParameters, date,
                 polarOffsetXDriver, polarDriftXDriver, indices).negate();
         final Gradient ypNeg    = linearModel(freeParameters, date,
                 polarOffsetYDriver, polarDriftYDriver, indices).negate();
-        final Gradient xpNegDot = polarDriftXDriver.getValue(freeParameters, indices, date.toAbsoluteDate()).negate();
-        final Gradient ypNegDot = polarDriftYDriver.getValue(freeParameters, indices, date.toAbsoluteDate()).negate();
+        final Gradient xpNegDot = polarDriftXDriver.getValue(freeParameters, indices).negate();
+        final Gradient ypNegDot = polarDriftYDriver.getValue(freeParameters, indices).negate();
 
         final Gradient                zero  = date.getField().getZero();
         final FieldVector3D<Gradient> plusI = FieldVector3D.getPlusI(date.getField());
@@ -492,8 +492,8 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
                                       offsetDriver.getName());
         }
         final Gradient dt     = date.durationFrom(offsetDriver.getReferenceDate());
-        final Gradient offset = offsetDriver.getValue(freeParameters, indices, date.toAbsoluteDate());
-        final Gradient drift  = driftDriver.getValue(freeParameters, indices, date.toAbsoluteDate());
+        final Gradient offset = offsetDriver.getValue(freeParameters, indices);
+        final Gradient drift  = driftDriver.getValue(freeParameters, indices);
         return dt.multiply(drift).add(offset);
     }
 

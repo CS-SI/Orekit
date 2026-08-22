@@ -45,9 +45,7 @@ import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.TimeSpanMap;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
-
 
 /**
  * Class modifying theoretical angular measurement with (the inverse of) stellar aberration.
@@ -360,10 +358,8 @@ public class AberrationModifier implements EstimationModifier<AngularRaDec> {
         final Map<String, Integer> indices = new HashMap<>();
         for (ParameterDriver driver : estimated.getObservedMeasurement().getParametersDrivers()) {
             if (driver.isSelected()) {
-                for (TimeSpanMap.Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                    if (!indices.containsKey(span.getData())) {
-                        indices.put(span.getData(), nbParams++);
-                    }
+                if (!indices.containsKey(driver.getName())) {
+                    indices.put(driver.getName(), nbParams++);
                 }
             }
         }
@@ -399,14 +395,12 @@ public class AberrationModifier implements EstimationModifier<AngularRaDec> {
         final double[] decDerivatives = naturalRaDec[1].getGradient();
 
         for (final ParameterDriver driver : estimated.getObservedMeasurement().getParametersDrivers()) {
-            for (TimeSpanMap.Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                final Integer index = indices.get(span.getData());
-                if (index != null) {
-                    final double[] parameterDerivative = estimated.getParameterDerivatives(driver);
-                    parameterDerivative[0] += raDerivatives[index];
-                    parameterDerivative[1] += decDerivatives[index];
-                    estimated.setParameterDerivatives(driver, span.getStart(), parameterDerivative[0], parameterDerivative[1]);
-                }
+            final Integer index = indices.get(driver.getName());
+            if (index != null) {
+                final double[] parameterDerivative = estimated.getParameterDerivatives(driver);
+                parameterDerivative[0] += raDerivatives[index];
+                parameterDerivative[1] += decDerivatives[index];
+                estimated.setParameterDerivatives(driver, parameterDerivative[0], parameterDerivative[1]);
             }
         }
     }

@@ -84,8 +84,9 @@ public class TDOATroposphericDelayModifier implements EstimationModifier<TDOA> {
             // only consider measurements above the horizon
             if (trackingCoordinates.getElevation() > 0) {
                 // Delay in meters
-                final double delay = tropoModel.pathDelay(trackingCoordinates, groundObserver.getOffsetGeodeticPoint(state.getDate()),
-                                tropoModel.getParameters(state.getDate()), state.getDate()).
+                final double delay = tropoModel.pathDelay(trackingCoordinates,
+                                                          groundObserver.getOffsetGeodeticPoint(state.getDate()),
+                                                          tropoModel.getParameters(), state.getDate()).
                         getDelay();
                 // return delay in seconds
                 return delay / Constants.SPEED_OF_LIGHT;

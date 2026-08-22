@@ -78,7 +78,7 @@ public class EstimatedIonosphericModelTest {
         // Delay
         final double delay = model.pathDelay(0.5 * FastMath.PI,
                                              PredefinedGnssSignal.G01.getFrequency(),
-                                             model.getParameters(new AbsoluteDate()));
+                                             model.getParameters());
         // Verify
         Assertions.assertEquals(0.162, delay, 0.001);
     }

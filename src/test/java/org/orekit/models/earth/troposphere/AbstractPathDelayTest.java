@@ -64,7 +64,7 @@ public abstract class AbstractPathDelayTest<T extends TroposphericModel> {
                                final double expectedDelay) {
         T model = buildTroposphericModel(provider);
         final TroposphericDelay td = model.pathDelay(trackingCoordinates, point,
-                                                     model.getParameters(date), date);
+                                                     model.getParameters(), date);
         Assertions.assertEquals(expectedZh,    td.getZh(),    0.0001);
         Assertions.assertEquals(expectedZw,    td.getZw(),    0.0001);
         Assertions.assertEquals(expectedSh,    td.getSh(),    0.0001);
@@ -91,7 +91,7 @@ public abstract class AbstractPathDelayTest<T extends TroposphericModel> {
                                            zero.newInstance(trackingCoordinates.getRange()));
         FieldGeodeticPoint<F> pointF = new FieldGeodeticPoint<>(field, point);
         FieldAbsoluteDate<F> dateF = new FieldAbsoluteDate<>(field, date);
-        final double[] parameters = model.getParameters(date);
+        final double[] parameters = model.getParameters();
         F[] parametersF = MathArrays.buildArray(field, parameters.length);
         for (int i = 0; i < parameters.length; i++) {
             parametersF[i] = zero.newInstance(parameters[i]);
@@ -116,7 +116,7 @@ public abstract class AbstractPathDelayTest<T extends TroposphericModel> {
         for (double elev = 10d; elev < 90d; elev += 8d) {
             final double delay = model.pathDelay(new TrackingCoordinates(0.0, FastMath.toRadians(elev), 0.0),
                                                  point,
-                                                 model.getParameters(date), date).getDelay();
+                                                 model.getParameters(), date).getDelay();
             Assertions.assertTrue(Precision.compareTo(delay, lastDelay, 1.0e-6) < 0);
             lastDelay = delay;
         }
@@ -159,7 +159,7 @@ public abstract class AbstractPathDelayTest<T extends TroposphericModel> {
                                                  new GeodeticPoint(defaultPoint.getLatitude(),
                                                                    defaultPoint.getLongitude(),
                                                                    height),
-                                                 model.getParameters(defaultDate), defaultDate).getDelay();
+                                                 model.getParameters(), defaultDate).getDelay();
             // some models have small noise, hence the 0.1mm margin
             Assertions.assertTrue(delay < lastDelay + 0.0001);
             lastDelay = delay;
@@ -181,7 +181,7 @@ public abstract class AbstractPathDelayTest<T extends TroposphericModel> {
                                             new FieldGeodeticPoint<>(zero.newInstance(defaultPoint.getLatitude()),
                                                                      zero.newInstance(defaultPoint.getLongitude()),
                                                                      zero.newInstance(height)),
-                                            model.getParameters(date.getField(), date), date).getDelay();
+                                            model.getParameters(date.getField()), date).getDelay();
             // some models have small noise, hence the 0.1mm margin
             Assertions.assertTrue(delay.getReal() < lastDelay.getReal() + 0.0001);
             lastDelay = delay;
@@ -198,10 +198,10 @@ public abstract class AbstractPathDelayTest<T extends TroposphericModel> {
         for (double elevation = FastMath.toRadians(5.0); elevation < MathUtils.SEMI_PI; elevation += 0.01) {
             final TrackingCoordinates trackingCoordinates = new TrackingCoordinates(2.75, elevation, 1.4e6);
             final TroposphericDelay referenceDelay = referenceModel.pathDelay(trackingCoordinates, defaultPoint,
-                                                                              referenceModel.getParameters(defaultDate),
+                                                                              referenceModel.getParameters(),
                                                                               defaultDate);
             final TroposphericDelay testedDelay = testedModel.pathDelay(trackingCoordinates, defaultPoint,
-                                                                        testedModel.getParameters(defaultDate),
+                                                                        testedModel.getParameters(),
                                                                         defaultDate);
             maxErrorZh = FastMath.max(maxErrorZh, FastMath.abs(testedDelay.getZh() - referenceDelay.getZh()));
             maxErrorZw = FastMath.max(maxErrorZw, FastMath.abs(testedDelay.getZw() - referenceDelay.getZw()));

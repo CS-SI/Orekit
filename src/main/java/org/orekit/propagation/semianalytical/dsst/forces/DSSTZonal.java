@@ -752,9 +752,7 @@ public class DSSTZonal implements DSSTForceModel {
             final AuxiliaryElements auxiliaryElements = new AuxiliaryElements(meanState.getOrbit(), I);
 
             // Container of attributes
-            // Extract the proper parameters valid for the corresponding meanState date from the input array
-            final double[] extractedParameters = this.extractParameters(parameters, auxiliaryElements.getDate());
-            final DSSTZonalContext context = initializeStep(auxiliaryElements, extractedParameters);
+            final DSSTZonalContext context = initializeStep(auxiliaryElements, parameters);
 
             // Access to potential U derivatives
             final UAnddU udu = new UAnddU(meanState.getDate(), context, auxiliaryElements, hansen);
@@ -795,9 +793,7 @@ public class DSSTZonal implements DSSTForceModel {
             final FieldAuxiliaryElements<T> auxiliaryElements = new FieldAuxiliaryElements<>(meanState.getOrbit(), I);
 
             // Container of attributes
-            // Extract the proper parameters valid for the corresponding meanState date from the input array
-            final T[] extractedParameters = this.extractParameters(parameters, auxiliaryElements.getDate());
-            final FieldDSSTZonalContext<T> context = initializeStep(auxiliaryElements, extractedParameters);
+            final FieldDSSTZonalContext<T> context = initializeStep(auxiliaryElements, parameters);
 
             final FieldHansenObjects<T> fho = (FieldHansenObjects<T>) fieldHansen.get(field);
 

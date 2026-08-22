@@ -438,9 +438,9 @@ class GPSPropagatorTest {
 
         // harvester sorts the columns lexicographically, and wraps them as SpanXxx##
         Assertions.assertEquals(2, harvester.getJacobiansColumnsNames().size());
-        Assertions.assertEquals("Span" + NonKeplerianDriversFactory.RADIUS_COSINE + "0",
+        Assertions.assertEquals(NonKeplerianDriversFactory.RADIUS_COSINE,
                                 harvester.getJacobiansColumnsNames().get(0));
-        Assertions.assertEquals("Span" + NonKeplerianDriversFactory.RADIUS_SINE + "0",
+        Assertions.assertEquals(NonKeplerianDriversFactory.RADIUS_SINE,
                                 harvester.getJacobiansColumnsNames().get(1));
 
         // propagate orbit

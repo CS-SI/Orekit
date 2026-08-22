@@ -68,12 +68,12 @@ public class DSSTNewtonianAttraction implements DSSTForceModel {
                                                 0.0, Double.POSITIVE_INFINITY, TimeInterval.UNLIMITED);
     }
 
-    /** Get the central attraction coefficient μ at specific date.
+    /** Get the central attraction coefficient μ.
      * @param date date at which mu wants to be known
      * @return mu central attraction coefficient (m³/s²)
      */
     public double getMu(final AbsoluteDate date) {
-        return gmParameterDriver.getValue(date);
+        return gmParameterDriver.getValue();
     }
 
     /** {@inheritDoc} */

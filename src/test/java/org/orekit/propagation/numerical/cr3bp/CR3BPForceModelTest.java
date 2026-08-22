@@ -57,12 +57,12 @@ public class CR3BPForceModelTest {
     @Test
     public void testModel() {
                 
-        final double mu = new CR3BPForceModel(syst).getParameters(new AbsoluteDate())[0];
+        final double mu = new CR3BPForceModel(syst).getParameters()[0];
         Assertions.assertEquals(0.0121, mu, 1E-3);
         
      // Time settings
         final AbsoluteDate initialDate =
-            new AbsoluteDate(1996, 06, 25, 0, 0, 00.000,
+            new AbsoluteDate(1996, 6, 25, 0, 0, 00.000,
                              TimeScalesFactory.getUTC());
 
         final PVCoordinates initialConditions =

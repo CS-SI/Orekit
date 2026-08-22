@@ -60,9 +60,10 @@ import org.orekit.utils.IERSConventions;
 class DSSTZonalTest {
 
     /** Test mean elements rates computation.
-     * 
+     * <p>
      * First without setting the body-fixed frame, then by setting it to the inertial propagation frame.
      * Both should give the same results.
+     * </p>
      */
     @Test
     void testGetMeanElementRate() {
@@ -77,7 +78,7 @@ class DSSTZonalTest {
                 GravityFieldFactory.getUnnormalizedProvider(4, 4);
 
         final Frame earthFrame = FramesFactory.getEME2000();
-        final AbsoluteDate initDate = new AbsoluteDate(2007, 04, 16, 0, 46, 42.400, TimeScalesFactory.getUTC());
+        final AbsoluteDate initDate = new AbsoluteDate(2007, 4, 16, 0, 46, 42.400, TimeScalesFactory.getUTC());
 
         // a  = 26559890 m
         // ex = 2.719455286199036E-4
@@ -108,7 +109,7 @@ class DSSTZonalTest {
         }
 
         // Force model parameters
-        final double[] parameters = zonal.getParameters(orbit.getDate());
+        final double[] parameters = zonal.getParameters();
 
         final AuxiliaryElements auxiliaryElements = new AuxiliaryElements(state.getOrbit(), 1);
 
@@ -119,9 +120,7 @@ class DSSTZonalTest {
         Arrays.fill(elements, 0.0);
 
         final double[] daidt = zonal.getMeanElementRate(state, auxiliaryElements, parameters);
-        for (int i = 0; i < daidt.length; i++) {
-            elements[i] = daidt[i];
-        }
+        System.arraycopy(daidt, 0, elements, 0, daidt.length);
 
         Assertions.assertEquals(0.0,                     elements[0], 1.e-25);
         Assertions.assertEquals(1.3909396722346468E-11,  elements[1], 3.e-26);
@@ -143,11 +142,10 @@ class DSSTZonalTest {
         final AuxiliaryElements aux = new AuxiliaryElements(meanState.getOrbit(), 1);
 
         // Set the force models
-        final List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<>();
-
         zonal.registerAttitudeProvider(null);
-        shortPeriodTerms.addAll(zonal.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, zonal.getParameters(meanState.getDate())));
-        zonal.updateShortPeriodTerms(zonal.getParametersAllValues(), meanState);
+        final List<ShortPeriodTerms> shortPeriodTerms =
+            new ArrayList<>(zonal.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, zonal.getParameters()));
+        zonal.updateShortPeriodTerms(zonal.getParameters(), meanState);
 
         double[] y = new double[6];
         for (final ShortPeriodTerms spt : shortPeriodTerms) {
@@ -167,7 +165,7 @@ class DSSTZonalTest {
 
     private SpacecraftState getGEOState() {
         // No shadow at this date
-        final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2003, 05, 21), new TimeComponents(1, 0, 0.),
+        final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2003, 5, 21), new TimeComponents(1, 0, 0.),
                                                        TimeScalesFactory.getUTC());
         final Orbit orbit = new EquinoctialOrbit(42164000,
                                                  10e-3,
@@ -188,7 +186,7 @@ class DSSTZonalTest {
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
 
         final Frame earthFrame = FramesFactory.getEME2000();
-        final AbsoluteDate initDate = new AbsoluteDate(2007, 04, 16, 0, 46, 42.400, TimeScalesFactory.getUTC());
+        final AbsoluteDate initDate = new AbsoluteDate(2007, 4, 16, 0, 46, 42.400, TimeScalesFactory.getUTC());
 
         // a  = 2.655989E6 m
         // ex = 2.719455286199036E-4
@@ -217,17 +215,17 @@ class DSSTZonalTest {
 
         // Zonal force model
         final DSSTZonal zonal = new DSSTZonal(provider, 32, 4, 65);
-        zonal.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, zonal.getParameters(orbit.getDate()));
+        zonal.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, zonal.getParameters());
 
         // Zonal force model with default constructor
         final DSSTZonal zonalDefault = new DSSTZonal(provider);
-        zonalDefault.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, zonalDefault.getParameters(orbit.getDate()));
+        zonalDefault.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, zonalDefault.getParameters());
 
         // Compute mean element rate for the zonal force model
-        final double[] elements = zonal.getMeanElementRate(state, auxiliaryElements, zonal.getParameters(orbit.getDate()));
+        final double[] elements = zonal.getMeanElementRate(state, auxiliaryElements, zonal.getParameters());
 
         // Compute mean element rate for the "default" zonal force model
-        final double[] elementsDefault = zonalDefault.getMeanElementRate(state, auxiliaryElements, zonalDefault.getParameters(orbit.getDate()));
+        final double[] elementsDefault = zonalDefault.getMeanElementRate(state, auxiliaryElements, zonalDefault.getParameters());
 
         // Verify
         for (int i = 0; i < 6; i++) {
@@ -408,9 +406,9 @@ class DSSTZonalTest {
         if (printResults) {
             System.out.println("Inertial frame  : " + inertialFrame.toString());
             System.out.println("Body-Fixed frame: " + bodyFixedFrame.toString());
-            System.out.println("\ndi\n" + dI.toString());
-            System.out.println("\ndΩ\n" + dOm.toString());
-            System.out.println("\ndLM\n" + dLM.toString());
+            System.out.println("\ndi\n" + dI);
+            System.out.println("\ndΩ\n" + dOm);
+            System.out.println("\ndLM\n" + dLM);
         }
         
         // Compare to reference

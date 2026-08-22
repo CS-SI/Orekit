@@ -28,7 +28,6 @@ import org.orekit.propagation.AbstractGradientConverter;
 import org.orekit.utils.Differentiation;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversProvider;
-import org.orekit.utils.TimeSpanMap.Span;
 
 /** Utility class for TDOA measurements.
  * @author Pascal Parraud
@@ -109,15 +108,12 @@ class TDOAModifierUtil {
         int index = 0;
         for (final ParameterDriver driver : parametricModel.getParametersDrivers()) {
             if (driver.isSelected()) {
-                for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-
-                    // update estimated derivatives with derivative of the modification wrt modifier parameters
-                    double parameterDerivative = estimated.getParameterDerivatives(driver, span.getStart())[0];
-                    parameterDerivative += primeDerivatives[index + converter.getFreeStateParameters()];
-                    parameterDerivative -= secondDerivatives[index + converter.getFreeStateParameters()];
-                    estimated.setParameterDerivatives(driver, span.getStart(), parameterDerivative);
-                    index += 1;
-                }
+                // update estimated derivatives with derivative of the modification wrt modifier parameters
+                double parameterDerivative = estimated.getParameterDerivatives(driver)[0];
+                parameterDerivative += primeDerivatives[index + converter.getFreeStateParameters()];
+                parameterDerivative -= secondDerivatives[index + converter.getFreeStateParameters()];
+                   estimated.setParameterDerivatives(driver, parameterDerivative);
+                   index += 1;
             }
 
         }
@@ -125,26 +121,20 @@ class TDOAModifierUtil {
         // Update derivatives with respect to primary station position
         for (final ParameterDriver driver : primeObserver.getParametersDrivers()) {
             if (driver.isSelected()) {
-                for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-
-                    double parameterDerivative = estimated.getParameterDerivatives(driver, span.getStart())[0];
-                    parameterDerivative += Differentiation.differentiate((d, t) -> modelEffect.evaluate(primeObserver, state),
+                double parameterDerivative = estimated.getParameterDerivatives(driver)[0];
+                parameterDerivative += Differentiation.differentiate((d, t) -> modelEffect.evaluate(primeObserver, state),
                                                                      3, 10.0 * driver.getScale()).value(driver, state.getDate());
-                    estimated.setParameterDerivatives(driver, span.getStart(), parameterDerivative);
-                }
+                estimated.setParameterDerivatives(driver, parameterDerivative);
             }
         }
 
         // Update derivatives with respect to secondary station position
         for (final ParameterDriver driver : secondObserver.getParametersDrivers()) {
             if (driver.isSelected()) {
-                for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-
-                    double parameterDerivative = estimated.getParameterDerivatives(driver, span.getStart())[0];
-                    parameterDerivative -= Differentiation.differentiate((d, t) -> modelEffect.evaluate(secondObserver, state),
+                double parameterDerivative = estimated.getParameterDerivatives(driver)[0];
+                parameterDerivative -= Differentiation.differentiate((d, t) -> modelEffect.evaluate(secondObserver, state),
                                                                      3, 10.0 * driver.getScale()).value(driver, state.getDate());
-                    estimated.setParameterDerivatives(driver, span.getStart(), parameterDerivative);
-                }
+                estimated.setParameterDerivatives(driver, parameterDerivative);
             }
         }
 

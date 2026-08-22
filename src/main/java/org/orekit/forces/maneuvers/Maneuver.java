@@ -157,7 +157,7 @@ public class Maneuver implements ForceModel {
     public void addContribution(final SpacecraftState s, final TimeDerivativesEquations adder) {
 
         // Get the parameters associated to the maneuver (from ForceModel)
-        final double[] parameters = getParameters(s.getDate());
+        final double[] parameters = getParameters();
 
         // If the maneuver is active, compute and add its contribution
         // Maneuver triggers are used to check if the maneuver is currently firing or not
@@ -189,7 +189,7 @@ public class Maneuver implements ForceModel {
                         final FieldTimeDerivativesEquations<T> adder) {
 
         // Get the parameters associated to the maneuver (from ForceModel)
-        final T[] parameters = getParameters(s.getDate().getField(), s.getDate());
+        final T[] parameters = getParameters(s.getDate().getField());
 
         // If the maneuver is active, compute and add its contribution
         // Maneuver triggers are used to check if the maneuver is currently firing or not

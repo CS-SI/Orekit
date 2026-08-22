@@ -186,9 +186,9 @@ class EarthBasedStationTransformProvider implements TransformProvider {
      * @return origin position
      */
     private Vector3D getOrigin(final AbsoluteDate date) {
-        final double    x          = eastOffsetDriver.getValue(date);
-        final double    y          = northOffsetDriver.getValue(date);
-        final double    z          = zenithOffsetDriver.getValue(date);
+        final double    x          = eastOffsetDriver.getValue();
+        final double    y          = northOffsetDriver.getValue();
+        final double    z          = zenithOffsetDriver.getValue();
         final Frame bodyFrame = baseFrame.getParentShape().getBodyFrame();
         final StaticTransform staticTopoToBody = baseFrame.getStaticTransformTo(bodyFrame, date);
         final Vector3D        originBeforeDisplacement     = staticTopoToBody.transformPosition(new Vector3D(x, y, z));
@@ -293,9 +293,9 @@ class EarthBasedStationTransformProvider implements TransformProvider {
     private <T extends CalculusFieldElement<T>> FieldVector3D<T> getOrigin(final FieldAbsoluteDate<T> date) {
         final AbsoluteDate absoluteDate = date.toAbsoluteDate();
         final Field<T> field = date.getField();
-        final T x          = field.getZero().newInstance(eastOffsetDriver.getValue(absoluteDate));
-        final T                       y          = field.getZero().newInstance(northOffsetDriver.getValue(absoluteDate));
-        final T                       z          = field.getZero().newInstance(zenithOffsetDriver.getValue(absoluteDate));
+        final T x          = field.getZero().newInstance(eastOffsetDriver.getValue());
+        final T                       y          = field.getZero().newInstance(northOffsetDriver.getValue());
+        final T                       z          = field.getZero().newInstance(zenithOffsetDriver.getValue());
         final Frame bodyFrame = baseFrame.getParentShape().getBodyFrame();
         final FieldStaticTransform<T> staticTopoToBody = baseFrame.getStaticTransformTo(bodyFrame, date);
         final FieldVector3D<T>        originBeforeDisplacement     = staticTopoToBody.transformPosition(new FieldVector3D<>(x, y, z));

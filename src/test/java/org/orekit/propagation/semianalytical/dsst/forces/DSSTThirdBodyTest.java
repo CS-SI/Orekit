@@ -50,7 +50,7 @@ class DSSTThirdBodyTest {
     void testGetMeanElementRate() throws IllegalArgumentException {
 
         final Frame earthFrame = FramesFactory.getEME2000();
-        final AbsoluteDate initDate = new AbsoluteDate(2003, 07, 01, 0, 0, 00.000, TimeScalesFactory.getUTC());
+        final AbsoluteDate initDate = new AbsoluteDate(2003, 7, 1, 0, 0, 00.000, TimeScalesFactory.getUTC());
 
         final double mu = 3.986004415E14;
         // a    = 42163393.0 m
@@ -77,7 +77,7 @@ class DSSTThirdBodyTest {
         final DSSTForceModel moon = new DSSTThirdBody(CelestialBodyFactory.getMoon(), mu);
 
         // Force model parameters
-        final double[] parameters = moon.getParameters(orbit.getDate());
+        final double[] parameters = moon.getParameters();
 
         // Initialize force model
         moon.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, parameters);
@@ -86,9 +86,7 @@ class DSSTThirdBodyTest {
         Arrays.fill(elements, 0.0);
 
         final double[] daidt = moon.getMeanElementRate(state, auxiliaryElements, parameters);
-        for (int i = 0; i < daidt.length; i++) {
-            elements[i] = daidt[i];
-        }
+        System.arraycopy(daidt, 0, elements, 0, daidt.length);
 
         Assertions.assertEquals(0.0,                    elements[0], eps);
         Assertions.assertEquals(4.346622389086759E-10,  elements[1], eps);
@@ -116,8 +114,8 @@ class DSSTThirdBodyTest {
 
         for (final DSSTForceModel force : forces) {
             force.registerAttitudeProvider(null);
-            shortPeriodTerms.addAll(force.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, force.getParameters(meanState.getDate())));
-            force.updateShortPeriodTerms(force.getParametersAllValues(), meanState);
+            shortPeriodTerms.addAll(force.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, force.getParameters()));
+            force.updateShortPeriodTerms(force.getParameters(), meanState);
         }
 
         double[] y = new double[6];
@@ -138,7 +136,7 @@ class DSSTThirdBodyTest {
 
     private SpacecraftState getGEOState() throws IllegalArgumentException {
         // No shadow at this date
-        final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2003, 05, 21), new TimeComponents(1, 0, 0.),
+        final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2003, 5, 21), new TimeComponents(1, 0, 0.),
                                                        TimeScalesFactory.getUTC());
         final Orbit orbit = new EquinoctialOrbit(42164000,
                                                  10e-3,

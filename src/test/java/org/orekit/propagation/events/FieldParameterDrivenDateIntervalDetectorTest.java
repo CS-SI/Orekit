@@ -172,7 +172,7 @@ class FieldParameterDrivenDateIntervalDetectorTest {
         final double startShift = 5.5;
         detector.getStartDriver().setValue(startShift);
         final double stopShift  = -0.5;
-        detector.getStopDriver().setValue(stopShift, null);
+        detector.getStopDriver().setValue(stopShift);
         propagator.propagate(propagator.getInitialState().getOrbit().getDate().shiftedBy(Constants.JULIAN_DAY));
 
         Assertions.assertEquals(2, logger.getLoggedEvents().size());

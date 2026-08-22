@@ -90,11 +90,11 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
      * Analytical version of the function theoreticalEvalution in TurnAroundRange class
      * The derivative structures are not used
      * For now only the value of turn-around range and not its derivatives are available
-     * @param iteration
-     * @param evaluation
-     * @param initialState
-     * @param state
-     * @return
+     * @param iteration number of iteration
+     * @param evaluation number of evaluation
+     * @param initialState initial state
+     * @param state current state
+     * @return evaluated measurement
      */
     protected EstimatedMeasurement<TurnAroundRange> theoreticalEvaluationAnalytic(final int iteration, final int evaluation,
                                                                                   final SpacecraftState initialState,
@@ -528,24 +528,24 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
 
             // Primary station drivers
             if (primaryGroundStation.getEastOffsetDriver().isSelected()) {
-                estimated.setParameterDerivatives(primaryGroundStation.getEastOffsetDriver(), new AbsoluteDate(), dRdQM.getX());
+                estimated.setParameterDerivatives(primaryGroundStation.getEastOffsetDriver(), dRdQM.getX());
             }
             if (primaryGroundStation.getNorthOffsetDriver().isSelected()) {
-                estimated.setParameterDerivatives(primaryGroundStation.getNorthOffsetDriver(), new AbsoluteDate(), dRdQM.getY());
+                estimated.setParameterDerivatives(primaryGroundStation.getNorthOffsetDriver(), dRdQM.getY());
             }
             if (primaryGroundStation.getZenithOffsetDriver().isSelected()) {
-                estimated.setParameterDerivatives(primaryGroundStation.getZenithOffsetDriver(), new AbsoluteDate(), dRdQM.getZ());
+                estimated.setParameterDerivatives(primaryGroundStation.getZenithOffsetDriver(), dRdQM.getZ());
             }
 
             // secondary station drivers
             if (secondaryGroundStation.getEastOffsetDriver().isSelected()) {
-                estimated.setParameterDerivatives(secondaryGroundStation.getEastOffsetDriver(), new AbsoluteDate(), dRdQS.getX());
+                estimated.setParameterDerivatives(secondaryGroundStation.getEastOffsetDriver(), dRdQS.getX());
             }
             if (secondaryGroundStation.getNorthOffsetDriver().isSelected()) {
-                estimated.setParameterDerivatives(secondaryGroundStation.getNorthOffsetDriver(), new AbsoluteDate(), dRdQS.getY());
+                estimated.setParameterDerivatives(secondaryGroundStation.getNorthOffsetDriver(), dRdQS.getY());
             }
             if (secondaryGroundStation.getZenithOffsetDriver().isSelected()) {
-                estimated.setParameterDerivatives(secondaryGroundStation.getZenithOffsetDriver(), new AbsoluteDate(), dRdQS.getZ());
+                estimated.setParameterDerivatives(secondaryGroundStation.getZenithOffsetDriver(), dRdQS.getZ());
             }
         }
 
@@ -555,12 +555,11 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
 
 
 
-    /**
-     * Added for validation
-     * @param iteration
-     * @param evaluation
-     * @param state
-     * @return
+    /** Added for validation.
+     * @param iteration number of iteration
+     * @param evaluation number of evaluation
+     * @param state current state
+     * @return evaluated measurement
      */
     protected EstimatedMeasurement<TurnAroundRange> theoreticalEvaluationValidation(final int iteration, final int evaluation,
                                                                                     final SpacecraftState state) {
@@ -731,7 +730,7 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
         for (final ParameterDriver driver : getParametersDrivers()) {
             final Integer index = indices.get(driver.getName());
             if (index != null) {
-                estimated.setParameterDerivatives(driver, new AbsoluteDate(), derivatives[index]);
+                estimated.setParameterDerivatives(driver, derivatives[index]);
             }
         }
 

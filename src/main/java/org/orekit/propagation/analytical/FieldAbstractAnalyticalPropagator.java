@@ -391,7 +391,7 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
         try {
 
             // evaluate orbit
-            final FieldOrbit<T> orbit = propagateOrbit(date, getParameters(date.getField(), date.getDate()));
+            final FieldOrbit<T> orbit = propagateOrbit(date, getParameters(date.getField()));
 
             // evaluate attitude
             final FieldAttitude<T> attitude =
@@ -411,7 +411,7 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
         /** {@inheritDoc} */
         @Override
         public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> date, final Frame frame) {
-            return propagateOrbit(date, getParameters(date.getField(), date)).getPVCoordinates(frame);
+            return propagateOrbit(date, getParameters(date.getField())).getPVCoordinates(frame);
         }
 
     }

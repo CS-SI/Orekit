@@ -31,8 +31,6 @@ import org.orekit.time.TimeInterval;
 import org.orekit.utils.DateDriver;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterObserver;
-import org.orekit.utils.TimeSpanMap;
-import org.orekit.utils.TimeSpanMap.Span;
 
 /** Detector for date intervals that may be offset thanks to parameter drivers.
  * <p>
@@ -246,20 +244,12 @@ public class ParameterDrivenDateIntervalDetector extends AbstractDetector<Parame
 
         /** {@inheritDoc} */
         @Override
-        public void valueChanged(final double previousValue, final ParameterDriver driver, final AbsoluteDate date) {
+        public void valueChanged(final double previousValue, final ParameterDriver driver) {
             if (driver.isSelected()) {
-                setDelta(driver.getValue(date) - previousValue, date);
+                setDelta(driver.getValue() - previousValue);
             }
         }
-        /** {@inheritDoc} */
-        @Override
-        public void valueSpanMapChanged(final TimeSpanMap<Double> previousValue, final ParameterDriver driver) {
-            if (driver.isSelected()) {
-                for (Span<Double> span = driver.getValueSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                    setDelta(span.getData() - previousValue.get(span.getStart()), span.getStart());
-                }
-            }
-        }
+
         /** {@inheritDoc} */
         @Override
         public void selectionChanged(final boolean previousSelection, final ParameterDriver driver) {
@@ -273,9 +263,8 @@ public class ParameterDrivenDateIntervalDetector extends AbstractDetector<Parame
 
         /** Change a value.
          * @param delta change of value
-         * @param date date at which the delta wants to be set
          */
-        protected abstract void setDelta(double delta, AbsoluteDate date);
+        protected abstract void setDelta(double delta);
 
     }
 
@@ -283,13 +272,13 @@ public class ParameterDrivenDateIntervalDetector extends AbstractDetector<Parame
     private class StartObserver extends BindingObserver {
         /** {@inheritDoc} */
         @Override
-        protected void setDelta(final double delta, final AbsoluteDate date) {
+        protected void setDelta(final double delta) {
             // date driver has no validity period, only 1 value is estimated
             // over the all interval so there is no problem for calling getValue with null argument
             // or any date, it would give the same result as there is only 1 span on the valueSpanMap
             // of the driver
-            median.setValue(median.getValue(date) + 0.5 * delta, date);
-            duration.setValue(duration.getValue(date) - delta, date);
+            median.setValue(median.getValue() + 0.5 * delta);
+            duration.setValue(duration.getValue() - delta);
         }
     }
 
@@ -297,13 +286,13 @@ public class ParameterDrivenDateIntervalDetector extends AbstractDetector<Parame
     private class StopObserver extends BindingObserver {
         /** {@inheritDoc} */
         @Override
-        protected void setDelta(final double delta, final AbsoluteDate date) {
+        protected void setDelta(final double delta) {
             // date driver has no validity period, only 1 value is estimated
             // over the all interval so there is no problem for calling getValue with null argument
             // or any date, it would give the same result as there is only 1 span on the valueSpanMap
             // of the driver
-            median.setValue(median.getValue(date) + 0.5 * delta, date);
-            duration.setValue(duration.getValue(date) + delta, date);
+            median.setValue(median.getValue() + 0.5 * delta);
+            duration.setValue(duration.getValue() + delta);
         }
     }
 
@@ -311,13 +300,13 @@ public class ParameterDrivenDateIntervalDetector extends AbstractDetector<Parame
     private class MedianObserver extends BindingObserver {
         /** {@inheritDoc} */
         @Override
-        protected void setDelta(final double delta, final AbsoluteDate date) {
+        protected void setDelta(final double delta) {
             // date driver has no validity period, only 1 value is estimated
             // over the all interval so there is no problem for calling getValue with null argument
             // or any date, it would give the same result as there is only 1 span on the valueSpanMap
             // of the driver
-            start.setValue(start.getValue(date) + delta, date);
-            stop.setValue(stop.getValue(date) + delta, date);
+            start.setValue(start.getValue() + delta);
+            stop.setValue(stop.getValue() + delta);
         }
     }
 
@@ -325,13 +314,13 @@ public class ParameterDrivenDateIntervalDetector extends AbstractDetector<Parame
     private class DurationObserver extends BindingObserver {
         /** {@inheritDoc} */
         @Override
-        protected void setDelta(final double delta, final AbsoluteDate date) {
+        protected void setDelta(final double delta) {
             // date driver has no validity period, only 1 value is estimated
             // over the all interval so there is no problem for calling getValue with null argument
             // or any date, it would give the same result as there is only 1 span on the valueSpanMap
             // of the driver
-            start.setValue(start.getValue(date) - 0.5 * delta, date);
-            stop.setValue(stop.getValue(date) + 0.5 * delta, date);
+            start.setValue(start.getValue() - 0.5 * delta);
+            stop.setValue(stop.getValue() + 0.5 * delta);
         }
     }
 

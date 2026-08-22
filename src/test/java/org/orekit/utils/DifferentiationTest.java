@@ -47,9 +47,9 @@ public class DifferentiationTest {
         ParameterDriver   driver = new ParameterDriver("", -100.0, scale,
                                                        Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
                                                        TimeInterval.UNLIMITED);
-        ParameterFunction f0     = (d,t) -> 3 * d.getValue(t) * d.getValue(t) - 2 * d.getValue(t);
+        ParameterFunction f0     = (d,t) -> 3 * d.getValue() * d.getValue() - 2 * d.getValue();
         ParameterFunction f1Diff = Differentiation.differentiate(f0, 4, step);
-        ParameterFunction f1Ref  = (d,t) -> 6 * d.getValue(t) - 2;
+        ParameterFunction f1Ref  = (d,t) -> 6 * d.getValue() - 2;
 
         for (double x = -3.0; x < 3.0; x += 0.125) {
             driver.setValue(x);

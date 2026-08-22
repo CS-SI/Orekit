@@ -48,7 +48,6 @@ import org.orekit.utils.Differentiation;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterFunction;
-import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class InterSatellitesOneWayRangeRateTest {
@@ -527,40 +526,38 @@ public class InterSatellitesOneWayRangeRateTest {
                     };
 
                     for (final ParameterDriver driver : drivers) {
-                        for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                            final double[] gradient  = measurement.estimate(0, 0, states).getParameterDerivatives(driver, span.getStart());
-                            Assertions.assertEquals(1, measurement.getDimension());
-                            Assertions.assertEquals(1, gradient.length);
+                        final double[] gradient  = measurement.estimate(0, 0, states).getParameterDerivatives(driver);
+                        Assertions.assertEquals(1, measurement.getDimension());
+                        Assertions.assertEquals(1, gradient.length);
 
-                            // Compute a reference value using finite differences
-                            final ParameterFunction dMkdP =
-                                            Differentiation.differentiate(new ParameterFunction() {
-                                                /** {@inheritDoc} */
-                                                @Override
-                                                public double value(final ParameterDriver parameterDriver, final AbsoluteDate date) {
-                                                    return measurement.
-                                                           estimateWithoutDerivatives(states).
-                                                           getEstimatedValue()[0];
-                                                }
-                                            }, 3, 20.0 * driver.getScale());
-                            final double ref = dMkdP.value(driver, span.getStart());
+                        // Compute a reference value using finite differences
+                        final ParameterFunction dMkdP =
+                                        Differentiation.differentiate(new ParameterFunction() {
+                                            /** {@inheritDoc} */
+                                            @Override
+                                            public double value(final ParameterDriver parameterDriver, final AbsoluteDate date) {
+                                                return measurement.
+                                                       estimateWithoutDerivatives(states).
+                                                       getEstimatedValue()[0];
+                                            }
+                                        }, 3, 20.0 * driver.getScale());
+                        final double ref = dMkdP.value(driver, date);
 
-                            final double  relError;
-                            if (ref == 0.0) {
-                                // this protection is because range rate is completely independent for remote clock offset
-                                // (it depends only on remote clock rate and acceleration), so ref is exactly 0.0
-                                // so here we compute an absolute error and not a relative error (anyway, it is 0)
-                                relError = ref - gradient[0];
-                            } else {
-                                relError = FastMath.abs((ref - gradient[0]) / ref);
-                            }
-                            relErrorList.add(relError);
-
-                            if (printResults) {
-                                System.out.format(Locale.US, "%10.3e  %10.3e  ", gradient[0]-ref, relError);
-                            }
-
+                        final double  relError;
+                        if (ref == 0.0) {
+                            // this protection is because range rate is completely independent for remote clock offset
+                            // (it depends only on remote clock rate and acceleration), so ref is exactly 0.0
+                            // so here we compute an absolute error and not a relative error (anyway, it is 0)
+                            relError = ref - gradient[0];
+                        } else {
+                            relError = FastMath.abs((ref - gradient[0]) / ref);
                         }
+                        relErrorList.add(relError);
+
+                        if (printResults) {
+                            System.out.format(Locale.US, "%10.3e  %10.3e  ", gradient[0]-ref, relError);
+                        }
+
                     }
                     if (printResults) {
                         System.out.format(Locale.US, "%n");
