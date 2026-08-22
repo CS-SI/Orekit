@@ -41,7 +41,7 @@ class FieldTimeIntervalDetectorTest {
     void testToEventDetector() {
         // GIVEN
         final FieldTimeIntervalDetector<Binary64> fieldDetector = new FieldTimeIntervalDetector<>(Binary64Field.getInstance(),
-                TimeInterval.of(AbsoluteDate.ARBITRARY_EPOCH, AbsoluteDate.J2000_EPOCH, true));
+                TimeInterval.of(AbsoluteDate.ARBITRARY_EPOCH, AbsoluteDate.J2000_EPOCH));
         final EventHandler expectedHandler = new ContinueOnEvent();
         // WHEN
         final TimeIntervalDetector detector = fieldDetector.toEventDetector(expectedHandler);
@@ -54,7 +54,7 @@ class FieldTimeIntervalDetectorTest {
     void testGetter() {
         // GIVEN
         final AbsoluteDate startDate = AbsoluteDate.ARBITRARY_EPOCH;
-        final TimeInterval interval = TimeInterval.of(startDate, startDate.shiftedBy(1.), true);
+        final TimeInterval interval = TimeInterval.of(startDate, startDate.shiftedBy(1.));
         final FieldTimeIntervalDetector<Binary64> detector = new FieldTimeIntervalDetector<>(Binary64Field.getInstance(),
                 interval);
         // WHEN
@@ -67,7 +67,7 @@ class FieldTimeIntervalDetectorTest {
     void testDependsOnlyOnTime() {
         // GIVEN
         final AbsoluteDate startDate = AbsoluteDate.ARBITRARY_EPOCH;
-        final TimeInterval interval = TimeInterval.of(startDate, startDate.shiftedBy(1.), true);
+        final TimeInterval interval = TimeInterval.of(startDate, startDate.shiftedBy(1.));
         final FieldTimeIntervalDetector<Binary64> detector = new FieldTimeIntervalDetector<>(Binary64Field.getInstance(),
                 interval);
         // WHEN
@@ -80,7 +80,7 @@ class FieldTimeIntervalDetectorTest {
     void testGValue() {
         // GIVEN
         final AbsoluteDate startDate = AbsoluteDate.ARBITRARY_EPOCH;
-        final TimeInterval interval = TimeInterval.of(startDate, startDate.shiftedBy(1.), true);
+        final TimeInterval interval = TimeInterval.of(startDate, startDate.shiftedBy(1.));
         final FieldTimeIntervalDetector<Binary64> detector = new FieldTimeIntervalDetector<>(Binary64Field.getInstance(),
                 interval);
         // WHEN & THEN
@@ -94,7 +94,7 @@ class FieldTimeIntervalDetectorTest {
         // GIVEN
         final AbsoluteDate startDate = AbsoluteDate.ARBITRARY_EPOCH;
         final double dt = 1;
-        final TimeInterval interval = TimeInterval.of(startDate, startDate.shiftedBy(dt), true);
+        final TimeInterval interval = TimeInterval.of(startDate, startDate.shiftedBy(dt));
         final FieldTimeIntervalDetector<Binary64> detector = new FieldTimeIntervalDetector<>(Binary64Field.getInstance(),
                 interval);
         // WHEN & THEN
@@ -107,7 +107,7 @@ class FieldTimeIntervalDetectorTest {
     void testCreate() {
         // GIVEN
         final AbsoluteDate startDate = AbsoluteDate.ARBITRARY_EPOCH;
-        final TimeInterval interval = TimeInterval.of(startDate, startDate.shiftedBy(1), true);
+        final TimeInterval interval = TimeInterval.of(startDate, startDate.shiftedBy(1));
         final FieldTimeIntervalDetector<Binary64> detector = new FieldTimeIntervalDetector<>(Binary64Field.getInstance(),
                 interval);
         final EventDetectionSettings detectionSettings = new EventDetectionSettings(mock(AdaptableInterval.class),

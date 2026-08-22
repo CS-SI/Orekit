@@ -17,7 +17,7 @@ class BoundedPVCoordinatesProviderTest {
         final TestProvider provider = new TestProvider();
         final AbsoluteDate minDate = AbsoluteDate.J2000_EPOCH;
         final AbsoluteDate maxDate = minDate.shiftedBy(1);
-        final TimeInterval interval = TimeInterval.of(minDate, maxDate, true);
+        final TimeInterval interval = TimeInterval.of(minDate, maxDate);
         // WHEN
         final BoundedPVCoordinatesProvider boundedProvider = BoundedPVCoordinatesProvider.of(provider, interval);
         // THEN
