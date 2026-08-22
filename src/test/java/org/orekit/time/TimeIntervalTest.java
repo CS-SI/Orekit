@@ -45,7 +45,7 @@ class TimeIntervalTest {
         final AbsoluteDate minDate = AbsoluteDate.ARBITRARY_EPOCH;
         final AbsoluteDate maxDate = minDate.shiftedBy(1);
         // WHEN
-        final TimeInterval timeInterval = TimeInterval.of(minDate, maxDate, true);
+        final TimeInterval timeInterval = TimeInterval.of(maxDate, minDate, true);
         // THEN
         assertEquals(minDate, timeInterval.getStartDate());
         assertEquals(maxDate, timeInterval.getEndDate());
