@@ -39,7 +39,7 @@ class BoundedAttitudeProviderTest {
         // GIVEN
         final AbsoluteDate minDate = AbsoluteDate.ARBITRARY_EPOCH;
         final AbsoluteDate maxDate = minDate.shiftedBy(10.);
-        final TimeInterval timeInterval = TimeInterval.of(minDate, maxDate, true);
+        final TimeInterval timeInterval = TimeInterval.of(minDate, maxDate);
         final AttitudeProvider provider = mock();
         // WHEN
         final BoundedAttitudeProvider boundedAttitudeProvider = BoundedAttitudeProvider.of(provider, timeInterval);
@@ -53,7 +53,7 @@ class BoundedAttitudeProviderTest {
         // GIVEN
         final AbsoluteDate minDate = AbsoluteDate.ARBITRARY_EPOCH;
         final AbsoluteDate maxDate = minDate.shiftedBy(10.);
-        final TimeInterval timeInterval = TimeInterval.of(minDate, maxDate, true);
+        final TimeInterval timeInterval = TimeInterval.of(minDate, maxDate);
         final FrameAlignedProvider provider = new FrameAlignedProvider(FramesFactory.getEME2000());
         final Orbit orbit = TestUtils.getDefaultOrbit(minDate);
         // WHEN
@@ -76,7 +76,7 @@ class BoundedAttitudeProviderTest {
         // GIVEN
         final AbsoluteDate minDate = AbsoluteDate.ARBITRARY_EPOCH;
         final AbsoluteDate maxDate = minDate.shiftedBy(10.);
-        final TimeInterval timeInterval = TimeInterval.of(minDate, maxDate, true);
+        final TimeInterval timeInterval = TimeInterval.of(minDate, maxDate);
         final FrameAlignedProvider provider = new FrameAlignedProvider(FramesFactory.getEME2000());
         final Orbit orbit = TestUtils.getDefaultOrbit(maxDate);
         final FieldOrbit<Binary64> fieldOrbit = new FieldCartesianOrbit<>(Binary64Field.getInstance(), orbit);

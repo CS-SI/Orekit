@@ -156,7 +156,7 @@ class NumericalPropagatorTest {
         // Initialize propagator
         final NumericalPropagator numerical = new NumericalPropagator(new ClassicalRungeKuttaIntegrator(60.0));
         numerical.addForceModel(new Maneuver(null,
-                                             TimeIntervalsManeuverTrigger.of(TimeInterval.of(maneuverStart, maneuverEnd, true)),
+                                             TimeIntervalsManeuverTrigger.of(TimeInterval.of(maneuverStart, maneuverEnd)),
                                              new BasicConstantThrustPropulsionModel(0.02, 1160, Vector3D.PLUS_I, "tangential")));
         numerical.setInitialState(new SpacecraftState(cartesian));
 
@@ -980,8 +980,6 @@ class NumericalPropagatorTest {
 
         TimeScale utc = TimeScalesFactory.getUTC();
         AbsoluteDate initialDate = new AbsoluteDate(2005, 1, 1, 0, 0, 0.0, utc);
-        double duration = 100000.;
-        AbsoluteDate endDate = new AbsoluteDate(initialDate, duration);
 
         // Initialization of the frame EME2000
         Frame EME2000 = FramesFactory.getEME2000();
@@ -997,8 +995,8 @@ class NumericalPropagatorTest {
                                                          initialDate, mu);
 
 
-        duration = geo.getKeplerianPeriod();
-        endDate = new AbsoluteDate(initialDate, duration);
+        double duration = geo.getKeplerianPeriod();
+        AbsoluteDate endDate = new AbsoluteDate(initialDate, duration);
 
         // Numerical Integration
         final double minStep  = 0.001;

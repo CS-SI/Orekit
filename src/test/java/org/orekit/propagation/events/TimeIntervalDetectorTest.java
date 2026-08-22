@@ -36,7 +36,7 @@ class TimeIntervalDetectorTest {
     void testGetter() {
         // GIVEN
         final AbsoluteDate startDate = AbsoluteDate.ARBITRARY_EPOCH;
-        final TimeInterval interval = TimeInterval.of(startDate, startDate.shiftedBy(1.), true);
+        final TimeInterval interval = TimeInterval.of(startDate, startDate.shiftedBy(1.));
         final TimeIntervalDetector detector = new TimeIntervalDetector(mock(EventHandler.class), interval);
         // WHEN
         final TimeInterval actualInterval = detector.getTimeInterval();
@@ -48,7 +48,7 @@ class TimeIntervalDetectorTest {
     void testDependsOnlyOnTime() {
         // GIVEN
         final AbsoluteDate startDate = AbsoluteDate.ARBITRARY_EPOCH;
-        final TimeInterval interval = TimeInterval.of(startDate, startDate.shiftedBy(1.), true);
+        final TimeInterval interval = TimeInterval.of(startDate, startDate.shiftedBy(1.));
         final TimeIntervalDetector detector = new TimeIntervalDetector(mock(EventHandler.class), interval);
         // WHEN
         final boolean value = detector.getEventFunction().dependsOnTimeOnly();
@@ -60,7 +60,7 @@ class TimeIntervalDetectorTest {
     void testGValue() {
         // GIVEN
         final AbsoluteDate startDate = AbsoluteDate.ARBITRARY_EPOCH;
-        final TimeInterval interval = TimeInterval.of(startDate, startDate.shiftedBy(1.), true);
+        final TimeInterval interval = TimeInterval.of(startDate, startDate.shiftedBy(1.));
         final TimeIntervalDetector detector = new TimeIntervalDetector(mock(EventHandler.class), interval);
         // WHEN & THEN
         final double expectedG = 0.;
@@ -74,7 +74,7 @@ class TimeIntervalDetectorTest {
         // GIVEN
         final AbsoluteDate startDate = AbsoluteDate.ARBITRARY_EPOCH;
         final double dt = 1;
-        final TimeInterval interval = TimeInterval.of(startDate, startDate.shiftedBy(dt), true);
+        final TimeInterval interval = TimeInterval.of(startDate, startDate.shiftedBy(dt));
         final TimeIntervalDetector detector = new TimeIntervalDetector(mock(EventHandler.class), interval);
         // WHEN & THEN
         assertTrue(detector.g(mockState(interval.getStartDate().shiftedBy(-dt))) < 0.);
@@ -86,7 +86,7 @@ class TimeIntervalDetectorTest {
     void testCreate() {
         // GIVEN
         final AbsoluteDate startDate = AbsoluteDate.ARBITRARY_EPOCH;
-        final TimeInterval interval = TimeInterval.of(startDate, startDate.shiftedBy(1), true);
+        final TimeInterval interval = TimeInterval.of(startDate, startDate.shiftedBy(1));
         final TimeIntervalDetector detector = new TimeIntervalDetector(mock(EventHandler.class), interval);
         final EventDetectionSettings detectionSettings = new EventDetectionSettings(mock(AdaptableInterval.class),
                 1., 1);
