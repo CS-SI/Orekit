@@ -25,6 +25,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldOrbit;
@@ -38,6 +40,7 @@ import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
+import org.orekit.utils.drivers.ParameterDriver;
 
 class FieldParameterDrivenDateIntervalDetectorTest {
 
@@ -56,6 +59,55 @@ class FieldParameterDrivenDateIntervalDetectorTest {
         Assertions.assertEquals(fieldDetector.getStopDriver(), detector.getStopDriver());
         Assertions.assertEquals(fieldDetector.getDurationDriver(), detector.getDurationDriver());
         Assertions.assertEquals(fieldDetector.getMedianDriver(), detector.getMedianDriver());
+
+    }
+
+    @Test
+    void testBindingStartStop() {
+        final FieldAbsoluteDate<Binary64> fieldDate = FieldAbsoluteDate.getArbitraryEpoch(Binary64Field.getInstance());
+        final FieldParameterDrivenDateIntervalDetector<Binary64> fieldDetector =
+            new FieldParameterDrivenDateIntervalDetector<>(fieldDate.getField(),
+                "e", fieldDate.toAbsoluteDate(), fieldDate.toAbsoluteDate().shiftedBy(10.0));
+
+        ParameterDriver start = fieldDetector.getStartDriver();
+        ParameterDriver stop  = fieldDetector.getStopDriver();
+        start.setSelected(true);
+        stop.setSelected(true);
+        double initialDuration = fieldDetector.getDurationDriver().getValue();
+        start.setValue(-1.0);
+        stop.setValue(1.0);
+        Assertions.assertEquals(initialDuration + 2, fieldDetector.getDurationDriver().getValue(), 1.0e-10);
+     }
+
+    @Test
+    void testBindingMedianDuration() {
+        final FieldAbsoluteDate<Binary64> fieldDate = FieldAbsoluteDate.getArbitraryEpoch(Binary64Field.getInstance());
+        final FieldParameterDrivenDateIntervalDetector<Binary64> fieldDetector =
+            new FieldParameterDrivenDateIntervalDetector<>(fieldDate.getField(),
+                "e", fieldDate.toAbsoluteDate(), fieldDate.toAbsoluteDate().shiftedBy(10.0));
+
+        ParameterDriver median   = fieldDetector.getMedianDriver();
+        ParameterDriver duration = fieldDetector.getDurationDriver();
+        median.setSelected(true);
+        duration.setSelected(true);
+        double stop = fieldDetector.getStopDriver().getValue();
+        median.setValue(0.5);
+        duration.setValue(duration.getValue() + 2.0);
+        Assertions.assertEquals(stop + 1.5, fieldDetector.getStopDriver().getValue(), 1.0e-10);
+     }
+
+    @Test
+    void testInconsistentSelection() {
+        final FieldAbsoluteDate<Binary64> fieldDate = FieldAbsoluteDate.getArbitraryEpoch(Binary64Field.getInstance());
+        final FieldParameterDrivenDateIntervalDetector<Binary64> fieldDetector =
+            new FieldParameterDrivenDateIntervalDetector<>(fieldDate.getField(),
+                "e", fieldDate.toAbsoluteDate(), fieldDate.toAbsoluteDate().shiftedBy(10.0));
+        try {
+            fieldDetector.getStartDriver().setSelected(true);
+            fieldDetector.getDurationDriver().setSelected(true);
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.INCONSISTENT_SELECTION, oe.getSpecifier());
+        }
     }
 
     @Test

@@ -61,6 +61,55 @@ class ParameterDrivenDateIntervalDetectorTest {
     }
 
     @Test
+    void testBindingStartStop() {
+        final ParameterDrivenDateIntervalDetector detector =
+            new ParameterDrivenDateIntervalDetector("e",
+                                                    AbsoluteDate.ARBITRARY_EPOCH,
+                                                    AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(10.0));
+
+        ParameterDriver start = detector.getStartDriver();
+        ParameterDriver stop  = detector.getStopDriver();
+        start.setSelected(true);
+        stop.setSelected(true);
+        double initialDuration = detector.getDurationDriver().getValue();
+        start.setValue(-1.0);
+        stop.setValue(1.0);
+        Assertions.assertEquals(initialDuration + 2, detector.getDurationDriver().getValue(), 1.0e-10);
+     }
+
+    @Test
+    void testBindingMedianDuration() {
+        final ParameterDrivenDateIntervalDetector detector =
+            new ParameterDrivenDateIntervalDetector("e",
+                                                    AbsoluteDate.ARBITRARY_EPOCH,
+                                                    AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(10.0));
+
+        ParameterDriver median   = detector.getMedianDriver();
+        ParameterDriver duration = detector.getDurationDriver();
+        median.setSelected(true);
+        duration.setSelected(true);
+        double stop = detector.getStopDriver().getValue();
+        median.setValue(0.5);
+        duration.setValue(duration.getValue() + 2.0);
+        Assertions.assertEquals(stop + 1.5, detector.getStopDriver().getValue(), 1.0e-10);
+     }
+
+    @Test
+    void testInconsistentSelection() {
+        final ParameterDrivenDateIntervalDetector detector =
+            new ParameterDrivenDateIntervalDetector("e",
+                                                    AbsoluteDate.ARBITRARY_EPOCH,
+                                                    AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(10.0));
+
+        try {
+            detector.getStartDriver().setSelected(true);
+            detector.getDurationDriver().setSelected(true);
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.INCONSISTENT_SELECTION, oe.getSpecifier());
+        }
+    }
+
+    @Test
     void testDependsOnlyOnTime() {
         // GIVEN
         final ParameterDrivenDateIntervalDetector detector = new ParameterDrivenDateIntervalDetector("a",
