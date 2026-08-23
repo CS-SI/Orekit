@@ -32,6 +32,7 @@ import org.hipparchus.Field;
  * @see PositionAngleType
  * @see EquinoctialParameters
  * @since 14.0
+ * @param <T> type of the field elements
  */
 public record FieldEquinoctialParameters<T extends CalculusFieldElement<T>>(T a, T ex, T ey, T hx, T hy, T longitudeArgument,
                                                                             PositionAngleType positionAngleType) {
