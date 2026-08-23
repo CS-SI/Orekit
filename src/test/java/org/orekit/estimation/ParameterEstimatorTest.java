@@ -22,8 +22,8 @@ import org.orekit.TestUtils;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.conversion.KeplerianPropagatorBuilder;
 import org.orekit.propagation.conversion.PropagatorBuilder;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterDriversList;
+import org.orekit.utils.drivers.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriversList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ParameterEstimatorTest {

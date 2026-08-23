@@ -26,7 +26,7 @@ import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriver;
 
 import java.util.Collections;
 import java.util.List;

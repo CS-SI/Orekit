@@ -37,7 +37,7 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.FieldTimeStamped;
 import org.orekit.time.TimeInterval;
 import org.orekit.time.TimeStamped;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriver;
 
 /** Interface for building event detectors for force models and maneuver parameters.
  * <p>

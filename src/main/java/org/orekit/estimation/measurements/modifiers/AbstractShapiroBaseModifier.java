@@ -22,7 +22,7 @@ import java.util.List;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriver;
 
 /** Class modifying theoretical range measurement with Shapiro time delay.
  * <p>

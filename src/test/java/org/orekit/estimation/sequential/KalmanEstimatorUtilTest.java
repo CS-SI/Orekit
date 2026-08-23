@@ -34,8 +34,8 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.signal.SignalTravelTimeModel;
 import org.orekit.time.TimeInterval;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterDriversList;
+import org.orekit.utils.drivers.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriversList;
 import org.orekit.utils.TimeStampedPVCoordinates;
 import static org.mockito.Mockito.mock;
 

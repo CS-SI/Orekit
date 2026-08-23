@@ -72,9 +72,9 @@ import org.orekit.propagation.integration.StateMapper;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.DoubleArrayDictionary;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterDriversList;
-import org.orekit.utils.ParameterDriversList.DelegatingDriver;
+import org.orekit.utils.drivers.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriversList;
+import org.orekit.utils.drivers.ParameterDriversList.DelegatingDriver;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** This class propagates {@link org.orekit.orbits.Orbit orbits} using

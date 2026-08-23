@@ -19,7 +19,7 @@ package org.orekit.estimation.measurements;
 import java.util.List;
 
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.utils.ParameterDriversProvider;
+import org.orekit.utils.drivers.ParameterDriversProvider;
 
 
 /** Interface for measurements used for orbit determination.

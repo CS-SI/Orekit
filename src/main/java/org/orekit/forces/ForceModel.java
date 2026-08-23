@@ -31,7 +31,7 @@ import org.orekit.propagation.numerical.FieldTimeDerivativesEquations;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.utils.ParameterDriversProvider;
+import org.orekit.utils.drivers.ParameterDriversProvider;
 
 /** This interface represents a force modifying spacecraft motion.
  *

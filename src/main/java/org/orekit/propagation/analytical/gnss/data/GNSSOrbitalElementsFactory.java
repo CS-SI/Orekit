@@ -42,9 +42,9 @@ import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeInterval;
 import org.orekit.time.TimeScales;
 import org.orekit.utils.Constants;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterDriversList;
-import org.orekit.utils.ParameterObserver;
+import org.orekit.utils.drivers.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriversList;
+import org.orekit.utils.drivers.ParameterObserver;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 /** Factory for {@link AbstractNavigationMessage}.

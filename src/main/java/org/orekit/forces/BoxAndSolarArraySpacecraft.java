@@ -38,7 +38,7 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.TimeInterval;
 import org.orekit.utils.ExtendedPositionProvider;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriver;
 
 /** Class representing the features of a classical satellite with a convex body shape.
  * <p>

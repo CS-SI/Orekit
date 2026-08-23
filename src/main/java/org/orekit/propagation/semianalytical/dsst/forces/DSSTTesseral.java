@@ -67,7 +67,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeInterval;
 import org.orekit.utils.FieldTimeSpanMap;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriver;
 import org.orekit.utils.TimeSpanMap;
 
 /** Tesseral contribution to the central body gravitational perturbation.

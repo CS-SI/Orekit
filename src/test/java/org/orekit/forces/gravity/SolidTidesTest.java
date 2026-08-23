@@ -67,7 +67,7 @@ import org.orekit.time.UT1Scale;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.LoveNumbers;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriver;
 
 
 class SolidTidesTest extends AbstractLegacyForceModelTest {

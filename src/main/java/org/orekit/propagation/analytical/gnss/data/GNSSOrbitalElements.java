@@ -29,7 +29,7 @@ import org.orekit.orbits.OrbitalState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriver;
 
 /** This class provides the minimal set of orbital elements needed by
  * {@link org.orekit.propagation.analytical.gnss.GNSSPropagator}.

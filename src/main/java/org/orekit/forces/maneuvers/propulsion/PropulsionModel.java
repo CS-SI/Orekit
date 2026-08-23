@@ -34,7 +34,7 @@ import org.orekit.propagation.events.EventDetectorsProvider;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.utils.ParameterDriversProvider;
+import org.orekit.utils.drivers.ParameterDriversProvider;
 
 /** Generic interface for a propulsion model used in a {@link Maneuver}.
  * @author Maxime Journot

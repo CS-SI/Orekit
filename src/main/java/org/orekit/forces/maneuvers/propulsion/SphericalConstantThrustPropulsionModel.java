@@ -25,7 +25,7 @@ import org.hipparchus.util.MathUtils;
 import org.orekit.forces.maneuvers.Control3DVectorCostType;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeInterval;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriver;
 
 import java.util.Arrays;
 import java.util.Collections;

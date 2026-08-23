@@ -45,9 +45,9 @@ import org.orekit.propagation.semianalytical.dsst.forces.ShortPeriodTerms;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterDriversList;
-import org.orekit.utils.ParameterDriversList.DelegatingDriver;
+import org.orekit.utils.drivers.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriversList;
+import org.orekit.utils.drivers.ParameterDriversList.DelegatingDriver;
 
 /** Class defining the process model dynamics to use with a {@link SemiAnalyticalUnscentedKalmanEstimator}.
  * @author Gaëtan Pierre

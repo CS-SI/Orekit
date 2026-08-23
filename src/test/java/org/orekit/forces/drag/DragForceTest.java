@@ -77,8 +77,8 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterDriversSequenceBuilder;
+import org.orekit.utils.drivers.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriversSequenceBuilder;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 class DragForceTest extends AbstractLegacyForceModelTest {

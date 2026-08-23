@@ -26,8 +26,8 @@ import java.util.function.Function;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterDriversList;
+import org.orekit.utils.drivers.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriversList;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** Class multiplexing several measurements as one.

@@ -35,8 +35,8 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.DerivativeStateUtils;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.FieldAbsolutePVCoordinates;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterDriversProvider;
+import org.orekit.utils.drivers.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriversProvider;
 import org.orekit.utils.TimeStampedFieldAngularCoordinates;
 
 /** Converter for states and parameters arrays.

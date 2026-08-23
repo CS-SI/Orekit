@@ -26,7 +26,7 @@ import org.orekit.gnss.antenna.PhaseCenterVariationFunction;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriver;
 
 public class OneWayRangeMeasurementCreator extends MeasurementCreator {
 

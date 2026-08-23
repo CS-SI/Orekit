@@ -24,7 +24,7 @@ import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.gnss.InterSatellitesPhase;
 import org.orekit.gnss.antenna.FrequencyPattern;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriver;
 
 /** On-board antenna offset effect on inter-satellites phase measurements.
  * @author Bryan Cazabonne

@@ -99,6 +99,7 @@ import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.time.UTCScale;
 import org.orekit.utils.*;
+import org.orekit.utils.drivers.ParameterDriver;
 
 class FieldNumericalPropagatorTest {
 

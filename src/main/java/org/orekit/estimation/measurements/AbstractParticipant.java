@@ -35,9 +35,10 @@ import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.FieldAbsolutePVCoordinates;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinatesProvider;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriver;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
+import org.orekit.utils.drivers.ParameterDriversProvider;
 
 /** Abstract class underlying both observed and observing measurement
  * objects.  Contains the ClockModel and the ability to store a
@@ -128,7 +129,7 @@ public abstract class AbstractParticipant implements MeasurementParticipant {
      * @return model parameters, will throw an
      * exception if one PDriver has several values driven. If
      * it's the case (if at least 1 PDriver of the model has several values
-     * driven) the method {@link org.orekit.utils.ParameterDriversProvider#getParameters(AbsoluteDate)} must be used.
+     * driven) the method {@link ParameterDriversProvider#getParameters(AbsoluteDate)} must be used.
      */
     @Override
     public List<ParameterDriver> getParametersDrivers() {

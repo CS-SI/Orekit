@@ -25,7 +25,7 @@ import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.orekit.time.TimeInterval;
 import org.orekit.utils.Constants;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriver;
 
 import java.util.Arrays;
 import java.util.List;

@@ -40,7 +40,7 @@ import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldDataDictionary;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriver;
 
 /** This class stores sequentially generated orbital parameters for
  * later retrieval.

@@ -35,7 +35,7 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.ExtendedPositionProvider;
 import org.orekit.utils.FrameAdapter;
 import org.orekit.utils.OccultationEngine;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriver;
 
 /** Solar radiation pressure force model.
  * <p>

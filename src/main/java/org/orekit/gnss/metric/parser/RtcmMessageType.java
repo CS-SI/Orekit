@@ -95,7 +95,7 @@ import org.orekit.propagation.analytical.gnss.data.QZSSLegacyNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.QZSSLegacyNavigationMessageFactory;
 import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
-import org.orekit.utils.ParameterDriversList;
+import org.orekit.utils.drivers.ParameterDriversList;
 
 /** Enum containing the supported RTCM messages types.
 *

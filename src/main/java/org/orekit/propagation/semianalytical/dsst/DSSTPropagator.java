@@ -64,9 +64,9 @@ import org.orekit.propagation.semianalytical.dsst.utilities.MaxGapInterpolationG
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.DataDictionary;
 import org.orekit.utils.DoubleArrayDictionary;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterDriversList;
-import org.orekit.utils.ParameterDriversList.DelegatingDriver;
+import org.orekit.utils.drivers.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriversList;
+import org.orekit.utils.drivers.ParameterDriversList.DelegatingDriver;
 
 /**
  * This class propagates {@link org.orekit.orbits.Orbit orbits} using the DSST theory.

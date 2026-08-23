@@ -19,7 +19,7 @@ package org.orekit.propagation.analytical;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriver;
 
 import java.util.List;
 

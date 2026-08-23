@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.utils;
+package org.orekit.utils.drivers;
 
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeInterval;

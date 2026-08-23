@@ -28,7 +28,7 @@ import org.orekit.frames.TopocentricFrame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeInterval;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriver;
 
 /**
  * An estimated ionospheric model. The ionospheric delay is computed according to the formula:

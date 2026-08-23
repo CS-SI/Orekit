@@ -55,8 +55,8 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldTrackingCoordinates;
 import org.orekit.utils.IERSConventions;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterDriversList;
+import org.orekit.utils.drivers.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriversList;
 import org.orekit.utils.TrackingCoordinates;
 
 public class TimeSpanEstimatedModelTest {

@@ -18,7 +18,7 @@ package org.orekit.orbits;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.ParameterDriversList.DelegatingDriver;
+import org.orekit.utils.drivers.ParameterDriversList.DelegatingDriver;
 
 import java.util.List;
 

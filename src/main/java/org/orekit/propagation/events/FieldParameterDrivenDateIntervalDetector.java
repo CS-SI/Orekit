@@ -30,9 +30,9 @@ import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.handlers.FieldStopOnEvent;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeInterval;
-import org.orekit.utils.DateDriver;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterObserver;
+import org.orekit.utils.drivers.DateDriver;
+import org.orekit.utils.drivers.ParameterDriver;
+import org.orekit.utils.drivers.ParameterObserver;
 
 /** Detector for date intervals that may be offset thanks to parameter drivers.
  * <p>

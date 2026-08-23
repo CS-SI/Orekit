@@ -171,9 +171,9 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterDriversList;
-import org.orekit.utils.ParameterDriversList.DelegatingDriver;
+import org.orekit.utils.drivers.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriversList;
+import org.orekit.utils.drivers.ParameterDriversList.DelegatingDriver;
 import org.orekit.utils.units.Unit;
 
 /** Base class for Orekit orbit determination tutorials.

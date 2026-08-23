@@ -22,6 +22,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeInterval;
+import org.orekit.utils.drivers.ParameterDriver;
+import org.orekit.utils.drivers.ParameterFunction;
 
 public class DifferentiationTest {
 
@@ -44,10 +46,10 @@ public class DifferentiationTest {
     }
 
     private void doTestScale(final double scale, final double step, final double tolerance) {
-        ParameterDriver   driver = new ParameterDriver("", -100.0, scale,
-                                                       Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
-                                                       TimeInterval.UNLIMITED);
-        ParameterFunction f0     = (d,t) -> 3 * d.getValue() * d.getValue() - 2 * d.getValue();
+        ParameterDriver driver = new ParameterDriver("", -100.0, scale,
+                                                     Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                                     TimeInterval.UNLIMITED);
+        ParameterFunction f0     = (d, t) -> 3 * d.getValue() * d.getValue() - 2 * d.getValue();
         ParameterFunction f1Diff = Differentiation.differentiate(f0, 4, step);
         ParameterFunction f1Ref  = (d,t) -> 6 * d.getValue() - 2;
 

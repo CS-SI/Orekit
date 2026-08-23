@@ -50,8 +50,8 @@ import org.orekit.propagation.conversion.osc2mean.OsculatingToMeanConverter;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeInterval;
 import org.orekit.utils.DoubleArrayDictionary;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterDriversProvider;
+import org.orekit.utils.drivers.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriversProvider;
 import org.orekit.utils.TimeSpanMap;
 
 /**

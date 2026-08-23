@@ -48,8 +48,8 @@ import org.orekit.propagation.conversion.DSSTPropagatorBuilder;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTNewtonianAttraction;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterDriversList;
+import org.orekit.utils.drivers.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriversList;
 
 class DSSTBatchLSEstimatorTest {
 

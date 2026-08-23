@@ -16,7 +16,7 @@
  */
 package org.orekit.orbits;
 
-import org.orekit.utils.ParameterDriversList.DelegatingDriver;
+import org.orekit.utils.drivers.ParameterDriversList.DelegatingDriver;
 
 import java.util.List;
 

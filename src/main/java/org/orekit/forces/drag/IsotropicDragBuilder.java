@@ -18,7 +18,7 @@ package org.orekit.forces.drag;
 
 import org.hipparchus.util.FastMath;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.ParameterDriversSequenceBuilder;
+import org.orekit.utils.drivers.ParameterDriversSequenceBuilder;
 
 /** Builder for {@link IsotropicDrag} allowing to set coefficients on different time spans.
  * @author Luc Maisonobe

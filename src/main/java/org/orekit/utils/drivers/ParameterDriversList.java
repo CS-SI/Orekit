@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.utils;
+package org.orekit.utils.drivers;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -23,7 +23,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.orekit.time.AbsoluteDate;
-
 
 /** Class managing several {@link ParameterDriver parameter drivers},
  * taking care of duplicated names.

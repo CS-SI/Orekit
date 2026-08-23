@@ -47,8 +47,8 @@ import org.orekit.propagation.events.FieldEventState.EventOccurrence;
 import org.orekit.propagation.sampling.FieldOrekitStepInterpolator;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinatesProvider;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterDriversProvider;
+import org.orekit.utils.drivers.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriversProvider;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 /** Common handling of {@link org.orekit.propagation.FieldPropagator} methods for analytical propagators.

@@ -47,7 +47,7 @@ import org.orekit.propagation.conversion.osc2mean.OsculatingToMeanConverter;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeInterval;
 import org.orekit.utils.FieldTimeSpanMap;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriver;
 
 /** This class propagates a {@link org.orekit.propagation.FieldSpacecraftState}
  *  using the analytical Brouwer-Lyddane model (from J2 to J5 zonal harmonics).

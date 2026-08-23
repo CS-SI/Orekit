@@ -19,7 +19,7 @@ package org.orekit.estimation.leastsquares;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresProblem;
 import org.orekit.estimation.measurements.EstimationsProvider;
 import org.orekit.orbits.Orbit;
-import org.orekit.utils.ParameterDriversList;
+import org.orekit.utils.drivers.ParameterDriversList;
 
 /** Observer for {@link BatchLSEstimator batch least squares estimator} iterations.
  * <p>

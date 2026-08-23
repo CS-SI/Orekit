@@ -31,7 +31,7 @@ import org.orekit.propagation.covariance.StateCovariance;
 import org.orekit.propagation.analytical.Ephemeris;
 import org.orekit.time.TimeInterpolator;
 import org.orekit.time.TimeStampedPair;
-import org.orekit.utils.ParameterDriversList;
+import org.orekit.utils.drivers.ParameterDriversList;
 
 import java.util.ArrayList;
 import java.util.List;

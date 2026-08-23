@@ -34,9 +34,9 @@ import org.orekit.propagation.AbstractPropagator;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.time.TimeInterval;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterDriversList;
-import org.orekit.utils.ParameterObserver;
+import org.orekit.utils.drivers.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriversList;
+import org.orekit.utils.drivers.ParameterObserver;
 
 /** Base class for propagator builders.
  * @param <T> type of the propagator

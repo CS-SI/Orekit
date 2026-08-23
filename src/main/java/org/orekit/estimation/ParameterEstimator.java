@@ -19,7 +19,7 @@ package org.orekit.estimation;
 import java.util.Arrays;
 
 import org.orekit.propagation.conversion.PropagatorBuilder;
-import org.orekit.utils.ParameterDriversList;
+import org.orekit.utils.drivers.ParameterDriversList;
 
 /**
  * Interface for parameter estimation.

@@ -39,7 +39,7 @@ import org.orekit.time.FieldTimeInterpolator;
 import org.orekit.utils.FieldBoundedPVCoordinatesProvider;
 import org.orekit.utils.FieldDataDictionary;
 import org.orekit.utils.ImmutableFieldTimeStampedCache;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriver;
 
 /**
  * This class is designed to accept and handle tabulated orbital entries. Tabulated entries are classified and then

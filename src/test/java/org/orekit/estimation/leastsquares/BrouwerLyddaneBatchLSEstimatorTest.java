@@ -45,7 +45,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.BrouwerLyddanePropagatorBuilder;
-import org.orekit.utils.ParameterDriversList;
+import org.orekit.utils.drivers.ParameterDriversList;
 
 public class BrouwerLyddaneBatchLSEstimatorTest {
 

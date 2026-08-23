@@ -28,7 +28,7 @@ import org.orekit.models.earth.troposphere.TroposphericModel;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.utils.FieldTrackingCoordinates;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriver;
 import org.orekit.utils.TrackingCoordinates;
 
 /** Base class modifying theoretical range measurements with tropospheric delay.

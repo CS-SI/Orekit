@@ -39,7 +39,7 @@ import org.orekit.time.TimeInterval;
 import org.orekit.time.TimeOffset;
 import org.orekit.time.UT1Scale;
 import org.orekit.utils.IERSConventions;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriver;
 
 /** Class modeling an Earth frame whose Earth Orientation Parameters can be estimated.
  * <p>

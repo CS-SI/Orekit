@@ -46,7 +46,7 @@ import org.orekit.propagation.conversion.osc2mean.MeanTheory;
 import org.orekit.propagation.conversion.osc2mean.OsculatingToMeanConverter;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldTimeSpanMap;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriver;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 /** This class propagates a {@link org.orekit.propagation.FieldSpacecraftState}

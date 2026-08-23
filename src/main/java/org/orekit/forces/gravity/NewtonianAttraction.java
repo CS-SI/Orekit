@@ -30,7 +30,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.FieldTimeDerivativesEquations;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.TimeInterval;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriver;
 
 /** Force model for Newtonian central body attraction.
  * @author Luc Maisonobe

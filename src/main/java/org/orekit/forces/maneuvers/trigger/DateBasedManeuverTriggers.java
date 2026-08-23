@@ -27,7 +27,7 @@ import org.orekit.propagation.events.FieldEventDetectionSettings;
 import org.orekit.propagation.events.FieldParameterDrivenDateIntervalDetector;
 import org.orekit.propagation.events.ParameterDrivenDateIntervalDetector;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriver;
 
 /** Maneuver triggers based on a start and end date.
  * @author Maxime Journot

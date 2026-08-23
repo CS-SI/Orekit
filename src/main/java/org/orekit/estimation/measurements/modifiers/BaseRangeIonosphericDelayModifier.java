@@ -23,7 +23,7 @@ import org.orekit.estimation.measurements.Observer;
 import org.orekit.models.earth.ionosphere.IonosphericModel;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriver;
 import org.orekit.utils.PVCoordinatesProvider;
 
 /** Base class modifying theoretical range measurement with ionospheric delay.

@@ -36,8 +36,8 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.utils.Differentiation;
 import org.orekit.utils.FieldTrackingCoordinates;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterFunction;
+import org.orekit.utils.drivers.ParameterDriver;
+import org.orekit.utils.drivers.ParameterFunction;
 import org.orekit.utils.TrackingCoordinates;
 
 /**

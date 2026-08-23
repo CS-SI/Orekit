@@ -38,7 +38,7 @@ import org.orekit.time.FieldTimeStamped;
 import org.orekit.time.TimeInterval;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.Constants;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriver;
 
 /**
  * Unit tests for {@link EventDetectorsProvider}.

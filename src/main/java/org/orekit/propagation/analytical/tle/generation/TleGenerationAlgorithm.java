@@ -41,9 +41,9 @@ import org.orekit.propagation.analytical.tle.TLEConstants;
 import org.orekit.propagation.conversion.osc2mean.OsculatingToMeanConverter;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeInterval;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterDriversList;
-import org.orekit.utils.ParameterDriversList.DelegatingDriver;
+import org.orekit.utils.drivers.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriversList;
+import org.orekit.utils.drivers.ParameterDriversList.DelegatingDriver;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 /**

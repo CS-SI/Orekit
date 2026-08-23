@@ -33,7 +33,7 @@ import org.orekit.time.TimeInterval;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriver;
 
 /**
  * Lense-Thirring post-Newtonian correction force due to general relativity.

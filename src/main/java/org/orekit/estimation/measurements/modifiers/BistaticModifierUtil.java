@@ -26,8 +26,8 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.AbstractGradientConverter;
 import org.orekit.utils.Differentiation;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterDriversProvider;
+import org.orekit.utils.drivers.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriversProvider;
 
 /** Utility class for bistatic measurements.
  * @author Pascal Parraud

@@ -27,7 +27,7 @@ import org.hipparchus.util.FastMath;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.TimeInterval;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriver;
 
 /** This class represents the features of a simplified spacecraft.
  * <p>This model uses the classical thermo-optical coefficients

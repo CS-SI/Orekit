@@ -38,8 +38,8 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Differentiation;
 import org.orekit.utils.FieldTrackingCoordinates;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterFunction;
+import org.orekit.utils.drivers.ParameterDriver;
+import org.orekit.utils.drivers.ParameterFunction;
 import org.orekit.utils.TrackingCoordinates;
 
 /**

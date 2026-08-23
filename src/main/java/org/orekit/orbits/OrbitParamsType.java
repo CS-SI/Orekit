@@ -30,8 +30,8 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeInterval;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterDriversList;
+import org.orekit.utils.drivers.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriversList;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 /** Enumerate for {@link Orbit} and {@link FieldOrbit} parameters types.

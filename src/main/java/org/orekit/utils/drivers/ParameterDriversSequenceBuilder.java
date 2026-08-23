@@ -14,12 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.utils;
+package org.orekit.utils.drivers;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeInterval;
+import org.orekit.utils.TimeSpanMap;
 
 /** Builder for {@link ParameterDriversSequence}.
  * @author Luc Maisonobe

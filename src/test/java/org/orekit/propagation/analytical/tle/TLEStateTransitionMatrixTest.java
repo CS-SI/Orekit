@@ -40,8 +40,8 @@ import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.analytical.tle.generation.FixedPointTleGenerationAlgorithm;
 import org.orekit.propagation.analytical.tle.generation.TleGenerationAlgorithm;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterDriversList.DelegatingDriver;
+import org.orekit.utils.drivers.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriversList.DelegatingDriver;
 
 import java.util.List;
 

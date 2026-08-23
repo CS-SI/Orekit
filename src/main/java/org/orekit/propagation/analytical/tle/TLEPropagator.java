@@ -46,8 +46,8 @@ import org.orekit.time.TimeInterval;
 import org.orekit.time.TimeScale;
 import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterDriversProvider;
+import org.orekit.utils.drivers.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriversProvider;
 import org.orekit.utils.TimeSpanMap;
 
 /** This class provides elements to propagate TLE's.

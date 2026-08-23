@@ -19,7 +19,7 @@ package org.orekit.propagation.analytical;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.AbstractGradientConverter;
-import org.orekit.utils.ParameterDriversProvider;
+import org.orekit.utils.drivers.ParameterDriversProvider;
 
 /**
  * Converter for analytical orbit propagator.

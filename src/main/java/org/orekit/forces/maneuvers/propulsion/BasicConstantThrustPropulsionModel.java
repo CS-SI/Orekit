@@ -28,7 +28,7 @@ import org.hipparchus.util.FastMath;
 import org.orekit.forces.maneuvers.Control3DVectorCostType;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeInterval;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriver;
 
 /** Constant thrust propulsion model with:
  *  - Constant thrust direction in spacecraft frame

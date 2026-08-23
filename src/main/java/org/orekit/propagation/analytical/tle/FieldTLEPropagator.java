@@ -43,7 +43,7 @@ import org.orekit.time.TimeInterval;
 import org.orekit.time.TimeScale;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriver;
 import org.orekit.utils.TimeSpanMap;
 
 
