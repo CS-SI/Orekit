@@ -340,7 +340,7 @@ class FixedPointTleGenerationAlgorithmTest {
         FieldPropagator<T> p = FieldTLEPropagator.selectExtrapolator(tle);
         final FieldTLE<T> converted = new FixedPointTleGenerationAlgorithm(tle.toTLE()).
                                       generate(p.getInitialState(), tle);
-        
+
         Assertions.assertEquals(tle.getSatelliteNumber(),         converted.getSatelliteNumber());
         Assertions.assertEquals(tle.getClassification(),          converted.getClassification());
         Assertions.assertEquals(tle.getLaunchYear(),              converted.getLaunchYear());
@@ -348,7 +348,7 @@ class FixedPointTleGenerationAlgorithmTest {
         Assertions.assertEquals(tle.getLaunchPiece(),             converted.getLaunchPiece());
         Assertions.assertEquals(tle.getElementNumber(),           converted.getElementNumber());
         Assertions.assertEquals(tle.getRevolutionNumberAtEpoch(), converted.getRevolutionNumberAtEpoch());
-        
+
         Assertions.assertEquals(tle.getMeanMotion().getReal(), converted.getMeanMotion().getReal(),threshold * tle.getMeanMotion().getReal());
         Assertions.assertEquals(tle.getE().getReal(), converted.getE().getReal(), threshold * tle.getE().getReal());
         Assertions.assertEquals(tle.getI().getReal(), converted.getI().getReal(), threshold * tle.getI().getReal());
@@ -379,10 +379,7 @@ class FixedPointTleGenerationAlgorithmTest {
         // Generate a TLE based on the orbit and check that the generated TLE is the same as the
         // original one.
         final TleGenerationAlgorithm algorithm = new FixedPointTleGenerationAlgorithm(initialTle);
-        final TLE generatedTle = TLE.stateToTLE(new SpacecraftState(orbit),
-                                                algorithm,
-                                                new FixedPointConverter(new TLETheory(initialTle)),
-                                                DataContext.getDefault());
+        final TLE generatedTle = TLE.stateToTLE(new SpacecraftState(orbit), algorithm);
         Assertions.assertEquals(initialTle.getLine1(), generatedTle.getLine1());
         Assertions.assertEquals(initialTle.getLine2(), generatedTle.getLine2());
         final TimeStampedPVCoordinates actualPvCoordinates = TLEPropagator.

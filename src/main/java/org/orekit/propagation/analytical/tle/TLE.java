@@ -29,14 +29,9 @@ import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.orbits.KeplerianOrbit;
-import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.OrbitalState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.generation.TleGenerationAlgorithm;
-import org.orekit.propagation.analytical.tle.generation.TleGenerationUtil;
-import org.orekit.propagation.conversion.osc2mean.OsculatingToMeanConverter;
-import org.orekit.propagation.conversion.osc2mean.TLETheory;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.DateTimeComponents;
@@ -692,18 +687,12 @@ public class TLE implements OrbitalState {
      * </p>
      * @param state       Spacecraft State to convert into TLE
      * @param generationAlgorithm generator for TLE elements
-     * @param converter   osculating to mean orbit converter
-     * @param dataContext data context
      * @return a generated TLE
      * @since 14.0
      */
     public static TLE stateToTLE(final SpacecraftState state,
-                                 final TleGenerationAlgorithm generationAlgorithm,
-                                 final OsculatingToMeanConverter converter,
-                                 final DataContext dataContext) {
-        converter.setMeanTheory(new TLETheory(generationAlgorithm.getTemplateTLE(), dataContext));
-        final KeplerianOrbit mean = (KeplerianOrbit) OrbitParamsType.KEPLERIAN.convertType(converter.convertToMean(state.getOrbit()));
-        return TleGenerationUtil.newTLE(mean, generationAlgorithm.getTemplateTLE());
+                                 final TleGenerationAlgorithm generationAlgorithm) {
+        return generationAlgorithm.generate(state, generationAlgorithm.getTemplateTLE());
     }
 
     /** Check the lines format validity.
