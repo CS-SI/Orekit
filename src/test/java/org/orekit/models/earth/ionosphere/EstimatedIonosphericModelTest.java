@@ -53,8 +53,8 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterDriversList;
+import org.orekit.utils.drivers.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriversList;
 
 public class EstimatedIonosphericModelTest {
     
@@ -78,7 +78,7 @@ public class EstimatedIonosphericModelTest {
         // Delay
         final double delay = model.pathDelay(0.5 * FastMath.PI,
                                              PredefinedGnssSignal.G01.getFrequency(),
-                                             model.getParameters(new AbsoluteDate()));
+                                             model.getParameters());
         // Verify
         Assertions.assertEquals(0.162, delay, 0.001);
     }

@@ -82,7 +82,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
             CelestialBody body = (CelestialBody) bodyField.get(forceModel);
             double gm = forceModel.
                         getParameterDriver(body.getName() + ThirdBodyAttraction.ATTRACTION_COEFFICIENT_SUFFIX).
-                        getValue(date.toAbsoluteDate());
+                        getValue();
 
             // compute bodies separation vectors and squared norm
             final FieldVector3D<DerivativeStructure> centralToBody =
@@ -117,7 +117,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
             CelestialBody body = (CelestialBody) bodyField.get(forceModel);
             double gm = forceModel.
                         getParameterDriver(body.getName() + ThirdBodyAttraction.ATTRACTION_COEFFICIENT_SUFFIX).
-                        getValue(date);
+                        getValue();
 
             // compute bodies separation vectors and squared norm
             final Vector3D centralToBody    = body.getPosition(date, state.getFrame());
@@ -143,7 +143,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
     void testSunContrib() {
         Assertions.assertThrows(OrekitException.class, () -> {
             // initialization
-            AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 07, 01),
+            AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 7, 1),
                     new TimeComponents(13, 59, 27.816),
                     TimeScalesFactory.getUTC());
             Orbit orbit = new EquinoctialOrbit(42164000, 10e-3, 10e-3,
@@ -364,7 +364,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
     void testMoonContrib() {
 
         // initialization
-        AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 07, 01),
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 7, 1),
                                              new TimeComponents(13, 59, 27.816),
                                              TimeScalesFactory.getUTC());
         Orbit orbit =
@@ -459,7 +459,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
     @Test
     void testJacobianVs80Implementation() {
         // initialization
-        AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 3, 1),
                                              new TimeComponents(13, 59, 27.816),
                                              TimeScalesFactory.getUTC());
         double i     = FastMath.toRadians(98.7);
@@ -478,7 +478,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
     @Test
     void testJacobianVs80ImplementationGradient() {
         // initialization
-        AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 3, 1),
                                              new TimeComponents(13, 59, 27.816),
                                              TimeScalesFactory.getUTC());
         double i     = FastMath.toRadians(98.7);
@@ -499,7 +499,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
         {
 
         // initialization
-        AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 3, 1),
                                              new TimeComponents(13, 59, 27.816),
                                              TimeScalesFactory.getUTC());
         double i     = FastMath.toRadians(98.7);

@@ -72,7 +72,7 @@ class DSSTAtmosphericDragTest {
                 GravityFieldFactory.getUnnormalizedProvider(2, 0);
 
         final Frame earthFrame = FramesFactory.getEME2000();
-        final AbsoluteDate initDate = new AbsoluteDate(2003, 07, 01, 0, 0, 0, TimeScalesFactory.getUTC());
+        final AbsoluteDate initDate = new AbsoluteDate(2003, 7, 1, 0, 0, 0, TimeScalesFactory.getUTC());
         final double mu = 3.986004415E14;
         // a  = 7204535.84810944 m
         // ex = -0.001119677138261611
@@ -111,7 +111,7 @@ class DSSTAtmosphericDragTest {
         final AuxiliaryElements auxiliaryElements = new AuxiliaryElements(state.getOrbit(), 1);
 
         // Force model parameters
-        final double[] parameters = drag.getParameters(orbit.getDate());
+        final double[] parameters = drag.getParameters();
         // Initialize force model
         drag.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, parameters);
 
@@ -123,9 +123,7 @@ class DSSTAtmosphericDragTest {
         final double[] elements = new double[7];
         Arrays.fill(elements, 0.0);
         final double[] daidt = drag.getMeanElementRate(state, auxiliaryElements, parameters);
-        for (int i = 0; i < daidt.length; i++) {
-            elements[i] = daidt[i];
-        }
+        System.arraycopy(daidt, 0, elements, 0, daidt.length);
 
         MatcherAssert.assertThat(elements[0], Matchers.closeTo(-3.415320567871035E-5, 4.e-20));
         MatcherAssert.assertThat(elements[1], Matchers.closeTo(6.276312897745139E-13, 3e-26));
@@ -139,7 +137,7 @@ class DSSTAtmosphericDragTest {
     @Test
     void testShortPeriodTerms() throws IllegalArgumentException, OrekitException {
 
-        final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2003, 03, 21), new TimeComponents(1, 0, 0.), TimeScalesFactory.getUTC());
+        final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2003, 3, 21), new TimeComponents(1, 0, 0.), TimeScalesFactory.getUTC());
 
         final Orbit orbit = new EquinoctialOrbit(7069219.9806427825,
                                                  -4.5941811292223825E-4,
@@ -177,11 +175,10 @@ class DSSTAtmosphericDragTest {
         final AuxiliaryElements aux = new AuxiliaryElements(meanState.getOrbit(), 1);
 
         // Set the force models
-        final List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<>();
-
         drag.registerAttitudeProvider(attitudeProvider);
-        shortPeriodTerms.addAll(drag.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, drag.getParameters(meanState.getDate())));
-        drag.updateShortPeriodTerms(drag.getParametersAllValues(), meanState);
+        final List<ShortPeriodTerms> shortPeriodTerms =
+            new ArrayList<>(drag.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, drag.getParameters()));
+        drag.updateShortPeriodTerms(drag.getParameters(), meanState);
 
         double[] y = new double[6];
         for (final ShortPeriodTerms spt : shortPeriodTerms) {
@@ -204,7 +201,7 @@ class DSSTAtmosphericDragTest {
 
         // Orbit above 1000 km altitude.
         final Frame eme2000Frame = FramesFactory.getEME2000();
-        final AbsoluteDate initDate = new AbsoluteDate(2003, 07, 01, 0, 0, 0, TimeScalesFactory.getUTC());
+        final AbsoluteDate initDate = new AbsoluteDate(2003, 7, 1, 0, 0, 0, TimeScalesFactory.getUTC());
         final double mu = 3.986004415E14;
         final Orbit orbit = new EquinoctialOrbit(8204535.84810944,
                                                  -0.001119677138261611,
@@ -237,7 +234,7 @@ class DSSTAtmosphericDragTest {
         final AuxiliaryElements auxiliaryElements = new AuxiliaryElements(state.getOrbit(), 1);
 
         // Force model parameters
-        final double[] parameters = drag.getParameters(orbit.getDate());
+        final double[] parameters = drag.getParameters();
         // Initialize force model
         drag.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, parameters);
 

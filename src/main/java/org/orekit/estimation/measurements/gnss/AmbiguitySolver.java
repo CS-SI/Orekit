@@ -28,8 +28,7 @@ import org.hipparchus.linear.RealVector;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.TimeSpanMap.Span;
+import org.orekit.utils.drivers.ParameterDriver;
 
 /** Class for solving integer ambiguity problems.
  * @see LambdaMethod
@@ -101,46 +100,37 @@ public class AmbiguitySolver {
         // set up indirection array
         final List<ParameterDriver> freeDrivers = getFreeAmbiguityDrivers();
         final List<String> measurementsPDriversNames = new ArrayList<>();
-        int totalValuesToEstimate = 0;
-        for (ParameterDriver driver : freeDrivers) {
-            totalValuesToEstimate += driver.getNbOfValues();
-        }
+        final int totalValuesToEstimate = freeDrivers.size();
         for (ParameterDriver measDriver : measurementsParametersDrivers) {
-            for (Span<String> spanMeasurementsParametersDrivers = measDriver.getNamesSpanMap().getFirstSpan();
-                    spanMeasurementsParametersDrivers != null; spanMeasurementsParametersDrivers = spanMeasurementsParametersDrivers.next()) {
-                measurementsPDriversNames.add(spanMeasurementsParametersDrivers.getData());
-            }
-
+            measurementsPDriversNames.add(measDriver.getName());
         }
 
         final int[] indirection = new int[totalValuesToEstimate];
         int nb = 0;
         for (ParameterDriver freeDriver : freeDrivers) {
 
-            for (Span<String> spanFreeDriver = freeDriver.getNamesSpanMap().getFirstSpan(); spanFreeDriver != null; spanFreeDriver = spanFreeDriver.next()) {
-                indirection[nb] = -1;
+            indirection[nb] = -1;
 
-                for (int k = 0; k < measurementsPDriversNames.size(); ++k) {
-                    if (spanFreeDriver.getData().equals(measurementsPDriversNames.get(k))) {
-                        indirection[nb] = startIndex + k;
-                        break;
-                    }
+            for (int k = 0; k < measurementsPDriversNames.size(); ++k) {
+                if (freeDriver.getName().equals(measurementsPDriversNames.get(k))) {
+                    indirection[nb] = startIndex + k;
+                    break;
                 }
-
-                if (indirection[nb] < 0) {
-                    // the parameter was not found
-                    final StringBuilder builder = new StringBuilder();
-                    for (final String driverName : measurementsPDriversNames) {
-                        if (builder.length() > 0) {
-                            builder.append(", ");
-                        }
-                        builder.append(driverName);
-                    }
-                    throw new OrekitIllegalArgumentException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME,
-                            spanFreeDriver.getData(), builder.toString());
-                }
-                nb++;
             }
+
+            if (indirection[nb] < 0) {
+                // the parameter was not found
+                final StringBuilder builder = new StringBuilder();
+                for (final String driverName : measurementsPDriversNames) {
+                    if (!builder.isEmpty()) {
+                        builder.append(", ");
+                    }
+                    builder.append(driverName);
+                }
+                throw new OrekitIllegalArgumentException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME,
+                                                         freeDriver.getName(), builder.toString());
+            }
+            nb++;
         }
 
         return indirection;
@@ -168,17 +158,11 @@ public class AmbiguitySolver {
         // set up Integer Least Square problem
         final List<ParameterDriver> ambiguities      = getAllAmbiguityDrivers();
 
-        // construct floatambiguities array
-        int nbPDriver = 0;
-        for (ParameterDriver pDriver : ambiguities) {
-            nbPDriver += pDriver.getNbOfValues();
-        }
-        final double[]              floatAmbiguities = new double[nbPDriver];
+        // construct float ambiguities array
+        final double[] floatAmbiguities = new double[ambiguities.size()];
         int floatAmbRank = 0;
         for (ParameterDriver pDriver : ambiguities) {
-            for (Span<Double> span = pDriver.getValueSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                floatAmbiguities[floatAmbRank++] = span.getData();
-            }
+            floatAmbiguities[floatAmbRank++] = pDriver.getValue();
         }
 
         final int[]                 indirection      = getFreeAmbiguityIndirection(startIndex, measurementsParametersDrivers);
@@ -207,13 +191,12 @@ public class AmbiguitySolver {
         // fix the ambiguities
         final long[] fixedAmbiguities = bestCandidate.getSolution();
         final List<ParameterDriver> fixedDrivers = new ArrayList<>(indirection.length);
-        int nb = 0;
-        for (int i = 0; i < measurementsParametersDrivers.size(); ++i) {
-            final ParameterDriver driver = measurementsParametersDrivers.get(indirection[nb] - startIndex);
+        final int nb = measurementsParametersDrivers.size();
+        for (int i = 0; i < nb; ++i) {
+            final ParameterDriver driver = measurementsParametersDrivers.get(indirection[i] - startIndex);
             driver.setMinValue(fixedAmbiguities[i]);
             driver.setMaxValue(fixedAmbiguities[i]);
             fixedDrivers.add(driver);
-            nb += driver.getNbOfValues();
         }
 
         // Update the others parameter drivers accordingly to the fixed integer ambiguity
@@ -228,10 +211,7 @@ public class AmbiguitySolver {
         for (int i = startIndex + 1; i < covariance.getColumnDimension(); i++) {
             if (!belongTo(indirection, i)) {
                 final ParameterDriver driver = measurementsParametersDrivers.get(i - startIndex);
-                for (Span<Double> span = driver.getValueSpanMap().getFirstSpan(); span != null; span = span.next()) {
-
-                    driver.setValue(driver.getValue(span.getStart()) - Y.getEntry(entry++ - startIndex), span.getStart());
-                }
+                driver.setValue(driver.getValue() - Y.getEntry(entry++ - startIndex));
             }
         }
 

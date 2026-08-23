@@ -30,7 +30,7 @@ import org.orekit.models.earth.ionosphere.IonosphericModel;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriver;
 import org.orekit.utils.TrackingCoordinates;
 
 /** Class modifying theoretical angular measurement with ionospheric delay.
@@ -91,7 +91,7 @@ public class AngularIonosphericDelayModifier implements EstimationModifier<Angul
         final double[] azimuthElevation = computeAzimuthElevation(state, topocentricFrame, measurement);
 
         // Delay is taken into account to shift the spacecraft position
-        final double delay = ionoModel.pathDelay(state, topocentricFrame, frequency, ionoModel.getParameters(state.getDate()));
+        final double delay = ionoModel.pathDelay(state, topocentricFrame, frequency, ionoModel.getParameters());
         final double dt = delay / Constants.SPEED_OF_LIGHT;
         final SpacecraftState transitState = state.shiftedBy(-dt);
 

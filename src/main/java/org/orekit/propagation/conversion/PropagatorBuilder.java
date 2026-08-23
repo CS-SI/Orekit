@@ -26,7 +26,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitalState;
 import org.orekit.orbits.OrbitalStateFactory;
 import org.orekit.propagation.Propagator;
-import org.orekit.utils.ParameterDriversList;
+import org.orekit.utils.drivers.ParameterDriversList;
 
 /** This interface is the top-level abstraction to build propagators for conversion.
  * @author Pascal Parraud

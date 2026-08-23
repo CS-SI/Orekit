@@ -39,12 +39,12 @@ import org.orekit.propagation.analytical.gnss.FieldGnssPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.GNSSDate;
+import org.orekit.time.TimeInterval;
 import org.orekit.time.TimeScales;
 import org.orekit.utils.Constants;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterDriversList;
-import org.orekit.utils.ParameterObserver;
-import org.orekit.utils.TimeSpanMap;
+import org.orekit.utils.drivers.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriversList;
+import org.orekit.utils.drivers.ParameterObserver;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 /** Factory for {@link AbstractNavigationMessage}.
@@ -149,20 +149,13 @@ public abstract class GNSSOrbitalElementsFactory<O extends GNSSOrbitalElements<O
 
             /** {@inheritDoc} */
             @Override
-            public void valueChanged(final double previousValue, final ParameterDriver driver,
-                                     final AbsoluteDate date) {
-                // the check for null toe allows to set up a dummy week number
+            public void valueChanged(final double previousValue, final ParameterDriver driver) {
+                // the check for non-null toe prevents using a wrong week number
                 // in case secondsInWeek is set *before* week is set
                 // (this can happen when parsing YUMA almanac for example)
-                final int weekNumber = toe == null ? 0 : toe.getWeekNumber();
-                setTimeOfEphemerisNoRecurse(weekNumber, driver.getValue());
-            }
-
-            /** {@inheritDoc} */
-            @Override
-            public void valueSpanMapChanged(final TimeSpanMap<Double> previousValueSpanMap,
-                                            final ParameterDriver driver) {
-                // nothing to do
+                if (toe != null) {
+                    setTimeOfEphemerisNoRecurse(toe.getWeekNumber(), driver.getValue());
+                }
             }
         });
 
@@ -521,22 +514,23 @@ public abstract class GNSSOrbitalElementsFactory<O extends GNSSOrbitalElements<O
         final ParameterDriversList drivers = new ParameterDriversList();
         drivers.add(new ParameterDriver(SEMI_MAJOR_AXIS, 26000000.0,
                                         FastMath.scalb(1.0, 0),
-                                        Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Double.POSITIVE_INFINITY));
+                                        Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Double.POSITIVE_INFINITY,
+                                        TimeInterval.UNLIMITED));
         drivers.add(new ParameterDriver(ECCENTRICITY, 1.0e-8,
                                         FastMath.scalb(1.0, -24),
-                                        0.0, 1.0));
+                                        0.0, 1.0, TimeInterval.UNLIMITED));
         drivers.add(new ParameterDriver(INCLINATION, FastMath.toRadians(56.0),
                                         FastMath.scalb(1.0, -24),
-                                        0.0, FastMath.PI));
+                                        0.0, FastMath.PI, TimeInterval.UNLIMITED));
         drivers.add(new ParameterDriver(ARGUMENT_OF_PERIAPSIS, 0.0,
                                         FastMath.scalb(1.0, -24),
-                                        Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY));
+                                        Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, TimeInterval.UNLIMITED));
         drivers.add(new ParameterDriver(NODE_LONGITUDE, 0.0,
                                         FastMath.scalb(1.0, -24),
-                                        Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY));
+                                        Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, TimeInterval.UNLIMITED));
         drivers.add(new ParameterDriver(MEAN_ANOMALY, 0.0,
                                         FastMath.scalb(1.0, -24),
-                                        Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY));
+                                        Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, TimeInterval.UNLIMITED));
         return drivers;
     }
 

@@ -40,13 +40,14 @@ import org.orekit.frames.Transform;
 import org.orekit.models.earth.displacement.StationDisplacement;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeInterval;
 import org.orekit.time.clocks.ClockModel;
 import org.orekit.utils.AngularCoordinates;
 import org.orekit.utils.FieldAngularCoordinates;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinatesProvider;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriver;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 /** Class modeling a ground station that can perform some measurements.
@@ -127,15 +128,18 @@ public class GroundStation extends AbstractParticipant implements GroundObserver
 
         this.eastOffsetDriver = new ParameterDriver(baseFrame.getName() + OFFSET_SUFFIX + "-East",
                                                     0.0, POSITION_OFFSET_SCALE,
-                                                    Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                                                    Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                                    TimeInterval.UNLIMITED);
 
         this.northOffsetDriver = new ParameterDriver(baseFrame.getName() + OFFSET_SUFFIX + "-North",
                                                      0.0, POSITION_OFFSET_SCALE,
-                                                     Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                                                     Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                                     TimeInterval.UNLIMITED);
 
         this.zenithOffsetDriver = new ParameterDriver(baseFrame.getName() + OFFSET_SUFFIX + "-Zenith",
                                                       0.0, POSITION_OFFSET_SCALE,
-                                                      Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                                                      Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                                      TimeInterval.UNLIMITED);
 
         // Add the ground station parameters to the master list.
         addParameterDriver(this.eastOffsetDriver);
@@ -293,9 +297,9 @@ public class GroundStation extends AbstractParticipant implements GroundObserver
         // compute position in topocentric frame
         final int freeParameters = date.getField().getZero().getFreeParameters();
         final AbsoluteDate absoluteDate = date.toAbsoluteDate();
-        final Gradient x          = eastOffsetDriver.getValue(freeParameters, indices, absoluteDate);
-        final Gradient                       y          = northOffsetDriver.getValue(freeParameters, indices, absoluteDate);
-        final Gradient                       z          = zenithOffsetDriver.getValue(freeParameters, indices, absoluteDate);
+        final Gradient x          = eastOffsetDriver.getValue(freeParameters, indices);
+        final Gradient                       y          = northOffsetDriver.getValue(freeParameters, indices);
+        final Gradient                       z          = zenithOffsetDriver.getValue(freeParameters, indices);
         final FieldVector3D<Gradient> position = new FieldVector3D<>(x, y, z);
         // approximate linearly (for performance) static transform from topocentric to body shape frame
         final Frame bodyFrame = baseFrame.getParentShape().getBodyFrame();

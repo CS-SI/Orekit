@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.utils;
+package org.orekit.utils.drivers;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -23,8 +23,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.TimeSpanMap.Span;
-
 
 /** Class managing several {@link ParameterDriver parameter drivers},
  * taking care of duplicated names.
@@ -65,13 +63,6 @@ public class ParameterDriversList {
      * both drivers will be managed together, existing drivers
      * being set to the value of the last driver added (i.e.
      * each addition overrides the parameter value).
-     * </p>
-     * <p>
-     * Warning if a driver is added and a driver with the same name
-     * was already added before, they should have the same validity
-     * periods to avoid surprises. Whatever, all driver having
-     * same name will have their valueSpanMap, nameSpanMap and validity period
-     * overwritten with the last driver added attributes.
      * </p>
      * @param driver driver to add
      */
@@ -143,23 +134,6 @@ public class ParameterDriversList {
         return null;
     }
 
-    /** Find  a {@link DelegatingDriver delegating driver} by name.
-     * @param name name to check
-     * @return a {@link DelegatingDriver delegating driver} managing this parameter name
-     * @since 9.1
-     */
-    public String findDelegatingSpanNameBySpanName(final String name) {
-        for (final DelegatingDriver d : delegating) {
-            for (Span<String> span = d.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                if (span.getData().equals(name)) {
-                    return span.getData();
-                }
-            }
-        }
-        return null;
-    }
-
-
     /** Sort the parameters lexicographically.
      */
     public void sort() {
@@ -185,17 +159,6 @@ public class ParameterDriversList {
      */
     public int getNbParams() {
         return delegating.size();
-    }
-
-    /** Get the number of values to estimate for parameters with different names.
-     * @return number of values to estimate for parameters with different names
-     */
-    public int getNbValuesToEstimate() {
-        int nbValuesToEstimate = 0;
-        for (DelegatingDriver driver : delegating) {
-            nbValuesToEstimate += driver.getNbOfValues();
-        }
-        return nbValuesToEstimate;
     }
 
     /** Get delegating drivers for all parameters.
@@ -228,14 +191,14 @@ public class ParameterDriversList {
          * @param driver first driver in the series
          */
         DelegatingDriver(final ParameterDriversList owner, final ParameterDriver driver) {
-            super(driver.getName(), driver.getNamesSpanMap(),
-                  driver.getValueSpanMap(), driver.getReferenceValue(),
-                  driver.getScale(), driver.getMinValue(), driver.getMaxValue());
+            super(driver.getName(), driver.getReferenceValue(),
+                  driver.getScale(), driver.getMinValue(), driver.getMaxValue(),
+                  driver.getValidity());
 
             owners = new ArrayList<>();
             addOwner(owner);
 
-            setValueSpanMap(driver);
+            setValue(driver.getValue());
             setReferenceDate(driver.getReferenceDate());
             setSelected(driver.isSelected());
 
@@ -261,26 +224,17 @@ public class ParameterDriversList {
             owners.removeIf(parameterDriversList -> parameterDriversList == owner);
         }
 
-        /** Add a driver. Warning, by doing this operation
-         * all the delegated drivers present in the parameterDriverList
-         * will be overwritten with the attributes of the driver given
-         * in argument.
+        /** Add a driver.
          * <p>
-         * </p>
-         * Warning if a driver is added and a driver with the same name
-         * was already added before, they should have the same validity
-         * Period (that is to say that the {@link
-         * ParameterDriver#addSpans(AbsoluteDate, AbsoluteDate, double)}
-         * and {@link ParameterDriver#addSpanAtDate(AbsoluteDate)} methods
-         * should have been called with the same arguments for all drivers
-         * having the same name) to avoid surprises. Whatever, all driver having
-         * same name will have their valueSpanMap, nameSpanMap and validity period
-         * overwritten with the last driver added attributes.
+         * Warning, by doing this operation all the delegated drivers present in the
+         * parameterDriverList will be overwritten with the attributes of the driver
+         * given in argument.
+         * <p>
          * @param driver driver to add
          */
         private void add(final ParameterDriver driver) {
 
-            setValueSpanMap(driver);
+            setValue(driver.getValue());
             setReferenceDate(driver.getReferenceDate());
 
             // if any of the drivers is selected, all must be selected
@@ -302,17 +256,6 @@ public class ParameterDriversList {
          * still forwarded to it, but it is itself not responsible anymore
          * for forwarding change.
          * <p>
-         * </p>
-         * Warning if a driver is added and a driver with the same name
-         * was already added before, they should have the same validity
-         * periods (that is to say that the {@link
-         * ParameterDriver#addSpans(AbsoluteDate, AbsoluteDate, double)}
-         * and {@link ParameterDriver#addSpanAtDate(AbsoluteDate)} methods
-         * should have been called with same arguments for all drivers
-         * having the same name) to avoid surprises. Whatever, all driver having
-         * same name will have their valueSpanMap, nameSpanMap and validity period
-         * overwritten with the last driver added attributes.
-         * </p>
          * @param other instance to merge
          */
         private void merge(final DelegatingDriver other) {
@@ -324,7 +267,6 @@ public class ParameterDriversList {
             }
 
             // synchronize parameter
-            setValueSpanMap(other);
             setReferenceDate(other.getReferenceDate());
             if (isSelected()) {
                 other.setSelected(true);
@@ -417,14 +359,8 @@ public class ParameterDriversList {
 
         /** {@inheritDoc} */
         @Override
-        public void valueSpanMapChanged(final TimeSpanMap<Double> previousValueSpanMap, final ParameterDriver driver) {
-            updateAll(driver, d -> d.setValueSpanMap(driver));
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public void valueChanged(final double previousValue, final ParameterDriver driver, final AbsoluteDate date) {
-            updateAll(driver, d -> d.setValue(driver.getValue(date), date));
+        public void valueChanged(final double previousValue, final ParameterDriver driver) {
+            updateAll(driver, d -> d.setValue(driver.getValue()));
         }
 
         /** {@inheritDoc} */
@@ -443,12 +379,6 @@ public class ParameterDriversList {
         @Override
         public void selectionChanged(final boolean previousSelection, final ParameterDriver driver) {
             updateAll(driver, d -> d.setSelected(driver.isSelected()));
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public void estimationTypeChanged(final boolean previousSelection, final ParameterDriver driver) {
-            updateAll(driver, d -> d.setContinuousEstimation(driver.isContinuousEstimation()));
         }
 
         /** {@inheritDoc} */

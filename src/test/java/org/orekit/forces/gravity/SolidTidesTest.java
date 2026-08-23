@@ -59,6 +59,7 @@ import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeInterval;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.time.TimeStamped;
@@ -66,7 +67,7 @@ import org.orekit.time.UT1Scale;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.LoveNumbers;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriver;
 
 
 class SolidTidesTest extends AbstractLegacyForceModelTest {
@@ -81,7 +82,7 @@ class SolidTidesTest extends AbstractLegacyForceModelTest {
             attractionModelField.setAccessible(true);
             ForceModel attractionModel = (ForceModel) attractionModelField.get(forceModel);
             Field<DerivativeStructure> field = state.getDate().getField();
-            return attractionModel.acceleration(state, attractionModel.getParameters(field, state.getDate()));
+            return attractionModel.acceleration(state, attractionModel.getParameters(field));
 
         } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
             return null;
@@ -98,7 +99,7 @@ class SolidTidesTest extends AbstractLegacyForceModelTest {
             ForceModel attractionModel = (ForceModel) attractionModelField.get(forceModel);
             final int freeParameters = position.getX().getFreeParameters();
             Field<Gradient> field = GradientField.getField(freeParameters);
-            return attractionModel.acceleration(state, attractionModel.getParameters(field, state.getDate()));
+            return attractionModel.acceleration(state, attractionModel.getParameters(field));
 
         } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
             return null;
@@ -459,11 +460,11 @@ class SolidTidesTest extends AbstractLegacyForceModelTest {
         Assertions.assertTrue(detectors.isEmpty());
         Assertions.assertTrue(fieldDetectors.isEmpty());
         
-        // When: 1 span added to driver
+        // When: validity date added to driver
         final List<ParameterDriver> drivers = solidTidesModel.getParametersDrivers();
         
         for (final ParameterDriver driver : drivers) {
-            driver.addSpanAtDate(t0);
+            driver.setValidity(TimeInterval.of(t0, AbsoluteDate.FUTURE_INFINITY, true));
         }
         
         detectors      = solidTidesModel.getEventDetectors().toList();
@@ -590,12 +591,12 @@ class SolidTidesTest extends AbstractLegacyForceModelTest {
         final SpacecraftState state = new SpacecraftState(orbit);
 
         // acceleration without Field
-        final Vector3D acceleration = forceModel.acceleration(state, forceModel.getParameters(date));
+        final Vector3D acceleration = forceModel.acceleration(state, forceModel.getParameters());
 
         // acceleration with Field
         final FieldSpacecraftState<Binary64> fieldState = new FieldSpacecraftState<>(Binary64Field.getInstance(), state);
         final FieldVector3D<Binary64> fieldAcceleration = forceModel.acceleration(fieldState,
-                forceModel.getParameters(Binary64Field.getInstance(), fieldState.getDate()));
+                forceModel.getParameters(Binary64Field.getInstance()));
 
         // verify that Field and non-Field accelerations match
         Assertions.assertEquals(acceleration.getX(), fieldAcceleration.getX().getReal(), 0);

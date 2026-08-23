@@ -29,7 +29,8 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.time.TimeInterval;
+import org.orekit.utils.drivers.ParameterDriver;
 
 /** Polynomial clock model.
  *
@@ -59,7 +60,8 @@ public class PolynomialClockModel implements ClockModel {
     public PolynomialClockModel(final AbsoluteDate referenceDate) {
         this.terms =  new ArrayList<>();
         final ParameterDriver parameterTerm = new ParameterDriver("-clock-bias", 0.0, CLOCK_OFFSET_SCALE,
-                Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                                                                  Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                                                  TimeInterval.UNLIMITED);
         parameterTerm.setValue(0);
         parameterTerm.setReferenceDate(referenceDate);
         this.terms.add(parameterTerm);
@@ -78,7 +80,8 @@ public class PolynomialClockModel implements ClockModel {
         for (double term : terms) {
             final String name = getAcceptedTermName(ii);
             final ParameterDriver parameterTerm = new ParameterDriver(name, 0.0, CLOCK_OFFSET_SCALE,
-                    Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                                                                      Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                                                      TimeInterval.UNLIMITED);
             parameterTerm.setValue(term);
             parameterTerm.setReferenceDate(referenceDate);
             convertedTerms.add(parameterTerm);
@@ -151,7 +154,8 @@ public class PolynomialClockModel implements ClockModel {
         } else if (parameters.size() == index && driver == null) {
             // Create empty parameter with correct name for this index
             final ParameterDriver empty = new ParameterDriver(getAcceptedTermName(index), 0.0, CLOCK_OFFSET_SCALE,
-                    Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                                                              Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                                              TimeInterval.UNLIMITED);
             empty.setReferenceDate(AbsoluteDate.ARBITRARY_EPOCH);
             parameters.add(empty);
         }
@@ -165,7 +169,11 @@ public class PolynomialClockModel implements ClockModel {
             return new ClockOffset(date, result);
         }
         final double dt = date.durationFrom(getSafeReference(date));
-        final double[] convertedTerms = terms.stream().map(x -> x.getValue(date)).mapToDouble(Double::doubleValue).toArray();
+        final double[] convertedTerms = terms.
+                                        stream().
+                                        map(ParameterDriver::getValue).
+                                        mapToDouble(Double::doubleValue).
+                                        toArray();
         // Turn the terms into a polynomial function
         PolynomialFunction function = new PolynomialFunction(convertedTerms);
         // Loop over all of the terms in order
@@ -184,7 +192,11 @@ public class PolynomialClockModel implements ClockModel {
         final List<T> result = new ArrayList<>(3);
         // Loop over all of the terms in order
         // Repeat until out of terms
-        final double[] convertedTerms = terms.stream().map(x -> x.getValue(aDate)).mapToDouble(Double::doubleValue).toArray();
+        final double[] convertedTerms = terms.
+                                        stream().
+                                        map(ParameterDriver::getValue).
+                                        mapToDouble(Double::doubleValue).
+                                        toArray();
         // Turn the terms into a polynomial function
         PolynomialFunction function = new PolynomialFunction(convertedTerms);
         for (int ii = 0; ii < 3; ii++) {
@@ -203,7 +215,7 @@ public class PolynomialClockModel implements ClockModel {
         if (terms.isEmpty()) {
             return null;
         }
-        final Gradient[] gradients = terms.stream().map(x -> x.getValue(freeParameters, indices, date))
+        final Gradient[] gradients = terms.stream().map(x -> x.getValue(freeParameters, indices))
                 .toArray(Gradient[]::new);
         final FieldAbsoluteDate<Gradient> referenceDate = new FieldAbsoluteDate<>(gradients[0].getField(),
                 getSafeReference(date));
@@ -231,7 +243,7 @@ public class PolynomialClockModel implements ClockModel {
         if (firstTerm.getReferenceDate() == null) {
             boolean allOtherDatesZero = true;
             for (final ParameterDriver term: terms) {
-                if (FastMath.abs(term.getValue(date)) > EPS) {
+                if (FastMath.abs(term.getValue()) > EPS) {
                     allOtherDatesZero = false;
                 }
             }

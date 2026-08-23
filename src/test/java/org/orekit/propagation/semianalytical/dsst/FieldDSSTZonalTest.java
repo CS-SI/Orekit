@@ -67,8 +67,8 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.IERSConventions;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterDriversList;
+import org.orekit.utils.drivers.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriversList;
 
 public class FieldDSSTZonalTest {
 
@@ -86,7 +86,7 @@ public class FieldDSSTZonalTest {
                 GravityFieldFactory.getUnnormalizedProvider(4, 4);
 
         final Frame earthFrame = FramesFactory.getEME2000();
-        final FieldAbsoluteDate<T> initDate = new FieldAbsoluteDate<>(field, 2007, 04, 16, 0, 46, 42.400, TimeScalesFactory.getUTC());
+        final FieldAbsoluteDate<T> initDate = new FieldAbsoluteDate<>(field, 2007, 4, 16, 0, 46, 42.400, TimeScalesFactory.getUTC());
 
         // a  = 26559890 m
         // ey = 0.0041543085910249414
@@ -113,7 +113,7 @@ public class FieldDSSTZonalTest {
         final FieldAuxiliaryElements<T> auxiliaryElements = new FieldAuxiliaryElements<>(state.getOrbit(), 1);
 
         // Force model parameters
-        final T[] parameters = zonal.getParameters(field, state.getDate());
+        final T[] parameters = zonal.getParameters(field);
         // Initialize force model
         zonal.initializeShortPeriodTerms(auxiliaryElements,
                          PropagationType.MEAN, parameters);
@@ -122,9 +122,7 @@ public class FieldDSSTZonalTest {
         Arrays.fill(elements, zero);
 
         final T[] daidt = zonal.getMeanElementRate(state, auxiliaryElements, parameters);
-        for (int i = 0; i < daidt.length; i++) {
-            elements[i] = daidt[i];
-        }
+        System.arraycopy(daidt, 0, elements, 0, daidt.length);
 
         Assertions.assertEquals(0.0,                     elements[0].getReal(), 1.e-25);
         Assertions.assertEquals(1.3909396722346468E-11,  elements[1].getReal(), 3.e-26);
@@ -153,11 +151,10 @@ public class FieldDSSTZonalTest {
 	    final FieldAuxiliaryElements<T> aux = new FieldAuxiliaryElements<>(meanState.getOrbit(), 1);
 	
 	    // Set the force models
-	    final List<FieldShortPeriodTerms<T>> shortPeriodTerms = new ArrayList<>();
-	
 	    zonal.registerAttitudeProvider(null);
-	    shortPeriodTerms.addAll(zonal.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, zonal.getParameters(field)));
-	    zonal.updateShortPeriodTerms(zonal.getParametersAllValues(field), meanState);
+	    final List<FieldShortPeriodTerms<T>> shortPeriodTerms =
+            new ArrayList<>(zonal.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, zonal.getParameters(field)));
+	    zonal.updateShortPeriodTerms(zonal.getParameters(field), meanState);
 	
 	    T[] y = MathArrays.buildArray(field, 6);
 	    Arrays.fill(y, zero);
@@ -189,7 +186,7 @@ public class FieldDSSTZonalTest {
         final T zero = field.getZero();
 
         final Frame earthFrame = FramesFactory.getEME2000();
-        final FieldAbsoluteDate<T> initDate = new FieldAbsoluteDate<>(field, 2007, 04, 16, 0, 46, 42.400, TimeScalesFactory.getUTC());
+        final FieldAbsoluteDate<T> initDate = new FieldAbsoluteDate<>(field, 2007, 4, 16, 0, 46, 42.400, TimeScalesFactory.getUTC());
 
         // a  = 2.655989E6 m
         // ex = 2.719455286199036E-4
@@ -218,17 +215,17 @@ public class FieldDSSTZonalTest {
 
         // Zonal force model
         final DSSTZonal zonal = new DSSTZonal(provider, 32, 4, 65);
-        zonal.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, zonal.getParameters(field, state.getDate()));
+        zonal.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, zonal.getParameters(field));
 
         // Zonal force model with default constructor
         final DSSTZonal zonalDefault = new DSSTZonal(provider);
-        zonalDefault.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, zonalDefault.getParameters(field, state.getDate()));
+        zonalDefault.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, zonalDefault.getParameters(field));
 
         // Compute mean element rate for the zonal force model
-        final T[] elements = zonal.getMeanElementRate(state, auxiliaryElements, zonal.getParameters(field, state.getDate()));
+        final T[] elements = zonal.getMeanElementRate(state, auxiliaryElements, zonal.getParameters(field));
 
         // Compute mean element rate for the "default" zonal force model
-        final T[] elementsDefault = zonalDefault.getMeanElementRate(state, auxiliaryElements, zonalDefault.getParameters(field, state.getDate()));
+        final T[] elementsDefault = zonalDefault.getMeanElementRate(state, auxiliaryElements, zonalDefault.getParameters(field));
 
         // Verify
         for (int i = 0; i < 6; i++) {
@@ -242,7 +239,7 @@ public class FieldDSSTZonalTest {
     public void testShortPeriodTermsStateDerivatives() {
 
         // Initial spacecraft state
-        final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2003, 05, 21), new TimeComponents(1, 0, 0.),
+        final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2003, 5, 21), new TimeComponents(1, 0, 0.),
                                                        TimeScalesFactory.getUTC());
 
         final Orbit orbit = new EquinoctialOrbit(42164000,
@@ -275,9 +272,9 @@ public class FieldDSSTZonalTest {
         final Gradient zero = dsState.getDate().getField().getZero();
 
         // Compute state Jacobian using directly the method
-        final List<FieldShortPeriodTerms<Gradient>> shortPeriodTerms = new ArrayList<>();
-        shortPeriodTerms.addAll(zonal.initializeShortPeriodTerms(fieldAuxiliaryElements, PropagationType.OSCULATING,
-                                converter.getParametersAtStateDate(dsState, zonal)));
+        final List<FieldShortPeriodTerms<Gradient>> shortPeriodTerms =
+            new ArrayList<>(zonal.initializeShortPeriodTerms(fieldAuxiliaryElements, PropagationType.OSCULATING,
+                                                             converter.getParametersAtStateDate(dsState, zonal)));
         zonal.updateShortPeriodTerms(converter.getParameters(dsState, zonal), dsState);
         final Gradient[] shortPeriod = new Gradient[6];
         Arrays.fill(shortPeriod, zero);
@@ -355,7 +352,7 @@ public class FieldDSSTZonalTest {
     public void testShortPeriodTermsMuParametersDerivatives() {
 
         // Initial spacecraft state
-        final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2003, 05, 21), new TimeComponents(1, 0, 0.),
+        final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2003, 5, 21), new TimeComponents(1, 0, 0.),
                                                        TimeScalesFactory.getUTC());
 
         final Orbit orbit = new EquinoctialOrbit(42164000,
@@ -396,9 +393,9 @@ public class FieldDSSTZonalTest {
         final Gradient zero = dsState.getDate().getField().getZero();
 
         // Compute Jacobian using directly the method
-        final List<FieldShortPeriodTerms<Gradient>> shortPeriodTerms = new ArrayList<>();
-        shortPeriodTerms.addAll(zonal.initializeShortPeriodTerms(fieldAuxiliaryElements, PropagationType.OSCULATING,
-                                converter.getParametersAtStateDate(dsState, zonal)));
+        final List<FieldShortPeriodTerms<Gradient>> shortPeriodTerms =
+            new ArrayList<>(zonal.initializeShortPeriodTerms(fieldAuxiliaryElements, PropagationType.OSCULATING,
+                                                             converter.getParametersAtStateDate(dsState, zonal)));
         zonal.updateShortPeriodTerms(converter.getParameters(dsState, zonal), dsState);
         final Gradient[] shortPeriod = new Gradient[6];
         Arrays.fill(shortPeriod, zero);
@@ -486,7 +483,9 @@ public class FieldDSSTZonalTest {
 
         final T zero = field.getZero();
         // No shadow at this date
-        final FieldAbsoluteDate<T> initDate = new FieldAbsoluteDate<>(field, new DateComponents(2003, 05, 21), new TimeComponents(1, 0, 0.),
+        final FieldAbsoluteDate<T> initDate = new FieldAbsoluteDate<>(field,
+                                                                      new DateComponents(2003, 5, 21),
+                                                                      new TimeComponents(1, 0, 0.),
                                                                       TimeScalesFactory.getUTC());
         final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<>(zero.add(42164000),
                                                                 zero.add(10e-3),
@@ -678,9 +677,9 @@ public class FieldDSSTZonalTest {
         if (printResults) {
             System.out.println("Inertial frame  : " + inertialFrame.toString());
             System.out.println("Body-Fixed frame: " + bodyFixedFrame.toString());
-            System.out.println("\ndi\n" + dI.toString());
-            System.out.println("\ndΩ\n" + dOm.toString());
-            System.out.println("\ndLM\n" + dLM.toString());
+            System.out.println("\ndi\n" + dI);
+            System.out.println("\ndΩ\n" + dOm);
+            System.out.println("\ndLM\n" + dLM);
         }
         
         // Compare to reference
@@ -694,9 +693,11 @@ public class FieldDSSTZonalTest {
 
         AuxiliaryElements auxiliaryElements = new AuxiliaryElements(state.getOrbit(), 1);
 
-        List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<>();
-        shortPeriodTerms.addAll(force.initializeShortPeriodTerms(auxiliaryElements, PropagationType.OSCULATING, force.getParameters(state.getDate())));
-        force.updateShortPeriodTerms(force.getParametersAllValues(), state);
+        List<ShortPeriodTerms> shortPeriodTerms =
+            new ArrayList<>(force.initializeShortPeriodTerms(auxiliaryElements,
+                                                             PropagationType.OSCULATING,
+                                                             force.getParameters()));
+        force.updateShortPeriodTerms(force.getParameters(), state);
         
         double[] shortPeriod = new double[6];
         for (ShortPeriodTerms spt : shortPeriodTerms) {

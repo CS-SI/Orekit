@@ -33,7 +33,7 @@ import org.orekit.time.clocks.ClockOffset;
 import org.orekit.time.clocks.PolynomialClockModel;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriver;
 
 public class OneWayGNSSRangeRateCreator
     extends MeasurementCreator {

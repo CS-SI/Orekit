@@ -21,7 +21,7 @@ import org.hipparchus.linear.QRDecomposer;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.conversion.DSSTPropagatorBuilder;
-import org.orekit.utils.ParameterDriversList;
+import org.orekit.utils.drivers.ParameterDriversList;
 
 /** Builder for a Semi-analytical Kalman Filter.
  * @author Julie Bayard

@@ -22,7 +22,7 @@ import org.orekit.bodies.GeodeticPoint;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldTrackingCoordinates;
-import org.orekit.utils.ParameterDriversProvider;
+import org.orekit.utils.drivers.ParameterDriversProvider;
 import org.orekit.utils.TrackingCoordinates;
 
 /** Defines a tropospheric model, used to calculate the path delay imposed to

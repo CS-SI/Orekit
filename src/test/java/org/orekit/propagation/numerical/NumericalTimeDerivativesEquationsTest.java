@@ -77,7 +77,7 @@ class NumericalTimeDerivativesEquationsTest {
         assertEquals(state.getVelocity().getX(), derivatives[0]);
         assertEquals(state.getVelocity().getY(), derivatives[1]);
         assertEquals(state.getVelocity().getZ(), derivatives[2]);
-        final Vector3D acceleration = forceModel.acceleration(state, new double[] {forceModel.getMu(orbit.getDate())});
+        final Vector3D acceleration = forceModel.acceleration(state, new double[] {forceModel.getMu()});
         final double tolerance = 1e-10;
         assertEquals(acceleration.getX(), derivatives[3], tolerance);
         assertEquals(acceleration.getY(), derivatives[4], tolerance);

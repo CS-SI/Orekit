@@ -64,12 +64,9 @@ import org.orekit.propagation.semianalytical.dsst.utilities.MaxGapInterpolationG
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.DataDictionary;
 import org.orekit.utils.DoubleArrayDictionary;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterDriversList;
-import org.orekit.utils.ParameterDriversList.DelegatingDriver;
-import org.orekit.utils.ParameterObserver;
-import org.orekit.utils.TimeSpanMap;
-import org.orekit.utils.TimeSpanMap.Span;
+import org.orekit.utils.drivers.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriversList;
+import org.orekit.utils.drivers.ParameterDriversList.DelegatingDriver;
 
 /**
  * This class propagates {@link org.orekit.orbits.Orbit orbits} using the DSST theory.
@@ -338,12 +335,8 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         final List<String> columnsNames = new ArrayList<>();
         for (final DSSTForceModel forceModel : getAllForceModels()) {
             for (final ParameterDriver driver : forceModel.getParametersDrivers()) {
-                if (driver.isSelected() && !columnsNames.contains(driver.getNamesSpanMap().getFirstSpan().getData())) {
-                    // As driver with same name should have same NamesSpanMap we only check if the first span is present,
-                    // if not we add all span names to columnsNames
-                    for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                        columnsNames.add(span.getData());
-                    }
+                if (driver.isSelected() && !columnsNames.contains(driver.getName())) {
+                    columnsNames.add(driver.getName());
                 }
             }
         }
@@ -464,32 +457,30 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         // add the Jacobians column generators corresponding to parameters, and setup state accordingly
         for (final DelegatingDriver driver : selected.getDrivers()) {
 
-            for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                DSSTIntegrableJacobianColumnGenerator generator = null;
+            DSSTIntegrableJacobianColumnGenerator generator = null;
 
-                // check if we already have set up the providers
-                for (final AdditionalDerivativesProvider provider : getAdditionalDerivativesProviders()) {
-                    if (provider instanceof DSSTIntegrableJacobianColumnGenerator columnGenerator &&
-                        provider.getName().equals(span.getData())) {
-                        // the Jacobian column generator has already been set up in a previous propagation
-                        generator = columnGenerator;
-                        break;
-                    }
+            // check if we already have set up the providers
+            for (final AdditionalDerivativesProvider provider : getAdditionalDerivativesProviders()) {
+                if (provider instanceof DSSTIntegrableJacobianColumnGenerator columnGenerator &&
+                    provider.getName().equals(driver.getName())) {
+                    // the Jacobian column generator has already been set up in a previous propagation
+                    generator = columnGenerator;
+                    break;
                 }
+            }
 
-                if (generator == null) {
-                    // this is the first time we need the Jacobian column generator, create it
-                    generator = new DSSTIntegrableJacobianColumnGenerator(stmGenerator, span.getData());
-                    addAdditionalDerivativesProvider(generator);
-                }
+            if (generator == null) {
+                // this is the first time we need the Jacobian column generator, create it
+                generator = new DSSTIntegrableJacobianColumnGenerator(stmGenerator, driver.getName());
+                addAdditionalDerivativesProvider(generator);
+            }
 
-                if (!getInitialIntegrationState().hasAdditionalData(span.getData())) {
-                    // add the initial Jacobian column if it is not already there
-                    // (perhaps due to a previous propagation)
-                    setInitialState(getInitialState().addAdditionalData(span.getData(),
-                                                                         getHarvester().getInitialJacobianColumn(span.getData())),
-                                    initialIsOsculating() ? PropagationType.OSCULATING : PropagationType.MEAN);
-                }
+            if (!getInitialIntegrationState().hasAdditionalData(driver.getName())) {
+                // add the initial Jacobian column if it is not already there
+                // (perhaps due to a previous propagation)
+                setInitialState(getInitialState().addAdditionalData(driver.getName(),
+                                                                    getHarvester().getInitialJacobianColumn(driver.getName())),
+                                initialIsOsculating() ? PropagationType.OSCULATING : PropagationType.MEAN);
             }
 
         }
@@ -551,24 +542,17 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      */
     public void addForceModel(final DSSTForceModel force) {
 
-        if (force instanceof DSSTNewtonianAttraction) {
+        if (force instanceof final DSSTNewtonianAttraction na) {
             // we want to add the central attraction force model
 
+            // ensure the state mapper knows about the new mu
+            superSetMu(na.getMu());
+
             // ensure we are notified of any mu change
-            force.getParametersDrivers().getFirst().addObserver(new ParameterObserver() {
-                /** {@inheritDoc} */
-                @Override
-                public void valueChanged(final double previousValue, final ParameterDriver driver, final AbsoluteDate date) {
-                    // mu PDriver should have only 1 span
-                    superSetMu(driver.getValue());
-                }
-                /** {@inheritDoc} */
-                @Override
-                public void valueSpanMapChanged(final TimeSpanMap<Double> previousValue, final ParameterDriver driver) {
-                    // mu PDriver should have only 1 span
-                    superSetMu(driver.getValue());
-                }
-            });
+            force.
+                getParametersDrivers().
+                getFirst().
+                addObserver((previousValue, driver) -> superSetMu(driver.getValue()));
 
             if (hasNewtonianAttraction()) {
                 // there is already a central attraction model, replace it
@@ -666,8 +650,8 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         final List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<>();
         for (final DSSTForceModel force : forces) {
             force.registerAttitudeProvider(attitudeProvider);
-            shortPeriodTerms.addAll(force.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, force.getParameters(mean.getDate())));
-            force.updateShortPeriodTerms(force.getParametersAllValues(), mean);
+            shortPeriodTerms.addAll(force.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, force.getParameters()));
+            force.updateShortPeriodTerms(force.getParameters(), mean);
         }
 
         final EquinoctialOrbit osculatingOrbit = computeOsculatingOrbit(mean, shortPeriodTerms);
@@ -834,7 +818,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         // initialize all perturbing forces
         final List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<>();
         for (final DSSTForceModel force : forceModels) {
-            shortPeriodTerms.addAll(force.initializeShortPeriodTerms(aux, type, force.getParameters(initialState.getDate())));
+            shortPeriodTerms.addAll(force.initializeShortPeriodTerms(aux, type, force.getParameters()));
         }
         mapper.setShortPeriodTerms(shortPeriodTerms);
 
@@ -843,7 +827,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
             final ShortPeriodicsHandler spHandler = new ShortPeriodicsHandler(forceModels);
             // Compute short periodic coefficients for this point
             for (DSSTForceModel forceModel : forceModels) {
-                forceModel.updateShortPeriodTerms(forceModel.getParametersAllValues(), initialState);
+                forceModel.updateShortPeriodTerms(forceModel.getParameters(), initialState);
             }
             final Collection<ODEStepHandler> stepHandlers = new ArrayList<>();
             stepHandlers.add(spHandler);
@@ -1155,7 +1139,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
 
             // compute the contributions of all perturbing forces
             for (final DSSTForceModel forceModel : forceModels) {
-                final double[] daidt = elementRates(forceModel, state, auxiliaryElements, forceModel.getParameters(state.getDate()));
+                final double[] daidt = elementRates(forceModel, state, auxiliaryElements, forceModel.getParameters());
                 for (int i = 0; i < daidt.length; i++) {
                     yDot[i] += daidt[i];
                 }
@@ -1219,7 +1203,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
 
             // Compute short periodic coefficients for this step
             for (DSSTForceModel forceModel : forceModels) {
-                forceModel.updateShortPeriodTerms(forceModel.getParametersAllValues(), meanStates);
+                forceModel.updateShortPeriodTerms(forceModel.getParameters(), meanStates);
             }
         }
 

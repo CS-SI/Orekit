@@ -21,7 +21,7 @@ import org.hipparchus.linear.RealMatrix;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.gnss.PredefinedGnssSignal;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriver;
 
 import java.util.ArrayList;
 import java.util.List;

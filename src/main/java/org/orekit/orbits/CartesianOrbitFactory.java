@@ -17,9 +17,8 @@
 package org.orekit.orbits;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.ParameterDriversList.DelegatingDriver;
+import org.orekit.utils.drivers.ParameterDriversList.DelegatingDriver;
 
 import java.util.List;
 
@@ -39,14 +38,13 @@ public class CartesianOrbitFactory extends AbstractOrbitFactory<CartesianOrbit> 
     /** {@inheritDoc} */
     @Override
     public CartesianOrbit createFromDrivers() {
-        final AbsoluteDate           date    = getDate();
         final List<DelegatingDriver> drivers = getOrbitalParametersDrivers().getDrivers();
-        return new CartesianOrbit(new PVCoordinates(new Vector3D(drivers.get(0).getValue(date),
-                                                                 drivers.get(1).getValue(date),
-                                                                 drivers.get(2).getValue(date)),
-                                                    new Vector3D(drivers.get(3).getValue(date),
-                                                                 drivers.get(4).getValue(date),
-                                                                 drivers.get(5).getValue(date))),
+        return new CartesianOrbit(new PVCoordinates(new Vector3D(drivers.get(0).getValue(),
+                                                                 drivers.get(1).getValue(),
+                                                                 drivers.get(2).getValue()),
+                                                    new Vector3D(drivers.get(3).getValue(),
+                                                                 drivers.get(4).getValue(),
+                                                                 drivers.get(5).getValue())),
                                   getFrame(), getDate(), getMu());
     }
 

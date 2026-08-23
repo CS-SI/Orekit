@@ -30,7 +30,11 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
+import org.orekit.estimation.measurements.modifiers.TurnAroundRangeIonosphericDelayModifier;
 import org.orekit.estimation.measurements.modifiers.TurnAroundRangeTroposphericDelayModifier;
+import org.orekit.gnss.PredefinedGnssSignal;
+import org.orekit.models.earth.ionosphere.IonosphericModel;
+import org.orekit.models.earth.ionosphere.KlobucharIonoModel;
 import org.orekit.models.earth.troposphere.ModifiedSaastamoinenModel;
 import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
@@ -40,8 +44,8 @@ import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.Differentiation;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterFunction;
+import org.orekit.utils.drivers.ParameterDriver;
+import org.orekit.utils.drivers.ParameterFunction;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class TurnAroundRangeTest {
@@ -73,7 +77,8 @@ public class TurnAroundRangeTest {
             System.out.println("\nTest TAR State Derivatives - Finite Differences comparison\n");
         }
         // Run test
-        boolean isModifier = false;
+        boolean tropoModifier   = false;
+        boolean ionoModifier    = false;
         double refErrorsPMedian = 1.4e-6;
         double refErrorsPMean   = 1.4e-06;
         double refErrorsPMax    = 2.6e-06;
@@ -81,7 +86,7 @@ public class TurnAroundRangeTest {
         double refErrorsVMean   = 3.6e-04;
         double refErrorsVMax    = 1.4e-02;
 
-        this.genericTestStateDerivatives(isModifier, printResults,
+        this.genericTestStateDerivatives(tropoModifier, ionoModifier, printResults,
                                          refErrorsPMedian, refErrorsPMean, refErrorsPMax,
                                          refErrorsVMedian, refErrorsVMean, refErrorsVMax);
     }
@@ -98,15 +103,16 @@ public class TurnAroundRangeTest {
             System.out.println("\nTest TAR State Derivatives with Modifier - Finite Differences comparison\n");
         }
         // Run test
-        boolean isModifier = true;
-        double refErrorsPMedian = 1.4e-6;
-        double refErrorsPMean   = 1.4e-06;
-        double refErrorsPMax    = 2.6e-06;
-        double refErrorsVMedian = 8.2e-05;
-        double refErrorsVMean   = 3.6e-04;
+        boolean tropoModifier   = true;
+        boolean ionoModifier    = true;
+        double refErrorsPMedian = 1.2e-8;
+        double refErrorsPMean   = 4.4e-8;
+        double refErrorsPMax    = 6.2e-7;
+        double refErrorsVMedian = 8.0e-5;
+        double refErrorsVMean   = 3.4e-4;
         double refErrorsVMax    = 1.4e-2;
 
-        this.genericTestStateDerivatives(isModifier, printResults,
+        this.genericTestStateDerivatives(tropoModifier, ionoModifier, printResults,
                                          refErrorsPMedian, refErrorsPMean, refErrorsPMax,
                                          refErrorsVMedian, refErrorsVMean, refErrorsVMax);
     }
@@ -125,14 +131,15 @@ public class TurnAroundRangeTest {
             System.out.println("\nTest TAR Parameter Derivatives - Finite Differences comparison\n");
         }
         // Run test
-        boolean isModifier = false;
+        boolean tropoModifier   = false;
+        boolean ionoModifier    = false;
         double refErrorQMMedian = 2.6e-6;
         double refErrorQMMean   = 2.5e-6;
         double refErrorQMMax    = 5.6e-6;
         double refErrorQSMedian = 3.7e-7;
         double refErrorQSMean   = 3.6e-7;
         double refErrorQSMax    = 7.7e-7;
-        this.genericTestParameterDerivatives(isModifier, printResults,
+        this.genericTestParameterDerivatives(tropoModifier, ionoModifier, printResults,
                                              refErrorQMMedian, refErrorQMMean, refErrorQMMax,
                                              refErrorQSMedian, refErrorQSMean, refErrorQSMax);
 
@@ -152,14 +159,15 @@ public class TurnAroundRangeTest {
             System.out.println("\nTest TAR Parameter Derivatives with Modifier - Finite Differences comparison\n");
         }
         // Run test
-        boolean isModifier = true;
+        boolean tropoModifier   = true;
+        boolean ionoModifier    = true;
         double refErrorQMMedian = 1.3e-8;
         double refErrorQMMean   = 8.9e-8;
         double refErrorQMMax    = 5.1e-6;
         double refErrorQSMedian = 3.6e-8;
-        double refErrorQSMean   = 1.9e-5;
-        double refErrorQSMax    = 2.2e-4;
-        this.genericTestParameterDerivatives(isModifier, printResults,
+        double refErrorQSMean   = 1.8e-5;
+        double refErrorQSMax    = 2.1e-4;
+        this.genericTestParameterDerivatives(tropoModifier, ionoModifier, printResults,
                                              refErrorQMMedian, refErrorQMMean, refErrorQMMax,
                                              refErrorQSMedian, refErrorQSMean, refErrorQSMax);
     }
@@ -264,7 +272,7 @@ public class TurnAroundRangeTest {
         Assertions.assertEquals(TurnAroundRange.MEASUREMENT_TYPE, measurements.getFirst().getMeasurementType());
     }
 
-    void genericTestStateDerivatives(final boolean isModifier, final boolean printResults,
+    void genericTestStateDerivatives(final boolean tropoModifier, final boolean ionoModifier, final boolean printResults,
                                      final double refErrorsPMedian, final double refErrorsPMean, final double refErrorsPMax,
                                      final double refErrorsVMedian, final double refErrorsVMean, final double refErrorsVMax) {
 
@@ -307,9 +315,18 @@ public class TurnAroundRangeTest {
         for (final ObservedMeasurement<?> measurement : measurements) {
 
             // Add modifiers if test implies it
-            final TurnAroundRangeTroposphericDelayModifier modifier =
-                            new TurnAroundRangeTroposphericDelayModifier(ModifiedSaastamoinenModel.getStandardModel());
-            if (isModifier) {
+            if (tropoModifier) {
+                final TurnAroundRangeTroposphericDelayModifier modifier =
+                    new TurnAroundRangeTroposphericDelayModifier(ModifiedSaastamoinenModel.getStandardModel());
+                ((TurnAroundRange) measurement).addModifier(modifier);
+            }
+            if (ionoModifier) {
+                final IonosphericModel klobuchar =
+                    new KlobucharIonoModel(context.earth,
+                                           new double[]{.3820e-07, .1490e-07, -.1790e-06, 0},
+                                           new double[]{.1430e+06, 0, -.3280e+06, .1130e+06});
+                final TurnAroundRangeIonosphericDelayModifier modifier =
+                    new TurnAroundRangeIonosphericDelayModifier(klobuchar, PredefinedGnssSignal.G01.getFrequency());
                 ((TurnAroundRange) measurement).addModifier(modifier);
             }
 
@@ -397,7 +414,7 @@ public class TurnAroundRangeTest {
     }
 
 
-    void genericTestParameterDerivatives(final boolean isModifier, final boolean printResults,
+    void genericTestParameterDerivatives(final boolean tropoModifier, final boolean ionoModifier, final boolean printResults,
                                          final double refErrorQMMedian, final double refErrorQMMean, final double refErrorQMMax,
                                          final double refErrorQSMedian, final double refErrorQSMean, final double refErrorQSMax) {
 
@@ -452,12 +469,21 @@ public class TurnAroundRangeTest {
         // Loop on the measurements
         for (final ObservedMeasurement<?> measurement : measurements) {
 
-          // Add modifiers if test implies it
-          final TurnAroundRangeTroposphericDelayModifier modifier =
-              new TurnAroundRangeTroposphericDelayModifier(ModifiedSaastamoinenModel.getStandardModel());
-          if (isModifier) {
-              ((TurnAroundRange) measurement).addModifier(modifier);
-          }
+            // Add modifiers if test implies it
+            if (tropoModifier) {
+                final TurnAroundRangeTroposphericDelayModifier modifier =
+                    new TurnAroundRangeTroposphericDelayModifier(ModifiedSaastamoinenModel.getStandardModel());
+                ((TurnAroundRange) measurement).addModifier(modifier);
+            }
+            if (ionoModifier) {
+                final IonosphericModel klobuchar =
+                    new KlobucharIonoModel(context.earth,
+                                           new double[]{.3820e-07, .1490e-07, -.1790e-06, 0},
+                                           new double[]{.1430e+06, 0, -.3280e+06, .1130e+06});
+                final TurnAroundRangeIonosphericDelayModifier modifier =
+                      new TurnAroundRangeIonosphericDelayModifier(klobuchar, PredefinedGnssSignal.G01.getFrequency());
+                  ((TurnAroundRange) measurement).addModifier(modifier);
+            }
 
             // parameter corresponding to station position offset
             final GroundStation primaryStationParameter = (GroundStation) ((TurnAroundRange) measurement).getPrimaryObserver();
@@ -492,7 +518,7 @@ public class TurnAroundRangeTest {
 
             // Loop on the parameters
             for (int i = 0; i < 6; ++i) {
-                final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i], new AbsoluteDate());
+                final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i]);
                 Assertions.assertEquals(1, measurement.getDimension());
                 Assertions.assertEquals(1, gradient.length);
 

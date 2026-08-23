@@ -35,10 +35,11 @@ import org.orekit.frames.Transform;
 import org.orekit.frames.TransformProvider;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeInterval;
 import org.orekit.time.TimeOffset;
 import org.orekit.time.UT1Scale;
 import org.orekit.utils.IERSConventions;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriver;
 
 /** Class modeling an Earth frame whose Earth Orientation Parameters can be estimated.
  * <p>
@@ -112,27 +113,33 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
 
         this.primeMeridianOffsetDriver = new ParameterDriver("prime-meridian-offset",
                                                              0.0, ANGULAR_SCALE,
-                                                            -FastMath.PI, FastMath.PI);
+                                                             -FastMath.PI, FastMath.PI,
+                                                             TimeInterval.UNLIMITED);
 
         this.primeMeridianDriftDriver = new ParameterDriver("prime-meridian-drift",
                                                             0.0, ANGULAR_SCALE,
-                                                            Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                                                            Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                                            TimeInterval.UNLIMITED);
 
         this.polarOffsetXDriver = new ParameterDriver("polar-offset-X",
                                                       0.0, ANGULAR_SCALE,
-                                                      -FastMath.PI, FastMath.PI);
+                                                      -FastMath.PI, FastMath.PI,
+                                                      TimeInterval.UNLIMITED);
 
         this.polarDriftXDriver = new ParameterDriver("polar-drift-X",
                                                      0.0, ANGULAR_SCALE,
-                                                     Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                                                     Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                                     TimeInterval.UNLIMITED);
 
         this.polarOffsetYDriver = new ParameterDriver("polar-offset-Y",
                                                       0.0, ANGULAR_SCALE,
-                                                      -FastMath.PI, FastMath.PI);
+                                                      -FastMath.PI, FastMath.PI,
+                                                      TimeInterval.UNLIMITED);
 
         this.polarDriftYDriver = new ParameterDriver("polar-drift-Y",
                                                      0.0, ANGULAR_SCALE,
-                                                     Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                                                     Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                                     TimeInterval.UNLIMITED);
 
         this.baseUT1      = baseUT1;
         this.estimatedUT1 = new EstimatedUT1Scale();
@@ -329,15 +336,15 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
         final Gradient theta    = linearModel(freeParameters, date,
                                               primeMeridianOffsetDriver, primeMeridianDriftDriver,
                                               indices);
-        final Gradient thetaDot = primeMeridianDriftDriver.getValue(freeParameters, indices, date.toAbsoluteDate());
+        final Gradient thetaDot = primeMeridianDriftDriver.getValue(freeParameters, indices);
 
         // pole shift parameters
         final Gradient xpNeg    = linearModel(freeParameters, date,
                                                          polarOffsetXDriver, polarDriftXDriver, indices).negate();
         final Gradient ypNeg    = linearModel(freeParameters, date,
                                                          polarOffsetYDriver, polarDriftYDriver, indices).negate();
-        final Gradient xpNegDot = polarDriftXDriver.getValue(freeParameters, indices, date.toAbsoluteDate()).negate();
-        final Gradient ypNegDot = polarDriftYDriver.getValue(freeParameters, indices, date.toAbsoluteDate()).negate();
+        final Gradient xpNegDot = polarDriftXDriver.getValue(freeParameters, indices).negate();
+        final Gradient ypNegDot = polarDriftYDriver.getValue(freeParameters, indices).negate();
 
         return getTransform(date, theta, thetaDot, xpNeg, xpNegDot, ypNeg, ypNegDot);
 
@@ -357,15 +364,15 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
         // prime meridian shift parameters
         final Gradient theta    = linearModel(freeParameters, date, primeMeridianOffsetDriver, primeMeridianDriftDriver,
                 indices);
-        final Gradient thetaDot = primeMeridianDriftDriver.getValue(freeParameters, indices, date.toAbsoluteDate());
+        final Gradient thetaDot = primeMeridianDriftDriver.getValue(freeParameters, indices);
 
         // pole shift parameters
         final Gradient xpNeg    = linearModel(freeParameters, date,
                 polarOffsetXDriver, polarDriftXDriver, indices).negate();
         final Gradient ypNeg    = linearModel(freeParameters, date,
                 polarOffsetYDriver, polarDriftYDriver, indices).negate();
-        final Gradient xpNegDot = polarDriftXDriver.getValue(freeParameters, indices, date.toAbsoluteDate()).negate();
-        final Gradient ypNegDot = polarDriftYDriver.getValue(freeParameters, indices, date.toAbsoluteDate()).negate();
+        final Gradient xpNegDot = polarDriftXDriver.getValue(freeParameters, indices).negate();
+        final Gradient ypNegDot = polarDriftYDriver.getValue(freeParameters, indices).negate();
 
         final Gradient                zero  = date.getField().getZero();
         final FieldVector3D<Gradient> plusI = FieldVector3D.getPlusI(date.getField());
@@ -485,8 +492,8 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
                                       offsetDriver.getName());
         }
         final Gradient dt     = date.durationFrom(offsetDriver.getReferenceDate());
-        final Gradient offset = offsetDriver.getValue(freeParameters, indices, date.toAbsoluteDate());
-        final Gradient drift  = driftDriver.getValue(freeParameters, indices, date.toAbsoluteDate());
+        final Gradient offset = offsetDriver.getValue(freeParameters, indices);
+        final Gradient drift  = driftDriver.getValue(freeParameters, indices);
         return dt.multiply(drift).add(offset);
     }
 

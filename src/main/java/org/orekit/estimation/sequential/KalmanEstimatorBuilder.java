@@ -25,7 +25,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.conversion.EphemerisPropagatorBuilder;
 import org.orekit.propagation.conversion.PropagatorBuilder;
-import org.orekit.utils.ParameterDriversList;
+import org.orekit.utils.drivers.ParameterDriversList;
 
 /** Builder for a Kalman filter estimator.
  * @author Romain Gerbaud
@@ -99,7 +99,7 @@ public class KalmanEstimatorBuilder {
      * to the subset of propagation parameters that are estimated, in the
      * same order as propagatorBuilder.{@link
      * org.orekit.propagation.conversion.PropagatorBuilder#getPropagationParametersDrivers()
-     * getPropagationParametersDrivers()}.{@link org.orekit.utils.ParameterDriversList#getDrivers()
+     * getPropagationParametersDrivers()}.{@link ParameterDriversList#getDrivers()
      * getDrivers()} (but filtering out the non selected drivers).
      * </p>
      * @param builder  The propagator builder to use in the Kalman filter.

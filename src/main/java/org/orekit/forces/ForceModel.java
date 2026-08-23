@@ -31,7 +31,7 @@ import org.orekit.propagation.numerical.FieldTimeDerivativesEquations;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.utils.ParameterDriversProvider;
+import org.orekit.utils.drivers.ParameterDriversProvider;
 
 /** This interface represents a force modifying spacecraft motion.
  *
@@ -117,8 +117,8 @@ public interface ForceModel extends ParameterDriversProvider, EventDetectorsProv
      * @param adder object where the contribution should be added
      */
     default void addContribution(final SpacecraftState s, final TimeDerivativesEquations adder) {
-        final double[] parameters = getParameters(s.getDate());
-        adder.addNonKeplerianAcceleration(acceleration(s, getParameters(s.getDate())));
+        final double[] parameters = getParameters();
+        adder.addNonKeplerianAcceleration(acceleration(s, getParameters()));
         adder.addMassDerivative(getMassDerivative(s, parameters));
     }
 
@@ -128,8 +128,9 @@ public interface ForceModel extends ParameterDriversProvider, EventDetectorsProv
      * @param adder object where the contribution should be added
      * @param <T> type of the elements
      */
-    default <T extends CalculusFieldElement<T>> void addContribution(final FieldSpacecraftState<T> s, final FieldTimeDerivativesEquations<T> adder) {
-        final T[] parameters = getParameters(s.getDate().getField(), s.getDate());
+    default <T extends CalculusFieldElement<T>> void addContribution(final FieldSpacecraftState<T> s,
+                                                                     final FieldTimeDerivativesEquations<T> adder) {
+        final T[] parameters = getParameters(s.getDate().getField());
         adder.addNonKeplerianAcceleration(acceleration(s, parameters));
         adder.addMassDerivative(getMassDerivative(s, parameters));
     }

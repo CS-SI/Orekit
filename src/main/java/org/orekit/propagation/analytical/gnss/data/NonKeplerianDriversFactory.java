@@ -23,8 +23,9 @@ import org.hipparchus.analysis.differentiation.FieldGradientField;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
+import org.orekit.time.TimeInterval;
 import org.orekit.utils.Constants;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriver;
 
 import java.util.Arrays;
 import java.util.List;
@@ -177,38 +178,49 @@ public class NonKeplerianDriversFactory {
     public NonKeplerianDriversFactory() {
 
         // propagation drivers
-        this.timeDriver       = new ParameterDriver(TIME,                0.0, FastMath.scalb(1.0, -10),
-                                                    0, 7 * Constants.JULIAN_DAY);
-        this.aDotDriver       = new ParameterDriver(A_DOT,               0.0, FastMath.scalb(1.0, -10),
-                                                    Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
-        this.deltaN0Driver    = new ParameterDriver(DELTA_N0,            0.0, FastMath.scalb(1.0, -36),
-                                                    Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
-        this.deltaN0DotDriver = new ParameterDriver(DELTA_N0_DOT,        0.0, FastMath.scalb(1.0, -46),
-                                                    Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
-        this.iDotDriver       = new ParameterDriver(INCLINATION_RATE,    0.0, FastMath.scalb(1.0, -34),
-                                                    Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
-        this.domDriver        = new ParameterDriver(LONGITUDE_RATE,      0.0, FastMath.scalb(1.0, -34),
-                                                    Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
-        this.cucDriver        = new ParameterDriver(LATITUDE_COSINE,     0.0, FastMath.scalb(1.0, -24),
-                                                    Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
-        this.cusDriver        = new ParameterDriver(LATITUDE_SINE,       0.0, FastMath.scalb(1.0, -24),
-                                                    Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
-        this.crcDriver        = new ParameterDriver(RADIUS_COSINE,       0.0, FastMath.scalb(1.0,   0),
-                                                    Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
-        this.crsDriver        = new ParameterDriver(RADIUS_SINE,         0.0, FastMath.scalb(1.0,   0),
-                                                    Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
-        this.cicDriver        = new ParameterDriver(INCLINATION_COSINE,  0.0, FastMath.scalb(1.0, -24),
-                                                    Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
-        this.cisDriver        = new ParameterDriver(INCLINATION_SINE,    0.0, FastMath.scalb(1.0, -24),
-                                                    Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+        this.timeDriver       = new ParameterDriver(TIME, 0.0, FastMath.scalb(1.0, -10),
+                                                    0, 7 * Constants.JULIAN_DAY, TimeInterval.UNLIMITED);
+        this.aDotDriver       = new ParameterDriver(A_DOT, 0.0, FastMath.scalb(1.0, -10),
+                                                    Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                                    TimeInterval.UNLIMITED);
+        this.deltaN0Driver    = new ParameterDriver(DELTA_N0, 0.0, FastMath.scalb(1.0, -36),
+                                                    Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                                    TimeInterval.UNLIMITED);
+        this.deltaN0DotDriver = new ParameterDriver(DELTA_N0_DOT, 0.0, FastMath.scalb(1.0, -46),
+                                                    Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                                    TimeInterval.UNLIMITED);
+        this.iDotDriver       = new ParameterDriver(INCLINATION_RATE, 0.0, FastMath.scalb(1.0, -34),
+                                                    Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                                    TimeInterval.UNLIMITED);
+        this.domDriver        = new ParameterDriver(LONGITUDE_RATE, 0.0, FastMath.scalb(1.0, -34),
+                                                    Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                                    TimeInterval.UNLIMITED);
+        this.cucDriver        = new ParameterDriver(LATITUDE_COSINE, 0.0, FastMath.scalb(1.0, -24),
+                                                    Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                                    TimeInterval.UNLIMITED);
+        this.cusDriver        = new ParameterDriver(LATITUDE_SINE, 0.0, FastMath.scalb(1.0, -24),
+                                                    Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                                    TimeInterval.UNLIMITED);
+        this.crcDriver        = new ParameterDriver(RADIUS_COSINE, 0.0, FastMath.scalb(1.0,   0),
+                                                    Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                                    TimeInterval.UNLIMITED);
+        this.crsDriver        = new ParameterDriver(RADIUS_SINE, 0.0, FastMath.scalb(1.0,   0),
+                                                    Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                                    TimeInterval.UNLIMITED);
+        this.cicDriver        = new ParameterDriver(INCLINATION_COSINE, 0.0, FastMath.scalb(1.0, -24),
+                                                    Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                                    TimeInterval.UNLIMITED);
+        this.cisDriver        = new ParameterDriver(INCLINATION_SINE, 0.0, FastMath.scalb(1.0, -24),
+                                                    Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                                    TimeInterval.UNLIMITED);
 
         // clock drivers
         this.af0Driver = new ParameterDriver(AF0, 0.0, FastMath.scalb(1.0, -26),
-                                             Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                                             Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, TimeInterval.UNLIMITED);
         this.af1Driver = new ParameterDriver(AF1, 0.0, FastMath.scalb(1.0, -42),
-                                             Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                                             Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, TimeInterval.UNLIMITED);
         this.af2Driver = new ParameterDriver(AF2, 0.0, FastMath.scalb(1.0, -58),
-                                             Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                                             Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, TimeInterval.UNLIMITED);
 
     }
 

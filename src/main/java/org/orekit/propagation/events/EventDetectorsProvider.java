@@ -16,7 +16,6 @@
  */
 package org.orekit.propagation.events;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.SortedSet;
@@ -36,14 +35,14 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.FieldTimeStamped;
+import org.orekit.time.TimeInterval;
 import org.orekit.time.TimeStamped;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriver;
 
 /** Interface for building event detectors for force models and maneuver parameters.
- *
  * <p>
  * Objects implementing this interface are mainly {@link ForceModel} and {@link DSSTForceModel}.
- *
+ * </p>
  * @author Luc Maisonobe
  * @author Melina Vanel
  * @author Maxime Journot
@@ -55,42 +54,44 @@ public interface EventDetectorsProvider {
     double DATATION_ACCURACY = DateDetector.DEFAULT_THRESHOLD;
 
     /** Get the discrete events related to the model.
-     *
-     * <p><b>This method is not intended to be called several time, only once by a propagator</b>,
+     * <p>This method is not intended to be called several time, only once by a propagator,
      * as it has the side effect of rebuilding the events detectors when called
-     *
+     * </p>
      * @return stream of event detectors
      */
     Stream<EventDetector> getEventDetectors();
 
     /** Get the discrete events related to the model.
-     *
-     * <p><b>This method is not intended to be called several time, only once by a propagator</b>,
+     * <p>This method is not intended to be called several time, only once by a propagator,
      * as it has the side effect of rebuilding the events detectors when called
-     *
+     * </p>
      * @param field field to which the state belongs
      * @param <T> extends CalculusFieldElement&lt;T&gt;
      * @return stream of event detectors
      */
     <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(Field<T> field);
 
-    /** Get the discrete events related to the model from a list of {@link ParameterDriver}
-     *
+    /** Get the discrete events related to the model from a list of {@link ParameterDriver}.
      * <p>Date detectors are used to cleanly stop the propagator and reset
      * the state derivatives at transition dates (if any) of the parameter drivers.
-     *
-     * <p><b>This method is not intended to be called several times, only once by a propagator</b>,
+     * </p>
+     * <p>This method is not intended to be called several times, only once by a propagator,
      * as it has the side effect of rebuilding the events detectors when called.
-     *
+     * </p>
      * @param parameterDrivers list of parameter drivers
      * @return stream of event detectors
      */
     default Stream<EventDetector> getEventDetectors(final List<ParameterDriver> parameterDrivers) {
         // If force model does not have parameter Driver, an empty stream is given as results
-        final ArrayList<TimeStamped> transitionDates = new ArrayList<>();
+        final SortedSet<AbsoluteDate> transitionDates = new TreeSet<>(new ChronologicalComparator());
         for (final ParameterDriver driver : parameterDrivers) {
-            // Get the transitions' dates from the TimeSpanMap
-            transitionDates.addAll(Arrays.asList(driver.getTransitionDates()));
+            final TimeInterval validity = driver.getValidity();
+            if (validity.getStartDate().isFinite()) {
+                transitionDates.add(validity.getStartDate());
+            }
+            if (validity.getEndDate().isFinite()) {
+                transitionDates.add(validity.getEndDate());
+            }
         }
         // Either force model does not have any parameter driver or only contains parameter driver with only 1 span
         if (transitionDates.isEmpty()) {
@@ -98,19 +99,18 @@ public interface EventDetectorsProvider {
 
         } else {
             // Create the date detector containing all transition dates and return it
-            final DateDetector detector = getDateDetector(transitionDates.toArray(new TimeStamped[0]));
+            final DateDetector detector = getDateDetector(transitionDates.toArray(new AbsoluteDate[0]));
             return Stream.of(detector);
         }
     }
 
-    /** Get the discrete events related to the model from a list of {@link ParameterDriver}
-     *
+    /** Get the discrete events related to the model from a list of {@link ParameterDriver}.
      * <p>Date detectors are used to cleanly stop the propagator and reset
      * the state derivatives at transition dates (if any) of the parameter drivers.
-     *
-     * <p><b>This method is not intended to be called several times, only once by a propagator</b>,
+     * </p>
+     * <p>This method is not intended to be called several times, only once by a propagator,
      * as it has the side effect of rebuilding the events detectors when called.
-     *
+     * </p>
      * @param parameterDrivers list of parameter drivers
      * @param field field to which the state belongs
      * @param <T> extends CalculusFieldElement&lt;T&gt;
@@ -119,10 +119,15 @@ public interface EventDetectorsProvider {
     default <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(final Field<T> field,
                                                                                                      final List<ParameterDriver> parameterDrivers) {
         // If force model does not have parameter Driver, an empty stream is given as results
-        final ArrayList<AbsoluteDate> transitionDates = new ArrayList<>();
+        final SortedSet<AbsoluteDate> transitionDates = new TreeSet<>(new ChronologicalComparator());
         for (ParameterDriver driver : parameterDrivers) {
-            // Get the transitions' dates from the TimeSpanMap
-            transitionDates.addAll(Arrays.asList(driver.getTransitionDates()));
+            final TimeInterval validity = driver.getValidity();
+            if (validity.getStartDate().isFinite()) {
+                transitionDates.add(validity.getStartDate());
+            }
+            if (validity.getEndDate().isFinite()) {
+                transitionDates.add(validity.getEndDate());
+            }
         }
         // Either force model does not have any parameter driver or only contains parameter driver with only 1 span
         if (transitionDates.isEmpty()) {
@@ -130,8 +135,8 @@ public interface EventDetectorsProvider {
 
         } else {
             // Initialize the date detector
-            final FieldDateDetector<T> datesDetector = getFieldDateDetector(field,
-                    transitionDates.toArray(new AbsoluteDate[0]));
+            final FieldDateDetector<T> datesDetector =
+                getFieldDateDetector(field, transitionDates.toArray(new AbsoluteDate[0]));
             // Return the detectors
             return Stream.of(datesDetector);
         }
@@ -144,11 +149,14 @@ public interface EventDetectorsProvider {
      * @since 13.0
      */
     default DateDetector getDateDetector(final TimeStamped... timeStampeds) {
-        final AdaptableInterval maxCheck = DateDetectionAdaptableIntervalFactory.getDatesDetectionInterval(
-                timeStampeds);
+        final AdaptableInterval maxCheck =
+            DateDetectionAdaptableIntervalFactory.getDatesDetectionInterval(timeStampeds);
         final double minGap = DateDetectionAdaptableIntervalFactory.getMinGap(timeStampeds) / 2;
-        final DateDetector dateDetector = new DateDetector().withMaxCheck(maxCheck).withMinGap(minGap).
-                withThreshold(DATATION_ACCURACY).withHandler(new ResetDerivativesOnEvent());
+        final DateDetector dateDetector = new DateDetector().
+                                          withMaxCheck(maxCheck).
+                                          withMinGap(minGap).
+                                          withThreshold(DATATION_ACCURACY).
+                                          withHandler(new ResetDerivativesOnEvent());
         final SortedSet<AbsoluteDate> sortedDates = new TreeSet<>(new ChronologicalComparator());
         sortedDates.addAll(Arrays.stream(timeStampeds).map(TimeStamped::getDate).toList());
         for (final AbsoluteDate date : sortedDates) {
@@ -168,13 +176,17 @@ public interface EventDetectorsProvider {
     default <T extends CalculusFieldElement<T>> FieldDateDetector<T> getFieldDateDetector(final Field<T> field,
                                                                                           final TimeStamped... timeStampeds) {
         @SuppressWarnings("unchecked")
-        final FieldAdaptableInterval<T> maxCheck = DateDetectionAdaptableIntervalFactory.getDatesDetectionFieldInterval(
-                Arrays.stream(timeStampeds).map(timeStamped -> new FieldAbsoluteDate<>(field, timeStamped.getDate()))
-                        .toArray(FieldTimeStamped[]::new));
+        final FieldAdaptableInterval<T> maxCheck =
+            DateDetectionAdaptableIntervalFactory.getDatesDetectionFieldInterval(
+                Arrays.stream(timeStampeds).
+                       map(timeStamped -> new FieldAbsoluteDate<>(field, timeStamped.getDate())).
+                       toArray(FieldTimeStamped[]::new));
         final double minGap = DateDetectionAdaptableIntervalFactory.getMinGap(timeStampeds) / 2;
         final FieldDateDetector<T> fieldDateDetector = new FieldDateDetector<>(field).
-                withHandler(new FieldResetDerivativesOnEvent<>()).withMaxCheck(maxCheck).withMinGap(minGap).
-                withThreshold(field.getZero().newInstance(DATATION_ACCURACY));
+                                                       withHandler(new FieldResetDerivativesOnEvent<>()).
+                                                       withMaxCheck(maxCheck).
+                                                       withMinGap(minGap).
+                                                       withThreshold(field.getZero().newInstance(DATATION_ACCURACY));
         final SortedSet<AbsoluteDate> sortedDates = new TreeSet<>(new ChronologicalComparator());
         sortedDates.addAll(Arrays.stream(timeStampeds).map(TimeStamped::getDate).toList());
         for (final AbsoluteDate date : sortedDates) {
@@ -182,4 +194,5 @@ public interface EventDetectorsProvider {
         }
         return fieldDateDetector;
     }
+
 }

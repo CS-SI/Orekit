@@ -34,8 +34,8 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
-import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.time.TimeInterval;
+import org.orekit.utils.drivers.ParameterDriver;
 
 /** Force model for Newtonian central body attraction for the {@link DSSTPropagator DSST propagator}.
  *  @author Bryan Cazabonne
@@ -64,15 +64,14 @@ public class DSSTNewtonianAttraction implements DSSTForceModel {
     public DSSTNewtonianAttraction(final double mu) {
         gmParameterDriver = new ParameterDriver(DSSTNewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
                                                 mu, MU_SCALE,
-                                                0.0, Double.POSITIVE_INFINITY);
+                                                0.0, Double.POSITIVE_INFINITY, TimeInterval.UNLIMITED);
     }
 
-    /** Get the central attraction coefficient μ at specific date.
-     * @param date date at which mu wants to be known
+    /** Get the central attraction coefficient μ.
      * @return mu central attraction coefficient (m³/s²)
      */
-    public double getMu(final AbsoluteDate date) {
-        return gmParameterDriver.getValue(date);
+    public double getMu() {
+        return gmParameterDriver.getValue();
     }
 
     /** {@inheritDoc} */
@@ -85,9 +84,10 @@ public class DSSTNewtonianAttraction implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends CalculusFieldElement<T>> List<FieldShortPeriodTerms<T>> initializeShortPeriodTerms(final FieldAuxiliaryElements<T> auxiliaryElements,
-                                                                                     final PropagationType type,
-                                                                                     final T[] parameters) {
+    public <T extends CalculusFieldElement<T>> List<FieldShortPeriodTerms<T>>
+        initializeShortPeriodTerms(final FieldAuxiliaryElements<T> auxiliaryElements,
+                                   final PropagationType type,
+                                   final T[] parameters) {
         return Collections.emptyList();
     }
 
@@ -99,7 +99,8 @@ public class DSSTNewtonianAttraction implements DSSTForceModel {
      *  @param parameters values of the force model parameters
      *  @return new force model context
      */
-    private DSSTNewtonianAttractionContext initializeStep(final AuxiliaryElements auxiliaryElements, final double[] parameters) {
+    private DSSTNewtonianAttractionContext initializeStep(final AuxiliaryElements auxiliaryElements,
+                                                          final double[] parameters) {
         return new DSSTNewtonianAttractionContext(auxiliaryElements, parameters);
     }
 
@@ -112,8 +113,9 @@ public class DSSTNewtonianAttraction implements DSSTForceModel {
      *  @param parameters values of the force model parameters
      *  @return new force model context
      */
-    private <T extends CalculusFieldElement<T>> FieldDSSTNewtonianAttractionContext<T> initializeStep(final FieldAuxiliaryElements<T> auxiliaryElements,
-                                                                                                  final T[] parameters) {
+    private <T extends CalculusFieldElement<T>> FieldDSSTNewtonianAttractionContext<T>
+        initializeStep(final FieldAuxiliaryElements<T> auxiliaryElements,
+                       final T[] parameters) {
         return new FieldDSSTNewtonianAttractionContext<>(auxiliaryElements, parameters);
     }
 
@@ -137,8 +139,8 @@ public class DSSTNewtonianAttraction implements DSSTForceModel {
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>> T[] getMeanElementRate(final FieldSpacecraftState<T> state,
-                                                                  final FieldAuxiliaryElements<T> auxiliaryElements,
-                                                                  final T[] parameters) {
+                                                                      final FieldAuxiliaryElements<T> auxiliaryElements,
+                                                                      final T[] parameters) {
 
         // Field for array building
         final Field<T> field = state.getMass().getField();

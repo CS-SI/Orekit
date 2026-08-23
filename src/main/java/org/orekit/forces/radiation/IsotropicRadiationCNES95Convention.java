@@ -26,7 +26,8 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.time.TimeInterval;
+import org.orekit.utils.drivers.ParameterDriver;
 
 /** This class represents the features of a simplified spacecraft.
  *
@@ -65,7 +66,7 @@ public class IsotropicRadiationCNES95Convention implements RadiationSensitive {
      * in the multiplications/divisions sequences.
      * </p>
      */
-    private final double SCALE = FastMath.scalb(1.0, -3);
+    private static final double SCALE = FastMath.scalb(1.0, -3);
 
     /** Drivers for absorption and specular reflection coefficients. */
     private final List<ParameterDriver> parameterDrivers;
@@ -80,9 +81,12 @@ public class IsotropicRadiationCNES95Convention implements RadiationSensitive {
      */
     public IsotropicRadiationCNES95Convention(final double crossSection, final double alpha, final double tau) {
         this.parameterDrivers = new ArrayList<>(3);
-        parameterDrivers.add(new ParameterDriver(RadiationSensitive.GLOBAL_RADIATION_FACTOR, 1.0, SCALE, 0.0, Double.POSITIVE_INFINITY));
-        parameterDrivers.add(new ParameterDriver(RadiationSensitive.ABSORPTION_COEFFICIENT, alpha, SCALE, 0.0, 1.0));
-        parameterDrivers.add(new ParameterDriver(RadiationSensitive.REFLECTION_COEFFICIENT, tau, SCALE, 0.0, 1.0));
+        parameterDrivers.add(new ParameterDriver(RadiationSensitive.GLOBAL_RADIATION_FACTOR, 1.0, SCALE,
+                                                 0.0, Double.POSITIVE_INFINITY, TimeInterval.UNLIMITED));
+        parameterDrivers.add(new ParameterDriver(RadiationSensitive.ABSORPTION_COEFFICIENT, alpha, SCALE,
+                                                 0.0, 1.0, TimeInterval.UNLIMITED));
+        parameterDrivers.add(new ParameterDriver(RadiationSensitive.REFLECTION_COEFFICIENT, tau, SCALE,
+                                                 0.0, 1.0, TimeInterval.UNLIMITED));
         this.crossSection = crossSection;
     }
 

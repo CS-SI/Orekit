@@ -31,17 +31,17 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.propagation.integration.CombinedDerivatives;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterDriversList;
-import org.orekit.utils.TimeSpanMap.Span;
+import org.orekit.utils.drivers.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriversList;
 
 import java.util.IdentityHashMap;
 import java.util.Map;
 
 /** Computes derivatives of the acceleration, including ThirdBodyAttraction.
- *
+ * <p>
  * {@link AdditionalDerivativesProvider Provider} computing the partial derivatives
  * of the state (orbit) with respect to initial state and force models parameters.
+ * </p>
  * <p>
  * This set of equations are automatically added to a {@link NumericalPropagator numerical propagator}
  * in order to compute partial derivatives of the orbit along with the orbit itself. This is
@@ -149,9 +149,7 @@ public class EpochDerivativesEquations
                     for (final ParameterDriver driver : provider.getParametersDrivers()) {
                         if (driver.getName().equals(selectedDriver.getName())) {
                             previousParameterIndex = parameterIndex;
-                            for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                                map.put(span.getData(), previousParameterIndex++);
-                            }
+                            map.put(driver.getName(), previousParameterIndex++);
                         }
                     }
                 }
@@ -179,7 +177,7 @@ public class EpochDerivativesEquations
         freezeParametersSelection();
         final int epochStateDimension = 6;
         final double[][] dYdY0 = new double[epochStateDimension][epochStateDimension];
-        final double[][] dYdP  = new double[epochStateDimension][selected.getNbValuesToEstimate() + 6];
+        final double[][] dYdP  = new double[epochStateDimension][selected.getNbParams() + 6];
         for (int i = 0; i < epochStateDimension; ++i) {
             dYdY0[i][i] = 1.0;
         }
@@ -221,7 +219,7 @@ public class EpochDerivativesEquations
         }
 
         // store the matrices as a single dimension array
-        final double[] p = new double[STATE_DIMENSION * (STATE_DIMENSION + selected.getNbValuesToEstimate()) + 6];
+        final double[] p = new double[STATE_DIMENSION * (STATE_DIMENSION + selected.getNbParams()) + 6];
         setInitialJacobians(s1, dY1dY0, dY1dP, p);
 
         // set value in propagator
@@ -259,13 +257,13 @@ public class EpochDerivativesEquations
             }
         }
 
-        if (selected.getNbValuesToEstimate() != 0) {
+        if (selected.getNbParams() != 0) {
             // convert the provided state Jacobian
             final RealMatrix dC1dP = solver.solve(new Array2DRowRealMatrix(dY1dP, false));
 
             // map the converted parameters Jacobian to one-dimensional array
             for (int i = 0; i < STATE_DIMENSION; ++i) {
-                for (int j = 0; j < selected.getNbValuesToEstimate(); ++j) {
+                for (int j = 0; j < selected.getNbParams(); ++j) {
                     p[index++] = dC1dP.getEntry(i, j);
                 }
             }
@@ -277,7 +275,7 @@ public class EpochDerivativesEquations
     public CombinedDerivatives combinedDerivatives(final SpacecraftState s) {
 
         // initialize acceleration Jacobians to zero
-        final int paramDimEpoch = selected.getNbValuesToEstimate() + 1; // added epoch
+        final int paramDimEpoch = selected.getNbParams() + 1; // added epoch
         final int dimEpoch      = 3;
         final double[][] dAccdParam = new double[dimEpoch][paramDimEpoch];
         final double[][] dAccdPos   = new double[dimEpoch][dimEpoch];
@@ -305,13 +303,11 @@ public class EpochDerivativesEquations
             int index = converter.getFreeStateParameters();
             for (ParameterDriver driver : forceModel.getParametersDrivers()) {
                 if (driver.isSelected()) {
-                    for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                        final int parameterIndex = map.get(span.getData());
-                        dAccdParam[0][parameterIndex] += derivativesX[index];
-                        dAccdParam[1][parameterIndex] += derivativesY[index];
-                        dAccdParam[2][parameterIndex] += derivativesZ[index];
-                        ++index;
-                    }
+                    final int parameterIndex = map.get(driver.getName());
+                    dAccdParam[0][parameterIndex] += derivativesX[index];
+                    dAccdParam[1][parameterIndex] += derivativesY[index];
+                    dAccdParam[2][parameterIndex] += derivativesZ[index];
+                    ++index;
                 }
             }
 

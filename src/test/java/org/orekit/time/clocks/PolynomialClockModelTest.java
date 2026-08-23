@@ -31,8 +31,8 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.TimeSpanMap.Span;
+import org.orekit.time.TimeInterval;
+import org.orekit.utils.drivers.ParameterDriver;
 
 class PolynomialClockModelTest {
 
@@ -125,11 +125,14 @@ class PolynomialClockModelTest {
     @Test
     void testSafeReferenceDate() {
         final ParameterDriver a0 = new ParameterDriver("-clock-bias", 0.0, 1.0,
-                                                       Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                                                       Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                                       TimeInterval.UNLIMITED);
         final ParameterDriver a1 = new ParameterDriver("-clock-drift", 0.0, 1.0,
-                                                       Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                                                       Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                                       TimeInterval.UNLIMITED);
         final ParameterDriver a2 = new ParameterDriver("-clock-acceleration", 0.0, 1.0,
-                                                       Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                                                       Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                                       TimeInterval.UNLIMITED);
         final PolynomialClockModel clock = new PolynomialClockModel(List.of(a0, a1, a2));
 
         // not OK to have no reference date
@@ -163,11 +166,14 @@ class PolynomialClockModelTest {
     void testGradient() {
         final AbsoluteDate    t0 = AbsoluteDate.GALILEO_EPOCH;
         final ParameterDriver a0 = new ParameterDriver("-clock-bias", 0.0, 1.0,
-                                                       Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                                                       Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                                       TimeInterval.UNLIMITED);
         final ParameterDriver a1 = new ParameterDriver("-clock-drift", 0.0, 1.0,
-                                                       Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                                                       Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                                       TimeInterval.UNLIMITED);
         final ParameterDriver a2 = new ParameterDriver("-clock-acceleration", 0.0, 1.0,
-                                                       Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                                                       Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                                       TimeInterval.UNLIMITED);
         final PolynomialClockModel clock = new PolynomialClockModel(a0, a1, a2);
 
         int nbParams = 0;
@@ -175,21 +181,15 @@ class PolynomialClockModelTest {
         a0.setValue(FastMath.scalb(1.0, -8));
         a0.setReferenceDate(t0);
         a0.setSelected(true);
-        for (Span<String> span = a0.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-            indices.put(span.getData(), nbParams++);
-        }
+        indices.put(a0.getName(), nbParams++);
         a1.setValue(FastMath.scalb(1.0, -9));
         a1.setReferenceDate(t0);
         a1.setSelected(true);
-        for (Span<String> span = a1.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-            indices.put(span.getData(), nbParams++);
-        }
+        indices.put(a1.getName(), nbParams++);
         a2.setValue(FastMath.scalb(1.0, -10));
         a2.setReferenceDate(t0);
         a2.setSelected(true);
-        for (Span<String> span = a2.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-            indices.put(span.getData(), nbParams++);
-        }
+        indices.put(a2.getName(), nbParams++);
 
         FieldClockModel<Gradient> gradientModel = clock.getFieldModel(nbParams, indices, t0);
         final FieldAbsoluteDate<Gradient> t0g = new FieldAbsoluteDate<>(GradientField.getField(nbParams), t0);
@@ -450,7 +450,8 @@ class PolynomialClockModelTest {
 
         // Add a drift parameter at index 1
         final ParameterDriver drift = new ParameterDriver("-clock-drift", 0.0, 1.0,
-                Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                                                          Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                                          TimeInterval.UNLIMITED);
         drift.setValue(1.0e-9);
         drift.setReferenceDate(t0);
         clock.addParameterDriver(1, drift);
@@ -460,7 +461,7 @@ class PolynomialClockModelTest {
                 "Clock should have 2 parameters after adding drift");
         Assertions.assertTrue(clock.getParametersDrivers().get(1).getName().contains("-clock-drift"),
                 "Second parameter should be drift");
-        Assertions.assertEquals(1.0e-9, clock.getParametersDrivers().get(1).getValue(t0), 1.0e-15,
+        Assertions.assertEquals(1.0e-9, clock.getParametersDrivers().get(1).getValue(), 1.0e-15,
                 "Drift value should be preserved");
     }
 
@@ -476,7 +477,8 @@ class PolynomialClockModelTest {
 
         // Add acceleration at index 2 (should auto-create drift at index 1)
         final ParameterDriver accel = new ParameterDriver("-clock-acceleration", 0.0, 1.0,
-                Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                                                          Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                                          TimeInterval.UNLIMITED);
         accel.setValue(2.0e-10);
         accel.setReferenceDate(t0);
         clock.addParameterDriver(2, accel);
@@ -488,13 +490,13 @@ class PolynomialClockModelTest {
         // Check that drift was auto-created with zero value
         Assertions.assertTrue(clock.getParametersDrivers().get(1).getName().contains("-clock-drift"),
                 "Second parameter should be drift (auto-created)");
-        Assertions.assertEquals(0.0, clock.getParametersDrivers().get(1).getValue(t0), 1.0e-15,
+        Assertions.assertEquals(0.0, clock.getParametersDrivers().get(1).getValue(), 1.0e-15,
                 "Auto-created drift should have zero value");
 
         // Check that acceleration was added correctly
         Assertions.assertTrue(clock.getParametersDrivers().get(2).getName().contains("-clock-acceleration"),
                 "Third parameter should be acceleration");
-        Assertions.assertEquals(2.0e-10, clock.getParametersDrivers().get(2).getValue(t0), 1.0e-15,
+        Assertions.assertEquals(2.0e-10, clock.getParametersDrivers().get(2).getValue(), 1.0e-15,
                 "Acceleration value should be preserved");
     }
 
@@ -514,7 +516,7 @@ class PolynomialClockModelTest {
         // Second parameter should be drift with zero value
         Assertions.assertTrue(clock.getParametersDrivers().get(1).getName().contains("-clock-drift"),
                 "Added parameter should be drift");
-        Assertions.assertEquals(0.0, clock.getParametersDrivers().get(1).getValue(t0), 1.0e-15,
+        Assertions.assertEquals(0.0, clock.getParametersDrivers().get(1).getValue(), 1.0e-15,
                 "Null driver should create empty parameter with zero value");
     }
 
@@ -529,7 +531,8 @@ class PolynomialClockModelTest {
 
         // Add term at index 4 (should auto-create indices 1, 2, 3)
         final ParameterDriver term4 = new ParameterDriver("-clock-term-4", 0.0, 1.0,
-                Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                                                          Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                                          TimeInterval.UNLIMITED);
         term4.setValue(5.0e-12);
         term4.setReferenceDate(t0);
         clock.addParameterDriver(4, term4);
@@ -546,12 +549,12 @@ class PolynomialClockModelTest {
         Assertions.assertTrue(clock.getParametersDrivers().get(4).getName().contains("-clock-term-4"));
 
         // Verify intermediate terms have zero values
-        Assertions.assertEquals(0.0, clock.getParametersDrivers().get(1).getValue(t0), 1.0e-15);
-        Assertions.assertEquals(0.0, clock.getParametersDrivers().get(2).getValue(t0), 1.0e-15);
-        Assertions.assertEquals(0.0, clock.getParametersDrivers().get(3).getValue(t0), 1.0e-15);
+        Assertions.assertEquals(0.0, clock.getParametersDrivers().get(1).getValue(), 1.0e-15);
+        Assertions.assertEquals(0.0, clock.getParametersDrivers().get(2).getValue(), 1.0e-15);
+        Assertions.assertEquals(0.0, clock.getParametersDrivers().get(3).getValue(), 1.0e-15);
 
         // Verify the added term has correct value
-        Assertions.assertEquals(5.0e-12, clock.getParametersDrivers().get(4).getValue(t0), 1.0e-15);
+        Assertions.assertEquals(5.0e-12, clock.getParametersDrivers().get(4).getValue(), 1.0e-15);
     }
 
     @Test
@@ -568,7 +571,8 @@ class PolynomialClockModelTest {
 
         // Add drift parameter
         final ParameterDriver drift = new ParameterDriver("-clock-drift", 0.0, 1.0,
-                Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                                                          Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                                          TimeInterval.UNLIMITED);
         drift.setValue(2.0e-9);
         drift.setReferenceDate(t0);
         clock.addParameterDriver(1, drift);
@@ -588,7 +592,8 @@ class PolynomialClockModelTest {
 
         // Add acceleration
         final ParameterDriver accel = new ParameterDriver("-clock-acceleration", 0.0, 1.0,
-                Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                                                          Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                                          TimeInterval.UNLIMITED);
         accel.setValue(3.0e-10);
         accel.setReferenceDate(t0);
         clock.addParameterDriver(2, accel);
@@ -608,32 +613,34 @@ class PolynomialClockModelTest {
 
         // Store reference to original bias driver
         ParameterDriver originalBias = clock.getParametersDrivers().getFirst();
-        double originalBiasValue = originalBias.getValue(t0);
+        double originalBiasValue = originalBias.getValue();
 
         // Add drift parameter
         final ParameterDriver drift = new ParameterDriver("-clock-drift", 0.0, 1.0,
-                Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                                                          Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                                          TimeInterval.UNLIMITED);
         drift.setValue(1.5e-9);
         drift.setReferenceDate(t0);
         clock.addParameterDriver(1, drift);
 
         // Original bias should be unchanged
-        Assertions.assertEquals(originalBiasValue, clock.getParametersDrivers().getFirst().getValue(t0), 1.0e-15,
+        Assertions.assertEquals(originalBiasValue, clock.getParametersDrivers().getFirst().getValue(), 1.0e-15,
                 "Original bias value should not change after adding drift");
-        Assertions.assertEquals(biasValue, clock.getParametersDrivers().getFirst().getValue(t0), 1.0e-15,
+        Assertions.assertEquals(biasValue, clock.getParametersDrivers().getFirst().getValue(), 1.0e-15,
                 "Bias should retain its original value");
 
         // Add acceleration with gap (should create intermediate drift if needed)
         final ParameterDriver accel = new ParameterDriver("-clock-acceleration", 0.0, 1.0,
-                Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                                                          Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                                          TimeInterval.UNLIMITED);
         accel.setValue(2.5e-10);
         accel.setReferenceDate(t0);
         clock.addParameterDriver(2, accel);
 
         // All existing parameters should still have their original values
-        Assertions.assertEquals(biasValue, clock.getParametersDrivers().getFirst().getValue(t0), 1.0e-15,
+        Assertions.assertEquals(biasValue, clock.getParametersDrivers().getFirst().getValue(), 1.0e-15,
                 "Bias should still retain its original value");
-        Assertions.assertEquals(1.5e-9, clock.getParametersDrivers().get(1).getValue(t0), 1.0e-15,
+        Assertions.assertEquals(1.5e-9, clock.getParametersDrivers().get(1).getValue(), 1.0e-15,
                 "Drift should retain its value");
     }
 

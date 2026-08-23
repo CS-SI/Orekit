@@ -26,7 +26,8 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.time.TimeInterval;
+import org.orekit.utils.drivers.ParameterDriver;
 
 /** This class represents the features of a simplified spacecraft.
  * <p>This model uses a single coefficient cr, considered to be
@@ -47,7 +48,7 @@ public class IsotropicRadiationSingleCoefficient implements RadiationSensitive {
      * in the multiplications/divisions sequences.
      * </p>
      */
-    private final double SCALE = FastMath.scalb(1.0, -3);
+    private static final double SCALE = FastMath.scalb(1.0, -3);
 
     /** Drivers for radiation coefficient. */
     private final List<ParameterDriver> radiationParametersDrivers;
@@ -80,10 +81,10 @@ public class IsotropicRadiationSingleCoefficient implements RadiationSensitive {
         this.radiationParametersDrivers = new ArrayList<>(2);
         radiationParametersDrivers.add(new ParameterDriver(RadiationSensitive.GLOBAL_RADIATION_FACTOR,
                                                            1.0, SCALE,
-                                                           0.0, Double.POSITIVE_INFINITY));
+                                                           0.0, Double.POSITIVE_INFINITY, TimeInterval.UNLIMITED));
         radiationParametersDrivers.add(new ParameterDriver(RadiationSensitive.REFLECTION_COEFFICIENT,
                                                            cr, SCALE,
-                                                           crMin, crMax));
+                                                           crMin, crMax, TimeInterval.UNLIMITED));
 
         this.crossSection = crossSection;
 

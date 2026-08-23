@@ -30,7 +30,7 @@ import org.orekit.gnss.antenna.PhaseCenterVariationFunction;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriver;
 
 public class PhaseMeasurementCreator extends MeasurementCreator {
 
@@ -112,8 +112,8 @@ public class PhaseMeasurementCreator extends MeasurementCreator {
                                                 stationPhaseCenterVariation.value(0.5 * FastMath.PI - staLosDown.getDelta(),
                                                                                   staLosDown.getAlpha());
 
-                    final double groundClk = station.getClockModel().getBiasDriver().getValue(date);
-                    final double satClk    = satellite.getClockModel().getBiasDriver().getValue(date);
+                    final double groundClk = station.getClockModel().getBiasDriver().getValue();
+                    final double satClk    = satellite.getClockModel().getBiasDriver().getValue();
                     final double correctedDownLinkDistance = downLinkDistance + satPCVDown + staPCVDown +
                                                              (groundClk - satClk) * Constants.SPEED_OF_LIGHT;
                     final Phase  phase = new Phase(station, receptionDate.shiftedBy(groundClk),

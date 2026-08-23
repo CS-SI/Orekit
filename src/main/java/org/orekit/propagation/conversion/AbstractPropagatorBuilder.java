@@ -33,12 +33,10 @@ import org.orekit.orbits.OrbitalStateFactory;
 import org.orekit.propagation.AbstractPropagator;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
-import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterDriversList;
-import org.orekit.utils.ParameterObserver;
-import org.orekit.utils.TimeSpanMap;
-import org.orekit.utils.TimeSpanMap.Span;
+import org.orekit.time.TimeInterval;
+import org.orekit.utils.drivers.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriversList;
+import org.orekit.utils.drivers.ParameterObserver;
 
 /** Base class for propagator builders.
  * @param <T> type of the propagator
@@ -158,18 +156,12 @@ public abstract class AbstractPropagatorBuilder<T extends AbstractPropagator,
             factory.getNonKeplerianParametersDrivers().getDrivers().forEach(propagationDrivers::add);
 
             final ParameterDriver muDriver = new ParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
-                                                                 factory.getMu(), MU_SCALE, 0, Double.POSITIVE_INFINITY);
+                                                                 factory.getMu(), MU_SCALE, 0, Double.POSITIVE_INFINITY,
+                                                                 TimeInterval.UNLIMITED);
             muDriver.addObserver(new ParameterObserver() {
                 /** {@inheritDoc} */
                 @Override
-                public void valueChanged(final double previousValue, final ParameterDriver driver, final AbsoluteDate date) {
-                    // getValue(), can be called without argument as mu driver should have only one span
-                    factory.setMu(driver.getValue());
-                }
-
-                @Override
-                public void valueSpanMapChanged(final TimeSpanMap<Double> previousValueSpanMap, final ParameterDriver driver) {
-                    // getValue(), can be called without argument as mu driver should have only one span
+                public void valueChanged(final double previousValue, final ParameterDriver driver) {
                     factory.setMu(driver.getValue());
                 }
             });
@@ -248,14 +240,14 @@ public abstract class AbstractPropagatorBuilder<T extends AbstractPropagator,
         // count orbital parameters
         for (final ParameterDriver driver : factory.getOrbitalParametersDrivers().getDrivers()) {
             if (driver.isSelected()) {
-                count += driver.getNbOfValues();
+                count++;
             }
         }
 
         // count propagation parameters
         for (final ParameterDriver driver : propagationDrivers.getDrivers()) {
             if (driver.isSelected()) {
-                count += driver.getNbOfValues();
+                count++;
             }
         }
 
@@ -273,16 +265,12 @@ public abstract class AbstractPropagatorBuilder<T extends AbstractPropagator,
         int index = 0;
         for (final ParameterDriver driver : factory.getOrbitalParametersDrivers().getDrivers()) {
             if (driver.isSelected()) {
-                for (int spanNumber = 0; spanNumber < driver.getNbOfValues(); ++spanNumber ) {
-                    selected[index++] = driver.getNormalizedValue(AbsoluteDate.ARBITRARY_EPOCH);
-                }
+                selected[index++] = driver.getNormalizedValue();
             }
         }
         for (final ParameterDriver driver : propagationDrivers.getDrivers()) {
             if (driver.isSelected()) {
-                for (int spanNumber = 0; spanNumber < driver.getNbOfValues(); ++spanNumber ) {
-                    selected[index++] = driver.getNormalizedValue(AbsoluteDate.ARBITRARY_EPOCH);
-                }
+                selected[index++] = driver.getNormalizedValue();
             }
         }
 
@@ -317,28 +305,14 @@ public abstract class AbstractPropagatorBuilder<T extends AbstractPropagator,
         // manage orbital parameters
         for (final ParameterDriver driver : factory.getOrbitalParametersDrivers().getDrivers()) {
             if (driver.isSelected()) {
-                // If the parameter driver contains only 1 value to estimate over the all time range, which
-                // is normally always the case for orbital drivers
-                if (driver.getNbOfValues() == 1) {
-                    driver.setNormalizedValue(normalizedParameters[index++], null);
-
-                } else {
-
-                    for (Span<Double> span = driver.getValueSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                        driver.setNormalizedValue(normalizedParameters[index++], span.getStart());
-                    }
-                }
+                driver.setNormalizedValue(normalizedParameters[index++]);
             }
         }
 
         // manage propagation parameters
         for (final ParameterDriver driver : propagationDrivers.getDrivers()) {
-
             if (driver.isSelected()) {
-
-                for (Span<Double> span = driver.getValueSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                    driver.setNormalizedValue(normalizedParameters[index++], span.getStart());
-                }
+                driver.setNormalizedValue(normalizedParameters[index++]);
             }
         }
     }

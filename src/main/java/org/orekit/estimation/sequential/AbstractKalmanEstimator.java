@@ -25,7 +25,7 @@ import org.hipparchus.linear.RealVector;
 import org.orekit.estimation.ParameterEstimator;
 import org.orekit.propagation.conversion.PropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.ParameterDriversList;
+import org.orekit.utils.drivers.ParameterDriversList;
 
 /**
  * Base class for Kalman estimators.

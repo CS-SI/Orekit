@@ -48,11 +48,11 @@ import org.orekit.propagation.conversion.osc2mean.FixedPointConverter;
 import org.orekit.propagation.conversion.osc2mean.MeanTheory;
 import org.orekit.propagation.conversion.osc2mean.OsculatingToMeanConverter;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeInterval;
 import org.orekit.utils.DoubleArrayDictionary;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterDriversProvider;
+import org.orekit.utils.drivers.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriversProvider;
 import org.orekit.utils.TimeSpanMap;
-import org.orekit.utils.TimeSpanMap.Span;
 
 /**
  * This class propagates a {@link org.orekit.propagation.SpacecraftState}
@@ -62,37 +62,37 @@ import org.orekit.utils.TimeSpanMap.Span;
  * suited for elliptical orbits, there is no problem having a rather small eccentricity or inclination
  * (Lyddane helped to solve this issue with the Brouwer model). Singularity for the critical
  * inclination i = 63.4° is avoided using the method developed in Warren Phipps' 1992 thesis.
+ * </p>
  * <p>
  * By default, Brouwer-Lyddane model considers only the perturbations due to zonal harmonics.
  * However, for low Earth orbits, the magnitude of the perturbative acceleration due to
  * atmospheric drag can be significant. Warren Phipps' 1992 thesis considered the atmospheric
  * drag by time derivatives of the <i>mean</i> mean anomaly using the catch-all coefficient
  * {@link #M2Driver}. Beware that M2Driver must have only 1 span on its TimeSpanMap value.
- *
+ * </p>
+ * <p>
  * Usually, M2 is adjusted during an orbit determination process and it represents the
  * combination of all unmodeled secular along-track effects (i.e. not just the atmospheric drag).
  * The behavior of M2 is close to the {@link TLE#getBStar()} parameter for the TLE.
- *
+ * </p>
+ * <p>
  * If the value of M2 is equal to {@link #M2 0.0}, the along-track  secular effects are not
  * considered in the dynamical model. Typical values for M2 are not known. It depends on the
  * orbit type. However, the value of M2 must be very small (e.g. between 1.0e-14 and 1.0e-15).
  * The unit of M2 is rad/s².
- *
+ * </p>
+ * <p>
  * The along-track effects, represented by the secular rates of the mean semi-major axis
  * and eccentricity, are computed following Eq. 2.38, 2.41, and 2.45 of Warren Phipps' thesis.
- *
+ * </p>
  * @see "Brouwer, Dirk. Solution of the problem of artificial satellite theory without drag.
  *       YALE UNIV NEW HAVEN CT NEW HAVEN United States, 1959."
- *
  * @see "Lyddane, R. H. Small eccentricities or inclinations in the Brouwer theory of the
  *       artificial satellite. The Astronomical Journal 68 (1963): 555."
- *
  * @see "Phipps Jr, Warren E. Parallelization of the Navy Space Surveillance Center
  *       (NAVSPASUR) Satellite Model. NAVAL POSTGRADUATE SCHOOL MONTEREY CA, 1992."
- *
  * @see "Solomon, Daniel, THE NAVSPASUR Satellite Motion Model,
  *       Naval Research Laboratory, August 8, 1991."
- *
  * @author Melina Vanel
  * @author Bryan Cazabonne
  * @author Pascal Parraud
@@ -560,7 +560,8 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator imple
         // initialize M2 driver
         this.M2Driver = new ParameterDriver(M2_NAME, m2Value, SCALE,
                                             Double.NEGATIVE_INFINITY,
-                                            Double.POSITIVE_INFINITY);
+                                            Double.POSITIVE_INFINITY,
+                                            TimeInterval.UNLIMITED);
 
         // compute mean parameters if needed
         resetInitialState(new SpacecraftState(initialOrbit,
@@ -988,10 +989,8 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator imple
     protected List<String> getJacobiansColumnsNames() {
         final List<String> columnsNames = new ArrayList<>();
         for (final ParameterDriver driver : getParametersDrivers()) {
-            if (driver.isSelected() && !columnsNames.contains(driver.getNamesSpanMap().getFirstSpan().getData())) {
-                for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                    columnsNames.add(span.getData());
-                }
+            if (driver.isSelected() && !columnsNames.contains(driver.getName())) {
+                columnsNames.add(driver.getName());
             }
         }
         Collections.sort(columnsNames);

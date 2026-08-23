@@ -27,7 +27,8 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.forces.maneuvers.Control3DVectorCostType;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.time.TimeInterval;
+import org.orekit.utils.drivers.ParameterDriver;
 
 /** Constant thrust propulsion model with:
  *  - Constant thrust direction in spacecraft frame
@@ -89,9 +90,9 @@ public class BasicConstantThrustPropulsionModel extends AbstractConstantThrustPr
 
         // Build the parameter drivers, using maneuver name as prefix
         this.thrustDriver   = new ParameterDriver(name + THRUST, thrust, THRUST_SCALE,
-                                                  0.0, Double.POSITIVE_INFINITY);
+                                                  0.0, Double.POSITIVE_INFINITY, TimeInterval.UNLIMITED);
         this.flowRateDriver = new ParameterDriver(name + FLOW_RATE, initialFlowRate, FLOW_RATE_SCALE,
-                                                  Double.NEGATIVE_INFINITY, 0.0 );
+                                                  Double.NEGATIVE_INFINITY, 0.0, TimeInterval.UNLIMITED);
     }
 
     /** Simple constructor.
@@ -111,9 +112,6 @@ public class BasicConstantThrustPropulsionModel extends AbstractConstantThrustPr
     @Override
     public Vector3D getThrustVector() {
         // Thrust vector does not depend on spacecraft state for a constant maneuver.
-        // thrustDriver as only 1 value estimated over the whole time period
-        // by construction thrustDriver has only 1 value estimated over the all period
-        // that is why no argument is acceptable
         return direction.scalarMultiply(thrustDriver.getValue());
     }
 
@@ -121,7 +119,7 @@ public class BasicConstantThrustPropulsionModel extends AbstractConstantThrustPr
     @Override
     public Vector3D getThrustVector(final AbsoluteDate date) {
         // Thrust vector does not depend on spacecraft state for a constant maneuver.
-        return direction.scalarMultiply(thrustDriver.getValue(date));
+        return getThrustVector();
     }
 
     /** {@inheritDoc} */
@@ -137,7 +135,7 @@ public class BasicConstantThrustPropulsionModel extends AbstractConstantThrustPr
     /** {@inheritDoc} */
     @Override
     public double getFlowRate(final AbsoluteDate date) {
-        return flowRateDriver.getValue(date);
+        return getFlowRate();
     }
 
     /** {@inheritDoc} */

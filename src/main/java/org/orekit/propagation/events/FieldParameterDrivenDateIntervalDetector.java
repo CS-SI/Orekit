@@ -30,11 +30,9 @@ import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.handlers.FieldStopOnEvent;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeInterval;
-import org.orekit.utils.DateDriver;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterObserver;
-import org.orekit.utils.TimeSpanMap;
-import org.orekit.utils.TimeSpanMap.Span;
+import org.orekit.utils.drivers.DateDriver;
+import org.orekit.utils.drivers.ParameterDriver;
+import org.orekit.utils.drivers.ParameterObserver;
 
 /** Detector for date intervals that may be offset thanks to parameter drivers.
  * <p>
@@ -104,7 +102,8 @@ public class FieldParameterDrivenDateIntervalDetector<T extends CalculusFieldEle
              new DateDriver(refStart, prefix + START_SUFFIX, true),
              new DateDriver(refStop, prefix + STOP_SUFFIX, false),
              new DateDriver(refStart.shiftedBy(0.5 * refStop.durationFrom(refStart)), prefix + MEDIAN_SUFFIX, true),
-             new ParameterDriver(prefix + DURATION_SUFFIX, refStop.durationFrom(refStart), 1.0, 0.0, Double.POSITIVE_INFINITY));
+             new ParameterDriver(prefix + DURATION_SUFFIX, refStop.durationFrom(refStart), 1.0,
+                                 0.0, Double.POSITIVE_INFINITY, TimeInterval.UNLIMITED));
     }
 
     /** Protected constructor with full parameters.
@@ -247,19 +246,9 @@ public class FieldParameterDrivenDateIntervalDetector<T extends CalculusFieldEle
 
         /** {@inheritDoc} */
         @Override
-        public void valueChanged(final double previousValue, final ParameterDriver driver, final AbsoluteDate date) {
+        public void valueChanged(final double previousValue, final ParameterDriver driver) {
             if (driver.isSelected()) {
-                setDelta(driver.getValue(date) - previousValue, date);
-            }
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public void valueSpanMapChanged(final TimeSpanMap<Double> previousValue, final ParameterDriver driver) {
-            if (driver.isSelected()) {
-                for (Span<Double> span = driver.getValueSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                    setDelta(span.getData() - previousValue.get(span.getStart()), span.getStart());
-                }
+                setDelta(driver.getValue() - previousValue);
             }
         }
 
@@ -275,10 +264,9 @@ public class FieldParameterDrivenDateIntervalDetector<T extends CalculusFieldEle
         }
 
         /** Change a value.
-         * @param date date for which the value wants to be change
          * @param delta change of value
          */
-        protected abstract void setDelta(double delta, AbsoluteDate date);
+        protected abstract void setDelta(double delta);
 
     }
 
@@ -286,9 +274,9 @@ public class FieldParameterDrivenDateIntervalDetector<T extends CalculusFieldEle
     private class StartObserver extends BindingObserver {
         /** {@inheritDoc} */
         @Override
-        protected void setDelta(final double delta, final AbsoluteDate date) {
-            median.setValue(median.getValue(date) + 0.5 * delta, date);
-            duration.setValue(duration.getValue(date) - delta, date);
+        protected void setDelta(final double delta) {
+            median.setValue(median.getValue() + 0.5 * delta);
+            duration.setValue(duration.getValue() - delta);
         }
     }
 
@@ -296,9 +284,9 @@ public class FieldParameterDrivenDateIntervalDetector<T extends CalculusFieldEle
     private class StopObserver extends BindingObserver {
         /** {@inheritDoc} */
         @Override
-        protected void setDelta(final double delta, final AbsoluteDate date) {
-            median.setValue(median.getValue(date) + 0.5 * delta, date);
-            duration.setValue(duration.getValue(date) + delta, date);
+        protected void setDelta(final double delta) {
+            median.setValue(median.getValue() + 0.5 * delta);
+            duration.setValue(duration.getValue() + delta);
         }
     }
 
@@ -306,9 +294,9 @@ public class FieldParameterDrivenDateIntervalDetector<T extends CalculusFieldEle
     private class MedianObserver extends BindingObserver {
         /** {@inheritDoc} */
         @Override
-        protected void setDelta(final double delta, final AbsoluteDate date) {
-            start.setValue(start.getValue(date) + delta, date);
-            stop.setValue(stop.getValue(date) + delta, date);
+        protected void setDelta(final double delta) {
+            start.setValue(start.getValue() + delta);
+            stop.setValue(stop.getValue() + delta);
         }
     }
 
@@ -316,9 +304,9 @@ public class FieldParameterDrivenDateIntervalDetector<T extends CalculusFieldEle
     private class DurationObserver extends BindingObserver {
         /** {@inheritDoc} */
         @Override
-        protected void setDelta(final double delta, final AbsoluteDate date) {
-            start.setValue(start.getValue(date) - 0.5 * delta, date);
-            stop.setValue(stop.getValue(date) + 0.5 * delta, date);
+        protected void setDelta(final double delta) {
+            start.setValue(start.getValue() - 0.5 * delta);
+            stop.setValue(stop.getValue() + 0.5 * delta);
         }
     }
 

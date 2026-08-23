@@ -35,11 +35,11 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.propagation.integration.CombinedDerivatives;
 import org.orekit.utils.DataDictionary;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.TimeSpanMap;
+import org.orekit.utils.drivers.ParameterDriver;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -306,12 +306,9 @@ abstract class AbstractStateTransitionMatrixGenerator implements AdditionalDeriv
         int paramsIndex = converter.getFreeStateParameters();
         for (ParameterDriver driver : forceModel.getParametersDrivers()) {
             if (driver.isSelected()) {
-
-                // for each span (for each estimated value) corresponding name is added
-                for (TimeSpanMap.Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                    updateDictionaryEntry(partialsDictionary, span, ratesPartials, paramsIndex);
-                    ++paramsIndex;
-                }
+                // add name for each estimated value
+                updateDictionaryEntry(partialsDictionary, driver.getName(), ratesPartials, paramsIndex);
+                ++paramsIndex;
             }
         }
 
@@ -325,21 +322,21 @@ abstract class AbstractStateTransitionMatrixGenerator implements AdditionalDeriv
     /**
      * Update entry of dictionary with derivative information.
      * @param partialsDictionary dictionary
-     * @param span time span
+     * @param name parameter name
      * @param ratesPartials state variables' rates evaluated in the Taylor differential algebra
      * @param paramsIndex index of parameter as an independent variable of the differential algebra
      */
-    private void updateDictionaryEntry(final Map<String, double[]> partialsDictionary, final TimeSpanMap.Span<String> span,
+    private void updateDictionaryEntry(final Map<String, double[]> partialsDictionary, final String name,
                                        final Gradient[] ratesPartials, final int paramsIndex) {
         // get the partials derivatives for this driver
-        partialsDictionary.putIfAbsent(span.getData(), new double[ratesPartials.length]);
+        partialsDictionary.putIfAbsent(name, new double[ratesPartials.length]);
 
         // add the contribution of the current force model
-        final double[] increment = partialsDictionary.get(span.getData());
+        final double[] increment = partialsDictionary.get(name);
         for (int i = 0; i < ratesPartials.length; ++i) {
             increment[i] += ratesPartials[i].getGradient()[paramsIndex];
         }
-        partialsDictionary.replace(span.getData(), increment);
+        partialsDictionary.replace(name, increment);
     }
 
     /**
@@ -379,6 +376,7 @@ abstract class AbstractStateTransitionMatrixGenerator implements AdditionalDeriv
     private static class LocalDoubleArrayDictionary extends DataDictionary {
 
         /** Serialization UID. */
+        @Serial
         private static final long serialVersionUID = 1L;
 
         /** Map for quick access. */
@@ -400,6 +398,7 @@ abstract class AbstractStateTransitionMatrixGenerator implements AdditionalDeriv
          * @throws IOException if an I/O error occurs during deserialization
          * @throws ClassNotFoundException if the class of a serialized object cannot be found
          */
+        @Serial
         private void readObject(final ObjectInputStream ois) throws IOException, ClassNotFoundException {
             ois.defaultReadObject();
             objectMap = toMap();

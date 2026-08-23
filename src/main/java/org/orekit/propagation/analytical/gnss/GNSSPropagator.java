@@ -57,9 +57,8 @@ import org.orekit.time.GNSSDate;
 import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterDriversProvider;
-import org.orekit.utils.TimeSpanMap.Span;
+import org.orekit.utils.drivers.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriversProvider;
 
 /** Common handling of {@link AbstractAnalyticalPropagator} methods for GNSS propagators.
  * <p>
@@ -261,12 +260,8 @@ public class GNSSPropagator<O extends GNSSOrbitalElements<O>>
     protected List<String> getJacobiansColumnsNames() {
         final List<String> columnsNames = new ArrayList<>();
         for (final ParameterDriver driver : getParametersDrivers()) {
-            if (driver.isSelected() && !columnsNames.contains(driver.getNamesSpanMap().getFirstSpan().getData())) {
-                // As driver with same name should have same NamesSpanMap we only check if the first span is present,
-                // if not we add all span names to columnsNames
-                for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                    columnsNames.add(span.getData());
-                }
+            if (driver.isSelected() && !columnsNames.contains(driver.getName())) {
+                columnsNames.add(driver.getName());
             }
         }
         Collections.sort(columnsNames);

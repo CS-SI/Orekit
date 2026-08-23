@@ -112,7 +112,7 @@ import org.orekit.files.sinex.Sinex;
 import org.orekit.files.sinex.SinexParser;
 import org.orekit.files.sinex.Station;
 import org.orekit.forces.drag.DragSensitive;
-import org.orekit.forces.drag.IsotropicDrag;
+import org.orekit.forces.drag.IsotropicDragBuilder;
 import org.orekit.forces.radiation.IsotropicRadiationSingleCoefficient;
 import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.frames.EOPHistory;
@@ -171,10 +171,9 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterDriversList;
-import org.orekit.utils.ParameterDriversList.DelegatingDriver;
-import org.orekit.utils.TimeSpanMap.Span;
+import org.orekit.utils.drivers.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriversList;
+import org.orekit.utils.drivers.ParameterDriversList.DelegatingDriver;
 import org.orekit.utils.units.Unit;
 
 /** Base class for Orekit orbit determination tutorials.
@@ -929,10 +928,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
              for (DelegatingDriver refDriver : refPropagationParameters.getDrivers()) {
                  for (DelegatingDriver driver : propagatorBuilder.getPropagationParametersDrivers().getDrivers()) {
                      if (driver.getName().equals(refDriver.getName())) {
-                         for (Span<Double> span = driver.getValueSpanMap().getFirstSpan(); span != null; span = span.next()) {
-
-                             driver.setValue(refDriver.getValue(initialRefOrbit.getDate()), span.getStart());
-                         }
+                         driver.setValue(refDriver.getValue());
                      }
                  }
              }
@@ -1053,7 +1049,8 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                             new MarshallSolarActivityFutureEstimation(MarshallSolarActivityFutureEstimation.DEFAULT_SUPPORTED_NAMES,
                                                                       MarshallSolarActivityFutureEstimation.StrengthLevel.AVERAGE);
             final Atmosphere atmosphere = new DTM2000(msafe, CelestialBodyFactory.getSun(), body);
-            final List<ParameterDriver> drivers = setDrag(propagatorBuilder, atmosphere, new IsotropicDrag(area, cd));
+            final List<ParameterDriver> drivers = setDrag(propagatorBuilder, atmosphere,
+                                                          new IsotropicDragBuilder(area).addDragCoeff(cd).build());
             if (cdEstimated) {
                 for (final ParameterDriver driver : drivers) {
                     if (driver.getName().equals(DragSensitive.DRAG_COEFFICIENT)) {
@@ -1915,12 +1912,10 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
      * @param parser input file parser
      * @param key name of the file
      * @return container for sinex data or null if key does not exist
-     * @throws IOException if file is not read properly
      */
     private Sinex readSinexFile(final File input,
                                 final KeyValueFileParser<ParameterKey> parser,
-                                final ParameterKey key)
-        throws IOException {
+                                final ParameterKey key) {
 
         // Verify if the key is defined
         if (parser.containsKey(key)) {
@@ -2415,7 +2410,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
         List<ParameterDriver> list = new ArrayList<>(parameters.getDrivers());
         if (sort) {
             // sort the parameters lexicographically
-            list.sort(new Comparator<ParameterDriver>() {
+            list.sort(new Comparator<>() {
 
                 /** {@inheritDoc} */
                 @Override

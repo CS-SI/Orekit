@@ -31,8 +31,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.TimeSpanMap.Span;
+import org.orekit.utils.drivers.ParameterDriver;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** One way range-rate measurement between two satellites.
@@ -145,11 +144,9 @@ public class InterSatellitesOneWayRangeRate
 
         // Set first order derivatives with respect to parameters
         for (final ParameterDriver driver : getParametersDrivers()) {
-            for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                final Integer index = common.getIndices().get(span.getData());
-                if (index != null) {
-                    estimatedPhase.setParameterDerivatives(driver, span.getStart(), derivatives[index]);
-                }
+            final Integer index = common.getIndices().get(driver.getName());
+            if (index != null) {
+                estimatedPhase.setParameterDerivatives(driver, derivatives[index]);
             }
         }
 

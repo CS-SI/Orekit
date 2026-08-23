@@ -39,8 +39,7 @@ import org.orekit.utils.AngularCoordinates;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldAbsolutePVCoordinates;
 import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.TimeSpanMap.Span;
+import org.orekit.utils.drivers.ParameterDriver;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -87,7 +86,7 @@ public class RangeAnalytic extends Range {
      * @param iteration current LS estimator iteration
      * @param evaluation current LS estimator evaluation
      * @param state spacecraft state. At measurement date on first iteration then close to emission date on further iterations
-     * @return
+     * @return evaluated measurement
      */
     protected EstimatedMeasurement<Range> theoreticalEvaluationAnalytic(final int iteration, final int evaluation,
                                                                         final SpacecraftState state) {
@@ -243,13 +242,13 @@ public class RangeAnalytic extends Range {
             final Vector3D dRdQT = ac.getRotation().applyTo(dRdQI);
 
             if (groundStation.getEastOffsetDriver().isSelected()) {
-                estimated.setParameterDerivatives(groundStation.getEastOffsetDriver(), new AbsoluteDate(), dRdQT.getX());
+                estimated.setParameterDerivatives(groundStation.getEastOffsetDriver(), dRdQT.getX());
             }
             if (groundStation.getNorthOffsetDriver().isSelected()) {
-                estimated.setParameterDerivatives(groundStation.getNorthOffsetDriver(), new AbsoluteDate(), dRdQT.getY());
+                estimated.setParameterDerivatives(groundStation.getNorthOffsetDriver(), dRdQT.getY());
             }
             if (groundStation.getZenithOffsetDriver().isSelected()) {
-                estimated.setParameterDerivatives(groundStation.getZenithOffsetDriver(), new AbsoluteDate(), dRdQT.getZ());
+                estimated.setParameterDerivatives(groundStation.getZenithOffsetDriver(), dRdQT.getZ());
             }
 
         }
@@ -262,10 +261,10 @@ public class RangeAnalytic extends Range {
     /**
      * Added for validation
      * Compares directly numeric and analytic computations
-     * @param iteration
-     * @param evaluation
-     * @param state
-     * @return
+     * @param iteration number of iteration
+     * @param evaluation number of evaluation
+     * @param state current state
+     * @return evaluated measurement
      */
     protected EstimatedMeasurement<Range> theoreticalEvaluationValidation(final int iteration, final int evaluation,
                                                                           final SpacecraftState state) {
@@ -277,11 +276,8 @@ public class RangeAnalytic extends Range {
         int nbParams = 6;
         final Map<String, Integer> indices = new HashMap<>();
         for (ParameterDriver driver : getParametersDrivers()) {
-            for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-
-                if (driver.isSelected()) {
-                    indices.put(span.getData(), nbParams++);
-                }
+            if (driver.isSelected()) {
+                indices.put(driver.getName(), nbParams++);
             }
         }
         final FieldVector3D<Gradient> zero = FieldVector3D.getZero(GradientField.getField(nbParams));
@@ -360,12 +356,9 @@ public class RangeAnalytic extends Range {
         // set partial derivatives with respect to parameters
         // (beware element at index 0 is the value, not a derivative)
         for (final ParameterDriver driver : getParametersDrivers()) {
-            for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-
-                final Integer index = indices.get(span.getData());
-                if (index != null) {
-                    estimated.setParameterDerivatives(driver, span.getStart(), derivatives[index]);
-                }
+            final Integer index = indices.get(driver.getName());
+            if (index != null) {
+                estimated.setParameterDerivatives(driver, derivatives[index]);
             }
         }
 

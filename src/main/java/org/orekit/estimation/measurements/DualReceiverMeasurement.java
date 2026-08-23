@@ -31,8 +31,7 @@ import org.orekit.signal.SignalTravelTimeModel;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinatesProvider;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.TimeSpanMap;
+import org.orekit.utils.drivers.ParameterDriver;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 /**
@@ -177,12 +176,12 @@ public abstract class DualReceiverMeasurement<T extends AbstractMeasurement<T>> 
 
         // Set first order derivatives with respect to parameters
         for (final ParameterDriver driver : getParametersDrivers()) {
-            for (TimeSpanMap.Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                final Integer index = paramIndices.get(span.getData());
-                if (index != null) {
-                    estimated.setParameterDerivatives(driver, span.getStart(), derivatives[index]);
-                }
+            final Integer index = paramIndices.get(driver.getName());
+            if (index != null) {
+                estimated.setParameterDerivatives(driver, derivatives[index]);
             }
         }
+
     }
+
 }

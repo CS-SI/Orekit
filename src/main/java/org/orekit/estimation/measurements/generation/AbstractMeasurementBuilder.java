@@ -30,7 +30,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeUtils;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriver;
 
 /** Base class for {@link MeasurementBuilder measurements builders}.
  * @param <T> the type of the measurement

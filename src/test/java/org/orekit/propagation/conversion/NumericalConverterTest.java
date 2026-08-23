@@ -33,7 +33,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.drag.DragForce;
 import org.orekit.forces.drag.DragSensitive;
-import org.orekit.forces.drag.IsotropicDrag;
+import org.orekit.forces.drag.IsotropicDragBuilder;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
 import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
@@ -54,7 +54,7 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriver;
 
 public class NumericalConverterTest {
 
@@ -298,7 +298,7 @@ public class NumericalConverterTest {
                 // we want to adjust drag coefficient, we need to start from a wrong value
                 ParameterDriver driver = drag.getParameterDriver(param);
                 double coeff = driver.getReferenceValue() - driver.getScale();
-                guessedDrag = new DragForce(atmosphere, new IsotropicDrag(crossSection, coeff));
+                guessedDrag = new DragForce(atmosphere, new IsotropicDragBuilder(crossSection).addDragCoeff(coeff).build());
             } else if (NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT.equals(param)) {
                 // we want to adjust mu, we need to start from  a wrong value
                 guessedGravity = new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true),
@@ -429,7 +429,8 @@ public class NumericalConverterTest {
         atmosphere = new SimpleExponentialAtmosphere(earth, 0.0004, 42000.0, 7500.0);
         final double dragCoef = 2.0;
         crossSection = 10.0;
-        drag = new DragForce(atmosphere, new IsotropicDrag(crossSection, dragCoef));
+        drag = new DragForce(atmosphere,
+                             new IsotropicDragBuilder(crossSection).addDragCoeff(dragCoef).build());
 
         propagator.addForceModel(gravity);
         propagator.addForceModel(drag);

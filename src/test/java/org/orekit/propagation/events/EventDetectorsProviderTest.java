@@ -35,9 +35,10 @@ import org.orekit.propagation.events.intervals.AdaptableInterval;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.FieldTimeStamped;
+import org.orekit.time.TimeInterval;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.Constants;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriver;
 
 /**
  * Unit tests for {@link EventDetectorsProvider}.
@@ -77,9 +78,9 @@ public class EventDetectorsProviderTest {
         // When: multiple drivers with no time-span
         // ----
 
-        final ParameterDriver param1 = new ParameterDriver("param-1", 0., 1., -1., 1.);
-        final ParameterDriver param2 = new ParameterDriver("param-2", 0., 1., -1., 1.);
-        final ParameterDriver param3 = new ParameterDriver("param-3", 0., 1., -1., 1.);
+        final ParameterDriver param1 = new ParameterDriver("param-1", 0., 1., -1., 1., TimeInterval.UNLIMITED);
+        final ParameterDriver param2 = new ParameterDriver("param-2", 0., 1., -1., 1., TimeInterval.UNLIMITED);
+        final ParameterDriver param3 = new ParameterDriver("param-3", 0., 1., -1., 1., TimeInterval.UNLIMITED);
         
         drivers.add(param1);
         drivers.add(param2);
@@ -98,12 +99,14 @@ public class EventDetectorsProviderTest {
         // When: time-spanned drivers
         // ----
 
-        // Add spans with different dates and steps between dates
+        // Add validity intervals with different dates and
         final AbsoluteDate t0 = AbsoluteDate.ARBITRARY_EPOCH;
-        final double step2 = 3600.;
-        final double step3 = 5000.;
-        param2.addSpans(t0, t0.shiftedBy(Constants.JULIAN_DAY), step2);
-        param3.addSpans(t0.shiftedBy(-2. * Constants.JULIAN_DAY), t0.shiftedBy(-Constants.JULIAN_DAY), step3);
+        param2.setValidity(TimeInterval.of(t0,
+                                           t0.shiftedBy(Constants.JULIAN_DAY),
+                                           false));
+        param3.setValidity(TimeInterval.of(t0.shiftedBy(-2. * Constants.JULIAN_DAY),
+                                           t0.shiftedBy(-Constants.JULIAN_DAY),
+                                           false));
 
         detectors      = provider.getEventDetectors().collect(Collectors.toList());
         fieldDetectors = provider.getFieldEventDetectors(Binary64Field.getInstance()).collect(Collectors.toList());
@@ -120,13 +123,13 @@ public class EventDetectorsProviderTest {
         Assertions.assertInstanceOf(FieldDateDetector.class, fieldDetectors.getFirst());
 
         // Check dates
-        final int expectedDatesNb = 39;
+        final int expectedDatesNb = 4;
         final DateDetector       dateDetector = (DateDetector) detectors.getFirst();
         final List<TimeStamped>  dates        = dateDetector.getDates();
                 
         Assertions.assertEquals(expectedDatesNb, dates.size());
-        Assertions.assertEquals(0., dates.getFirst().durationFrom(t0.shiftedBy(-2. * Constants.JULIAN_DAY + step3)), 0.);
-        Assertions.assertEquals(0., dates.get(expectedDatesNb-1).durationFrom(t0.shiftedBy(Constants.JULIAN_DAY - step2)), 0.);
+        Assertions.assertEquals(0., dates.getFirst().durationFrom(t0.shiftedBy(-2. * Constants.JULIAN_DAY)), 0.);
+        Assertions.assertEquals(0., dates.getLast().durationFrom(t0.shiftedBy(Constants.JULIAN_DAY)), 0.);
 
         // Field version
         final FieldDateDetector<Binary64> fieldDateDetector = (FieldDateDetector<Binary64>) fieldDetectors.getFirst();
@@ -135,11 +138,11 @@ public class EventDetectorsProviderTest {
         Assertions.assertEquals(expectedDatesNb, dates.size());
         Assertions.assertEquals(0.,
                                 fieldDates.getFirst().durationFrom(new FieldAbsoluteDate<>(b64Field,
-                                                t0.shiftedBy(-2. * Constants.JULIAN_DAY + step3))).getReal(),
+                                                t0.shiftedBy(-2. * Constants.JULIAN_DAY))).getReal(),
                                 0.);
         Assertions.assertEquals(0.,
-                                fieldDates.get(expectedDatesNb-1).durationFrom(new FieldAbsoluteDate<>(b64Field,
-                                                t0.shiftedBy(Constants.JULIAN_DAY - step2))).getReal(),
+                                fieldDates.getLast().durationFrom(new FieldAbsoluteDate<>(b64Field,
+                                                t0.shiftedBy(Constants.JULIAN_DAY))).getReal(),
                                 0.);
     }
 
@@ -184,7 +187,6 @@ public class EventDetectorsProviderTest {
 
             @Override
             public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(Field<T> field) {
-
                 return getFieldEventDetectors(field, drivers);
             }
 
@@ -194,4 +196,5 @@ public class EventDetectorsProviderTest {
             }
         };
     }
+
 }

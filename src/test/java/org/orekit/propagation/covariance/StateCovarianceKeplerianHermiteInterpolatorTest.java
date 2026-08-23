@@ -42,6 +42,7 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.DataContext;
 import org.orekit.forces.drag.DragForce;
 import org.orekit.forces.drag.IsotropicDrag;
+import org.orekit.forces.drag.IsotropicDragBuilder;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
 import org.orekit.forces.gravity.OceanTides;
 import org.orekit.forces.gravity.Relativity;
@@ -441,7 +442,7 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
 
         // Drag
         final double        cd            = 2.2;
-        final IsotropicDrag dragSensitive = new IsotropicDrag(crossSection, cd);
+        final IsotropicDrag dragSensitive = new IsotropicDragBuilder(crossSection).addDragCoeff(cd).build();
         final Atmosphere atmosphere =
                 new NRLMSISE00(new CssiSpaceWeatherData(CssiSpaceWeatherData.DEFAULT_SUPPORTED_NAMES), sun, earthShape);
         final DragForce dragForce = new DragForce(atmosphere, dragSensitive, false);

@@ -62,8 +62,9 @@ import org.orekit.propagation.semianalytical.dsst.utilities.hansen.FieldHansenZo
 import org.orekit.propagation.semianalytical.dsst.utilities.hansen.HansenZonalLinear;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeInterval;
 import org.orekit.utils.FieldTimeSpanMap;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriver;
 import org.orekit.utils.TimeSpanMap;
 
 /** Zonal contribution to the central body gravitational perturbation.
@@ -224,7 +225,7 @@ public class DSSTZonal implements DSSTForceModel {
 
         gmParameterDriver = new ParameterDriver(DSSTNewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
                                                 provider.getMu(), MU_SCALE,
-                                                0.0, Double.POSITIVE_INFINITY);
+                                                0.0, Double.POSITIVE_INFINITY, TimeInterval.UNLIMITED);
 
         // Central body rotating frame
         this.bodyFixedFrame = bodyFixedFrame;
@@ -751,9 +752,7 @@ public class DSSTZonal implements DSSTForceModel {
             final AuxiliaryElements auxiliaryElements = new AuxiliaryElements(meanState.getOrbit(), I);
 
             // Container of attributes
-            // Extract the proper parameters valid for the corresponding meanState date from the input array
-            final double[] extractedParameters = this.extractParameters(parameters, auxiliaryElements.getDate());
-            final DSSTZonalContext context = initializeStep(auxiliaryElements, extractedParameters);
+            final DSSTZonalContext context = initializeStep(auxiliaryElements, parameters);
 
             // Access to potential U derivatives
             final UAnddU udu = new UAnddU(meanState.getDate(), context, auxiliaryElements, hansen);
@@ -794,9 +793,7 @@ public class DSSTZonal implements DSSTForceModel {
             final FieldAuxiliaryElements<T> auxiliaryElements = new FieldAuxiliaryElements<>(meanState.getOrbit(), I);
 
             // Container of attributes
-            // Extract the proper parameters valid for the corresponding meanState date from the input array
-            final T[] extractedParameters = this.extractParameters(parameters, auxiliaryElements.getDate());
-            final FieldDSSTZonalContext<T> context = initializeStep(auxiliaryElements, extractedParameters);
+            final FieldDSSTZonalContext<T> context = initializeStep(auxiliaryElements, parameters);
 
             final FieldHansenObjects<T> fho = (FieldHansenObjects<T>) fieldHansen.get(field);
 

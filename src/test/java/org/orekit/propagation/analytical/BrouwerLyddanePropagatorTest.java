@@ -41,7 +41,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.drag.DragForce;
-import org.orekit.forces.drag.IsotropicDrag;
+import org.orekit.forces.drag.IsotropicDragBuilder;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
@@ -143,7 +143,7 @@ public class BrouwerLyddanePropagatorTest {
         // Error case from forum thread (nicksakva) : negative eccentricity when constructing
         final Frame eme2000 = FramesFactory.getEME2000();
 
-        final AbsoluteDate t = new AbsoluteDate(2023,06,26,12,0,0.0,TimeScalesFactory.getUTC());
+        final AbsoluteDate t = new AbsoluteDate(2023, 6, 26, 12, 0, 0.0,TimeScalesFactory.getUTC());
         final double x = 6313554.48504233;
         final double y = 2775620.8433687;
         final double z = -2111774.8221765;
@@ -365,7 +365,7 @@ public class BrouwerLyddanePropagatorTest {
 
         final Frame inertialFrame = FramesFactory.getEME2000();
         final TimeScale utc = TimeScalesFactory.getUTC();
-        final AbsoluteDate initDate = new AbsoluteDate(2003, 1, 1, 00, 00, 00.000, utc);
+        final AbsoluteDate initDate = new AbsoluteDate(2003, 1, 1, 0, 0, 0.000, utc);
         double timeshift = 60000. ;
 
         // Initial orbit
@@ -409,7 +409,7 @@ public class BrouwerLyddanePropagatorTest {
         // Force model
         final ForceModel holmesFeatherstone =
                 new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true), provider);
-        final ForceModel drag = new DragForce(atmosphere, new IsotropicDrag(1.0, 1.0));
+        final ForceModel drag = new DragForce(atmosphere, new IsotropicDragBuilder(1.0).addDragCoeff(1.0).build());
         NumPropagator.addForceModel(holmesFeatherstone);
         NumPropagator.addForceModel(drag);
 
@@ -640,10 +640,10 @@ public class BrouwerLyddanePropagatorTest {
                 FramesFactory.getEME2000(), initDate, provider.getMu());
         // Extrapolator definition
         // -----------------------
-        OrekitException oe = Assertions.assertThrows(OrekitException.class, () -> {
-                new BrouwerLyddanePropagator(initialOrbit, DEFAULT_LAW, provider.getAe(), provider.getMu(),
-                        -1.08263e-3, 2.54e-6, 1.62e-6, 2.3e-7, BrouwerLyddanePropagator.M2);
-        });
+        OrekitException oe =
+            Assertions.assertThrows(OrekitException.class,
+                                    () -> new BrouwerLyddanePropagator(initialOrbit, DEFAULT_LAW, provider.getAe(), provider.getMu(),
+                                                                       -1.08263e-3, 2.54e-6, 1.62e-6, 2.3e-7, BrouwerLyddanePropagator.M2));
         Assertions.assertTrue(oe.getMessage().contains("trajectory inside the Brillouin sphere (r ="));
     }
 
@@ -657,10 +657,10 @@ public class BrouwerLyddanePropagatorTest {
                 initDate, provider.getMu());
         // Extrapolator definition
         // -----------------------
-        OrekitException oe = Assertions.assertThrows(OrekitException.class, () -> {
-                new BrouwerLyddanePropagator(initialOrbit, provider.getAe(), provider.getMu(),
-                        -1.08263e-3, 2.54e-6, 1.62e-6, 2.3e-7, BrouwerLyddanePropagator.M2);
-              });
+        OrekitException oe =
+            Assertions.assertThrows(OrekitException.class,
+                                    () -> new BrouwerLyddanePropagator(initialOrbit, provider.getAe(), provider.getMu(),
+                                                                       -1.08263e-3, 2.54e-6, 1.62e-6, 2.3e-7, BrouwerLyddanePropagator.M2));
         Assertions.assertTrue(oe.getMessage().contains("too large eccentricity for propagation model: e ="));
     }
 
@@ -714,10 +714,10 @@ public class BrouwerLyddanePropagatorTest {
                                                       initDate, provider.getMu());
         // Extrapolator definition
         // -----------------------
-        OrekitIllegalArgumentException oe = Assertions.assertThrows(OrekitIllegalArgumentException.class, () -> {
-                new BrouwerLyddanePropagator(initialOrbit, Propagator.DEFAULT_MASS, provider.getAe(), provider.getMu(),
-                        -1.08263e-3, 2.54e-6, 1.62e-6, 2.3e-7);
-        });
+        OrekitIllegalArgumentException oe =
+            Assertions.assertThrows(OrekitIllegalArgumentException.class,
+                                    () -> new BrouwerLyddanePropagator(initialOrbit, Propagator.DEFAULT_MASS, provider.getAe(), provider.getMu(),
+                                                                       -1.08263e-3, 2.54e-6, 1.62e-6, 2.3e-7));
         Assertions.assertTrue(oe.getMessage().contains("orbit should be either elliptic with a > 0 and e < 1 or hyperbolic with a < 0 and e > 1"));
     }
 
@@ -741,10 +741,10 @@ public class BrouwerLyddanePropagatorTest {
         final UnnormalizedSphericalHarmonics uh = up.onDate(date);
         final double eps  = 1.e-13;
         final int maxIter = 10;
-        OrekitException oe = Assertions.assertThrows(OrekitException.class, () -> {
-            BrouwerLyddanePropagator.computeMeanOrbit(orbit, up, uh, BrouwerLyddanePropagator.M2,
-                                                      eps, maxIter);
-        });
+        OrekitException oe =
+            Assertions.assertThrows(OrekitException.class,
+                                    () -> BrouwerLyddanePropagator.computeMeanOrbit(orbit, up, uh, BrouwerLyddanePropagator.M2,
+                                                                                    eps, maxIter));
         Assertions.assertTrue(oe.getMessage().contains("unable to compute Brouwer-Lyddane mean parameters after"));
     }
 

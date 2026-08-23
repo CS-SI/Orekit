@@ -24,7 +24,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.models.earth.atmosphere.Atmosphere;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriver;
 
 
 /** Atmospheric drag force model.

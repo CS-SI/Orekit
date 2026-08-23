@@ -65,7 +65,7 @@ import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriver;
 import org.orekit.utils.TimeStampedPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinatesHermiteInterpolator;
 
@@ -438,9 +438,9 @@ class GPSPropagatorTest {
 
         // harvester sorts the columns lexicographically, and wraps them as SpanXxx##
         Assertions.assertEquals(2, harvester.getJacobiansColumnsNames().size());
-        Assertions.assertEquals("Span" + NonKeplerianDriversFactory.RADIUS_COSINE + "0",
+        Assertions.assertEquals(NonKeplerianDriversFactory.RADIUS_COSINE,
                                 harvester.getJacobiansColumnsNames().get(0));
-        Assertions.assertEquals("Span" + NonKeplerianDriversFactory.RADIUS_SINE + "0",
+        Assertions.assertEquals(NonKeplerianDriversFactory.RADIUS_SINE,
                                 harvester.getJacobiansColumnsNames().get(1));
 
         // propagate orbit

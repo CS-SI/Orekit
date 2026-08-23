@@ -26,7 +26,7 @@ import org.orekit.attitudes.Attitude;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.forces.drag.DragSensitive;
-import org.orekit.forces.drag.IsotropicDrag;
+import org.orekit.forces.drag.IsotropicDragBuilder;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.SHMFormatReader;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
@@ -49,11 +49,8 @@ import org.orekit.propagation.semianalytical.dsst.forces.DSSTZonal;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterDriversList;
-
-import java.io.IOException;
-import java.text.ParseException;
+import org.orekit.utils.drivers.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriversList;
 
 /** Unit tests for {@link DSSTIntegrableJacobianColumnGenerator}. */
 public class DSSTIntegrableJacobianColumnGeneratorTest {
@@ -65,7 +62,7 @@ public class DSSTIntegrableJacobianColumnGeneratorTest {
     }
 
     @Test
-    public void testDragParametersDerivatives() throws ParseException, IOException {
+    public void testDragParametersDerivatives() {
         doTestParametersDerivatives(DragSensitive.DRAG_COEFFICIENT,
                                     2.4e-3,
                                     PropagationType.MEAN,
@@ -73,7 +70,7 @@ public class DSSTIntegrableJacobianColumnGeneratorTest {
     }
 
     @Test
-    public void testMuParametersDerivatives() throws ParseException, IOException {
+    public void testMuParametersDerivatives() {
         doTestParametersDerivatives(DSSTNewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
                                     5.e-3,
                                     PropagationType.MEAN,
@@ -93,7 +90,7 @@ public class DSSTIntegrableJacobianColumnGeneratorTest {
         UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(5, 5);
 
         DSSTForceModel drag = new DSSTAtmosphericDrag(new HarrisPriester(CelestialBodyFactory.getSun(), earth),
-                                                      new IsotropicDrag(2.5, 1.2),
+                                                      new IsotropicDragBuilder(2.5).addDragCoeff(1.2).build(),
                                                       provider.getMu());
 
         final DSSTForceModel tesseral = new DSSTTesseral(earthFrame,

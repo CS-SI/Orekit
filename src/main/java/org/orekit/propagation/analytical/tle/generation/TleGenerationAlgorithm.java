@@ -40,9 +40,10 @@ import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEConstants;
 import org.orekit.propagation.conversion.osc2mean.OsculatingToMeanConverter;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterDriversList;
-import org.orekit.utils.ParameterDriversList.DelegatingDriver;
+import org.orekit.time.TimeInterval;
+import org.orekit.utils.drivers.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriversList;
+import org.orekit.utils.drivers.ParameterDriversList.DelegatingDriver;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 /**
@@ -107,8 +108,8 @@ public abstract class TleGenerationAlgorithm extends AbstractOrbitalStateFactory
         // create model parameter drivers
         nonKeplerianDrivers = new ParameterDriversList();
         nonKeplerianDrivers.add(new ParameterDriver(B_STAR, templateTLE.getBStar(), B_STAR_SCALE,
-                                                    Double.NEGATIVE_INFINITY,
-                                                    Double.POSITIVE_INFINITY));
+                                                    Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                                    TimeInterval.UNLIMITED));
 
         // conversion algorithm
         this.converter = converter;
@@ -144,22 +145,22 @@ public abstract class TleGenerationAlgorithm extends AbstractOrbitalStateFactory
         final ParameterDriversList drivers = new ParameterDriversList();
         drivers.add(new ParameterDriver(MEAN_MOTION, tle.getMeanMotion(),
                                         FastMath.scalb(1.0, -32),
-                                        0, Double.POSITIVE_INFINITY));
+                                        0, Double.POSITIVE_INFINITY, TimeInterval.UNLIMITED));
         drivers.add(new ParameterDriver(ECCENTRICITY, tle.getE(),
                                         FastMath.scalb(1.0, -22),
-                                        0.0, 1.0));
+                                        0.0, 1.0, TimeInterval.UNLIMITED));
         drivers.add(new ParameterDriver(INCLINATION, tle.getI(),
                                         FastMath.scalb(1.0, -22),
-                                        0, FastMath.PI));
+                                        0, FastMath.PI, TimeInterval.UNLIMITED));
         drivers.add(new ParameterDriver(PERIAPSIS_ARGUMENT, tle.getPeriapsisArgument(),
                                         FastMath.scalb(1.0, -22),
-                                        Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY));
+                                        Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, TimeInterval.UNLIMITED));
         drivers.add(new ParameterDriver(RAAN, tle.getRaan(),
                                         FastMath.scalb(1.0, -22),
-                                        Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY));
+                                        Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, TimeInterval.UNLIMITED));
         drivers.add(new ParameterDriver(MEAN_ANOM, tle.getMeanAnomaly(),
                                         FastMath.scalb(1.0, -22),
-                                        Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY));
+                                        Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, TimeInterval.UNLIMITED));
         return drivers;
     }
 
@@ -340,7 +341,8 @@ public abstract class TleGenerationAlgorithm extends AbstractOrbitalStateFactory
         final ParameterDriversList newDrivers = new ParameterDriversList();
         final ParameterDriver driver = nonKeplerianDrivers.getDrivers().getFirst();
         newDrivers.add(new ParameterDriver(driver.getName(), driver.getValue(), driver.getScale(),
-                                           driver.getMinValue(), driver.getMaxValue()));
+                                           driver.getMinValue(), driver.getMaxValue(),
+                                           driver.getValidity()));
         clone.nonKeplerianDrivers = newDrivers;
 
         return clone;

@@ -22,8 +22,8 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterDriversList;
+import org.orekit.utils.drivers.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriversList;
 
 /** Factory for orbital parameters.
  * @param <P> type of the orbital parameters
@@ -191,7 +191,8 @@ public abstract class AbstractOrbitalStateFactory<P extends OrbitalState>
             for (final ParameterDriver oldDriver : oldDrivers.getDrivers()) {
                 final ParameterDriver newDriver =
                     new ParameterDriver(oldDriver.getName(), oldDriver.getValue(), oldDriver.getScale(),
-                                        oldDriver.getMinValue(), oldDriver.getMaxValue());
+                                        oldDriver.getMinValue(), oldDriver.getMaxValue(),
+                                        oldDriver.getValidity());
                 newDriver.setSelected(oldDriver.isSelected());
                 newDrivers.add(newDriver);
             }

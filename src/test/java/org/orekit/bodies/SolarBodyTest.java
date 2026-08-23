@@ -20,7 +20,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
@@ -56,17 +55,18 @@ import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeInterval;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriver;
 
 public class SolarBodyTest {
 
     @Test
-    void testNaif() throws UnsupportedEncodingException, IOException {
+    void testNaif() throws IOException {
         Utils.setDataRoot("regular-data");
         final Frame refFrame = FramesFactory.getICRF();
         final TimeScale tdb = TimeScalesFactory.getTDB();
@@ -333,7 +333,7 @@ public class SolarBodyTest {
         Utils.setDataRoot("regular-data");
         final Frame moon  = CelestialBodyFactory.getMoon().getBodyOrientedFrame();
         final Frame earth = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
-        final AbsoluteDate date0 = new AbsoluteDate(1969, 06, 25, TimeScalesFactory.getTDB());
+        final AbsoluteDate date0 = new AbsoluteDate(1969, 6, 25, TimeScalesFactory.getTDB());
 
         for (double t = 0; t < Constants.JULIAN_DAY; t += 3600) {
             final AbsoluteDate date = date0.shiftedBy(t);
@@ -426,8 +426,8 @@ public class SolarBodyTest {
          */
         public BodyAttraction(final CelestialBody body) {
             parameterDriver = new ParameterDriver(body.getName() + ATTRACTION_COEFFICIENT_SUFFIX,
-                                                    body.getGM(), 1.0e-5 * body.getGM(),
-                                                    0.0, Double.POSITIVE_INFINITY);
+                                                  body.getGM(), 1.0e-5 * body.getGM(),
+                                                  0.0, Double.POSITIVE_INFINITY, TimeInterval.UNLIMITED);
             this.body = body;
         }
 
@@ -495,7 +495,7 @@ public class SolarBodyTest {
     @Test
     void testKepler() {
         Utils.setDataRoot("regular-data");
-        AbsoluteDate date = new AbsoluteDate(1969, 06, 28, TimeScalesFactory.getTT());
+        AbsoluteDate date = new AbsoluteDate(1969, 6, 28, TimeScalesFactory.getTT());
         final double au = 149597870691.0;
         checkKepler(CelestialBodyFactory.getMoon(),    CelestialBodyFactory.getEarth(), date, 3.844e8, 0.012);
         checkKepler(CelestialBodyFactory.getMercury(), CelestialBodyFactory.getSun(),   date,  0.387 * au, 4.0e-9);

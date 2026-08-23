@@ -34,7 +34,7 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.drag.DragForce;
 import org.orekit.forces.drag.DragSensitive;
-import org.orekit.forces.drag.IsotropicDrag;
+import org.orekit.forces.drag.IsotropicDragBuilder;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
 import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
@@ -56,11 +56,8 @@ import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterDriversList;
-
-import java.io.IOException;
-import java.text.ParseException;
+import org.orekit.utils.drivers.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriversList;
 
 /** Unit tests for {@link IntegrableJacobianColumnGenerator}. */
 public class IntegrableJacobianColumnGeneratorTest {
@@ -72,12 +69,12 @@ public class IntegrableJacobianColumnGeneratorTest {
     }
 
     @Test
-    void testDragParametersDerivatives() throws ParseException, IOException {
+    void testDragParametersDerivatives() {
         doTestParametersDerivatives(DragSensitive.DRAG_COEFFICIENT, 2.4e-3, OrbitParamsType.values());
     }
 
     @Test
-    void testMuParametersDerivatives() throws ParseException, IOException {
+    void testMuParametersDerivatives() {
         // TODO: for an unknown reason, derivatives with respect to central attraction
         // coefficient currently (June 2016) do not work in non-Cartesian orbits
         // we don't even know if the test is badly written or if the library code is wrong ...
@@ -92,7 +89,7 @@ public class IntegrableJacobianColumnGeneratorTest {
                                                       Constants.WGS84_EARTH_FLATTENING,
                                                       FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         ForceModel drag = new DragForce(new HarrisPriester(CelestialBodyFactory.getSun(), earth),
-                                        new IsotropicDrag(2.5, 1.2));
+                                        new IsotropicDragBuilder(2.5).addDragCoeff(1.2).build());
 
         NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(5, 5);
         ForceModel gravityField =
@@ -114,7 +111,7 @@ public class IntegrableJacobianColumnGeneratorTest {
                 ParameterDriver selected = null;
                 for (final ForceModel forceModel : propagator.getAllForceModels()) {
                     for (final ParameterDriver driver : forceModel.getParametersDrivers()) {
-                        driver.setValue(driver.getReferenceValue(), initialOrbit.getDate());
+                        driver.setValue(driver.getReferenceValue());
                         if (driver.getName().equals(parameterName)) {
                             driver.setSelected(true);
                             selected = driver;
@@ -126,7 +123,7 @@ public class IntegrableJacobianColumnGeneratorTest {
 
                 SpacecraftState initialState = new SpacecraftState(initialOrbit);
                 propagator.setInitialState(initialState);
-                PickUpHandler pickUp = new PickUpHandler(propagator, null, null, selected.getNameSpan(new AbsoluteDate()));
+                PickUpHandler pickUp = new PickUpHandler(propagator, null, null, selected.getName());
                 propagator.setStepHandler(pickUp);
                 propagator.propagate(initialState.getDate().shiftedBy(dt));
                 RealMatrix dYdP = pickUp.getdYdP();
@@ -240,7 +237,7 @@ public class IntegrableJacobianColumnGeneratorTest {
         final AttitudeProvider law = new FrameAlignedProvider(new Rotation(new Vector3D(alpha, delta),
                                                                            Vector3D.PLUS_I));
 
-        final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2004, 01, 01),
+        final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2004, 1, 1),
                                                        new TimeComponents(23, 30, 00.000),
                                                        TimeScalesFactory.getUTC());
         final Orbit orbit =
@@ -249,8 +246,8 @@ public class IntegrableJacobianColumnGeneratorTest {
         SpacecraftState initialState =
             new SpacecraftState(orbit, law.getAttitude(orbit, orbit.getDate(), orbit.getFrame())).withMass(mass);
 
-        final AbsoluteDate fireDate = new AbsoluteDate(new DateComponents(2004, 01, 02),
-                                                       new TimeComponents(04, 15, 34.080),
+        final AbsoluteDate fireDate = new AbsoluteDate(new DateComponents(2004, 1, 2),
+                                                       new TimeComponents(4, 15, 34.080),
                                                        TimeScalesFactory.getUTC());
         final ConstantThrustManeuver maneuver =
             new ConstantThrustManeuver(fireDate, duration, f, isp, Vector3D.PLUS_I);

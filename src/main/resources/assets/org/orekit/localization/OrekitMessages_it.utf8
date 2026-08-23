@@ -295,12 +295,6 @@ UNEXPECTED_TWO_ELEVATION_VALUES_FOR_ONE_AZIMUTH=due valori di elevazione inattes
 # unsupported parameter name {0}, supported names: {1}
 UNSUPPORTED_PARAMETER_NAME=nome del parametro {0} sconosciuto, parametri conosciuti: {1}
 
-# {0} parameter contains several span in its value TimeSpanMap, the {1} method must be called
-PARAMETER_WITH_SEVERAL_ESTIMATED_VALUES=
-
-# setPeriod was already called once on {0} parameter, another parameter should be created if the periods have to be changed
-PARAMETER_PERIODS_HAS_ALREADY_BEEN_SET=
-
 # scale factor for parameter {0} is too small: {1}
 TOO_SMALL_SCALE_FOR_PARAMETER=il fattore di scala per il parametro {0} è troppo piccolo: {1}
 
@@ -762,8 +756,11 @@ NON_COPLANAR_POINTS=le osservazioni non sono sullo stesso piano
 # invalid parameter {0}: {1} not in range [{2}, {3}]
 INVALID_PARAMETER_RANGE=parametro {0} non valido: {1} non appartiene all'' intervallo [{2}, {3}]
 
-# The parameter {0} should not be null in {1}
-PARAMETER_NOT_SET=il parametro {0} dovrebbe essere non nullo in {1}
+# no reference values have been set
+NO_REFERENCE_VALUES_SET=
+
+# missing reference value from {0} to {1}
+MISSING_REFERENCE_VALUE=
 
 # {0} is not implemented
 FUNCTION_NOT_IMPLEMENTED={0} non implementato

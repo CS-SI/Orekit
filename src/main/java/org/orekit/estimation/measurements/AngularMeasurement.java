@@ -33,8 +33,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinatesProvider;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.TimeSpanMap;
+import org.orekit.utils.drivers.ParameterDriver;
 
 /** Abstract class for ground-based angular measurements, when the sensor receives the signal.
  *
@@ -146,13 +145,11 @@ public abstract class AngularMeasurement<T extends SignalBasedMeasurement<T>> ex
 
         // Set first order derivatives of azimuth/elevation with respect to state
         for (final ParameterDriver driver : getParametersDrivers()) {
-
-            for (TimeSpanMap.Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                final Integer index = paramIndices.get(span.getData());
-                if (index != null) {
-                    estimatedMeasurement.setParameterDerivatives(driver, span.getStart(), firstAngleDerivatives[index],
-                            secondAngleDerivatives[index]);
-                }
+            final Integer index = paramIndices.get(driver.getName());
+            if (index != null) {
+                estimatedMeasurement.setParameterDerivatives(driver,
+                                                             firstAngleDerivatives[index],
+                                                             secondAngleDerivatives[index]);
             }
         }
     }

@@ -44,10 +44,10 @@ import org.orekit.propagation.conversion.osc2mean.BrouwerLyddaneTheory;
 import org.orekit.propagation.conversion.osc2mean.FixedPointConverter;
 import org.orekit.propagation.conversion.osc2mean.MeanTheory;
 import org.orekit.propagation.conversion.osc2mean.OsculatingToMeanConverter;
-import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeInterval;
 import org.orekit.utils.FieldTimeSpanMap;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriver;
 
 /** This class propagates a {@link org.orekit.propagation.FieldSpacecraftState}
  *  using the analytical Brouwer-Lyddane model (from J2 to J5 zonal harmonics).
@@ -62,31 +62,29 @@ import org.orekit.utils.ParameterDriver;
  * atmospheric drag can be significant. Warren Phipps' 1992 thesis considered the atmospheric
  * drag by time derivatives of the <i>mean</i> mean anomaly using the catch-all coefficient
  * {@link #M2Driver}.
- *
+ * <p>
  * Usually, M2 is adjusted during an orbit determination process and it represents the
  * combination of all unmodeled secular along-track effects (i.e. not just the atmospheric drag).
  * The behavior of M2 is close to the {@link FieldTLE#getBStar()} parameter for the TLE.
- *
+ * </p>
+ * <p>
  * If the value of M2 is equal to {@link BrouwerLyddanePropagator#M2 0.0}, the along-track secular
  * effects are not considered in the dynamical model. Typical values for M2 are not known.
  * It depends on the orbit type. However, the value of M2 must be very small (e.g. between 1.0e-14 and 1.0e-15).
  * The unit of M2 is rad/s².
- *
+ * </p>
+ * <p>
  * The along-track effects, represented by the secular rates of the mean semi-major axis
  * and eccentricity, are computed following Eq. 2.38, 2.41, and 2.45 of Warren Phipps' thesis.
- *
+ * </p>
  * @see "Brouwer, Dirk. Solution of the problem of artificial satellite theory without drag.
  *       YALE UNIV NEW HAVEN CT NEW HAVEN United States, 1959."
- *
  * @see "Lyddane, R. H. Small eccentricities or inclinations in the Brouwer theory of the
  *       artificial satellite. The Astronomical Journal 68 (1963): 555."
- *
  * @see "Phipps Jr, Warren E. Parallelization of the Navy Space Surveillance Center
  *       (NAVSPASUR) Satellite Model. NAVAL POSTGRADUATE SCHOOL MONTEREY CA, 1992."
- *
  * @see "Solomon, Daniel, THE NAVSPASUR Satellite Motion Model,
  *       Naval Research Laboratory, August 8, 1991."
- *
  * @author Melina Vanel
  * @author Bryan Cazabonne
  * @author Pascal Parraud
@@ -582,8 +580,8 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
 
         // initialize M2 driver
         this.M2Driver = new ParameterDriver(BrouwerLyddanePropagator.M2_NAME, m2Value, SCALE,
-                                            Double.NEGATIVE_INFINITY,
-                                            Double.POSITIVE_INFINITY);
+                                            Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                            TimeInterval.UNLIMITED);
 
         // compute mean parameters if needed
         resetInitialState(new FieldSpacecraftState<>(initialOrbit,
@@ -878,15 +876,6 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      */
     public double getM2() {
         return M2Driver.getValue();
-    }
-
-    /**
-     * Get the value of the M2 drag parameter.
-     * @param date date at which the model parameters want to be known
-     * @return the value of the M2 drag parameter
-     */
-    public double getM2(final AbsoluteDate date) {
-        return M2Driver.getValue(date);
     }
 
     /** Local class for Brouwer-Lyddane model. */

@@ -47,8 +47,8 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.Differentiation;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterFunction;
+import org.orekit.utils.drivers.ParameterDriver;
+import org.orekit.utils.drivers.ParameterFunction;
 import org.orekit.utils.TimeStampedPVCoordinates;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -283,7 +283,7 @@ class TDOATest {
                 secondParameter.getZenithOffsetDriver(),
             };
             for (ParameterDriver driver : drivers) {
-                final double[] gradient = measurement.estimate(0, 0, new SpacecraftState[]{state}).getParameterDerivatives(driver, new AbsoluteDate());
+                final double[] gradient = measurement.estimate(0, 0, new SpacecraftState[]{state}).getParameterDerivatives(driver);
                 Assertions.assertEquals(1, measurement.getDimension());
                 Assertions.assertEquals(1, gradient.length);
 
@@ -372,7 +372,7 @@ class TDOATest {
                 secondParameter.getZenithOffsetDriver(),
             };
             for (ParameterDriver driver : drivers) {
-                final double[] gradient = measurement.estimate(0, 0, new SpacecraftState[]{state}).getParameterDerivatives(driver, new AbsoluteDate());
+                final double[] gradient = measurement.estimate(0, 0, new SpacecraftState[]{state}).getParameterDerivatives(driver);
                 Assertions.assertEquals(1, measurement.getDimension());
                 Assertions.assertEquals(1, gradient.length);
 

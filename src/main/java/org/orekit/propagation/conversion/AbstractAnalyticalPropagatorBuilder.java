@@ -29,8 +29,8 @@ import org.orekit.forces.maneuvers.ImpulseManeuver;
 import org.orekit.orbits.OrbitalState;
 import org.orekit.orbits.OrbitalStateFactory;
 import org.orekit.propagation.analytical.AbstractAnalyticalPropagator;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterDriversList;
+import org.orekit.utils.drivers.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriversList;
 
 /**
  * Abstract class for propagator builders of analytical models (except for ephemeris i.e. interpolated ones).
@@ -59,7 +59,7 @@ public abstract class AbstractAnalyticalPropagatorBuilder<T extends AbstractAnal
      * and then call {@link ParameterDriver#setSelected(boolean) setSelected(false)}.
      * </p>
      * @param factory factory for initial orbit
-     * @param addDriverForCentralAttraction if true, a {@link org.orekit.utils.ParameterDriver} should
+     * @param addDriverForCentralAttraction if true, a {@link ParameterDriver} should
      * be set up for central attraction coefficient
      * @param attitudeProvider for the propagator
      * @param initialMass mass

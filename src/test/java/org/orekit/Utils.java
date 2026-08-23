@@ -42,7 +42,7 @@ import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
-import org.orekit.utils.ParameterDriversList;
+import org.orekit.utils.drivers.ParameterDriversList;
 
 import java.io.File;
 import java.lang.reflect.Field;
@@ -237,13 +237,11 @@ public class Utils {
             final ParameterDriversList.DelegatingDriver currentExpectedDriver = expectedDriversList.get(i);
             final ParameterDriversList.DelegatingDriver currentActualDriver = actualDriversList.get(i);
 
-            Assertions.assertArrayEquals(currentExpectedDriver.getValues(), currentActualDriver.getValues());
             Assertions.assertEquals(currentExpectedDriver.getValue(), currentActualDriver.getValue());
             Assertions.assertEquals(currentExpectedDriver.getNormalizedValue(), currentActualDriver.getNormalizedValue());
             Assertions.assertEquals(currentExpectedDriver.getMaxValue(), currentActualDriver.getMaxValue());
             Assertions.assertEquals(currentExpectedDriver.getMinValue(), currentActualDriver.getMinValue());
             Assertions.assertEquals(currentExpectedDriver.getName(), currentActualDriver.getName());
-            Assertions.assertEquals(currentExpectedDriver.getNbOfValues(), currentActualDriver.getNbOfValues());
             Assertions.assertEquals(currentExpectedDriver.getReferenceValue(), currentActualDriver.getReferenceValue());
 
         }

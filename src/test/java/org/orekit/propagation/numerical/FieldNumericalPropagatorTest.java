@@ -61,7 +61,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.ForceModelModifier;
 import org.orekit.forces.drag.DragForce;
-import org.orekit.forces.drag.IsotropicDrag;
+import org.orekit.forces.drag.IsotropicDragBuilder;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
 import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.forces.gravity.ThirdBodyAttraction;
@@ -99,6 +99,7 @@ import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.time.UTCScale;
 import org.orekit.utils.*;
+import org.orekit.utils.drivers.ParameterDriver;
 
 class FieldNumericalPropagatorTest {
 
@@ -2094,7 +2095,8 @@ class FieldNumericalPropagatorTest {
                         new MarshallSolarActivityFutureEstimation("Jan2000F10-edited-data\\.txt",
                                                                   MarshallSolarActivityFutureEstimation.StrengthLevel.AVERAGE);
         DTM2000 atmosphere = new DTM2000(msafe, CelestialBodyFactory.getSun(), earth);
-        np.addForceModel(new DragForce(atmosphere, new IsotropicDrag(spacecraftArea, spacecraftDragCoefficient)));
+        np.addForceModel(new DragForce(atmosphere,
+                                       new IsotropicDragBuilder(spacecraftArea).addDragCoeff(spacecraftDragCoefficient).build()));
 
         // solar radiation pressure
         np.addForceModel(new SolarRadiationPressure(CelestialBodyFactory.getSun(), earth,

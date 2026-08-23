@@ -17,7 +17,6 @@
 
 package org.orekit.propagation.analytical;
 
-import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 import org.hipparchus.CalculusFieldElement;
@@ -45,7 +44,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.drag.DragForce;
-import org.orekit.forces.drag.IsotropicDrag;
+import org.orekit.forces.drag.IsotropicDragBuilder;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
@@ -241,30 +240,32 @@ public class FieldBrouwerLyddanePropagatorTest {
         FieldOrbit<T> finalOrbitAna = extrapolatorAna.propagate(extrapDate).getOrbit();
         FieldOrbit<T> finalOrbitKep = extrapolatorKep.propagate(extrapDate).getOrbit();
 
-        Assertions.assertEquals(finalOrbitAna.getDate().durationFrom(extrapDate).getReal(), 0.0,
-                     Utils.epsilonTest);
+        Assertions.assertEquals(0.0, finalOrbitAna.getDate().durationFrom(extrapDate).getReal(), Utils.epsilonTest);
         // comparison of each orbital parameters
-        Assertions.assertEquals(finalOrbitAna.getA().getReal(), finalOrbitKep.getA().getReal(), 10
-                     * Utils.epsilonTest * finalOrbitKep.getA().getReal());
-        Assertions.assertEquals(finalOrbitAna.getEquinoctialEx().getReal(), finalOrbitKep.getEquinoctialEx().getReal(), Utils.epsilonE
-                     * finalOrbitKep.getE().getReal());
-        Assertions.assertEquals(finalOrbitAna.getEquinoctialEy().getReal(), finalOrbitKep.getEquinoctialEy().getReal(), Utils.epsilonE
-                     * finalOrbitKep.getE().getReal());
+        Assertions.assertEquals(finalOrbitAna.getA().getReal(),
+                                finalOrbitKep.getA().getReal(),
+                                10 * Utils.epsilonTest * finalOrbitKep.getA().getReal());
+        Assertions.assertEquals(finalOrbitAna.getEquinoctialEx().getReal(),
+                                finalOrbitKep.getEquinoctialEx().getReal(),
+                                Utils.epsilonE * finalOrbitKep.getE().getReal());
+        Assertions.assertEquals(finalOrbitAna.getEquinoctialEy().getReal(),
+                                finalOrbitKep.getEquinoctialEy().getReal(),
+                                Utils.epsilonE * finalOrbitKep.getE().getReal());
         Assertions.assertEquals(MathUtils.normalizeAngle(finalOrbitAna.getHx().getReal(), finalOrbitKep.getHx().getReal()),
-                     finalOrbitKep.getHx().getReal(), Utils.epsilonAngle
-                     * FastMath.abs(finalOrbitKep.getI().getReal()));
+                                finalOrbitKep.getHx().getReal(),
+                                Utils.epsilonAngle * FastMath.abs(finalOrbitKep.getI().getReal()));
         Assertions.assertEquals(MathUtils.normalizeAngle(finalOrbitAna.getHy().getReal(), finalOrbitKep.getHy().getReal()),
-                     finalOrbitKep.getHy().getReal(), Utils.epsilonAngle
-                     * FastMath.abs(finalOrbitKep.getI().getReal()));
+                                finalOrbitKep.getHy().getReal(),
+                                Utils.epsilonAngle * FastMath.abs(finalOrbitKep.getI().getReal()));
         Assertions.assertEquals(MathUtils.normalizeAngle(finalOrbitAna.getLv().getReal(), finalOrbitKep.getLv().getReal()),
-                     finalOrbitKep.getLv().getReal(), Utils.epsilonAngle
-                     * FastMath.abs(finalOrbitKep.getLv().getReal()));
+                                finalOrbitKep.getLv().getReal(),
+                                Utils.epsilonAngle * FastMath.abs(finalOrbitKep.getLv().getReal()));
         Assertions.assertEquals(MathUtils.normalizeAngle(finalOrbitAna.getLE().getReal(), finalOrbitKep.getLE().getReal()),
-                     finalOrbitKep.getLE().getReal(), Utils.epsilonAngle
-                     * FastMath.abs(finalOrbitKep.getLE().getReal()));
+                                finalOrbitKep.getLE().getReal(),
+                                Utils.epsilonAngle * FastMath.abs(finalOrbitKep.getLE().getReal()));
         Assertions.assertEquals(MathUtils.normalizeAngle(finalOrbitAna.getLM().getReal(), finalOrbitKep.getLM().getReal()),
-                     finalOrbitKep.getLM().getReal(), Utils.epsilonAngle
-                     * FastMath.abs(finalOrbitKep.getLM().getReal()));
+                                finalOrbitKep.getLM().getReal(),
+                                Utils.epsilonAngle * FastMath.abs(finalOrbitKep.getLM().getReal()));
 
     }
 
@@ -355,7 +356,7 @@ public class FieldBrouwerLyddanePropagatorTest {
         T zero = field.getZero();
         final Frame inertialFrame = FramesFactory.getEME2000();
         final TimeScale utc = TimeScalesFactory.getUTC();
-        final AbsoluteDate date = new AbsoluteDate(2003, 1, 1, 00, 00, 00.000, utc);
+        final AbsoluteDate date = new AbsoluteDate(2003, 1, 1, 0, 0, 00.000, utc);
         final FieldAbsoluteDate<T> initDate = new FieldAbsoluteDate<>(date, zero);
         double timeshift = 60000. ;
 
@@ -401,7 +402,8 @@ public class FieldBrouwerLyddanePropagatorTest {
         // Force model
         final ForceModel holmesFeatherstone =
                 new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true), provider);
-        final ForceModel drag = new DragForce(atmosphere, new IsotropicDrag(1.0, 1.0));
+        final ForceModel drag = new DragForce(atmosphere,
+                                              new IsotropicDragBuilder(1.0).addDragCoeff(1.0).build());
         NumPropagator.addForceModel(holmesFeatherstone);
         NumPropagator.addForceModel(drag);
 
@@ -902,7 +904,7 @@ public class FieldBrouwerLyddanePropagatorTest {
     }
 
     @Test
-    public void testMeanOrbit() throws IOException {
+    public void testMeanOrbit() {
         doTestMeanOrbit(Binary64Field.getInstance());
     }
 

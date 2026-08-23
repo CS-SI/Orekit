@@ -49,9 +49,8 @@ import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.Differentiation;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterFunction;
-import org.orekit.utils.TimeSpanMap.Span;
+import org.orekit.utils.drivers.ParameterDriver;
+import org.orekit.utils.drivers.ParameterFunction;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class InterSatellitesPhaseTest {
@@ -505,32 +504,28 @@ public class InterSatellitesPhaseTest {
                     };
 
                     for (final ParameterDriver driver : drivers) {
-                        for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                            final double[] gradient  = measurement.estimate(0, 0, states).getParameterDerivatives(driver, span.getStart());
-                            Assertions.assertEquals(1, measurement.getDimension());
-                            Assertions.assertEquals(1, gradient.length);
+                        final double[] gradient  = measurement.estimate(0, 0, states).getParameterDerivatives(driver);
+                        Assertions.assertEquals(1, measurement.getDimension());
+                        Assertions.assertEquals(1, gradient.length);
 
-                            // Compute a reference value using finite differences
-                            final ParameterFunction dMkdP =
-                                            Differentiation.differentiate(new ParameterFunction() {
-                                                /** {@inheritDoc} */
-                                                @Override
-                                                public double value(final ParameterDriver parameterDriver, final AbsoluteDate date) {
-                                                    return measurement.
-                                                           estimateWithoutDerivatives(states).
-                                                           getEstimatedValue()[0];
-                                                }
-                                            }, 3, 20.0 * driver.getScale());
-                            final double ref = dMkdP.value(driver, span.getStart());
+                        // Compute a reference value using finite differences
+                        final ParameterFunction dMkdP =
+                                        Differentiation.differentiate(new ParameterFunction() {
+                                            /** {@inheritDoc} */
+                                            @Override
+                                            public double value(final ParameterDriver parameterDriver, final AbsoluteDate date) {
+                                                return measurement.estimateWithoutDerivatives(states).getEstimatedValue()[0];
+                                            }
+                                        }, 3, 20.0 * driver.getScale());
+                        final double ref = dMkdP.value(driver, measurement.getDate());
 
-                            if (printResults) {
-                                System.out.format(Locale.US, "%10.3e  %10.3e  ", gradient[0]-ref, FastMath.abs((gradient[0]-ref)/ref));
-                            }
-
-                            final double relError = FastMath.abs((ref-gradient[0])/ref);
-                            relErrorList.add(relError);
-//                            Assert.assertEquals(ref, gradient[0], 6.1e-5 * FastMath.abs(ref));
+                        if (printResults) {
+                            System.out.format(Locale.US, "%10.3e  %10.3e  ", gradient[0]-ref, FastMath.abs((gradient[0]-ref)/ref));
                         }
+
+                        final double relError = FastMath.abs((ref-gradient[0])/ref);
+                        relErrorList.add(relError);
+//                        Assert.assertEquals(ref, gradient[0], 6.1e-5 * FastMath.abs(ref));
                     }
                     if (printResults) {
                         System.out.format(Locale.US, "%n");

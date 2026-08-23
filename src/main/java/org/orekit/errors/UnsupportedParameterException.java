@@ -19,8 +19,8 @@ package org.orekit.errors;
 import java.io.Serial;
 import java.util.List;
 
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterDriversProvider;
+import org.orekit.utils.drivers.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriversProvider;
 
 /** Exception for unsupported {@link ParameterDriver} in a model implementing {@link ParameterDriversProvider}.
  *

@@ -64,8 +64,8 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterDriversList;
+import org.orekit.utils.drivers.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriversList;
 
 public class FieldDSSTTesseralTest {
 
@@ -83,7 +83,7 @@ public class FieldDSSTTesseralTest {
 
         final Frame frame = FramesFactory.getEME2000();
         final Frame earthFrame = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
-        final FieldAbsoluteDate<T> initDate = new FieldAbsoluteDate<>(field, 2007, 04, 16, 0, 46, 42.400, TimeScalesFactory.getUTC());
+        final FieldAbsoluteDate<T> initDate = new FieldAbsoluteDate<>(field, 2007, 4, 16, 0, 46, 42.400, TimeScalesFactory.getUTC());
 
         // a  = 26559890 m
         // ey = 0.0041543085910249414
@@ -112,7 +112,7 @@ public class FieldDSSTTesseralTest {
         final FieldAuxiliaryElements<T> auxiliaryElements = new FieldAuxiliaryElements<>(state.getOrbit(), 1);
 
         // Force model parameters
-        final T[] parameters = tesseral.getParameters(field, state.getDate());
+        final T[] parameters = tesseral.getParameters(field);
         // Initialize force model
         tesseral.initializeShortPeriodTerms(auxiliaryElements,
                             PropagationType.MEAN, parameters);
@@ -121,9 +121,7 @@ public class FieldDSSTTesseralTest {
         Arrays.fill(elements, zero);
 
         final T[] daidt = tesseral.getMeanElementRate(state, auxiliaryElements, parameters);
-        for (int i = 0; i < daidt.length; i++) {
-            elements[i] = daidt[i];
-        }
+        System.arraycopy(daidt, 0, elements, 0, daidt.length);
 
         Assertions.assertEquals(7.12557687065243E-05 , elements[0].getReal(), 6.0e-19);
         Assertions.assertEquals(-1.11351345747909E-11, elements[1].getReal(), 2.0e-26);
@@ -172,11 +170,10 @@ public class FieldDSSTTesseralTest {
         //Create the auxiliary object
         final FieldAuxiliaryElements<T> aux = new FieldAuxiliaryElements<>(orbit, 1);
 
-        final List<FieldShortPeriodTerms<T>> shortPeriodTerms = new ArrayList<>();
-
         force.registerAttitudeProvider(null);
-        shortPeriodTerms.addAll(force.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, force.getParameters(field, orbit.getDate())));
-        force.updateShortPeriodTerms(force.getParametersAllValues(field), meanState);
+        final List<FieldShortPeriodTerms<T>> shortPeriodTerms =
+            new ArrayList<>(force.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, force.getParameters(field)));
+        force.updateShortPeriodTerms(force.getParameters(field), meanState);
         
         T[] y = MathArrays.buildArray(field, 6);
         Arrays.fill(y, zero);
@@ -209,7 +206,7 @@ public class FieldDSSTTesseralTest {
 
         final Frame frame = FramesFactory.getEME2000();
         final Frame earthFrame = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
-        final FieldAbsoluteDate<T> initDate = new FieldAbsoluteDate<>(field, 2007, 04, 16, 0, 46, 42.400, TimeScalesFactory.getUTC());
+        final FieldAbsoluteDate<T> initDate = new FieldAbsoluteDate<>(field, 2007, 4, 16, 0, 46, 42.400, TimeScalesFactory.getUTC());
 
         // a  = 26559890 m
         // ey = 0.0041543085910249414
@@ -236,18 +233,18 @@ public class FieldDSSTTesseralTest {
         final DSSTForceModel tesseral = new DSSTTesseral(earthFrame,
                                                          Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider,
                                                          4, 4, 4, 8, 4, 4, 2);
-        tesseral.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, tesseral.getParameters(field, state.getDate()));
+        tesseral.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, tesseral.getParameters(field));
 
         // Tesseral force model with default constructor
         final DSSTForceModel tesseralDefault = new DSSTTesseral(earthFrame,
                                                              Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider);
-        tesseralDefault.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, tesseralDefault.getParameters(field, state.getDate()));
+        tesseralDefault.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, tesseralDefault.getParameters(field));
 
         // Compute mean element rate for the tesseral force model
-        final T[] elements = tesseral.getMeanElementRate(state, auxiliaryElements, tesseral.getParameters(field, state.getDate()));
+        final T[] elements = tesseral.getMeanElementRate(state, auxiliaryElements, tesseral.getParameters(field));
 
         // Compute mean element rate for the "default" tesseral force model
-        final T[] elementsDefault = tesseralDefault.getMeanElementRate(state, auxiliaryElements, tesseralDefault.getParameters(field, state.getDate()));
+        final T[] elementsDefault = tesseralDefault.getMeanElementRate(state, auxiliaryElements, tesseralDefault.getParameters(field));
 
         // Verify
         for (int i = 0; i < 6; i++) {
@@ -270,7 +267,7 @@ public class FieldDSSTTesseralTest {
         // Frames and epoch
         final Frame frame = FramesFactory.getEME2000();
         final Frame earthFrame = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
-        final FieldAbsoluteDate<T> initDate = new FieldAbsoluteDate<>(field, 2007, 04, 16, 0, 46, 42.400, TimeScalesFactory.getUTC());
+        final FieldAbsoluteDate<T> initDate = new FieldAbsoluteDate<>(field, 2007, 4, 16, 0, 46, 42.400, TimeScalesFactory.getUTC());
 
         // Orbit
         final T zero = field.getZero();
@@ -281,7 +278,7 @@ public class FieldDSSTTesseralTest {
 
         // Force model
         final DSSTForceModel tesseral = new DSSTTesseral(earthFrame, Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider);
-        final T[] parameters = tesseral.getParameters(field, orbit.getDate());
+        final T[] parameters = tesseral.getParameters(field);
 
         // Initialize force model
         tesseral.initializeShortPeriodTerms(new FieldAuxiliaryElements<>(orbit, 1), PropagationType.MEAN, parameters);
@@ -308,7 +305,7 @@ public class FieldDSSTTesseralTest {
     public void testShortPeriodTermsStateDerivatives() {
 
         // Initial spacecraft state
-        final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2003, 05, 21), new TimeComponents(1, 0, 0.),
+        final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2003, 5, 21), new TimeComponents(1, 0, 0.),
                                                        TimeScalesFactory.getUTC());
 
         final Orbit orbit = new EquinoctialOrbit(42164000,
@@ -346,9 +343,9 @@ public class FieldDSSTTesseralTest {
         final Gradient zero = dsState.getDate().getField().getZero();
 
         // Compute state Jacobian using directly the method
-        final List<FieldShortPeriodTerms<Gradient>> shortPeriodTerms = new ArrayList<>();
-        shortPeriodTerms.addAll(tesseral.initializeShortPeriodTerms(fieldAuxiliaryElements, PropagationType.OSCULATING,
-                                converter.getParametersAtStateDate(dsState, tesseral)));
+        final List<FieldShortPeriodTerms<Gradient>> shortPeriodTerms =
+            new ArrayList<>(tesseral.initializeShortPeriodTerms(fieldAuxiliaryElements, PropagationType.OSCULATING,
+                                                                converter.getParametersAtStateDate(dsState, tesseral)));
         tesseral.updateShortPeriodTerms(converter.getParameters(dsState, tesseral), dsState);
         final Gradient[] shortPeriod = new Gradient[6];
         Arrays.fill(shortPeriod, zero);
@@ -426,7 +423,7 @@ public class FieldDSSTTesseralTest {
     public void testShortPeriodTermsMuParametersDerivatives() {
 
         // Initial spacecraft state
-        final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2003, 05, 21), new TimeComponents(1, 0, 0.),
+        final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2003, 5, 21), new TimeComponents(1, 0, 0.),
                                                        TimeScalesFactory.getUTC());
 
         final Orbit orbit = new EquinoctialOrbit(42164000,
@@ -469,9 +466,9 @@ public class FieldDSSTTesseralTest {
         final Gradient zero = dsState.getDate().getField().getZero();
 
         // Compute Jacobian using directly the method
-        final List<FieldShortPeriodTerms<Gradient>> shortPeriodTerms = new ArrayList<>();
-        shortPeriodTerms.addAll(tesseral.initializeShortPeriodTerms(fieldAuxiliaryElements, PropagationType.OSCULATING,
-                                converter.getParametersAtStateDate(dsState, tesseral)));
+        final List<FieldShortPeriodTerms<Gradient>> shortPeriodTerms =
+            new ArrayList<>(tesseral.initializeShortPeriodTerms(fieldAuxiliaryElements, PropagationType.OSCULATING,
+                                                                converter.getParametersAtStateDate(dsState, tesseral)));
         tesseral.updateShortPeriodTerms(converter.getParameters(dsState, tesseral), dsState);
         final Gradient[] shortPeriod = new Gradient[6];
         Arrays.fill(shortPeriod, zero);
@@ -561,9 +558,10 @@ public class FieldDSSTTesseralTest {
 
         AuxiliaryElements auxiliaryElements = new AuxiliaryElements(state.getOrbit(), 1);
 
-        List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<>();
-        shortPeriodTerms.addAll(force.initializeShortPeriodTerms(auxiliaryElements, PropagationType.OSCULATING, force.getParameters(state.getDate())));
-        force.updateShortPeriodTerms(force.getParametersAllValues(), state);
+        List<ShortPeriodTerms> shortPeriodTerms =
+            new ArrayList<>(force.initializeShortPeriodTerms(auxiliaryElements, PropagationType.OSCULATING,
+                                                             force.getParameters()));
+        force.updateShortPeriodTerms(force.getParameters(), state);
         
         double[] shortPeriod = new double[6];
         for (ShortPeriodTerms spt : shortPeriodTerms) {

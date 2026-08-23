@@ -39,7 +39,7 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldLegendrePolynomials;
 import org.orekit.utils.LegendrePolynomials;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriver;
 
 /**
  * Ionospheric model based on SSR IM201 message.

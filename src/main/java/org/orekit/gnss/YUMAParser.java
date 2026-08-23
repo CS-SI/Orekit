@@ -42,7 +42,7 @@ import org.orekit.propagation.analytical.gnss.data.GPSAlmanacFactory;
 import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
 import org.orekit.utils.IERSConventions;
-import org.orekit.utils.ParameterDriversList;
+import org.orekit.utils.drivers.ParameterDriversList;
 
 /**
  * This class reads Yuma almanac files and provides {@link GPSAlmanac GPS almanacs}.

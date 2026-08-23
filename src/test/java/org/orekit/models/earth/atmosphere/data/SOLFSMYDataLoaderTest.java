@@ -31,6 +31,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.drag.DragForce;
 import org.orekit.forces.drag.IsotropicDrag;
+import org.orekit.forces.drag.IsotropicDragBuilder;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.models.earth.atmosphere.Atmosphere;
@@ -245,7 +246,7 @@ public class SOLFSMYDataLoaderTest {
         NumericalPropagator propagator = new NumericalPropagator(integrator);
         JB2008InputParameters JBData = loadJB();
         final Atmosphere atmosphere = new JB2008(JBData, sun, earth);
-        final IsotropicDrag satellite = new IsotropicDrag(1, 3.2);
+        final IsotropicDrag satellite = new IsotropicDragBuilder(1).addDragCoeff(3.2).build();
         propagator.addForceModel(new DragForce(atmosphere, satellite));
 
         propagator.setInitialState(ic);

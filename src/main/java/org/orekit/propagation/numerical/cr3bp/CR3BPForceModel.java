@@ -31,7 +31,8 @@ import org.orekit.bodies.CR3BPSystem;
 import org.orekit.forces.ForceModel;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.time.TimeInterval;
+import org.orekit.utils.drivers.ParameterDriver;
 
 /** Class calculating the acceleration induced by CR3BP model.
  * @see "Dynamical systems, the three-body problem, and space mission design, Koon, Lo, Marsden, Ross"
@@ -60,8 +61,9 @@ public class CR3BPForceModel implements ForceModel {
      */
     public CR3BPForceModel(final CR3BPSystem cr3bp) {
         muParameterDriver = new ParameterDriver(cr3bp.getName() + MASS_RATIO_SUFFIX,
-                                                cr3bp.getMassRatio(), MU_SCALE, 0.0,
-                                                Double.POSITIVE_INFINITY);
+                                                cr3bp.getMassRatio(), MU_SCALE,
+                                                0.0, Double.POSITIVE_INFINITY,
+                                                TimeInterval.UNLIMITED);
     }
 
     /** {@inheritDoc} */
@@ -141,9 +143,7 @@ public class CR3BPForceModel implements ForceModel {
         final DerivativeStructure zero = fpx.getField().getZero();
 
         // Get CR3BP System mass ratio
-        // By construction, mudriver has 1 value for the all time period that is why
-        // the getValue can be called with any date argument or null argument
-        final DerivativeStructure mu = zero.newInstance(muParameterDriver.getValue(s.getDate()));
+        final DerivativeStructure mu = zero.newInstance(muParameterDriver.getValue());
 
         // Normalized distances between primaries and barycenter in CR3BP
         final DerivativeStructure d1 = mu;
@@ -184,9 +184,7 @@ public class CR3BPForceModel implements ForceModel {
         final FieldDerivativeStructure<T> zero = fpx.getField().getZero();
 
         // Get CR3BP System mass ratio
-        // By construction, mudriver has 1 value for the all time period that is why
-        // the getValue can be called with any date argument or null argument
-        final FieldDerivativeStructure<T> mu = zero.newInstance(muParameterDriver.getValue(s.getDate().toAbsoluteDate()));
+        final FieldDerivativeStructure<T> mu = zero.newInstance(muParameterDriver.getValue());
 
         // Normalized distances between primaries and barycenter in CR3BP
         final FieldDerivativeStructure<T> d1 = mu;

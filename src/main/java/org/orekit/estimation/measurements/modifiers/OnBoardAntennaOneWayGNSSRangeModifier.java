@@ -25,7 +25,7 @@ import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.gnss.OneWayGNSSRange;
 import org.orekit.gnss.antenna.FrequencyPattern;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriver;
 
 /** On-board antenna offset effect on one-way GNSS range measurements.
  * @author Bryan Cazabonne

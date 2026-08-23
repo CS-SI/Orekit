@@ -16,7 +16,7 @@
  */
 package org.orekit.estimation.measurements;
 
-import org.orekit.utils.ParameterDriversProvider;
+import org.orekit.utils.drivers.ParameterDriversProvider;
 
 
 /** Interface for estimated measurements modifiers used for orbit determination.

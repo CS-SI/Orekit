@@ -286,7 +286,7 @@ public class TriggerDate implements ManeuverTriggersResetter, AdditionalDataProv
         }
 
         // get the acceleration near trigger time
-        final double[] parameters = maneuver.getParameters(state.getDate());
+        final double[] parameters = maneuver.getParameters();
         final SpacecraftState stateWhenFiring = state.shiftedBy((manageStart ? 2 : -2) * threshold);
         final Vector3D        acceleration    = maneuver.acceleration(stateWhenFiring, parameters);
 

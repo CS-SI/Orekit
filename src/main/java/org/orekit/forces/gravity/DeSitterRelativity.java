@@ -29,11 +29,12 @@ import org.orekit.data.DataContext;
 import org.orekit.forces.ForceModel;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.time.TimeInterval;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ExtendedPositionProvider;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriver;
 
 /**
  * De Sitter post-Newtonian correction force due to general relativity.
@@ -86,7 +87,7 @@ public class DeSitterRelativity implements ForceModel {
     public DeSitterRelativity(final CelestialBody earth, final CelestialBody sun) {
         gmParameterDriver = new ParameterDriver(sun.getName() + ATTRACTION_COEFFICIENT_SUFFIX,
                                                 sun.getGM(), MU_SCALE,
-                                                0.0, Double.POSITIVE_INFINITY);
+                                                0.0, Double.POSITIVE_INFINITY, TimeInterval.UNLIMITED);
         this.earth = earth;
         this.sun   = sun;
     }

@@ -28,15 +28,17 @@ import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeInterval;
 import org.orekit.time.clocks.ClockModel;
 import org.orekit.time.clocks.PolynomialClockModel;
 import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.FieldAbsolutePVCoordinates;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinatesProvider;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriver;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
+import org.orekit.utils.drivers.ParameterDriversProvider;
 
 /** Abstract class underlying both observed and observing measurement
  * objects.  Contains the ClockModel and the ability to store a
@@ -84,9 +86,8 @@ public abstract class AbstractParticipant implements MeasurementParticipant {
         this.name = name;
         this.clockModel = clock;
 
-        for (ParameterDriver parameter: clock.getParametersDrivers()) {
-            parameterDrivers.add(parameter);
-        }
+        parameterDrivers.addAll(clock.getParametersDrivers());
+
     }
 
     /** Get the MeasurementObject name.
@@ -103,14 +104,17 @@ public abstract class AbstractParticipant implements MeasurementParticipant {
      */
     protected static PolynomialClockModel createEmptyPolynomialClock(final String name) {
         return new PolynomialClockModel(new ParameterDriver(name + CLOCK_STRING + BIAS_SUFFIX,
-                                                    0.0, CLOCK_OFFSET_SCALE,
-                                                    Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY),
+                                                            0.0, CLOCK_OFFSET_SCALE,
+                                                            Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                                            TimeInterval.UNLIMITED),
                                            new ParameterDriver(name + CLOCK_STRING + DRIFT_SUFFIX,
-                                                    0.0, CLOCK_OFFSET_SCALE,
-                                                    Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY),
+                                                               0.0, CLOCK_OFFSET_SCALE,
+                                                               Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                                               TimeInterval.UNLIMITED),
                                            new ParameterDriver(name + CLOCK_STRING + ACCELERATION_SUFFIX,
-                                                    0.0, CLOCK_OFFSET_SCALE,
-                                                    Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY));
+                                                               0.0, CLOCK_OFFSET_SCALE,
+                                                               Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                                               TimeInterval.UNLIMITED));
     }
 
     /** Get the clock model valid at some date.
@@ -125,7 +129,7 @@ public abstract class AbstractParticipant implements MeasurementParticipant {
      * @return model parameters, will throw an
      * exception if one PDriver has several values driven. If
      * it's the case (if at least 1 PDriver of the model has several values
-     * driven) the method {@link org.orekit.utils.ParameterDriversProvider#getParameters(AbsoluteDate)} must be used.
+     * driven) the method {@link ParameterDriversProvider#getParameters(AbsoluteDate)} must be used.
      */
     @Override
     public List<ParameterDriver> getParametersDrivers() {

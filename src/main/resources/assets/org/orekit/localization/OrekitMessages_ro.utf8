@@ -295,12 +295,6 @@ UNEXPECTED_TWO_ELEVATION_VALUES_FOR_ONE_AZIMUTH=date neașteptate, două valori 
 # unsupported parameter name {0}, supported names: {1}
 UNSUPPORTED_PARAMETER_NAME=parametrul {0} necunoscut, parametrii cunoscuți: {1}
 
-# {0} parameter contains several span in its value TimeSpanMap, the {1} method must be called
-PARAMETER_WITH_SEVERAL_ESTIMATED_VALUES=parametrul {0} conține mai multe intervale în valoarea sa TimeSpanMap, trebuie apelată metoda {1}
-
-# setPeriod was already called once on {0} parameter, another parameter should be created if the periods have to be changed
-PARAMETER_PERIODS_HAS_ALREADY_BEEN_SET=metoda setPeriod a fost deja apelată o dată pentru parametrul {0}, alt parametru trebuie creat dacă intervalele trebuie modificate
-
 # scale factor for parameter {0} is too small: {1}
 TOO_SMALL_SCALE_FOR_PARAMETER=factorul de scalare pentru parametrul {0} este prea mic: {1}
 
@@ -762,8 +756,11 @@ NON_COPLANAR_POINTS=observațiile nu sunt în același plan
 # invalid parameter {0}: {1} not in range [{2}, {3}]
 INVALID_PARAMETER_RANGE=parametrul {0} este nevalid: {1} nu este în intervalul [{2}, {3}]
 
-# The parameter {0} should not be null in {1}
-PARAMETER_NOT_SET=Parametrul {0} nu ar trebui să fie nul în {1}
+# no reference values have been set
+NO_REFERENCE_VALUES_SET=
+
+# missing reference value from {0} to {1}
+MISSING_REFERENCE_VALUE=
 
 # {0} is not implemented
 FUNCTION_NOT_IMPLEMENTED={0} nu este implementată

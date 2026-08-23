@@ -18,7 +18,6 @@ package org.orekit.propagation.semianalytical.dsst.forces;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.util.MathArrays;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
@@ -31,9 +30,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterDriversProvider;
-import org.orekit.utils.TimeSpanMap.Span;
+import org.orekit.utils.drivers.ParameterDriversProvider;
 
 import java.util.List;
 import java.util.stream.Stream;
@@ -110,7 +107,7 @@ public interface DSSTForceModel extends ParameterDriversProvider, EventDetectors
      *  @param type type of the elements used during the propagation
      *  @param parameters values of the force model parameters for specific date
      *  (1 value only per parameter driver) obtained for example by calling
-     *  {@link #getParameters(AbsoluteDate)} on force model.
+     *  {@link #getParameters()} on force model.
      *  @return a list of objects that will hold short period terms (the objects
      *  are also retained by the force model, which will update them during propagation)
      */
@@ -126,7 +123,7 @@ public interface DSSTForceModel extends ParameterDriversProvider, EventDetectors
      *  @param type type of the elements used during the propagation
      *  @param parameters values of the force model parameters for specific date
      *  (1 value only per parameter driver) obtained for example by calling
-     *  {@link #getParameters(AbsoluteDate)} on force model or
+     *  {@link #getParameters()} on force model or
      *  {@link AbstractGradientConverter#getParametersAtStateDate(FieldSpacecraftState, ParameterDriversProvider)}
      *  on gradient converter.
      *  @return a list of objects that will hold short period terms (the objects
@@ -135,73 +132,12 @@ public interface DSSTForceModel extends ParameterDriversProvider, EventDetectors
     <T extends CalculusFieldElement<T>> List<FieldShortPeriodTerms<T>> initializeShortPeriodTerms(FieldAuxiliaryElements<T> auxiliaryElements,
                                                                                                   PropagationType type, T[] parameters);
 
-    /** Extract the proper parameter drivers' values from the array in input of the
-     * {@link #updateShortPeriodTerms(double[], SpacecraftState...) updateShortPeriodTerms} method.
-     *  Parameters are filtered given an input date.
-     * @param parameters the input parameters array containing all span values of all drivers
-     * from which the parameter values at date date wants to be extracted
-     * @param date the date
-     * @return the parameters given the date
-     */
-    default double[] extractParameters(final double[] parameters, final AbsoluteDate date) {
-
-        // Find out the indexes of the parameters in the whole array of parameters
-        final List<ParameterDriver> allParameters = getParametersDrivers();
-        final double[] outParameters = new double[allParameters.size()];
-        int index = 0;
-        int paramIndex = 0;
-        for (final ParameterDriver driver : allParameters) {
-            final String driverNameforDate = driver.getNameSpan(date);
-            // Loop on the spans
-            for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                // Add all the parameter drivers of the span
-                if (span.getData().equals(driverNameforDate)) {
-                    outParameters[index++] = parameters[paramIndex];
-                }
-                paramIndex++;
-            }
-        }
-        return outParameters;
-    }
-
-    /** Extract the proper parameter drivers' values from the array in input of the
-     * {@link #updateShortPeriodTerms(CalculusFieldElement[], FieldSpacecraftState...)
-     * updateShortPeriodTerms} method. Parameters are filtered given an input date.
-     * @param parameters the input parameters array containing all span values of all drivers
-     * from which the parameter values at date date wants to be extracted
-     * @param date the date
-     * @param <T> extends CalculusFieldElement
-     * @return the parameters given the date
-     */
-    default <T extends CalculusFieldElement<T>> T[] extractParameters(final T[] parameters,
-                                                                      final FieldAbsoluteDate<T> date) {
-
-        // Find out the indexes of the parameters in the whole array of parameters
-        final List<ParameterDriver> allParameters = getParametersDrivers();
-        final T[] outParameters = MathArrays.buildArray(date.getField(), allParameters.size());
-        int index = 0;
-        int paramIndex = 0;
-        for (final ParameterDriver driver : allParameters) {
-            final String driverNameforDate = driver.getNameSpan(date.toAbsoluteDate());
-            // Loop on the spans
-            for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                // Add all the parameter drivers of the span
-                if (span.getData().equals(driverNameforDate)) {
-                    outParameters[index++] = parameters[paramIndex];
-                }
-                ++paramIndex;
-            }
-        }
-        return outParameters;
-    }
-
-
     /** Computes the mean equinoctial elements rates da<sub>i</sub> / dt.
      *
      *  @param state current state information: date, kinematics, attitude
      *  @param auxiliaryElements auxiliary elements related to the current orbit
      *  @param parameters values of the force model parameters at state date (only 1 span for
-     *  each parameter driver) obtained for example by calling {@link #getParameters(AbsoluteDate)}
+     *  each parameter driver) obtained for example by calling {@link #getParameters()}
      *  on force model.
      *  @return the mean element rates dai/dt
      */
@@ -214,7 +150,7 @@ public interface DSSTForceModel extends ParameterDriversProvider, EventDetectors
      *  @param state current state information: date, kinematics, attitude
      *  @param auxiliaryElements auxiliary elements related to the current orbit
      *  @param parameters values of the force model parameters at state date (only 1 span for
-     *  each parameter driver) obtained for example by calling {@link #getParameters(Field, FieldAbsoluteDate)}
+     *  each parameter driver) obtained for example by calling {@link #getParameters(Field)}
      *  on force model  or
      *  {@link AbstractGradientConverter#getParametersAtStateDate(FieldSpacecraftState, ParameterDriversProvider)}
      *  on gradient converter.
@@ -238,10 +174,7 @@ public interface DSSTForceModel extends ParameterDriversProvider, EventDetectors
      * #initializeShortPeriodTerms(AuxiliaryElements, PropagationType, double[])}.
      * </p>
      * @param parameters values of the force model parameters (all span values for each parameters)
-     * obtained for example by calling
-     * {@link #getParametersAllValues()}
-     * on force model. The extract parameter method {@link #extractParameters(double[], AbsoluteDate)} is called in
-     * the method to select the right parameter corresponding to the mean state date.
+     * obtained for example by calling {@link #getParameters()} on force model.
      * @param meanStates mean states information: date, kinematics, attitude
      */
     void updateShortPeriodTerms(double[] parameters, SpacecraftState... meanStates);
@@ -254,11 +187,9 @@ public interface DSSTForceModel extends ParameterDriversProvider, EventDetectors
      * </p>
      * @param <T> type of the elements
      * @param parameters values of the force model parameters (all span values for each parameters)
-     * obtained for example by calling {@link #getParametersAllValues(Field)} on force model or
+     * obtained for example by calling {@link #getParameters(Field)} on force model or
      *  {@link AbstractGradientConverter#getParameters(FieldSpacecraftState, ParameterDriversProvider)}
-     *  on gradient converter. The extract parameter method
-     *  {@link #extractParameters(CalculusFieldElement[], FieldAbsoluteDate)} is called in
-     * the method to select the right parameter.
+     *  on gradient converter.
      * @param meanStates mean states information: date, kinematics, attitude
      */
     @SuppressWarnings("unchecked")

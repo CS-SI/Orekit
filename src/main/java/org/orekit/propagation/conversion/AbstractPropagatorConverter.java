@@ -40,7 +40,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriver;
 
 /** Common handling of {@link PropagatorConverter} methods for propagators conversions.
  * <p>

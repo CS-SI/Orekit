@@ -42,7 +42,7 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.drag.DragForce;
 import org.orekit.forces.drag.DragSensitive;
-import org.orekit.forces.drag.IsotropicDrag;
+import org.orekit.forces.drag.IsotropicDragBuilder;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
 import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
@@ -61,7 +61,7 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriver;
 
 public class JacobianPropagatorConverterTest {
 
@@ -133,12 +133,8 @@ public class JacobianPropagatorConverterTest {
         // using normalized values different from 0.0 for the sake of generality
         RandomGenerator random = new Well19937a(0xe67f19c1a678d037L);
         List<ParameterDriver> all = new ArrayList<>();
-        for (final ParameterDriver driver : builder.getOrbitalStateFactory().getOrbitalParametersDrivers().getDrivers()) {
-            all.add(driver);
-        }
-        for (final ParameterDriver driver : builder.getPropagationParametersDrivers().getDrivers()) {
-            all.add(driver);
-        }
+        all.addAll(builder.getOrbitalStateFactory().getOrbitalParametersDrivers().getDrivers());
+        all.addAll(builder.getPropagationParametersDrivers().getDrivers());
         double[] normalized = new double[names.length];
         List<ParameterDriver> selected = new ArrayList<>(names.length);
         int index = 0;
@@ -147,7 +143,7 @@ public class JacobianPropagatorConverterTest {
             for (final String name : names) {
                 if (name.equals(driver.getName())) {
                     found = true;
-                    normalized[index++] = driver.getNormalizedValue(new AbsoluteDate()) + (2 * random.nextDouble() - 1);
+                    normalized[index++] = driver.getNormalizedValue() + (2 * random.nextDouble() - 1);
                     selected.add(driver);
                 }
             }
@@ -158,7 +154,7 @@ public class JacobianPropagatorConverterTest {
         // the 10 minutes offset implies even the first point is influenced by model parameters
         final List<SpacecraftState> sample = new ArrayList<>();
         Propagator propagator = builder.buildPropagator(normalized);
-        propagator.setStepHandler(60.0, currentState -> sample.add(currentState));
+        propagator.setStepHandler(60.0, sample::add);
         propagator.propagate(orbit.getDate().shiftedBy(600.0), orbit.getDate().shiftedBy(4200.0));
 
         JacobianPropagatorConverter  fitter = new JacobianPropagatorConverter(builder, 1.0e-3, 5000);
@@ -231,7 +227,8 @@ public class JacobianPropagatorConverterTest {
         atmosphere = new SimpleExponentialAtmosphere(earth, 0.0004, 42000.0, 7500.0);
         final double dragCoef = 2.0;
         crossSection = 25.0;
-        drag = new DragForce(atmosphere, new IsotropicDrag(crossSection, dragCoef));
+        drag = new DragForce(atmosphere,
+                             new IsotropicDragBuilder(crossSection).addDragCoeff(dragCoef).build());
 
     }
 

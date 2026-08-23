@@ -65,8 +65,9 @@ import org.orekit.propagation.semianalytical.dsst.utilities.hansen.FieldHansenTe
 import org.orekit.propagation.semianalytical.dsst.utilities.hansen.HansenTesseralLinear;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeInterval;
 import org.orekit.utils.FieldTimeSpanMap;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriver;
 import org.orekit.utils.TimeSpanMap;
 
 /** Tesseral contribution to the central body gravitational perturbation.
@@ -259,7 +260,7 @@ public class DSSTTesseral implements DSSTForceModel {
 
         gmParameterDriver = new ParameterDriver(DSSTNewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
                                                 provider.getMu(), MU_SCALE,
-                                                0.0, Double.POSITIVE_INFINITY);
+                                                0.0, Double.POSITIVE_INFINITY, TimeInterval.UNLIMITED);
 
         // Central body rotating frame
         this.bodyFrame = centralBodyFrame;
@@ -437,10 +438,7 @@ public class DSSTTesseral implements DSSTForceModel {
      *  This method aims at being called before mean elements rates computation.
      *  </p>
      *  @param auxiliaryElements auxiliary elements related to the current orbit
-     *  @param parameters values of the force model parameters (only 1 value for each parameter)
-     *  that is to say that the extract parameter method {@link #extractParameters(double[], AbsoluteDate)}
-     *  should have be called before or the parameters list given in argument must correspond
-     *  to the extraction of parameter for a precise date {@link #getParameters(AbsoluteDate)}.
+     *  @param parameters values of the force model parameters
      *  @return new force model context
      */
     private DSSTTesseralContext initializeStep(final AuxiliaryElements auxiliaryElements, final double[] parameters) {
@@ -547,9 +545,7 @@ public class DSSTTesseral implements DSSTForceModel {
 
             final AuxiliaryElements auxiliaryElements = new AuxiliaryElements(meanState.getOrbit(), I);
 
-            // Extract the proper parameters valid at date from the input array
-            final double[] extractedParameters = this.extractParameters(parameters, auxiliaryElements.getDate());
-            final DSSTTesseralContext context = initializeStep(auxiliaryElements, extractedParameters);
+            final DSSTTesseralContext context = initializeStep(auxiliaryElements, parameters);
 
             // Initialise the Hansen coefficients
             for (int s = -maxDegree; s <= maxDegree; s++) {
@@ -605,16 +601,15 @@ public class DSSTTesseral implements DSSTForceModel {
         // Field used by default
         final Field<T> field = meanStates[0].getDate().getField();
 
-        final FieldTesseralShortPeriodicCoefficients<T> ftspc = (FieldTesseralShortPeriodicCoefficients<T>) fieldShortPeriodTerms.get(field);
+        final FieldTesseralShortPeriodicCoefficients<T> ftspc =
+            (FieldTesseralShortPeriodicCoefficients<T>) fieldShortPeriodTerms.get(field);
         final FieldSlot<T> slot = ftspc.createSlot(meanStates);
 
         for (final FieldSpacecraftState<T> meanState : meanStates) {
 
             final FieldAuxiliaryElements<T> auxiliaryElements = new FieldAuxiliaryElements<>(meanState.getOrbit(), I);
 
-            // Extract the proper parameters valid at date from the input array
-            final T[] extractedParameters = this.extractParameters(parameters, auxiliaryElements.getDate());
-            final FieldDSSTTesseralContext<T> context = initializeStep(auxiliaryElements, extractedParameters);
+            final FieldDSSTTesseralContext<T> context = initializeStep(auxiliaryElements, parameters);
 
             final FieldHansenObjects<T> fho = (FieldHansenObjects<T>) fieldHansen.get(field);
             // Initialise the Hansen coefficients
@@ -629,7 +624,8 @@ public class DSSTTesseral implements DSSTForceModel {
                 }
             }
 
-            final FieldFourierCjSjCoefficients<T> cjsjFourier = new FieldFourierCjSjCoefficients<>(maxFrequencyShortPeriodics, mMax, field);
+            final FieldFourierCjSjCoefficients<T> cjsjFourier =
+                new FieldFourierCjSjCoefficients<>(maxFrequencyShortPeriodics, mMax, field);
 
             // Compute coefficients
             // Compute only if there is at least one non-resonant tesseral

@@ -50,10 +50,9 @@ import org.orekit.propagation.semianalytical.dsst.forces.ShortPeriodTerms;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterDriversList;
-import org.orekit.utils.ParameterDriversList.DelegatingDriver;
-import org.orekit.utils.TimeSpanMap.Span;
+import org.orekit.utils.drivers.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriversList;
+import org.orekit.utils.drivers.ParameterDriversList.DelegatingDriver;
 
 /** Process model to use with a {@link SemiAnalyticalKalmanEstimator}.
  *
@@ -195,11 +194,8 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
             if (driver.isSelected()) {
                 estimatedPropagationParameters.add(driver);
                 // Add the driver name if it has not been added yet
-                for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-
-                    if (!estimatedPropagationParametersNames.contains(span.getData())) {
-                        estimatedPropagationParametersNames.add(span.getData());
-                    }
+                if (!estimatedPropagationParametersNames.contains(driver.getName())) {
+                    estimatedPropagationParametersNames.add(driver.getName());
                 }
             }
 
@@ -218,10 +214,8 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
             if (parameter.getReferenceDate() == null) {
                 parameter.setReferenceDate(currentDate);
             }
-            for (Span<String> span = parameter.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                measurementParameterColumns.put(span.getData(), columns);
-                ++columns;
-            }
+            measurementParameterColumns.put(parameter.getName(), columns);
+            ++columns;
         }
 
         // Compute the scale factors
@@ -231,14 +225,10 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
             scale[index++] = driver.getScale();
         }
         for (final ParameterDriver driver : estimatedPropagationParameters.getDrivers()) {
-            for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                scale[index++] = driver.getScale();
-            }
+            scale[index++] = driver.getScale();
         }
         for (final ParameterDriver driver : estimatedMeasurementsParameters.getDrivers()) {
-            for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                scale[index++] = driver.getScale();
-            }
+            scale[index++] = driver.getScale();
         }
 
         // Build the reference propagator and add its partial derivatives equations implementation
@@ -256,18 +246,18 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
         // Initialize propagation parameters part of the state transition matrix (See Ref [1], Eq. 3.2c)
         this.psiS = null;
         if (estimatedPropagationParameters.getNbParams() != 0) {
-            this.psiS = MatrixUtils.createRealMatrix(getNumberSelectedOrbitalDriversValuesToEstimate(),
-                                                     getNumberSelectedPropagationDriversValuesToEstimate());
+            this.psiS = MatrixUtils.createRealMatrix(estimatedOrbitalParameters.getDrivers().size(),
+                                                     estimatedPropagationParameters.getDrivers().size());
         }
 
         // Initialize inverse of the orbital part of the state transition matrix (See Ref [1], Eq. 3.2d)
-        this.phiS = MatrixUtils.createRealIdentityMatrix(getNumberSelectedOrbitalDriversValuesToEstimate());
+        this.phiS = MatrixUtils.createRealIdentityMatrix(estimatedOrbitalParameters.getDrivers().size());
 
         // Number of estimated measurement parameters
-        final int nbMeas = getNumberSelectedMeasurementDriversValuesToEstimate();
+        final int nbMeas = estimatedMeasurementsParameters.getDrivers().size();
 
         // Number of estimated dynamic parameters (orbital + propagation)
-        final int nbDyn  = getNumberSelectedOrbitalDriversValuesToEstimate() + getNumberSelectedPropagationDriversValuesToEstimate();
+        final int nbDyn  = estimatedOrbitalParameters.getDrivers().size() + estimatedPropagationParameters.getDrivers().size();
 
         // Covariance matrix
         final RealMatrix noiseK = MatrixUtils.createRealMatrix(nbDyn + nbMeas, nbDyn + nbMeas);
@@ -412,10 +402,10 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
         final RealMatrix measurementMatrix = getMeasurementMatrix();
 
         // Number of estimated measurement parameters
-        final int nbMeas = getNumberSelectedMeasurementDriversValuesToEstimate();
+        final int nbMeas = estimatedMeasurementsParameters.getDrivers().size();
 
         // Number of estimated dynamic parameters (orbital + propagation)
-        final int nbDyn  = getNumberSelectedOrbitalDriversValuesToEstimate() + getNumberSelectedPropagationDriversValuesToEstimate();
+        final int nbDyn  = estimatedOrbitalParameters.getDrivers().size() + estimatedPropagationParameters.getDrivers().size();
 
         // Covariance matrix
         final RealMatrix noiseK = MatrixUtils.createRealMatrix(nbDyn + nbMeas, nbDyn + nbMeas);
@@ -531,19 +521,13 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
         final RealVector physicalEstimatedState = new ArrayRealVector(scale.length);
         int i = 0;
         for (final DelegatingDriver driver : getEstimatedOrbitalParameters().getDrivers()) {
-            for (Span<Double> span = driver.getValueSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                physicalEstimatedState.setEntry(i++, span.getData());
-            }
+            physicalEstimatedState.setEntry(i++, driver.getValue());
         }
         for (final DelegatingDriver driver : getEstimatedPropagationParameters().getDrivers()) {
-            for (Span<Double> span = driver.getValueSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                physicalEstimatedState.setEntry(i++, span.getData());
-            }
+            physicalEstimatedState.setEntry(i++, driver.getValue());
         }
         for (final DelegatingDriver driver : getEstimatedMeasurementsParameters().getDrivers()) {
-            for (Span<Double> span = driver.getValueSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                physicalEstimatedState.setEntry(i++, span.getData());
-            }
+            physicalEstimatedState.setEntry(i++, driver.getValue());
         }
 
         return physicalEstimatedState;
@@ -676,7 +660,7 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
     public void updateShortPeriods(final SpacecraftState state) {
         // Loop on DSST force models
         for (final DSSTForceModel model : builder.getAllForceModels()) {
-            model.updateShortPeriodTerms(model.getParametersAllValues(), state);
+            model.updateShortPeriodTerms(model.getParameters(), state);
         }
         harvester.updateFieldShortPeriodTerms(state);
     }
@@ -688,7 +672,8 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
         // initialize ForceModels in OSCULATING mode even if propagation is MEAN
         final PropagationType type = PropagationType.OSCULATING;
         for (final DSSTForceModel force :  builder.getAllForceModels()) {
-            shortPeriodTerms.addAll(force.initializeShortPeriodTerms(new AuxiliaryElements(meanState.getOrbit(), 1), type, force.getParameters(meanState.getDate())));
+            shortPeriodTerms.addAll(force.initializeShortPeriodTerms(new AuxiliaryElements(meanState.getOrbit(), 1),
+                                                                     type, force.getParameters()));
         }
         dsstPropagator.setShortPeriodTerms(shortPeriodTerms);
         // also need to initialize the Field terms in the same mode
@@ -724,7 +709,7 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
         final RealMatrix stm = MatrixUtils.createRealIdentityMatrix(correctedEstimate.getState().getDimension());
 
         // Derivatives of the state vector with respect to initial state vector
-        final int nbOrb = getNumberSelectedOrbitalDriversValuesToEstimate();
+        final int nbOrb = estimatedOrbitalParameters.getDrivers().size();
         final RealMatrix dYdY0 = harvester.getB2(nominalMeanSpacecraftState);
 
         // Calculate transitional orbital matrix (See Ref [1], Eq. 3.4a)
@@ -750,7 +735,7 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
         // Derivatives of the state vector with respect to propagation parameters
         if (psiS != null) {
 
-            final int nbProp = getNumberSelectedPropagationDriversValuesToEstimate();
+            final int nbProp = estimatedPropagationParameters.getDrivers().size();
             final RealMatrix dYdPp = harvester.getB3(nominalMeanSpacecraftState);
 
             // Calculate transitional parameters matrix (See Ref [1], Eq. 3.4b)
@@ -850,16 +835,9 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
                 measurementMatrix.setEntry(i, j, dMdY.getEntry(i, j) / sigma[i] * driverScale);
             }
 
-            int col = 0;
             for (int j = 0; j < nbProp; j++) {
                 final double driverScale = estimatedPropagationParameters.getDrivers().get(j).getScale();
-                for (Span<Double> span = estimatedPropagationParameters.getDrivers().get(j).getValueSpanMap().getFirstSpan();
-                                  span != null; span = span.next()) {
-
-                    measurementMatrix.setEntry(i, col + nbOrb,
-                                               dMdY.getEntry(i, col + nbOrb) / sigma[i] * driverScale);
-                    col++;
-                }
+                measurementMatrix.setEntry(i, j + nbOrb, dMdY.getEntry(i, j + nbOrb) / sigma[i] * driverScale);
             }
         }
 
@@ -870,19 +848,17 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
         // Gather the measurement parameters linked to current measurement
         for (final ParameterDriver driver : observedMeasurement.getParametersDrivers()) {
             if (driver.isSelected()) {
-                for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                    // Derivatives of current measurement w/r to selected measurement parameter
-                    final double[] aMPm = predictedMeasurement.getParameterDerivatives(driver, span.getStart());
+                // Derivatives of current measurement w/r to selected measurement parameter
+                final double[] aMPm = predictedMeasurement.getParameterDerivatives(driver);
 
-                    // Check that the measurement parameter is managed by the filter
-                    if (measurementParameterColumns.get(span.getData()) != null) {
-                        // Column of the driver in the measurement matrix
-                        final int driverColumn = measurementParameterColumns.get(span.getData());
+                // Check that the measurement parameter is managed by the filter
+                if (measurementParameterColumns.get(driver.getName()) != null) {
+                    // Column of the driver in the measurement matrix
+                    final int driverColumn = measurementParameterColumns.get(driver.getName());
 
-                        // Fill the corresponding indexes of the measurement matrix
-                        for (int i = 0; i < aMPm.length; ++i) {
-                            measurementMatrix.setEntry(i, driverColumn, aMPm[i] / sigma[i] * driver.getScale());
-                        }
+                    // Fill the corresponding indexes of the measurement matrix
+                    for (int i = 0; i < aMPm.length; ++i) {
+                        measurementMatrix.setEntry(i, driverColumn, aMPm[i] / sigma[i] * driver.getScale());
                     }
                 }
             }
@@ -966,45 +942,6 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
         return estimatedPropagationParameters.getNbParams();
     }
 
-    /** Get the number of estimated orbital parameters values (some parameter
-     * driver may have several values to estimate for different time range
-     * {@link ParameterDriver}.
-     * @return the number of estimated values for , orbital parameters
-     */
-    private int getNumberSelectedOrbitalDriversValuesToEstimate() {
-        int nbOrbitalValuesToEstimate = 0;
-        for (final ParameterDriver driver : estimatedOrbitalParameters.getDrivers()) {
-            nbOrbitalValuesToEstimate += driver.getNbOfValues();
-        }
-        return nbOrbitalValuesToEstimate;
-    }
-
-    /** Get the number of estimated propagation parameters values (some parameter
-     * driver may have several values to estimate for different time range
-     * {@link ParameterDriver}.
-     * @return the number of estimated values for propagation parameters
-     */
-    private int getNumberSelectedPropagationDriversValuesToEstimate() {
-        int nbPropagationValuesToEstimate = 0;
-        for (final ParameterDriver driver : estimatedPropagationParameters.getDrivers()) {
-            nbPropagationValuesToEstimate += driver.getNbOfValues();
-        }
-        return nbPropagationValuesToEstimate;
-    }
-
-    /** Get the number of estimated measurement parameters values (some parameter
-     * driver may have several values to estimate for different time range
-     * {@link ParameterDriver}.
-     * @return the number of estimated values for measurement parameters
-     */
-    private int getNumberSelectedMeasurementDriversValuesToEstimate() {
-        int nbMeasurementValuesToEstimate = 0;
-        for (final ParameterDriver driver : estimatedMeasurementsParameters.getDrivers()) {
-            nbMeasurementValuesToEstimate += driver.getNbOfValues();
-        }
-        return nbMeasurementValuesToEstimate;
-    }
-
     /** Update the estimated parameters after the correction phase of the filter.
      * The min/max allowed values are handled by the parameter themselves.
      */
@@ -1014,26 +951,19 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
         // Orbital parameters
         for (final DelegatingDriver driver : getEstimatedOrbitalParameters().getDrivers()) {
             // let the parameter handle min/max clipping
-            for (Span<Double> span = driver.getValueSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                driver.setNormalizedValue(driver.getNormalizedValue(span.getStart()) + correctedState.getEntry(i++), span.getStart());
-            }
+            driver.setNormalizedValue(driver.getNormalizedValue() + correctedState.getEntry(i++));
         }
 
         // Propagation parameters
         for (final DelegatingDriver driver : getEstimatedPropagationParameters().getDrivers()) {
             // let the parameter handle min/max clipping
-            // If the parameter driver contains only 1 value to estimate over the all time range
-            for (Span<Double> span = driver.getValueSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                driver.setNormalizedValue(driver.getNormalizedValue(span.getStart()) + correctedState.getEntry(i++), span.getStart());
-            }
+            driver.setNormalizedValue(driver.getNormalizedValue() + correctedState.getEntry(i++));
         }
 
         // Measurements parameters
         for (final DelegatingDriver driver : getEstimatedMeasurementsParameters().getDrivers()) {
             // let the parameter handle min/max clipping
-            for (Span<Double> span = driver.getValueSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                driver.setNormalizedValue(driver.getNormalizedValue(span.getStart()) + correctedState.getEntry(i++), span.getStart());
-            }
+            driver.setNormalizedValue(driver.getNormalizedValue() + correctedState.getEntry(i++));
         }
     }
 

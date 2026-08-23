@@ -34,7 +34,7 @@ import org.orekit.utils.AngularCoordinates;
 import org.orekit.utils.FieldAngularCoordinates;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinatesProvider;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriver;
 
 /** This interface represents an attitude provider that modifies/wraps another underlying provider.
  * @author Luc Maisonobe

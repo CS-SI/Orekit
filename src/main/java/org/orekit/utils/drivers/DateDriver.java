@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.utils;
+package org.orekit.utils.drivers;
 
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeInterval;
 import org.orekit.time.TimeStamped;
-
 
 /** {@link ParameterDriver Parameter driver} allowing to drive a date.
  * @author Luc Maisonobe
@@ -44,7 +44,7 @@ public class DateDriver extends ParameterDriver implements TimeStamped {
      * @param start if true, the driver corresponds to a start date
      */
     public DateDriver(final AbsoluteDate base, final String name, final boolean start) {
-        super(name, 0.0, 1.0, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+        super(name, 0.0, 1.0, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, TimeInterval.UNLIMITED);
         this.base  = base;
         this.start = start;
     }
@@ -67,11 +67,7 @@ public class DateDriver extends ParameterDriver implements TimeStamped {
      * @return shifted date
      */
     public AbsoluteDate getDate() {
-        // date driver has no validity period, only 1 value is estimated
-        // over the all interval so there is no problem for calling getValue with null argument
-        // or any date, it would give the same result as there is only 1 span on the valueSpanMap
-        // of the driver
-        return base.shiftedBy(getValue(base));
+        return base.shiftedBy(getValue());
     }
 
 }

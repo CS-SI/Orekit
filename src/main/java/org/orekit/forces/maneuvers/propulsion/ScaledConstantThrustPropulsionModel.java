@@ -26,7 +26,8 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.time.TimeInterval;
+import org.orekit.utils.drivers.ParameterDriver;
 
 /** Thrust propulsion model with parameters (for estimation) represented by scale factors
  *  on the X, Y and Z axis of the spacecraft frame.
@@ -73,11 +74,14 @@ public class ScaledConstantThrustPropulsionModel extends AbstractConstantThrustP
 
         // Build the parameter drivers, using maneuver name as prefix
         this.scaleFactorThrustXDriver   = new ParameterDriver(name + THRUSTX_SCALE_FACTOR, 1., THRUST_SCALE,
-                                                              Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                                                              Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                                              TimeInterval.UNLIMITED);
         this.scaleFactorThrustYDriver   = new ParameterDriver(name + THRUSTY_SCALE_FACTOR, 1., THRUST_SCALE,
-                                                              Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                                                              Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                                              TimeInterval.UNLIMITED);
         this.scaleFactorThrustZDriver   = new ParameterDriver(name + THRUSTZ_SCALE_FACTOR, 1., THRUST_SCALE,
-                                                              Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                                                              Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                                              TimeInterval.UNLIMITED);
     }
 
     /** Get the thrust vector in S/C frame from scale factors (N).
@@ -106,9 +110,7 @@ public class ScaledConstantThrustPropulsionModel extends AbstractConstantThrustP
     /** {@inheritDoc} */
     @Override
     public Vector3D getThrustVector(final AbsoluteDate date) {
-        return getThrustVector(scaleFactorThrustXDriver.getValue(date),
-                               scaleFactorThrustYDriver.getValue(date),
-                               scaleFactorThrustZDriver.getValue(date));
+        return getThrustVector();
     }
 
     /** {@inheritDoc} */

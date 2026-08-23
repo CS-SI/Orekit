@@ -29,7 +29,7 @@ import org.orekit.models.earth.ionosphere.IonosphericModel;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.utils.Constants;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriver;
 import org.orekit.utils.PVCoordinatesProvider;
 
 /** Class modifying theoretical TDOA measurements with ionospheric delay.
@@ -77,7 +77,7 @@ public class TDOAIonosphericDelayModifier implements EstimationModifier<TDOA> {
         // base frame associated with the observer
         final PVCoordinatesProvider coordsProvider = observer.getPVCoordinatesProvider();
         // delay in meters
-        final double delay = ionoModel.pathDelay(state, coordsProvider, frequency, ionoModel.getParameters(state.getDate()));
+        final double delay = ionoModel.pathDelay(state, coordsProvider, frequency, ionoModel.getParameters());
         // return delay in seconds
         return delay / Constants.SPEED_OF_LIGHT;
     }

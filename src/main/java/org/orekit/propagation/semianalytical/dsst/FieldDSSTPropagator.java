@@ -62,12 +62,8 @@ import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElemen
 import org.orekit.propagation.semianalytical.dsst.utilities.FixedNumberInterpolationGrid;
 import org.orekit.propagation.semianalytical.dsst.utilities.InterpolationGrid;
 import org.orekit.propagation.semianalytical.dsst.utilities.MaxGapInterpolationGrid;
-import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldDataDictionary;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterObserver;
-import org.orekit.utils.TimeSpanMap;
 
 /**
  * This class propagates {@link org.orekit.orbits.FieldOrbit orbits} using the DSST theory.
@@ -410,29 +406,18 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
      */
     public void addForceModel(final DSSTForceModel force) {
 
-        if (force instanceof DSSTNewtonianAttraction) {
+        if (force instanceof final DSSTNewtonianAttraction na) {
             // we want to add the central attraction force model
 
-            try {
-                // ensure we are notified of any mu change
-                force.getParametersDrivers().getFirst().addObserver(new ParameterObserver() {
-                    /** {@inheritDoc} */
-                    @Override
-                    public void valueChanged(final double previousValue, final ParameterDriver driver, final AbsoluteDate date) {
-                        // mu PDriver should have only 1 span
-                        superSetMu(getField().getZero().newInstance(driver.getValue()));
-                    }
-                    /** {@inheritDoc} */
-                    @Override
-                    public void valueSpanMapChanged(final TimeSpanMap<Double> previousValue, final ParameterDriver driver) {
-                        // mu PDriver should have only 1 span
-                        superSetMu(getField().getZero().newInstance(driver.getValue()));
-                    }
-                });
-            } catch (OrekitException oe) {
-                // this should never happen
-                throw new OrekitInternalError(oe);
-            }
+            // ensure the state mapper knows about the new mu
+            final T zero = getField().getZero();
+            superSetMu(zero.newInstance(na.getMu()));
+
+            // ensure we are notified of any mu change
+            force.
+                getParametersDrivers().
+                getFirst().
+                addObserver((previousValue, driver) -> superSetMu(zero.newInstance(driver.getValue())));
 
             if (hasNewtonianAttraction()) {
                 // there is already a central attraction model, replace it
@@ -531,8 +516,9 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
         final List<FieldShortPeriodTerms<T>> shortPeriodTerms = new ArrayList<>();
         for (final DSSTForceModel force : forces) {
             force.registerAttitudeProvider(attitudeProvider);
-            shortPeriodTerms.addAll(force.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, force.getParameters(mean.getDate().getField(), mean.getDate())));
-            force.updateShortPeriodTerms(force.getParametersAllValues(mean.getDate().getField()), mean);
+            shortPeriodTerms.addAll(force.initializeShortPeriodTerms(aux, PropagationType.OSCULATING,
+                                                                     force.getParameters(mean.getDate().getField())));
+            force.updateShortPeriodTerms(force.getParameters(mean.getDate().getField()), mean);
         }
 
         final FieldEquinoctialOrbit<T> osculatingOrbit = computeOsculatingOrbit(mean, shortPeriodTerms);
@@ -685,7 +671,7 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
         // initialize all perturbing forces
         final List<FieldShortPeriodTerms<T>> shortPeriodTerms = new ArrayList<>();
         for (final DSSTForceModel force : forceModels) {
-            shortPeriodTerms.addAll(force.initializeShortPeriodTerms(aux, type, force.getParameters(getField(), initialState.getDate())));
+            shortPeriodTerms.addAll(force.initializeShortPeriodTerms(aux, type, force.getParameters(getField())));
         }
         mapper.setShortPeriodTerms(shortPeriodTerms);
 
@@ -694,7 +680,7 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
             final FieldShortPeriodicsHandler spHandler = new FieldShortPeriodicsHandler(forceModels);
             // Compute short periodic coefficients for this point
             for (DSSTForceModel forceModel : forceModels) {
-                forceModel.updateShortPeriodTerms(forceModel.getParametersAllValues(getField()), initialState);
+                forceModel.updateShortPeriodTerms(forceModel.getParameters(getField()), initialState);
 
             }
             final Collection<FieldODEStepHandler<T>> stepHandlers = new ArrayList<>();
@@ -998,7 +984,7 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
 
             // compute the contributions of all perturbing forces
             for (final DSSTForceModel forceModel : forceModels) {
-                final T[] daidt = elementRates(forceModel, state, auxiliaryElements, forceModel.getParametersAllValues(getField()));
+                final T[] daidt = elementRates(forceModel, state, auxiliaryElements, forceModel.getParameters(getField()));
                 for (int i = 0; i < daidt.length; i++) {
                     yDot[i] = yDot[i].add(daidt[i]);
                 }
@@ -1064,7 +1050,7 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
 
             // Compute short periodic coefficients for this step
             for (DSSTForceModel forceModel : forceModels) {
-                forceModel.updateShortPeriodTerms(forceModel.getParametersAllValues(getField()), meanStates);
+                forceModel.updateShortPeriodTerms(forceModel.getParameters(getField()), meanStates);
             }
 
         }

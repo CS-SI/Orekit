@@ -40,7 +40,7 @@ import org.orekit.frames.TransformProvider;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriver;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -202,14 +202,13 @@ class EarthBasedStationTransformProviderTest {
     private static ParameterDriver mockDriver(final double value) {
         final ParameterDriver driver = mock();
         when(driver.getValue()).thenReturn(value);
-        when(driver.getValue(any(AbsoluteDate.class))).thenReturn(value);
         return driver;
     }
 
     @SuppressWarnings("unchecked")
     private static ParameterDriver mockDriverWithGradient(final double value, final int freeParameters) {
         final ParameterDriver driver = mockDriver(value);
-        when(driver.getValue(any(Integer.class), any(Map.class), any(AbsoluteDate.class))).thenReturn(Gradient.constant(freeParameters, value));
+        when(driver.getValue(any(Integer.class), any(Map.class))).thenReturn(Gradient.constant(freeParameters, value));
         return driver;
     }
 }

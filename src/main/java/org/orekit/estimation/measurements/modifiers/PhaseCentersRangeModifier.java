@@ -24,7 +24,7 @@ import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.Observer;
 import org.orekit.estimation.measurements.Range;
 import org.orekit.gnss.antenna.FrequencyPattern;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriver;
 
 /** Ground and on-board antennas offsets effect on range measurements.
  * @author Luc Maisonobe

@@ -25,7 +25,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.clocks.ClockModel;
 import org.orekit.time.clocks.FieldClockModel;
-import org.orekit.utils.ParameterDriversProvider;
+import org.orekit.utils.drivers.ParameterDriversProvider;
 
 /** Interface underlying both observed and observing measurement objects. Contains the clock model.
  *

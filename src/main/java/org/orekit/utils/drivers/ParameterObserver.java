@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.utils;
+package org.orekit.utils.drivers;
 
 import org.orekit.time.AbsoluteDate;
-
+import org.orekit.time.TimeInterval;
 
 /** Interface for observing parameters changes.
  * @see ParameterDriver
@@ -28,16 +28,9 @@ public interface ParameterObserver {
 
     /** Notify that a parameter value has been changed.
      * @param previousValue previous value
-     * @param driver parameter driver that has been changed
-     * @param date date for which the parameter value have been updated
+     * @param driver        parameter driver that has been changed
      */
-    void valueChanged(double previousValue, ParameterDriver driver, AbsoluteDate date);
-
-    /** Notify that a parameter value span map has been changed.
-     * @param previousValueSpanMap previous value
-     * @param driver parameter driver that has been changed
-     */
-    void valueSpanMapChanged(TimeSpanMap<Double> previousValueSpanMap, ParameterDriver driver);
+    void valueChanged(double previousValue, ParameterDriver driver);
 
     /** Notify that a parameter reference date has been changed.
      * <p>
@@ -73,19 +66,6 @@ public interface ParameterObserver {
      * @since 9.0
      */
     default void selectionChanged(final boolean previousSelection, final ParameterDriver driver) {
-        // nothing by default
-    }
-
-    /** Notify that a parameter estimation type (continuous or step) has been changed.
-     * <p>
-     * The default implementation does nothing
-     * </p>
-     * @param previousIsContinuous previous estimation type, continuous estimation if true,
-     * step estimation if not.
-     * @param driver parameter driver that has been changed
-     * @since 9.0
-     */
-    default void estimationTypeChanged(final boolean previousIsContinuous, final ParameterDriver driver) {
         // nothing by default
     }
 
@@ -134,6 +114,18 @@ public interface ParameterObserver {
      * @since 9.0
      */
     default void scaleChanged(final double previousScale, final ParameterDriver driver) {
+        // nothing by default
+    }
+
+    /** Notify that a parameter validity interval has been changed.
+     * <p>
+     * The default implementation does nothing
+     * </p>
+     * @param previousValidity previous validity interval
+     * @param driver parameter driver that has been changed
+     * @since 14.0
+     */
+    default void validityChanged(final TimeInterval previousValidity, final ParameterDriver driver) {
         // nothing by default
     }
 

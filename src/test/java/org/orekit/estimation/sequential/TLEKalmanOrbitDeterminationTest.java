@@ -47,7 +47,7 @@ import org.orekit.estimation.common.ResultKalman;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.drag.DragForce;
 import org.orekit.forces.drag.DragSensitive;
-import org.orekit.forces.drag.IsotropicDrag;
+import org.orekit.forces.drag.IsotropicDragBuilder;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
 import org.orekit.forces.gravity.ThirdBodyAttraction;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
@@ -77,8 +77,8 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterDriversList;
+import org.orekit.utils.drivers.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriversList;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPropagatorBuilder> {
@@ -452,7 +452,7 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
 
         // Atmospheric Drag
         ForceModel drag = new DragForce(new HarrisPriester(CelestialBodyFactory.getSun(), earth),
-                                        new IsotropicDrag(spacecraftArea, spacecraftDragCoefficient));
+                                        new IsotropicDragBuilder(spacecraftArea).addDragCoeff(spacecraftDragCoefficient).build());
         propagator.addForceModel(drag);
 
         // Solar radiation pressure

@@ -68,7 +68,7 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriver;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -175,11 +175,11 @@ class StateTransitionMatrixGeneratorTest {
     void testComputeDerivativesStateVelocity() {
 
         //setup
-        /** arbitrary date */
+        // arbitrary date
         final AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
-        /** Earth gravitational parameter */
+        // Earth gravitational parameter
         final double gm = Constants.EIGEN5C_EARTH_MU;
-        /** arbitrary inertial frame */
+        // arbitrary inertial frame
         Frame eci = FramesFactory.getGCRF();
         NumericalPropagator propagator = new NumericalPropagator(new DormandPrince54Integrator(1, 500, 0.001, 0.001));
         MockForceModel forceModel = new MockForceModel();
@@ -337,7 +337,7 @@ class StateTransitionMatrixGeneratorTest {
         final SpacecraftState initialState = new SpacecraftState(initialOrbit);
         propagator.setInitialState(initialState);
         AbsoluteDate pickupDate = initialOrbit.getDate().shiftedBy(200);
-        PickUpHandler pickUp = new PickUpHandler(propagator, pickupDate, gmDriver.getNameSpan(new AbsoluteDate()), gmDriver.getNameSpan(new AbsoluteDate()));
+        PickUpHandler pickUp = new PickUpHandler(propagator, pickupDate, gmDriver.getName(), gmDriver.getName());
         propagator.setStepHandler(pickUp);
         propagator.propagate(initialState.getDate().shiftedBy(900.0));
         Assertions.assertEquals(0.0, pickUp.getState().getDate().durationFrom(pickupDate), 1.0e-10);
@@ -371,7 +371,7 @@ class StateTransitionMatrixGeneratorTest {
         final SpacecraftState initialState = new SpacecraftState(initialOrbit);
         propagator.setInitialState(initialState);
         AbsoluteDate pickupDate = initialOrbit.getDate().shiftedBy(200);
-        PickUpHandler pickUp = new PickUpHandler(propagator, pickupDate, gmDriver.getNameSpan(new AbsoluteDate()), gmDriver.getNameSpan(new AbsoluteDate()));
+        PickUpHandler pickUp = new PickUpHandler(propagator, pickupDate, gmDriver.getName(), gmDriver.getName());
         propagator.setStepHandler(pickUp);
         propagator.propagate(initialState.getDate().shiftedBy(900.0));
         Assertions.assertEquals(0.0, pickUp.getState().getDate().durationFrom(pickupDate), 1.0e-10);
@@ -458,7 +458,7 @@ class StateTransitionMatrixGeneratorTest {
         double OMEGA = FastMath.toRadians(261);
         double lv = 0;
 
-        AbsoluteDate date = new AbsoluteDate(new DateComponents(2004, 01, 01),
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(2004, 1, 1),
                 TimeComponents.H00,
                 TimeScalesFactory.getUTC());
         Orbit orbit = new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngleType.TRUE,
@@ -669,7 +669,7 @@ class StateTransitionMatrixGeneratorTest {
         propagator.addAdditionalDataProvider(new AdditionalDataProvider<double[]>() {
             public String getName() { return triggers.getName().concat("-acc"); }
             public double[] getAdditionalData(SpacecraftState state) {
-                double[] parameters = Arrays.copyOfRange(maneuver.getParameters(initialState.getDate()), 0, propulsionModel.getParametersDrivers().size());
+                double[] parameters = Arrays.copyOfRange(maneuver.getParameters(), 0, propulsionModel.getParametersDrivers().size());
                 return new double[] {
                         propulsionModel.getAcceleration(state, state.getAttitude(), parameters).getNorm()
                 };

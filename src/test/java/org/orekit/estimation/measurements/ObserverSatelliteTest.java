@@ -35,7 +35,7 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.ExtendedPositionProvider;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriver;
 
 class ObserverSatelliteTest {
 
@@ -62,7 +62,7 @@ class ObserverSatelliteTest {
         for (ParameterDriver driver : satellite.getParametersDrivers()) {
             driver.setReferenceDate(epoch);
             driver.setSelected(true);
-            indices.put(driver.getNameSpan(epoch), nbParams++);
+            indices.put(driver.getName(), nbParams++);
         }
 
         // Checks to make sure that fieldCoordsProvider is an instance of ExtendedPositionProvider

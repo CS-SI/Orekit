@@ -19,7 +19,7 @@ package org.orekit.orbits;
 import org.hipparchus.linear.RealMatrix;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.ParameterDriversList;
+import org.orekit.utils.drivers.ParameterDriversList;
 
 /** Factory for orbital state.
  * @param <P> type of the orbital state

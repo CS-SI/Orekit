@@ -24,8 +24,8 @@ import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.TimeSpanMap.Span;
+import org.orekit.time.TimeInterval;
+import org.orekit.utils.drivers.ParameterDriver;
 
 /** Class modeling a measurement bias.
  * @param <T> the type of the measurement
@@ -52,7 +52,7 @@ public class Bias<T extends ObservedMeasurement<T>> implements EstimationModifie
 
         drivers = new ArrayList<>(bias.length);
         for (int i = 0; i < bias.length; ++i) {
-            drivers.add(new ParameterDriver(name[i], bias[i], scale[i], min[i], max[i]));
+            drivers.add(new ParameterDriver(name[i], bias[i], scale[i], min[i], max[i], TimeInterval.UNLIMITED));
         }
 
         derivatives = new double[bias.length][bias.length];
@@ -90,10 +90,7 @@ public class Bias<T extends ObservedMeasurement<T>> implements EstimationModifie
         final double[] value = estimated.getEstimatedValue();
         int nb = 0;
         for (final ParameterDriver driver : drivers) {
-            for (Span<String> span = driver.getNamesSpanMap().getFirstSpan();
-                 span != null; span = span.next()) {
-                value[nb++] += driver.getValue(span.getStart());
-            }
+            value[nb++] += driver.getValue();
         }
         estimated.modifyEstimatedValue(this, value);
 
@@ -106,13 +103,9 @@ public class Bias<T extends ObservedMeasurement<T>> implements EstimationModifie
         // apply the bias to the measurement value
         int nb = 0;
         for (final ParameterDriver driver : drivers) {
-            for (Span<String> span = driver.getNamesSpanMap().getFirstSpan();
-                 span != null; span = span.next()) {
-                if (driver.isSelected()) {
-                    // add the partial derivatives
-                    estimated.setParameterDerivatives(driver, span.getStart(),
-                                                      derivatives[nb++]);
-                }
+            if (driver.isSelected()) {
+                // add the partial derivatives
+                estimated.setParameterDerivatives(driver, derivatives[nb++]);
             }
         }
 

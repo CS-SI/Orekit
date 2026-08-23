@@ -28,6 +28,8 @@ import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.ToleranceProvider;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.drivers.ParameterDriver;
+import org.orekit.utils.drivers.ParameterFunction;
 
 /** Utility class for differentiating various kinds of functions.
  * @author Luc Maisonobe
@@ -64,15 +66,15 @@ public class Differentiation {
                     /** {@inheritDoc} */
                     @Override
                     public double value(final double value) {
-                        final double saved = driver.getValue(date);
-                        driver.setValue(value, date);
+                        final double saved = driver.getValue();
+                        driver.setValue(value);
                         final double functionValue = function.value(driver, date);
-                        driver.setValue(saved, date);
+                        driver.setValue(saved);
                         return functionValue;
                     }
                 };
 
-                final UnivariateDerivative1 dsParam = new UnivariateDerivative1(driver.getValue(date), 1.);
+                final UnivariateDerivative1 dsParam = new UnivariateDerivative1(driver.getValue(), 1.);
                 final UnivariateDerivative1 dsValue = differentiator.differentiate(uf).value(dsParam);
                 return dsValue.getFirstDerivative();
 

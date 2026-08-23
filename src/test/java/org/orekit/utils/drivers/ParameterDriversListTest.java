@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.utils;
+package org.orekit.utils.drivers;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeInterval;
 
 public class ParameterDriversListTest {
 
@@ -29,10 +29,10 @@ public class ParameterDriversListTest {
     public void testDownwardAndUpwardSettings() {
 
         // this test used to generate an infinite recursion ending with StackOverFlowError
-        ParameterDriver p1A = new ParameterDriver("p1", 0.0, 1.0, -1.0, +1.0);
-        ParameterDriver p1B = new ParameterDriver("p1", 0.0, 1.0, -1.0, +1.0);
-        ParameterDriver p2A = new ParameterDriver("p2", 0.0, 1.0, -1.0, +1.0);
-        ParameterDriver p2B = new ParameterDriver("p2", 0.0, 1.0, -1.0, +1.0);
+        ParameterDriver p1A = new ParameterDriver("p1", 0.0, 1.0, -1.0, +1.0, TimeInterval.UNLIMITED);
+        ParameterDriver p1B = new ParameterDriver("p1", 0.0, 1.0, -1.0, +1.0, TimeInterval.UNLIMITED);
+        ParameterDriver p2A = new ParameterDriver("p2", 0.0, 1.0, -1.0, +1.0, TimeInterval.UNLIMITED);
+        ParameterDriver p2B = new ParameterDriver("p2", 0.0, 1.0, -1.0, +1.0, TimeInterval.UNLIMITED);
 
         ParameterDriversList list1 = new ParameterDriversList();
         list1.add(p1A);
@@ -133,11 +133,11 @@ public class ParameterDriversListTest {
 
     @Test
     public void testEmbeddedList() {
-        ParameterDriver pA1 = new ParameterDriver("p", 0.0, 1.0, -1.0, +1.0);
-        ParameterDriver pA2 = new ParameterDriver("p", 0.0, 1.0, -1.0, +1.0);
-        ParameterDriver pA3 = new ParameterDriver("p", 0.0, 1.0, -1.0, +1.0);
-        ParameterDriver pB1 = new ParameterDriver("p", 0.0, 1.0, -1.0, +1.0);
-        ParameterDriver pB2 = new ParameterDriver("p", 0.0, 1.0, -1.0, +1.0);
+        ParameterDriver pA1 = new ParameterDriver("p", 0.0, 1.0, -1.0, +1.0, TimeInterval.UNLIMITED);
+        ParameterDriver pA2 = new ParameterDriver("p", 0.0, 1.0, -1.0, +1.0, TimeInterval.UNLIMITED);
+        ParameterDriver pA3 = new ParameterDriver("p", 0.0, 1.0, -1.0, +1.0, TimeInterval.UNLIMITED);
+        ParameterDriver pB1 = new ParameterDriver("p", 0.0, 1.0, -1.0, +1.0, TimeInterval.UNLIMITED);
+        ParameterDriver pB2 = new ParameterDriver("p", 0.0, 1.0, -1.0, +1.0, TimeInterval.UNLIMITED);
         ParameterDriversList listA = new ParameterDriversList();
         listA.add(pA1);
         pA1.setSelected(true);
@@ -192,28 +192,17 @@ public class ParameterDriversListTest {
 
     @Test
     public void testMerge() {
-        ParameterDriver pA1 = new ParameterDriver("p", 0.0, 1.0, -1.0, +1.0);
-        ParameterDriver pA2 = new ParameterDriver("p", 0.0, 1.0, -1.0, +1.0);
-        ParameterDriver pA3 = new ParameterDriver("p", 0.0, 1.0, -1.0, +1.0);
-        ParameterDriver pB1 = new ParameterDriver("p", 0.0, 1.0, -1.0, +1.0);
-        ParameterDriver pB2 = new ParameterDriver("p", 0.0, 1.0, -1.0, +1.0);
-        ParameterDriver pC1 = new ParameterDriver("p", 0.0, 1.0, -1.0, +1.0);
-        ParameterDriver qA1 = new ParameterDriver("q", 0.0, 1.0, -1.0, +1.0);
-        ParameterDriver qA2 = new ParameterDriver("q", 0.0, 1.0, -1.0, +1.0);
-        ParameterDriver qB1 = new ParameterDriver("q", 0.0, 1.0, -1.0, +1.0);
+        ParameterDriver pA1 = new ParameterDriver("p", 0.0, 1.0, -1.0, +1.0, TimeInterval.UNLIMITED);
+        ParameterDriver pA2 = new ParameterDriver("p", 0.0, 1.0, -1.0, +1.0, TimeInterval.UNLIMITED);
+        ParameterDriver pA3 = new ParameterDriver("p", 0.0, 1.0, -1.0, +1.0, TimeInterval.UNLIMITED);
+        ParameterDriver pB1 = new ParameterDriver("p", 0.0, 1.0, -1.0, +1.0, TimeInterval.UNLIMITED);
+        ParameterDriver pB2 = new ParameterDriver("p", 0.0, 1.0, -1.0, +1.0, TimeInterval.UNLIMITED);
+        ParameterDriver pC1 = new ParameterDriver("p", 0.0, 1.0, -1.0, +1.0, TimeInterval.UNLIMITED);
+        ParameterDriver qA1 = new ParameterDriver("q", 0.0, 1.0, -1.0, +1.0, TimeInterval.UNLIMITED);
+        ParameterDriver qA2 = new ParameterDriver("q", 0.0, 1.0, -1.0, +1.0, TimeInterval.UNLIMITED);
+        ParameterDriver qB1 = new ParameterDriver("q", 0.0, 1.0, -1.0, +1.0, TimeInterval.UNLIMITED);
         final AtomicBoolean called = new AtomicBoolean(false);
-        qB1.addObserver(new ParameterObserver() {
-            /** {@inheritDoc} */
-            @Override
-            public void valueChanged(final double previousValue, final ParameterDriver driver, final AbsoluteDate date) {
-                called.set(true);
-            }
-
-            @Override
-            public void valueSpanMapChanged(final TimeSpanMap<Double> previousValueSpanMap, final ParameterDriver driver) {
-                called.set(true);
-            }
-        });
+        qB1.addObserver((previousValue, driver) -> called.set(true));
         ParameterDriversList listA = new ParameterDriversList();
         listA.add(pA1);
         listA.add(pA2);
@@ -279,9 +268,9 @@ public class ParameterDriversListTest {
 
     @Test
     public void testAddSameDriver() {
-        ParameterDriver p = new ParameterDriver("p", 0.0, 1.0, -1.0, +1.0);
-        ParameterDriver q = new ParameterDriver("q", 0.0, 1.0, -1.0, +1.0);
-        ParameterDriver r = new ParameterDriver("r", 0.0, 1.0, -1.0, +1.0);
+        ParameterDriver p = new ParameterDriver("p", 0.0, 1.0, -1.0, +1.0, TimeInterval.UNLIMITED);
+        ParameterDriver q = new ParameterDriver("q", 0.0, 1.0, -1.0, +1.0, TimeInterval.UNLIMITED);
+        ParameterDriver r = new ParameterDriver("r", 0.0, 1.0, -1.0, +1.0, TimeInterval.UNLIMITED);
         ParameterDriversList list = new ParameterDriversList();
 
         // first add the drivers once each
@@ -315,7 +304,7 @@ public class ParameterDriversListTest {
         Assertions.assertSame(r, list.getDrivers().get(2).getRawDrivers().getFirst());
 
         // then add a new driver for the second parameter
-        ParameterDriver newQ = new ParameterDriver("q", 0.0, 1.0, -1.0, +1.0);
+        ParameterDriver newQ = new ParameterDriver("q", 0.0, 1.0, -1.0, +1.0, TimeInterval.UNLIMITED);
         list.add(newQ);
         Assertions.assertEquals(3, list.getDrivers().size());
         Assertions.assertEquals(1, list.getDrivers().getFirst().getRawDrivers().size());

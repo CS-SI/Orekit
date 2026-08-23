@@ -29,9 +29,10 @@ import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeInterval;
 import org.orekit.utils.Constants;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterDriversList;
+import org.orekit.utils.drivers.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriversList;
 
 /**
  * Unit tests for {@link FiniteDifferencePropagatorConverter}.
@@ -62,8 +63,9 @@ public class FiniteDifferencePropagatorConverterTest {
         PropagatorBuilder builder = Mockito.mock(PropagatorBuilder.class);
         OrbitalStateFactory factory = Mockito.mock(OrbitalStateFactory.class);
         ParameterDriversList list = new ParameterDriversList();
-        list.add(new ParameterDriver("p1", 0, 1e-3, Double.NEGATIVE_INFINITY,
-                Double.POSITIVE_INFINITY));
+        list.add(new ParameterDriver("p1", 0, 1e-3,
+                                     Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                     TimeInterval.UNLIMITED));
         Mockito.when(builder.getOrbitalStateFactory()).thenReturn(factory);
         Mockito.when(factory.getOrbitalParametersDrivers()).thenReturn(list);
         Mockito.when(builder.getPropagationParametersDrivers())

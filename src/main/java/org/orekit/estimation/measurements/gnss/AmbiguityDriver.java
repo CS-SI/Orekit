@@ -18,8 +18,9 @@ package org.orekit.estimation.measurements.gnss;
 
 import org.hipparchus.util.FastMath;
 import org.orekit.gnss.GnssSignal;
+import org.orekit.time.TimeInterval;
 import org.orekit.utils.Constants;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriver;
 
 import java.util.Locale;
 
@@ -60,7 +61,7 @@ public class AmbiguityDriver extends ParameterDriver {
         super(String.format(Locale.US, "%s-%s-%s-%.2f",
                             PREFIX, emitter, receiver,
                             Constants.SPEED_OF_LIGHT / (wavelength * GnssSignal.F0)),
-              0.0, AMBIGUITY_SCALE, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+              0.0, AMBIGUITY_SCALE, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, TimeInterval.UNLIMITED);
         this.emitter    = emitter;
         this.receiver   = receiver;
         this.wavelength = wavelength;

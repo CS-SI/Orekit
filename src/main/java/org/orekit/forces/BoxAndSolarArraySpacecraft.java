@@ -36,8 +36,9 @@ import org.orekit.forces.drag.DragSensitive;
 import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.time.TimeInterval;
 import org.orekit.utils.ExtendedPositionProvider;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriver;
 
 /** Class representing the features of a classical satellite with a convex body shape.
  * <p>
@@ -110,9 +111,11 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
 
         try {
             dragFactorParameterDriver      = new ParameterDriver(DragSensitive.GLOBAL_DRAG_FACTOR,
-                                                                 1.0, SCALE, 0.0, Double.POSITIVE_INFINITY);
+                                                                 1.0, SCALE, 0.0, Double.POSITIVE_INFINITY,
+                                                                 TimeInterval.UNLIMITED);
             radiationFactorParameterDriver = new ParameterDriver(RadiationSensitive.GLOBAL_RADIATION_FACTOR,
-                                                                 1.0, SCALE, 0.0, Double.POSITIVE_INFINITY);
+                                                                 1.0, SCALE, 0.0, Double.POSITIVE_INFINITY,
+                                                                 TimeInterval.UNLIMITED);
         } catch (OrekitException oe) {
             // this should never happen
             throw new OrekitInternalError(oe);

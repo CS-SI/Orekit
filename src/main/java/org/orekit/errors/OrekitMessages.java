@@ -324,12 +324,6 @@ public enum OrekitMessages implements Localizable {
     /** UNSUPPORTED_PARAMETER_NAME. */
     UNSUPPORTED_PARAMETER_NAME("unsupported parameter name {0}, supported names: {1}"),
 
-    /** PARAMETER_WITH_SEVERAL_ESTIMATED_VALUES. */
-    PARAMETER_WITH_SEVERAL_ESTIMATED_VALUES("{0} parameter contains several span in its value TimeSpanMap, the {1} method must be called"),
-
-    /** PARAMETER_PERIODS_HAS_ALREADY_BEEN_SET. */
-    PARAMETER_PERIODS_HAS_ALREADY_BEEN_SET("setPeriod was already called once on {0} parameter, another parameter should be created if the periods have to be changed"),
-
     /** TOO_SMALL_SCALE_FOR_PARAMETER. */
     TOO_SMALL_SCALE_FOR_PARAMETER("scale factor for parameter {0} is too small: {1}"),
 
@@ -796,8 +790,11 @@ public enum OrekitMessages implements Localizable {
     /** INVALID_PARAMETER_RANGE. */
     INVALID_PARAMETER_RANGE("invalid parameter {0}: {1} not in range [{2}, {3}]"),
 
-    /** PARAMETER_NOT_SET. */
-    PARAMETER_NOT_SET("The parameter {0} should not be null in {1}"),
+    /** NO_REFERENCE_VALUES_SET. */
+    NO_REFERENCE_VALUES_SET("no reference values have been set"),
+
+    /** MISSING_REFERENCE_VALUE. */
+    MISSING_REFERENCE_VALUE("missing reference value from {0} to {1}"),
 
     /** FUNCTION_NOT_IMPLEMENTED. */
     FUNCTION_NOT_IMPLEMENTED("{0} is not implemented"),

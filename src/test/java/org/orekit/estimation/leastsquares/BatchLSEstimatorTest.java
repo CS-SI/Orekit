@@ -63,6 +63,8 @@ import org.orekit.estimation.measurements.TwoWayRangeMeasurementCreator;
 import org.orekit.estimation.measurements.modifiers.MeasurementNoise;
 import org.orekit.estimation.measurements.modifiers.OutlierFilter;
 import org.orekit.estimation.measurements.modifiers.PhaseCentersRangeModifier;
+import org.orekit.forces.drag.DragSensitive;
+import org.orekit.forces.drag.IsotropicDragBuilder;
 import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.frames.LOFType;
@@ -82,9 +84,9 @@ import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterDriversList;
-import org.orekit.utils.ParameterDriversList.DelegatingDriver;
+import org.orekit.utils.drivers.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriversList;
+import org.orekit.utils.drivers.ParameterDriversList.DelegatingDriver;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 class BatchLSEstimatorTest {
@@ -130,18 +132,21 @@ class BatchLSEstimatorTest {
     void testKeplerPVMultipleDrag() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        context.dragSensitive = new IsotropicDragBuilder(2.0).
+                                addDragCoeff(1.2).
+                                addDragCoeff(1.2, context.initialOrbit.getDate(), AbsoluteDate.FUTURE_INFINITY).
+                                build();
 
         final NumericalPropagatorBuilder propagatorBuilder =
                         context.createNumerical(OrbitParamsType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 1.0, Force.DRAG);
 
         for (ParameterDriver driver:propagatorBuilder.getPropagationParametersDrivers().getDrivers()) {
-            if (driver.getName().equals("drag coefficient")) {
+            if (driver.getName().contains(DragSensitive.DRAG_COEFFICIENT)) {
                 driver.setSelected(true);
-                driver.addSpanAtDate(context.initialOrbit.getDate());
             }
         }
-        
+
         // create perfect PV measurements
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
@@ -1003,7 +1008,7 @@ class BatchLSEstimatorTest {
 
         ParameterDriver a1Driver = parameters.get(6);
         Assertions.assertEquals("a[1]", a1Driver.getName());
-        a1Driver.setValue(a1Driver.getValue() - 5.4, null);
+        a1Driver.setValue(a1Driver.getValue() - 5.4);
         a1Driver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
         final Orbit before = new KeplerianOrbit(parameters.get( 6).getValue(),

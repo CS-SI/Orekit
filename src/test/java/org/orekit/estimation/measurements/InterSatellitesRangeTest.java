@@ -56,9 +56,8 @@ import org.orekit.time.clocks.PolynomialClockModel;
 import org.orekit.utils.Constants;
 import org.orekit.utils.Differentiation;
 import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterFunction;
-import org.orekit.utils.TimeSpanMap.Span;
+import org.orekit.utils.drivers.ParameterDriver;
+import org.orekit.utils.drivers.ParameterFunction;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 class InterSatellitesRangeTest {
@@ -517,29 +516,25 @@ class InterSatellitesRangeTest {
                     }
 
                     for (int i = 0; i < drivers.length; ++i) {
-                        for (Span<String> span = drivers[i].getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
 
-                            final double[] gradient  = measurement.
-                                estimate(0, 0, states).getParameterDerivatives(drivers[i], span.getStart());
-                            Assertions.assertEquals(1, measurement.getDimension());
-                            Assertions.assertEquals(1, gradient.length);
+                        final double[] gradient  = measurement.estimate(0, 0, states).getParameterDerivatives(drivers[i]);
+                        Assertions.assertEquals(1, measurement.getDimension());
+                        Assertions.assertEquals(1, gradient.length);
 
-                            // Compute a reference value using finite differences
-                            final ParameterFunction dMkdP =
-                                            Differentiation.differentiate(new ParameterFunction() {
-                                                /** {@inheritDoc} */
-                                                @Override
-                                                public double value(final ParameterDriver parameterDriver, final AbsoluteDate date) {
-                                                    return measurement.
-                                                           estimateWithoutDerivatives(states).
-                                                           getEstimatedValue()[0];
-                                                }
-                                            }, 3, 20.0 * drivers[i].getScale());
-                            final double ref = dMkdP.value(drivers[i], span.getStart());
+                        // Compute a reference value using finite differences
+                        final ParameterFunction dMkdP =
+                            Differentiation.differentiate(new ParameterFunction() {
+                                /** {@inheritDoc} */
+                                @Override
+                                public double value(final ParameterDriver parameterDriver, final AbsoluteDate date) {
+                                    return measurement.estimateWithoutDerivatives(states).getEstimatedValue()[0];
+                                }
+                            }, 3, 20.0 * drivers[i].getScale());
+                        final double ref = dMkdP.value(drivers[i], measurement.getDate());
                             
-                            final double relError = FastMath.abs((ref-gradient[0])/ref);
-                            relErrorList.add(relError);
-                        }
+                        final double relError = FastMath.abs((ref-gradient[0])/ref);
+                        relErrorList.add(relError);
+
                     }
 
                 } // End if measurement date between previous and current interpolator step

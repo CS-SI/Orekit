@@ -33,8 +33,7 @@ import org.orekit.time.clocks.FieldClockModel;
 import org.orekit.time.clocks.FieldClockOffset;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinatesProvider;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.TimeSpanMap.Span;
+import org.orekit.utils.drivers.ParameterDriver;
 
 /** Abstract interface that contains those methods necessary
  *  for both space and ground-based satellite observers.
@@ -86,8 +85,7 @@ public interface Observer extends MeasurementParticipant {
      * @param inertial inertial frame to transform to
      * @param clockDate date of the transform, clock offset and its derivatives already compensated
      * @param freeParameters total number of free parameters in the gradient
-     * @param indices indices of the estimated parameters in derivatives computations, must be driver
-     * span name in map, not driver name or will not give right results (see {@link ParameterDriver#getValue(int, Map)})
+     * @param indices indices of the estimated parameters in derivatives computations
      * @return transform between offset frame and inertial frame, at specified date
      */
     default FieldTransform<Gradient> getOffsetToInertial(final Frame inertial,
@@ -111,8 +109,7 @@ public interface Observer extends MeasurementParticipant {
      * @param inertial inertial frame to transform to
      * @param offsetCompensatedDate date of the transform, clock offset and its derivatives already compensated
      * @param freeParameters total number of free parameters in the gradient
-     * @param indices indices of the estimated parameters in derivatives computations, must be driver
-     * span name in map, not driver name or will not give right results (see {@link ParameterDriver#getValue(int, Map)})
+     * @param indices indices of the estimated parameters in derivatives computations
      * @return transform between offset frame and inertial frame, at specified date
      */
     FieldTransform<Gradient> getOffsetToInertial(Frame inertial, FieldAbsoluteDate<Gradient> offsetCompensatedDate,
@@ -135,9 +132,7 @@ public interface Observer extends MeasurementParticipant {
         final Map<String, Integer> paramIndices = new HashMap<>();
         for (ParameterDriver measurementDriver : parameterDrivers) {
             if (measurementDriver.isSelected()) {
-                for (Span<String> span = measurementDriver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                    paramIndices.put(span.getData(), nbParams++);
-                }
+                paramIndices.put(measurementDriver.getName(), nbParams++);
             }
         }
         return paramIndices;

@@ -36,7 +36,7 @@ import org.orekit.time.TimeOffset;
 import org.orekit.utils.FieldArrayDictionary;
 import org.orekit.utils.FieldDataDictionary;
 import org.orekit.utils.FieldTimeSpanMap;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriver;
 
 /** Simple Keplerian orbit propagator.
  * @see FieldOrbit

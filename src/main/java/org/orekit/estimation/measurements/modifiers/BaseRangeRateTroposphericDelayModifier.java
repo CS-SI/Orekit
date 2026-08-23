@@ -32,7 +32,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldTrackingCoordinates;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriver;
 import org.orekit.utils.TrackingCoordinates;
 
 /** Baselass modifying theoretical range-rate measurements with tropospheric delay.
@@ -98,7 +98,7 @@ public abstract class BaseRangeRateTroposphericDelayModifier {
                 final AbsoluteDate date = state.getDate();
                 final GeodeticPoint point = groundObserver.getOffsetGeodeticPoint(date);
                 final double d1 = tropoModel.pathDelay(trackingCoordinates1, point,
-                        tropoModel.getParameters(date), date).getDelay();
+                                                       tropoModel.getParameters(), date).getDelay();
 
                 // propagate spacecraft state forward by dt
                 final SpacecraftState state2 = state.shiftedBy(dt);
@@ -108,7 +108,7 @@ public abstract class BaseRangeRateTroposphericDelayModifier {
 
                 // tropospheric delay dt after
                 final double d2 = tropoModel.pathDelay(trackingCoordinates2, point,
-                                tropoModel.getParameters(state2.getDate()), state2.getDate()).
+                                                       tropoModel.getParameters(), state2.getDate()).
                         getDelay();
 
                 return (d2 - d1) / dt;

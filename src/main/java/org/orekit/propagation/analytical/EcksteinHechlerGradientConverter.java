@@ -22,7 +22,7 @@ import java.util.List;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriver;
 
 /**
  * Converter for Eckstein-Hechler propagator.

@@ -26,9 +26,8 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.AbstractGradientConverter;
 import org.orekit.utils.Differentiation;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterDriversProvider;
-import org.orekit.utils.TimeSpanMap.Span;
+import org.orekit.utils.drivers.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriversProvider;
 
 /** Utility class for bistatic measurements.
  * @author Pascal Parraud
@@ -108,15 +107,12 @@ class BistaticModifierUtil {
         int index = 0;
         for (final ParameterDriver driver : parametricModel.getParametersDrivers()) {
             if (driver.isSelected()) {
-                for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-
-                    // update estimated derivatives with derivative of the modification wrt model parameters
-                    double parameterDerivative  = estimated.getParameterDerivatives(driver, span.getStart())[0];
-                    parameterDerivative += derivativesUp[index + converter.getFreeStateParameters()];
-                    parameterDerivative += derivativesDown[index + converter.getFreeStateParameters()];
-                    estimated.setParameterDerivatives(driver, span.getStart(), parameterDerivative);
-                    index++;
-                }
+                // update estimated derivatives with derivative of the modification wrt model parameters
+                double parameterDerivative  = estimated.getParameterDerivatives(driver)[0];
+                parameterDerivative += derivativesUp[index + converter.getFreeStateParameters()];
+                parameterDerivative += derivativesDown[index + converter.getFreeStateParameters()];
+                estimated.setParameterDerivatives(driver, parameterDerivative);
+                index++;
             }
 
         }
@@ -136,14 +132,11 @@ class BistaticModifierUtil {
                                                                                       final SpacecraftState state) {
         for (final ParameterDriver driver : observer.getParametersDrivers()) {
             if (driver.isSelected()) {
-                for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-
-                    // update estimated derivatives with derivative of the modification wrt parameters
-                    double parameterDerivative = estimated.getParameterDerivatives(driver, span.getStart())[0];
-                    parameterDerivative += Differentiation.differentiate((d, t) -> modelEffect.evaluate(observer, state),
-                                                                         3, 10.0 * driver.getScale()).value(driver, state.getDate());
-                    estimated.setParameterDerivatives(driver, span.getStart(), parameterDerivative);
-                }
+                // update estimated derivatives with derivative of the modification wrt parameters
+                double parameterDerivative = estimated.getParameterDerivatives(driver)[0];
+                parameterDerivative += Differentiation.differentiate((d, t) -> modelEffect.evaluate(observer, state),
+                                                                      3, 10.0 * driver.getScale()).value(driver, state.getDate());
+                estimated.setParameterDerivatives(driver, parameterDerivative);
             }
         }
     }

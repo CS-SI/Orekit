@@ -47,8 +47,8 @@ import org.orekit.propagation.events.FieldEventState.EventOccurrence;
 import org.orekit.propagation.sampling.FieldOrekitStepInterpolator;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinatesProvider;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterDriversProvider;
+import org.orekit.utils.drivers.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriversProvider;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 /** Common handling of {@link org.orekit.propagation.FieldPropagator} methods for analytical propagators.
@@ -391,7 +391,7 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
         try {
 
             // evaluate orbit
-            final FieldOrbit<T> orbit = propagateOrbit(date, getParameters(date.getField(), date.getDate()));
+            final FieldOrbit<T> orbit = propagateOrbit(date, getParameters(date.getField()));
 
             // evaluate attitude
             final FieldAttitude<T> attitude =
@@ -411,7 +411,7 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
         /** {@inheritDoc} */
         @Override
         public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> date, final Frame frame) {
-            return propagateOrbit(date, getParameters(date.getField(), date)).getPVCoordinates(frame);
+            return propagateOrbit(date, getParameters(date.getField())).getPVCoordinates(frame);
         }
 
     }

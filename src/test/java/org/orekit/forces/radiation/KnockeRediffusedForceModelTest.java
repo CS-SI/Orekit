@@ -463,7 +463,7 @@ class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
 
         // Compute acceleration and verify
         // Typical values are on the order of 1e-11 to 1e-10 km/s^2 (Montenbruck, Satellite Orbits, Fig 3.1)
-        final Vector3D acceleration = forceModel.acceleration(new SpacecraftState(orbit), forceModel.getParameters(date));
+        final Vector3D acceleration = forceModel.acceleration(new SpacecraftState(orbit), forceModel.getParameters());
         final double accNormKmPerSec = acceleration.getNorm() * 0.001;
         Assertions.assertTrue(accNormKmPerSec > 0, "Acceleration should be non-zero in LEO");
         Assertions.assertTrue(acceleration.dotProduct(pos.normalize()) > 0, "Radial acceleration should be positive (away from Earth)");
@@ -494,7 +494,7 @@ class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
                     FramesFactory.getGCRF(), date, Constants.WGS84_EARTH_MU);
 
             // Compute acceleration
-            final Vector3D acceleration = forceModel.acceleration(new SpacecraftState(orbit), forceModel.getParameters(date));
+            final Vector3D acceleration = forceModel.acceleration(new SpacecraftState(orbit), forceModel.getParameters());
             final double accNorm = acceleration.getNorm();
 
             // Acceleration should decrease with altitude (See Montenbruck, Satellite Orbits, Fig 3.1)
@@ -571,7 +571,7 @@ class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
 
             // Get Knocke model acceleration
 
-            final Vector3D knockeAcceleration = knockeModel.acceleration(currentState, knockeModel.getParameters(currentState.getDate()));
+            final Vector3D knockeAcceleration = knockeModel.acceleration(currentState, knockeModel.getParameters());
 
             // Get radial direction
             final Vector3D radialUnit = currentState.getOrbit().getPosition().normalize();

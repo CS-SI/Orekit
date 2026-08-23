@@ -16,8 +16,7 @@
  */
 package org.orekit.orbits;
 
-import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.ParameterDriversList.DelegatingDriver;
+import org.orekit.utils.drivers.ParameterDriversList.DelegatingDriver;
 
 import java.util.List;
 
@@ -39,14 +38,13 @@ public class EquinoctialOrbitFactory extends AbstractOrbitFactory<EquinoctialOrb
     /** {@inheritDoc} */
     @Override
     public EquinoctialOrbit createFromDrivers() {
-        final AbsoluteDate           date    = getDate();
         final List<DelegatingDriver> drivers = getOrbitalParametersDrivers().getDrivers();
-        return new EquinoctialOrbit(drivers.get(0).getValue(date),
-                                    drivers.get(1).getValue(date),
-                                    drivers.get(2).getValue(date),
-                                    drivers.get(3).getValue(date),
-                                    drivers.get(4).getValue(date),
-                                    drivers.get(5).getValue(date),
+        return new EquinoctialOrbit(drivers.get(0).getValue(),
+                                    drivers.get(1).getValue(),
+                                    drivers.get(2).getValue(),
+                                    drivers.get(3).getValue(),
+                                    drivers.get(4).getValue(),
+                                    drivers.get(5).getValue(),
                                     getPositionAngleType(), getFrame(), getDate(), getMu());
     }
 

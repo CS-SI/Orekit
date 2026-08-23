@@ -61,7 +61,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.drag.DragForce;
-import org.orekit.forces.drag.IsotropicDrag;
+import org.orekit.forces.drag.IsotropicDragBuilder;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
 import org.orekit.forces.gravity.ThirdBodyAttraction;
 import org.orekit.forces.gravity.potential.GRGSFormatReader;
@@ -130,7 +130,7 @@ import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriver;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 class NumericalPropagatorTest {
@@ -574,16 +574,14 @@ class NumericalPropagatorTest {
 
     @Test
     void testPropagationTypesElliptical() {
-     // setup
-        AbsoluteDate         initDate  = new AbsoluteDate();
-        SpacecraftState     initialState;
+        // setup
         final Vector3D position = new Vector3D(7.0e6, 1.0e6, 4.0e6);
         final Vector3D velocity = new Vector3D(-500.0, 8000.0, 1000.0);
-        initDate = AbsoluteDate.J2000_EPOCH;
+        final AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH;
 
         final Orbit orbit = new EquinoctialOrbit(new PVCoordinates(position, velocity),
                                                  FramesFactory.getEME2000(), initDate, mu);
-        initialState = new SpacecraftState(orbit);
+        final SpacecraftState initialState = new SpacecraftState(orbit);
         OrbitParamsType type = OrbitParamsType.EQUINOCTIAL;
         double[][] tolerance = ToleranceProvider.of(CartesianToleranceProvider.of(0.001)).getTolerances(orbit, type);
         AdaptiveStepsizeIntegrator integrator =
@@ -1932,7 +1930,8 @@ class NumericalPropagatorTest {
                         new MarshallSolarActivityFutureEstimation("Jan2000F10-edited-data\\.txt",
                                                                   MarshallSolarActivityFutureEstimation.StrengthLevel.AVERAGE);
         DTM2000 atmosphere = new DTM2000(msafe, CelestialBodyFactory.getSun(), earth);
-        np.addForceModel(new DragForce(atmosphere, new IsotropicDrag(spacecraftArea, spacecraftDragCoefficient)));
+        np.addForceModel(new DragForce(atmosphere,
+                                       new IsotropicDragBuilder(spacecraftArea).addDragCoeff(spacecraftDragCoefficient).build()));
 
         // solar radiation pressure
         np.addForceModel(new SolarRadiationPressure(CelestialBodyFactory.getSun(), earth,

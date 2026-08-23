@@ -58,6 +58,7 @@ import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeInterval;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.time.TimeStamped;
@@ -65,7 +66,7 @@ import org.orekit.time.UT1Scale;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriver;
 
 public class OceanTidesTest {
 
@@ -144,7 +145,7 @@ public class OceanTidesTest {
                 GravityFieldFactory.getNormalizedProvider(5, 5);
 
         // initialization
-        AbsoluteDate date = new AbsoluteDate(1970, 07, 01, 13, 59, 27.816, utc);
+        AbsoluteDate date = new AbsoluteDate(1970, 7, 1, 13, 59, 27.816, utc);
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, FastMath.toRadians(98.7),
                                          FastMath.toRadians(93.0), FastMath.toRadians(15.0 * 22.5),
                                          0, PositionAngleType.MEAN, eme2000, date,
@@ -197,7 +198,7 @@ public class OceanTidesTest {
                 GravityFieldFactory.getNormalizedProvider(5, 5);
 
         // initialization
-        AbsoluteDate date = new AbsoluteDate(2003, 07, 01, 13, 59, 27.816, utc);
+        AbsoluteDate date = new AbsoluteDate(2003, 7, 1, 13, 59, 27.816, utc);
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, FastMath.toRadians(98.7),
                                          FastMath.toRadians(93.0), FastMath.toRadians(15.0 * 22.5),
                                          0, PositionAngleType.MEAN, eme2000, date,
@@ -314,11 +315,11 @@ public class OceanTidesTest {
         Assertions.assertTrue(detectors.isEmpty());
         Assertions.assertTrue(fieldDetectors.isEmpty());
         
-        // When: 1 span added to driver
+        // When: validity end added to driver
         final List<ParameterDriver> drivers = oceanTidesModel.getParametersDrivers();
         
         for (final ParameterDriver driver : drivers) {
-            driver.addSpanAtDate(t0);
+            driver.setValidity(TimeInterval.of(t0, AbsoluteDate.FUTURE_INFINITY, false));
         }
         
         detectors      = oceanTidesModel.getEventDetectors().toList();

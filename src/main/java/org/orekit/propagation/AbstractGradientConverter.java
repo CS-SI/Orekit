@@ -35,10 +35,9 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.DerivativeStateUtils;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.FieldAbsolutePVCoordinates;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterDriversProvider;
+import org.orekit.utils.drivers.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriversProvider;
 import org.orekit.utils.TimeStampedFieldAngularCoordinates;
-import org.orekit.utils.TimeSpanMap.Span;
 
 /** Converter for states and parameters arrays.
  *  @author Luc Maisonobe
@@ -236,7 +235,7 @@ public abstract class AbstractGradientConverter {
         int nbParams = 0;
         for (final ParameterDriver driver : parametricModel.getParametersDrivers()) {
             if (driver.isSelected()) {
-                nbParams += driver.getNbOfValues();
+                nbParams++;
             }
         }
 
@@ -284,20 +283,14 @@ public abstract class AbstractGradientConverter {
                                     final ParameterDriversProvider parametricModel) {
         final int freeParameters = state.getMass().getFreeParameters();
         final List<ParameterDriver> drivers = parametricModel.getParametersDrivers();
-        int sizeDrivers = 0;
-        for ( ParameterDriver driver : drivers) {
-            sizeDrivers += driver.getNbOfValues();
-        }
+        final int sizeDrivers = drivers.size();
         final Gradient[] parameters = new Gradient[sizeDrivers];
         int index = freeStateParameters;
         int i = 0;
         for (ParameterDriver driver : drivers) {
-            // Loop on the spans
-            for (Span<Double> span = driver.getValueSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                parameters[i++] = driver.isSelected() ?
-                                  Gradient.variable(freeParameters, index++, span.getData()) :
-                                  Gradient.constant(freeParameters, span.getData());
-            }
+            parameters[i++] = driver.isSelected() ?
+                              Gradient.variable(freeParameters, index++, driver.getValue()) :
+                              Gradient.constant(freeParameters, driver.getValue());
         }
         return parameters;
     }
@@ -321,14 +314,10 @@ public abstract class AbstractGradientConverter {
         int index = freeStateParameters;
         int i = 0;
         for (ParameterDriver driver : drivers) {
-            for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                if (span.getData().equals(driver.getNameSpan(date))) {
-                    parameters[i++] = driver.isSelected() ?
-                                      Gradient.variable(freeParameters, index, driver.getValue(date)) :
-                                      Gradient.constant(freeParameters, driver.getValue(date));
-                }
-                index = driver.isSelected() ? index + 1 : index;
-            }
+            parameters[i++] = driver.isSelected() ?
+                              Gradient.variable(freeParameters, index, driver.getValue()) :
+                              Gradient.constant(freeParameters, driver.getValue());
+            index = driver.isSelected() ? index + 1 : index;
         }
         return parameters;
     }

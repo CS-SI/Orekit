@@ -118,13 +118,13 @@ import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElemen
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
+import org.orekit.time.TimeInterval;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.TimeSpanMap;
+import org.orekit.utils.drivers.ParameterDriver;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 class DSSTPropagatorTest {
@@ -310,8 +310,7 @@ class DSSTPropagatorTest {
                                  OrekitMatchers.closeTo(0, 0));
         //test date
         AbsoluteDate date = endDate.shiftedBy(-0.11);
-        Assertions.assertEquals(
-                                ephemeris.propagate(date).getDate().durationFrom(date), 0, 0);
+        Assertions.assertEquals(0, ephemeris.propagate(date).getDate().durationFrom(date), 0);
     }
 
     @Test
@@ -394,7 +393,12 @@ class DSSTPropagatorTest {
 
     @Test
     void testImpulseManeuver() {
-        final Orbit initialOrbit = new KeplerianOrbit(24532000.0, 0.72, 0.3, FastMath.PI, 0.4, 2.0, PositionAngleType.MEAN, FramesFactory.getEME2000(), new AbsoluteDate(new DateComponents(2008, 06, 23), new TimeComponents(14, 18, 37), TimeScalesFactory.getUTC()), 3.986004415e14);
+        final Orbit initialOrbit = new KeplerianOrbit(24532000.0, 0.72, 0.3, FastMath.PI, 0.4, 2.0,
+                                                      PositionAngleType.MEAN, FramesFactory.getEME2000(),
+                                                      new AbsoluteDate(new DateComponents(2008, 6, 23),
+                                                                       new TimeComponents(14, 18, 37),
+                                                                       TimeScalesFactory.getUTC()),
+                                                      3.986004415e14);
         final double a = initialOrbit.getA();
         final double e = initialOrbit.getE();
         final double i = initialOrbit.getI();
@@ -414,7 +418,7 @@ class DSSTPropagatorTest {
     }
 
     @Test
-    void testPropagationWithCentralBody() throws Exception {
+    void testPropagationWithCentralBody() {
 
         // Central Body geopotential 4x4
         final UnnormalizedSphericalHarmonicsProvider provider =
@@ -463,7 +467,7 @@ class DSSTPropagatorTest {
     }
 
     @Test
-    void testPropagationWithThirdBody() throws IOException {
+    void testPropagationWithThirdBody() {
 
         // Central Body geopotential 2x0
         final UnnormalizedSphericalHarmonicsProvider provider =
@@ -521,23 +525,20 @@ class DSSTPropagatorTest {
 
     @Test
     void testTooSmallMaxDegree() {
-        Assertions.assertThrows(OrekitException.class, () -> {
-            new DSSTZonal(GravityFieldFactory.getUnnormalizedProvider(2, 0), 1, 0, 3);
-        });
+        Assertions.assertThrows(OrekitException.class,
+                                () -> new DSSTZonal(GravityFieldFactory.getUnnormalizedProvider(2, 0), 1, 0, 3));
     }
 
     @Test
     void testTooLargeMaxDegree() {
-        Assertions.assertThrows(OrekitException.class, () -> {
-            new DSSTZonal(GravityFieldFactory.getUnnormalizedProvider(2, 0), 8, 0, 8);
-        });
+        Assertions.assertThrows(OrekitException.class,
+                                () -> new DSSTZonal(GravityFieldFactory.getUnnormalizedProvider(2, 0), 8, 0, 8));
     }
 
     @Test
     void testWrongMaxPower() {
-        Assertions.assertThrows(OrekitException.class, () -> {
-            new DSSTZonal(GravityFieldFactory.getUnnormalizedProvider(8, 8), 4, 4, 4);
-        });
+        Assertions.assertThrows(OrekitException.class,
+                                () -> new DSSTZonal(GravityFieldFactory.getUnnormalizedProvider(8, 8), 4, 4, 4));
     }
 
     @Test
@@ -602,10 +603,11 @@ class DSSTPropagatorTest {
                                 2.e-3);
         //Assertions.assertEquals(((DSSTAtmosphericDrag)drag).getCd(), cd, 1e-9);
         //Assertions.assertEquals(((DSSTAtmosphericDrag)drag).getArea(), area, 1e-9);
-        Assertions.assertEquals(((DSSTAtmosphericDrag)drag).getAtmosphere(), atm);
+        Assertions.assertEquals(atm, ((DSSTAtmosphericDrag)drag).getAtmosphere());
 
         final double atmosphericMaxConstant = 1000000.0; //DSSTAtmosphericDrag.ATMOSPHERE_ALTITUDE_MAX
-        Assertions.assertEquals(((DSSTAtmosphericDrag)drag).getRbar(), atmosphericMaxConstant + Constants.WGS84_EARTH_EQUATORIAL_RADIUS, 1e-9);
+        Assertions.assertEquals(atmosphericMaxConstant + Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                ((DSSTAtmosphericDrag)drag).getRbar(), 1e-9);
     }
 
     @Test
@@ -1097,7 +1099,7 @@ class DSSTPropagatorTest {
         Assertions.assertDoesNotThrow(() -> propagator.propagate(state.getDate().shiftedBy(3600)));
     }
 
-    public class ApsideHandlerWithResetState implements EventHandler {
+    public static class ApsideHandlerWithResetState implements EventHandler {
         @Override
         public Action eventOccurred(SpacecraftState s, EventDetector detector, boolean increasing) {
             return Action.RESET_STATE;
@@ -1144,7 +1146,7 @@ class DSSTPropagatorTest {
         final SpacecraftState finalState = propagator.propagate(state.getDate().shiftedBy(86400.0));
 
         // Verify is the propagation is correctly performed
-        Assertions.assertEquals(finalState.getOrbit().getMu(), 3.986004415E14, Double.MIN_VALUE);
+        Assertions.assertEquals(3.986004415E14, finalState.getOrbit().getMu(), Double.MIN_VALUE);
     }
 
     @Test
@@ -1428,9 +1430,8 @@ class DSSTPropagatorTest {
                 is(PositionAngleType.MEAN));
         MatcherAssert.assertThat(stm,
                 OrekitMatchers.matrixCloseTo(expectedStm, twoParameterAbsTol));
-        // "Spancentral" seems like an odd name, but that's what the code uses.
         MatcherAssert.assertThat(harvester.getJacobiansColumnsNames(),
-                contains("MDot", "Spancentral attraction coefficient0"));
+                contains("MDot", "central attraction coefficient"));
         MatcherAssert.assertThat(stmParameters.getColumn(0), stmMdotMatcherClose);
         MatcherAssert.assertThat(stmParameters.getColumn(1), stmMuMatcherClose);
         MatcherAssert.assertThat(stmParameters.getColumnDimension(), is(2));
@@ -1513,9 +1514,8 @@ class DSSTPropagatorTest {
                 is(PositionAngleType.MEAN));
         MatcherAssert.assertThat(stm,
                 OrekitMatchers.matrixCloseTo(expectedStm, twoParameterAbsTol));
-        // "Spancentral" seems like an odd name, but that's what the code uses.
         MatcherAssert.assertThat(harvester.getJacobiansColumnsNames(),
-                contains("MDot", "Spancentral attraction coefficient0"));
+                contains("MDot", "central attraction coefficient"));
         MatcherAssert.assertThat(stmParameters.getColumn(0), stmMdotMatcherClose);
         MatcherAssert.assertThat(stmParameters.getColumn(1), stmMuMatcherClose);
         MatcherAssert.assertThat(stmParameters.getColumnDimension(), is(2));
@@ -1526,15 +1526,9 @@ class DSSTPropagatorTest {
     private static class MDot implements DSSTForceModel {
 
         /** Mean Anomaly Rate */
-        private final ParameterDriver mDot = new ParameterDriver(
-                "MDot",
-                // this seems to be needed to ensure the name is "MDot"
-                new TimeSpanMap<>("MDot"),
-                new TimeSpanMap<>(0.0),
-                0,
-                1,
-                Double.NEGATIVE_INFINITY,
-                Double.POSITIVE_INFINITY);
+        private final ParameterDriver mDot =
+            new ParameterDriver("MDot", 0, 1,
+                                Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, TimeInterval.UNLIMITED);
 
         @Override
         public List<ParameterDriver> getParametersDrivers() {
@@ -1603,7 +1597,7 @@ class DSSTPropagatorTest {
 
     private SpacecraftState getGEOState() throws IllegalArgumentException, OrekitException {
         // No shadow at this date
-        final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2003, 05, 21), new TimeComponents(1, 0, 0.),
+        final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2003, 5, 21), new TimeComponents(1, 0, 0.),
                                                        TimeScalesFactory.getUTC());
         final Orbit orbit = new EquinoctialOrbit(42164000,
                                                  10e-3,
@@ -1621,7 +1615,7 @@ class DSSTPropagatorTest {
         final Vector3D position = new Vector3D(-6142438.668, 3492467.560, -25767.25680);
         final Vector3D velocity = new Vector3D(505.8479685, 942.7809215, 7435.922231);
         // Spring equinoxe 21st mars 2003 1h00m
-        final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2003, 03, 21), new TimeComponents(1, 0, 0.), TimeScalesFactory.getUTC());
+        final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2003, 3, 21), new TimeComponents(1, 0, 0.), TimeScalesFactory.getUTC());
         return new SpacecraftState(new EquinoctialOrbit(new PVCoordinates(position, velocity),
                                                         FramesFactory.getEME2000(),
                                                         initDate,
@@ -1661,7 +1655,7 @@ class DSSTPropagatorTest {
     }
 
     /** This class is based on the example given by Orekit user kris06 in https://gitlab.orekit.org/orekit/orekit/-/issues/670. */
-    private class DSSTForce extends AbstractGaussianContribution {
+    private static class DSSTForce extends AbstractGaussianContribution {
 
         DSSTForce(ForceModel contribution, double mu) {
             super("DSST mock -", 6.0e-10, contribution, mu);
@@ -1696,7 +1690,7 @@ class DSSTPropagatorTest {
     }
 
     /** This class is based on the example given by Orekit user kris06 in https://gitlab.orekit.org/orekit/orekit/-/issues/670. */
-    private class NumericalForce implements ForceModel {
+    private static class NumericalForce implements ForceModel {
 
         private boolean initialized;
         private boolean accComputed;
@@ -1766,7 +1760,7 @@ class DSSTPropagatorTest {
         final Vector3D position = new Vector3D(-6142438.668, 3492467.560, -25767.25680);
         final Vector3D velocity = new Vector3D(505.8479685, 942.7809215, 7435.922231);
         // Spring equinoxe 21st mars 2003 1h00m
-        final AbsoluteDate initialDate = new AbsoluteDate(new DateComponents(2003, 03, 21), new TimeComponents(1, 0, 0.), TimeScalesFactory.getUTC());
+        final AbsoluteDate initialDate = new AbsoluteDate(new DateComponents(2003, 3, 21), new TimeComponents(1, 0, 0.), TimeScalesFactory.getUTC());
         final CartesianOrbit osculatingOrbit = new CartesianOrbit(new PVCoordinates(position, velocity), FramesFactory.getTOD(IERSConventions.IERS_1996, false),
                                                                   initialDate, Constants.WGS84_EARTH_MU);
         // Adaptive step integrator

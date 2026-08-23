@@ -16,7 +16,7 @@
  */
 package org.orekit.time.clocks;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -25,7 +25,8 @@ import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.util.FastMath;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.time.TimeInterval;
+import org.orekit.utils.drivers.ParameterDriver;
 
 /**
  * Clock model for a clock with constant offset.
@@ -45,7 +46,8 @@ public class ConstantClockModel implements ClockModel {
      */
     public ConstantClockModel(final double offset) {
         this.offset = new ParameterDriver("a0", 0.0, FastMath.scalb(1.0, -10),
-                    Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                                          Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                          TimeInterval.UNLIMITED);
         this.offset.setValue(offset);
     }
 
@@ -65,13 +67,13 @@ public class ConstantClockModel implements ClockModel {
     /** {@inheritDoc} */
     @Override
     public List<ParameterDriver> getParametersDrivers() {
-        return Arrays.asList(offset);
+        return Collections.singletonList(offset);
     }
 
     /** {@inheritDoc} */
     @Override
     public ClockOffset getOffset(final AbsoluteDate date) {
-        return new ClockOffset(date, offset.getValue(date), 0, 0);
+        return new ClockOffset(date, offset.getValue(), 0, 0);
     }
 
     /** {@inheritDoc} */
@@ -79,13 +81,14 @@ public class ConstantClockModel implements ClockModel {
     public <T extends CalculusFieldElement<T>> FieldClockOffset<T> getFieldOffset(final FieldAbsoluteDate<T> date) {
         final AbsoluteDate aDate = date.toAbsoluteDate();
         final T zero = date.getField().getZero();
-        return new FieldClockOffset<>(date, zero.newInstance(offset.getValue(aDate)), zero, zero);
+        return new FieldClockOffset<>(date, zero.newInstance(offset.getValue()), zero, zero);
     }
 
     /** {@inheritDoc} */
     @Override
     public FieldClockModel<Gradient> getFieldModel(final int freeParameters,
         final Map<String, Integer> indices, final AbsoluteDate date) {
-        return new ConstantFieldClockModel<>(null, Gradient.constant(freeParameters, offset.getValue(date)));
+        return new ConstantFieldClockModel<>(null, Gradient.constant(freeParameters, offset.getValue()));
     }
+
 }

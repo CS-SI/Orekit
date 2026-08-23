@@ -27,8 +27,8 @@ import org.hipparchus.util.UnscentedTransformProvider;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.propagation.conversion.DSSTPropagatorBuilder;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterDriversList;
+import org.orekit.utils.drivers.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriversList;
 
 /**
  * Implementation of an Unscented Semi-analytical Kalman filter (USKF) to perform orbit determination.

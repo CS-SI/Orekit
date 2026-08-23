@@ -45,7 +45,7 @@ import org.orekit.estimation.sequential.KalmanEstimator;
 import org.orekit.estimation.sequential.SemiAnalyticalKalmanEstimator;
 import org.orekit.estimation.sequential.SemiAnalyticalUnscentedKalmanEstimator;
 import org.orekit.estimation.sequential.UnscentedKalmanEstimator;
-import org.orekit.forces.drag.IsotropicDrag;
+import org.orekit.forces.drag.IsotropicDragBuilder;
 import org.orekit.forces.gravity.potential.AstronomicalAmplitudeReader;
 import org.orekit.forces.gravity.potential.FESCHatEpsilonReader;
 import org.orekit.forces.gravity.potential.GRGSFormatReader;
@@ -78,7 +78,7 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriver;
 
 /** Utility class for orbit determination tests. */
 public class EstimationTestUtils {
@@ -99,7 +99,7 @@ public class EstimationTestUtils {
         context.sun = CelestialBodyFactory.getSun();
         context.moon = CelestialBodyFactory.getMoon();
         context.radiationSensitive = new IsotropicRadiationClassicalConvention(2.0, 0.2, 0.8);
-        context.dragSensitive = new IsotropicDrag(2.0, 1.2);
+        context.dragSensitive = new IsotropicDragBuilder(2.0).addDragCoeff(1.2).build();
         final EOPHistory eopHistory = FramesFactory.getEOPHistory(context.conventions, true);
         context.utc = TimeScalesFactory.getUTC();
         context.ut1 = TimeScalesFactory.getUT1(eopHistory);
@@ -265,7 +265,7 @@ public class EstimationTestUtils {
         context.sun = CelestialBodyFactory.getSun();
         context.moon = CelestialBodyFactory.getMoon();
         context.radiationSensitive = new IsotropicRadiationClassicalConvention(2.0, 0.2, 0.8);
-        context.dragSensitive = new IsotropicDrag(2.0, 1.2);
+        context.dragSensitive = new IsotropicDragBuilder(2.0).addDragCoeff(1.2).build();
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
         AstronomicalAmplitudeReader aaReader =
                         new AstronomicalAmplitudeReader("hf-fes2004.dat", 5, 2, 3, 1.0);

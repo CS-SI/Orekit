@@ -24,8 +24,9 @@ import org.orekit.forces.ForceModel;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeInterval;
 import org.orekit.utils.ExtendedPositionProvider;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.drivers.ParameterDriver;
 import org.orekit.utils.TimeStampedPVCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
@@ -68,7 +69,7 @@ public abstract class AbstractBodyAttraction implements ForceModel {
         this.positionProvider = positionProvider;
         this.name = name;
         this.gmParameterDriver = new ParameterDriver(name + ATTRACTION_COEFFICIENT_SUFFIX, FastMath.abs(mu),
-            MU_SCALE, 0.0, Double.POSITIVE_INFINITY);
+                                                     MU_SCALE, 0.0, Double.POSITIVE_INFINITY, TimeInterval.UNLIMITED);
     }
 
     /** Getter for the body's name.
