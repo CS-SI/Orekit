@@ -235,6 +235,7 @@ public class ParameterDriversList {
          */
         private void add(final ParameterDriver driver) {
 
+            setValue(driver.getValue());
             setReferenceDate(driver.getReferenceDate());
 
             // if any of the drivers is selected, all must be selected
