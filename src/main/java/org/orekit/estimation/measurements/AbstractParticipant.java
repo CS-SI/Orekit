@@ -27,7 +27,6 @@ import org.hipparchus.util.FastMath;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeInterval;
 import org.orekit.time.clocks.ClockModel;
 import org.orekit.time.clocks.PolynomialClockModel;
@@ -129,7 +128,7 @@ public abstract class AbstractParticipant implements MeasurementParticipant {
      * @return model parameters, will throw an
      * exception if one PDriver has several values driven. If
      * it's the case (if at least 1 PDriver of the model has several values
-     * driven) the method {@link ParameterDriversProvider#getParameters(AbsoluteDate)} must be used.
+     * driven) the method {@link ParameterDriversProvider#getParameters()} must be used.
      */
     @Override
     public List<ParameterDriver> getParametersDrivers() {
