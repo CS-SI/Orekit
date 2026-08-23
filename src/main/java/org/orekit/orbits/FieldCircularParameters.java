@@ -21,6 +21,7 @@ import org.hipparchus.Field;
 
 /**
  * Data container for circular orbital elements (Field version).
+ * @param <T> type of the field elements
  * @param a semi-major axis
  * @param ex first component of the eccentricity vector
  * @param ey second component of the eccentricity vector
