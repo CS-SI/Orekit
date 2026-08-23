@@ -67,7 +67,6 @@ import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
-import org.orekit.utils.ParameterObserver;
 
 /**
  * This class propagates {@link org.orekit.orbits.Orbit orbits} using the DSST theory.
@@ -543,17 +542,17 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      */
     public void addForceModel(final DSSTForceModel force) {
 
-        if (force instanceof DSSTNewtonianAttraction) {
+        if (force instanceof final DSSTNewtonianAttraction na) {
             // we want to add the central attraction force model
 
+            // ensure the state mapper knows about the new mu
+            superSetMu(na.getMu());
+
             // ensure we are notified of any mu change
-            force.getParametersDrivers().getFirst().addObserver(new ParameterObserver() {
-                /** {@inheritDoc} */
-                @Override
-                public void valueChanged(final double previousValue, final ParameterDriver driver) {
-                    superSetMu(driver.getValue());
-                }
-            });
+            force.
+                getParametersDrivers().
+                getFirst().
+                addObserver((previousValue, driver) -> superSetMu(driver.getValue()));
 
             if (hasNewtonianAttraction()) {
                 // there is already a central attraction model, replace it

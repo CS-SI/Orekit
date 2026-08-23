@@ -80,12 +80,12 @@ public class ParameterDriverTest {
 
         p.addObserver(new ParameterObserver() {
 
-            int valueChangesCount = 0;
-
             /** {@inheritDoc} */
             @Override
             public void valueChanged(final double previousValue, final ParameterDriver driver) {
-                if (valueChangesCount++ == 1) {
+                // we just chek the first call
+                // because there will be additional ones with difference values
+                if (!valueFlag.get()) {
                     Assertions.assertEquals( 7.0, previousValue, 1e-10);
                     Assertions.assertEquals(-7.0, driver.getValue(), 1e-10);
                     valueFlag.set(true);

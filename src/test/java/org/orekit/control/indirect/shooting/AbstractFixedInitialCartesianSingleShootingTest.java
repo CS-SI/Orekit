@@ -131,7 +131,7 @@ class AbstractFixedInitialCartesianSingleShootingTest {
         Assertions.assertEquals(derivatives[0], fullState[3]);
         Assertions.assertEquals(derivatives[1], fullState[4]);
         Assertions.assertEquals(derivatives[2], fullState[5]);
-        final double mu = attraction.getMu(AbsoluteDate.ARBITRARY_EPOCH);
+        final double mu = attraction.getMu();
         final Vector3D newtonianAcceleration = attraction.acceleration(state, new double[] {mu});
         final CartesianAdjointDerivativesProvider derivativesProvider = adjointDynamicsProvider.buildAdditionalDerivativesProvider();
         final CombinedDerivatives combinedDerivatives = derivativesProvider.combinedDerivatives(state);

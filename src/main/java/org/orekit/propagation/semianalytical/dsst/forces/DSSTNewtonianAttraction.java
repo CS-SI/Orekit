@@ -34,7 +34,6 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
-import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeInterval;
 import org.orekit.utils.ParameterDriver;
 
@@ -69,10 +68,9 @@ public class DSSTNewtonianAttraction implements DSSTForceModel {
     }
 
     /** Get the central attraction coefficient μ.
-     * @param date date at which mu wants to be known
      * @return mu central attraction coefficient (m³/s²)
      */
-    public double getMu(final AbsoluteDate date) {
+    public double getMu() {
         return gmParameterDriver.getValue();
     }
 
@@ -86,9 +84,10 @@ public class DSSTNewtonianAttraction implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends CalculusFieldElement<T>> List<FieldShortPeriodTerms<T>> initializeShortPeriodTerms(final FieldAuxiliaryElements<T> auxiliaryElements,
-                                                                                     final PropagationType type,
-                                                                                     final T[] parameters) {
+    public <T extends CalculusFieldElement<T>> List<FieldShortPeriodTerms<T>>
+        initializeShortPeriodTerms(final FieldAuxiliaryElements<T> auxiliaryElements,
+                                   final PropagationType type,
+                                   final T[] parameters) {
         return Collections.emptyList();
     }
 
@@ -100,7 +99,8 @@ public class DSSTNewtonianAttraction implements DSSTForceModel {
      *  @param parameters values of the force model parameters
      *  @return new force model context
      */
-    private DSSTNewtonianAttractionContext initializeStep(final AuxiliaryElements auxiliaryElements, final double[] parameters) {
+    private DSSTNewtonianAttractionContext initializeStep(final AuxiliaryElements auxiliaryElements,
+                                                          final double[] parameters) {
         return new DSSTNewtonianAttractionContext(auxiliaryElements, parameters);
     }
 
@@ -113,8 +113,9 @@ public class DSSTNewtonianAttraction implements DSSTForceModel {
      *  @param parameters values of the force model parameters
      *  @return new force model context
      */
-    private <T extends CalculusFieldElement<T>> FieldDSSTNewtonianAttractionContext<T> initializeStep(final FieldAuxiliaryElements<T> auxiliaryElements,
-                                                                                                  final T[] parameters) {
+    private <T extends CalculusFieldElement<T>> FieldDSSTNewtonianAttractionContext<T>
+        initializeStep(final FieldAuxiliaryElements<T> auxiliaryElements,
+                       final T[] parameters) {
         return new FieldDSSTNewtonianAttractionContext<>(auxiliaryElements, parameters);
     }
 
@@ -138,8 +139,8 @@ public class DSSTNewtonianAttraction implements DSSTForceModel {
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>> T[] getMeanElementRate(final FieldSpacecraftState<T> state,
-                                                                  final FieldAuxiliaryElements<T> auxiliaryElements,
-                                                                  final T[] parameters) {
+                                                                      final FieldAuxiliaryElements<T> auxiliaryElements,
+                                                                      final T[] parameters) {
 
         // Field for array building
         final Field<T> field = state.getMass().getField();

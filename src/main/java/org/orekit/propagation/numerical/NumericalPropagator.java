@@ -38,7 +38,6 @@ import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.drag.AbstractDragForceModel;
@@ -76,7 +75,6 @@ import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
-import org.orekit.utils.ParameterObserver;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** This class propagates {@link org.orekit.orbits.Orbit orbits} using
@@ -296,22 +294,17 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
      */
     public void addForceModel(final ForceModel model) {
 
-        if (model instanceof NewtonianAttraction) {
+        if (model instanceof final NewtonianAttraction na) {
             // we want to add the central attraction force model
 
-            try {
-                // ensure we are notified of any mu change
-                model.getParametersDrivers().getFirst().addObserver(new ParameterObserver() {
-                    /** {@inheritDoc} */
-                    @Override
-                    public void valueChanged(final double previousValue, final ParameterDriver driver) {
-                        superSetMu(driver.getValue());
-                    }
-                });
-            } catch (OrekitException oe) {
-                // this should never happen
-                throw new OrekitInternalError(oe);
-            }
+            // ensure the state mapper knows about the new mu
+            superSetMu(na.getMu());
+
+            // ensure we are notified of any mu change
+            model.
+                getParametersDrivers().
+                getFirst().
+                addObserver((previousValue, driver) -> superSetMu(driver.getValue()));
 
             if (hasNewtonianAttraction()) {
                 // there is already a central attraction model, replace it

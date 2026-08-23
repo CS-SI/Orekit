@@ -29,8 +29,6 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.FieldTimeDerivativesEquations;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
-import org.orekit.time.AbsoluteDate;
-import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeInterval;
 import org.orekit.utils.ParameterDriver;
 
@@ -69,20 +67,18 @@ public class NewtonianAttraction implements ForceModel {
     }
 
     /** Get the central attraction coefficient μ.
-     * @param date date at which the mu value wants to be known
      * @return mu central attraction coefficient (m³/s²)
      */
-    public double getMu(final AbsoluteDate date) {
+    public double getMu() {
         return gmParameterDriver.getValue();
     }
 
     /** Get the central attraction coefficient μ.
      * @param <T> the type of the field element
      * @param field field to which the state belongs
-     * @param date date at which the mu value wants to be known
      * @return mu central attraction coefficient (m³/s²)
      */
-    public <T extends CalculusFieldElement<T>> T getMu(final Field<T> field, final FieldAbsoluteDate<T> date) {
+    public <T extends CalculusFieldElement<T>> T getMu(final Field<T> field) {
         final T zero = field.getZero();
         return zero.newInstance(gmParameterDriver.getValue());
     }
@@ -90,15 +86,15 @@ public class NewtonianAttraction implements ForceModel {
     /** {@inheritDoc} */
     @Override
     public void addContribution(final SpacecraftState s, final TimeDerivativesEquations adder) {
-        adder.addKeplerContribution(getMu(s.getDate()));
+        adder.addKeplerContribution(getMu());
     }
 
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>> void addContribution(final FieldSpacecraftState<T> s,
-                                                                final FieldTimeDerivativesEquations<T> adder) {
+                                                                    final FieldTimeDerivativesEquations<T> adder) {
         final Field<T> field = s.getDate().getField();
-        adder.addKeplerContribution(getMu(field, s.getDate()));
+        adder.addKeplerContribution(getMu(field));
     }
 
     /** {@inheritDoc} */

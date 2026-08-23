@@ -153,7 +153,6 @@ public class ParameterDriver {
      */
     public void addObserver(final ParameterObserver observer) {
         observers.add(observer);
-        observer.valueChanged(getValue(), this);
     }
 
     /** Remove an observer.

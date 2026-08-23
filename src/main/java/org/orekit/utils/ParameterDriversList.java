@@ -65,13 +65,6 @@ public class ParameterDriversList {
      * being set to the value of the last driver added (i.e.
      * each addition overrides the parameter value).
      * </p>
-     * <p>
-     * Warning if a driver is added and a driver with the same name
-     * was already added before, they should have the same validity
-     * periods to avoid surprises. Whatever, all driver having
-     * same name will have their valueSpanMap, nameSpanMap and validity period
-     * overwritten with the last driver added attributes.
-     * </p>
      * @param driver driver to add
      */
     public void add(final ParameterDriver driver) {
@@ -206,6 +199,7 @@ public class ParameterDriversList {
             owners = new ArrayList<>();
             addOwner(owner);
 
+            setValue(driver.getValue());
             setReferenceDate(driver.getReferenceDate());
             setSelected(driver.isSelected());
 

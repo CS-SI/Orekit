@@ -64,8 +64,6 @@ import org.orekit.propagation.semianalytical.dsst.utilities.InterpolationGrid;
 import org.orekit.propagation.semianalytical.dsst.utilities.MaxGapInterpolationGrid;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldDataDictionary;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterObserver;
 
 /**
  * This class propagates {@link org.orekit.orbits.FieldOrbit orbits} using the DSST theory.
@@ -408,22 +406,18 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
      */
     public void addForceModel(final DSSTForceModel force) {
 
-        if (force instanceof DSSTNewtonianAttraction) {
+        if (force instanceof final DSSTNewtonianAttraction na) {
             // we want to add the central attraction force model
 
-            try {
-                // ensure we are notified of any mu change
-                force.getParametersDrivers().getFirst().addObserver(new ParameterObserver() {
-                    /** {@inheritDoc} */
-                    @Override
-                    public void valueChanged(final double previousValue, final ParameterDriver driver) {
-                        superSetMu(getField().getZero().newInstance(driver.getValue()));
-                    }
-                });
-            } catch (OrekitException oe) {
-                // this should never happen
-                throw new OrekitInternalError(oe);
-            }
+            // ensure the state mapper knows about the new mu
+            final T zero = getField().getZero();
+            superSetMu(zero.newInstance(na.getMu()));
+
+            // ensure we are notified of any mu change
+            force.
+                getParametersDrivers().
+                getFirst().
+                addObserver((previousValue, driver) -> superSetMu(zero.newInstance(driver.getValue())));
 
             if (hasNewtonianAttraction()) {
                 // there is already a central attraction model, replace it

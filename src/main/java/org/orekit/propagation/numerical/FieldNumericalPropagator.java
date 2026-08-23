@@ -31,7 +31,6 @@ import org.orekit.attitudes.FieldAttitude;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
-import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.NewtonianAttraction;
@@ -47,8 +46,6 @@ import org.orekit.propagation.integration.FieldAbstractIntegratedPropagator;
 import org.orekit.propagation.integration.FieldStateMapper;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldAbsolutePVCoordinates;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterObserver;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 /** This class propagates {@link org.orekit.orbits.FieldOrbit orbits} using
@@ -256,23 +253,18 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
      */
     public void addForceModel(final ForceModel model) {
 
-        if (model instanceof NewtonianAttraction) {
+        if (model instanceof final NewtonianAttraction na) {
             // we want to add the central attraction force model
 
-            try {
-                // ensure we are notified of any mu change
-                model.getParametersDrivers().getFirst().addObserver(new ParameterObserver() {
-                    /** {@inheritDoc} */
-                    @Override
-                    public void valueChanged(final double previousValue, final ParameterDriver driver) {
-                        // mu PDriver should have only 1 span
-                        superSetMu(getField().getZero().newInstance(driver.getValue()));
-                    }
-                });
-            } catch (OrekitException oe) {
-                // this should never happen
-                throw new OrekitInternalError(oe);
-            }
+            // ensure the state mapper knows about the new mu
+            final T zero = getField().getZero();
+            superSetMu(zero.newInstance(na.getMu()));
+
+            // ensure we are notified of any mu change
+            model.
+                getParametersDrivers().
+                getFirst().
+                addObserver((previousValue, driver) -> superSetMu(zero.newInstance(driver.getValue())));
 
             if (hasNewtonianAttraction()) {
                 // there is already a central attraction model, replace it
