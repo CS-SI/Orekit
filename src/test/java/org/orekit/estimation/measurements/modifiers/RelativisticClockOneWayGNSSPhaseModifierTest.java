@@ -35,6 +35,7 @@ import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.time.clocks.PolynomialClockModel;
+import org.orekit.utils.drivers.ParameterDriver;
 
 public class RelativisticClockOneWayGNSSPhaseModifierTest {
 
@@ -50,12 +51,15 @@ public class RelativisticClockOneWayGNSSPhaseModifierTest {
         // Measurement
         final double wavelength = PredefinedGnssSignal.G01.getWavelength();
         final OneWayGNSSPhase phase = new OneWayGNSSPhase(new ObserverSatellite("", states[1].getOrbit(), 
-                                                                            new PolynomialClockModel(date)), 
+                                                                            new PolynomialClockModel(date, "dummy")),
                                                           date,
                                                           Vector3D.distance(states[0].getPosition(),
                                                                             states[1].getPosition()) / wavelength,
                                                           wavelength, 1.0, 1.0, new ObservableSatellite(0),
                                                           new AmbiguityCache());
+        for (final ParameterDriver driver : phase.getParametersDrivers()) {
+            driver.setReferenceDate(date);
+        }
 
         // One-way GNSS phase before applying the modifier
         final EstimatedMeasurementBase<OneWayGNSSPhase> estimatedBefore = phase.estimateWithoutDerivatives(states);

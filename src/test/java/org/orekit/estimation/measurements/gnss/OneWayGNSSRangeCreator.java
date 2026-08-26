@@ -52,7 +52,9 @@ public class OneWayGNSSRangeCreator extends MeasurementCreator {
                                   final Vector3D antennaPhaseCenter2) {
         this.ephemeris           = ephemeris;
         this.remoteClk           = remoteClockOffset;
-        this.remote              = new ObserverSatellite("", ephemeris, new PolynomialClockModel(ephemeris.getMinDate(), remoteClockOffset));
+        this.remote              = new ObserverSatellite("", ephemeris,
+                                                         new PolynomialClockModel(ephemeris.getMinDate(), "",
+                                                                                  remoteClockOffset));
         this.antennaPhaseCenter1 = antennaPhaseCenter1;
         this.antennaPhaseCenter2 = antennaPhaseCenter2;
         this.local               = new ObservableSatellite(0);

@@ -16,26 +16,24 @@
  */
 package org.orekit.time.clocks;
 
-import java.util.List;
-import java.util.stream.Stream;
-
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeUtils;
-import org.orekit.utils.drivers.ParameterDriver;
 
-/**
- * Clock model combining two underlying models.
- *
+/** Clock model combining two underlying models.
+ * @param <T> type of the field elements
  * @author Luc Maisonobe
  * @since 14.0
  */
-public abstract class AbstractCombinedClocksPair implements ClockModel {
+public abstract class AbstractCombinedFieldClocksPair<T extends CalculusFieldElement<T>>
+    implements FieldClockModel<T> {
 
     /** First underlying clock. */
-    private final ClockModel clock1;
+    private final FieldClockModel<T> clock1;
 
     /** Second underlying clock. */
-    private final ClockModel clock2;
+    private final FieldClockModel<T> clock2;
 
     /**
      * Simple constructor.
@@ -43,24 +41,22 @@ public abstract class AbstractCombinedClocksPair implements ClockModel {
      * @param clock1 first underlying clock
      * @param clock2 second underlying clock
      */
-    protected AbstractCombinedClocksPair(final ClockModel clock1, final ClockModel clock2) {
+    protected AbstractCombinedFieldClocksPair(final FieldClockModel<T> clock1, final FieldClockModel<T> clock2) {
         this.clock1 = clock1;
         this.clock2 = clock2;
     }
 
     /** Get the first underlying clock.
      * @return first underlying clock
-     * @since 14.0
      */
-    public ClockModel getClock1() {
+    public FieldClockModel<T> getClock1() {
         return clock1;
     }
 
     /** Get the second underlying clock.
      * @return second underlying clock
-     * @since 14.0
      */
-    public ClockModel getClock2() {
+    public FieldClockModel<T> getClock2() {
         return clock2;
     }
 
@@ -78,21 +74,17 @@ public abstract class AbstractCombinedClocksPair implements ClockModel {
 
     /** {@inheritDoc} */
     @Override
-    public ClockOffset getOffset(final AbsoluteDate date) {
+    public FieldClockOffset<T> getOffset(final FieldAbsoluteDate<T> date) {
         return combine(clock1.getOffset(date), clock2.getOffset(date));
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public List<ParameterDriver> getParametersDrivers() {
-        return Stream.concat(clock1.getParametersDrivers().stream(), clock2.getParametersDrivers().stream()).toList();
-    }
-
-    /** Combine two offsets.
+    /**
+     * Combine two offsets.
      * @param offset1 first offset
      * @param offset2 second offset
      * @return combined offset
      */
-    protected abstract ClockOffset combine(ClockOffset offset1, ClockOffset offset2);
+    protected abstract FieldClockOffset<T> combine(FieldClockOffset<T> offset1,
+                                                   FieldClockOffset<T> offset2);
 
 }

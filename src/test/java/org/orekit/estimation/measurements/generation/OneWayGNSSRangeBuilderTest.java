@@ -104,7 +104,7 @@ class OneWayGNSSRangeBuilderTest {
         final Orbit o2 = new KeplerianOrbit(new PVCoordinates(o1.getPosition(),
                                                               o1.getVelocity().negate()),
                                             o1.getFrame(), o1.getDate(), o1.getMu());
-        PolynomialClockModel remoteClockModel = new PolynomialClockModel(AbsoluteDate.ARBITRARY_EPOCH, 1e-16);
+        PolynomialClockModel remoteClockModel = new PolynomialClockModel(AbsoluteDate.ARBITRARY_EPOCH, "dummy", 1e-16);
         ObserverSatellite remote = new ObserverSatellite("GNSS-remote", new KeplerianPropagator(o2), remoteClockModel);
 
         final double step = 60.0;

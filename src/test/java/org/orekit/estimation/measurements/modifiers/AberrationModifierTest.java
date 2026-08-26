@@ -272,6 +272,9 @@ public class AberrationModifierTest {
 
         // RA/Dec no modifier
         AngularRaDec raDec = defaultRaDec(FramesFactory.getGCRF(), epoch);
+        for (final ParameterDriver driver : raDec.getParametersDrivers()) {
+            driver.setReferenceDate(epoch);
+        }
 
         // Estimated (no modifier)
         double[] estimatedRaDec = raDec

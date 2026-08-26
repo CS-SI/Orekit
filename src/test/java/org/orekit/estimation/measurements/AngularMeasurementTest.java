@@ -74,7 +74,7 @@ class AngularMeasurementTest {
         final TopocentricFrame topocentricFrame = new TopocentricFrame(bodyShape,
                 new GeodeticPoint(0., 0., 0.), "");
         final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
-        final PolynomialClockModel clockModel = new PolynomialClockModel(date, 1., 2., 3.);
+        final PolynomialClockModel clockModel = new PolynomialClockModel(date, "", 1., 2., 3.);
         final GroundStation groundStation = new GroundStation(topocentricFrame, clockModel);
         final AngularMeasurement<?> measurement = new TestMeasurement(date, new SignalTravelTimeModel());
         // WHEN
@@ -91,7 +91,7 @@ class AngularMeasurementTest {
         final TopocentricFrame topocentricFrame = new TopocentricFrame(bodyShape,
                 new GeodeticPoint(0., 0., 0.), "");
         final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
-        final PolynomialClockModel clockModel = new PolynomialClockModel(date.shiftedBy(10.), 1., 2., 3.);
+        final PolynomialClockModel clockModel = new PolynomialClockModel(date.shiftedBy(10.), "", 1., 2., 3.);
         final GroundStation groundStation = new GroundStation(topocentricFrame, clockModel);
         final AngularMeasurement<?> measurement = new TestMeasurement(date, new SignalTravelTimeModel());
         // WHEN

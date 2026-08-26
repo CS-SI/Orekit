@@ -36,6 +36,8 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.time.clocks.PolynomialClockModel;
 import org.orekit.utils.Constants;
+import org.orekit.utils.drivers.ParameterDriver;
+
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -62,49 +64,20 @@ public class RelativisticJ2ClockOneWayGNSSPhaseModifierTest {
     /** Spacecraft states. */
     private static SpacecraftState[] states;
 
-    @Deprecated
-    @Test
-    public void testRelativisticClockCorrectionDeprecated() {
-
-        // Measurement
-        final double wavelength = PredefinedGnssSignal.G01.getWavelength();
-        final OneWayGNSSPhase phase = new OneWayGNSSPhase(new ObserverSatellite("", states[1].getOrbit(), 
-                                                                            new PolynomialClockModel(date)), date,
-                                                          Vector3D.distance(states[0].getPosition(),
-                                                                            states[1].getPosition()) / wavelength,
-                                                          wavelength, 1.0, 1.0, new ObservableSatellite(0),
-                                                          new AmbiguityCache());
-
-        // One-way GNSS phase before applying the modifier
-        final EstimatedMeasurementBase<OneWayGNSSPhase> estimatedBefore = phase.estimateWithoutDerivatives(states);
-
-        // One-way GNSS phase before applying the modifier
-        final EstimationModifier<OneWayGNSSPhase> modifier = new RelativisticJ2ClockOneWayGNSSPhaseModifier(Constants.WGS84_EARTH_MU,
-                                                                                                            Constants.WGS84_EARTH_C20, Constants.WGS84_EARTH_EQUATORIAL_RADIUS );
-        phase.addModifier(modifier);
-        final EstimatedMeasurement<OneWayGNSSPhase> estimatedAfter = phase.estimate(0, 0, states);
-
-        // Verify : According to Teunissen and Montenbruck, the delay is supposed to be around 62 ps for Galileo.
-        //          The computed value is equal to 67.284 ps, therefore lying in the supposed range.
-        Assertions.assertEquals(-0.106217, estimatedBefore.getEstimatedValue()[0] - estimatedAfter.getEstimatedValue()[0], 1.0e-6);
-        Assertions.assertEquals(0, modifier.getParametersDrivers().size());
-        Assertions.assertEquals(1,
-                                estimatedAfter.getAppliedEffects().entrySet().stream().
-                                filter(e -> e.getKey().getEffectName().equals("J₂ clock relativity")).count());
-
-    }
-
     @Test
     public void testRelativisticClockCorrection() {
 
         // Measurement
         final double wavelength = PredefinedGnssSignal.G01.getWavelength();
         final OneWayGNSSPhase phase = new OneWayGNSSPhase(new ObserverSatellite("remote", states[1].getOrbit(), 
-                                                                            new PolynomialClockModel(date)), date,
+                                                                            new PolynomialClockModel(date, "remote")), date,
                                                           Vector3D.distance(states[0].getPosition(),
                                                                             states[1].getPosition()) / wavelength,
                                                           wavelength, 1.0, 1.0, new ObservableSatellite(0),
                                                           new AmbiguityCache());
+        for (final ParameterDriver driver : phase.getSatellites().getFirst().getClockModel().getParametersDrivers()) {
+            driver.setReferenceDate(phase.getDate());
+        }
 
         // One-way GNSS phase before applying the modifier
         final EstimatedMeasurementBase<OneWayGNSSPhase> estimatedBefore = phase.estimateWithoutDerivatives(states);

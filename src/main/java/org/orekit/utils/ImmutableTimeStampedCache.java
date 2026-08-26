@@ -20,8 +20,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
@@ -30,6 +32,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.TimeStampedCacheException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
+import org.orekit.time.FieldTimeStamped;
 import org.orekit.time.TimeStamped;
 
 /**
@@ -142,6 +145,22 @@ public class ImmutableTimeStampedCache<T extends TimeStamped>
     @Override
     public String toString() {
         return "Immutable cache with " + this.data.size() + " entries";
+    }
+
+    /** Get a field version of the instance.
+     * @param <C> cache elements
+     * @param <F> field elements
+     * @param converter converter to field elements
+     * @return field version
+     * @since 14.0
+     */
+    public <C extends FieldTimeStamped<F>, F extends CalculusFieldElement<F>>
+        ImmutableFieldTimeStampedCache<C, F> toField(final Function<T, C> converter) {
+        final List<C> fieldData = new ArrayList<>(data.size());
+        for (int i = 0; i < data.size(); i++) {
+            fieldData.add(converter.apply(data.get(i)));
+        }
+        return new ImmutableFieldTimeStampedCache<>(maxNeighborsSize, fieldData);
     }
 
     /**

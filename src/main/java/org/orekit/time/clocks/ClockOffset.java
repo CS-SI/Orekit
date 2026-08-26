@@ -16,10 +16,14 @@
  */
 package org.orekit.time.clocks;
 
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeStamped;
+
+import java.util.function.DoubleFunction;
 
 /**
  * Container for time stamped clock offset.
@@ -157,6 +161,20 @@ public class ClockOffset implements TimeStamped {
         final double dt = givenDate.durationFrom(date);
         return dt * ((dt * getAcceleration()) + getRate()) + getBias();
 
+    }
+
+    /** Get a field version of the instance.
+     * @param <T> type of the field elements
+     * @param converter converter to field elements
+     * @return field version
+     * @since 14.0
+     */
+    public <T extends CalculusFieldElement<T>> FieldClockOffset<T> toField(final DoubleFunction<T> converter) {
+        final T fieldBias         = converter.apply(bias);
+        final T fieldRate         = converter.apply(rate);
+        final T fieldAcceleration = converter.apply(acceleration);
+        return new FieldClockOffset<>(new FieldAbsoluteDate<>(fieldBias.getField(), date),
+                                      fieldBias, fieldRate, fieldAcceleration);
     }
 
 }

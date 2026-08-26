@@ -40,7 +40,7 @@ public class PolynomialFieldClockModelTest {
     private <T extends CalculusFieldElement<T>> void doTestValueField(final Field<T> field) {
         final FieldAbsoluteDate<T> t0 = new FieldAbsoluteDate<>(field, AbsoluteDate.GALILEO_EPOCH);
         final PolynomialFieldClockModel<T> clock =
-                        new PolynomialFieldClockModel<>(t0,
+                        new PolynomialFieldClockModel<>(t0, "dummy",
                                                        field.getZero().newInstance(FastMath.scalb(1.0,  -8)),
                                                        field.getZero().newInstance(FastMath.scalb(1.0,  -9)),
                                                        field.getZero().newInstance(FastMath.scalb(1.0, -10)));
@@ -52,7 +52,7 @@ public class PolynomialFieldClockModelTest {
     private <T extends CalculusFieldElement<T>> void doTestRateField(final Field<T> field) {
         final FieldAbsoluteDate<T> t0 = new FieldAbsoluteDate<>(field, AbsoluteDate.GALILEO_EPOCH);
         final PolynomialFieldClockModel<T> clock =
-                        new PolynomialFieldClockModel<>(t0,
+                        new PolynomialFieldClockModel<>(t0, "dummy",
                                                        field.getZero().newInstance(FastMath.scalb(1.0,  -8)),
                                                        field.getZero().newInstance(FastMath.scalb(1.0,  -9)),
                                                        field.getZero().newInstance(FastMath.scalb(1.0, -10)));

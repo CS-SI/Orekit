@@ -81,7 +81,7 @@ public interface MeasurementParticipant extends ParameterDriversProvider {
     default Gradient getFieldOffsetValue(final int freeParameters, final Map<String, Integer> indices,
                                         final AbsoluteDate date) {
         final FieldAbsoluteDate<Gradient> fieldDate = new FieldAbsoluteDate<>(GradientField.getField(freeParameters), date);
-        return getFieldClockModel(freeParameters, indices, date).getOffset(fieldDate).getBias();
+        return getFieldClockModel(freeParameters, indices).getOffset(fieldDate).getBias();
     }
 
     /** Get the current gradient clock drift as a function of time.
@@ -94,19 +94,16 @@ public interface MeasurementParticipant extends ParameterDriversProvider {
                                         final Map<String, Integer> indices,
                                         final AbsoluteDate date) {
         final FieldAbsoluteDate<Gradient> fieldDate = new FieldAbsoluteDate<>(GradientField.getField(freeParameters), date);
-        return getFieldClockModel(freeParameters, indices, date).getOffset(fieldDate).getRate();
+        return getFieldClockModel(freeParameters, indices).getOffset(fieldDate).getRate();
     }
 
     /** Get Gradient clock model.
      * @param freeParameters total number of free parameters in the gradient
-     * @param indices indices of the differentiation parameters in derivatives computations,
-     * must be span name and not driver name
-     * @param date time of computations
+     * @param indices indices of the differentiation parameters in derivatives computations
      * @return clock gradient
      */
-    default FieldClockModel<Gradient> getFieldClockModel(final int freeParameters, final Map<String, Integer> indices,
-                                                         final AbsoluteDate date) {
-        return getClockModel().getFieldModel(freeParameters, indices, date);
+    default FieldClockModel<Gradient> getFieldClockModel(final int freeParameters, final Map<String, Integer> indices) {
+        return getClockModel().toGradient(freeParameters, indices);
     }
 
 }

@@ -902,6 +902,9 @@ class RangeTest {
         final SpacecraftState[] state = new SpacecraftState[] { new SpacecraftState(orbit) };
         // WHEN & THEN
         final Range range = new Range(mockedObserver, twoWay, epoch, 0., 1., 1., satellite);
+        for (final ParameterDriver driver : range.getParametersDrivers()) {
+            driver.setReferenceDate(epoch);
+        }
         assertDoesNotThrow(() -> range.estimate(0, 0, state));
     }
 
@@ -911,7 +914,7 @@ class RangeTest {
         final GradientField field = GradientField.getField(6);
         final Gradient zero = field.getZero();
         final PolynomialFieldClockModel<Gradient> fieldClockModel = mock();
-        when(observer.getFieldClockModel(anyInt(), anyMap(), any())).thenReturn(fieldClockModel);
+        when(observer.getFieldClockModel(anyInt(), anyMap())).thenReturn(fieldClockModel);
         when(observer.getFieldOffsetValue(anyInt(), anyMap(), any())).thenReturn(zero);
         when(observer.getPVCoordinatesProvider()).thenReturn(new AbsolutePVCoordinates(FramesFactory.getEME2000(), epoch, PVCoordinates.ZERO));
         final FieldPVCoordinatesProvider<Gradient> provider = mock(FieldPVCoordinatesProvider.class);
@@ -939,7 +942,9 @@ class RangeTest {
                 FramesFactory.getITRF(ITRFVersion.ITRF_2020, IERSConventions.IERS_2010, false));
         final GeodeticPoint point = new GeodeticPoint(0., 0., 100.);
         final TopocentricFrame baseFrame = new TopocentricFrame(earth, point, "name");
-        final GroundStation station = new GroundStation(baseFrame, new PolynomialClockModel(AbsoluteDate.JULIAN_EPOCH, 1e-2));
+        final GroundStation station = new GroundStation(baseFrame,
+                                                        new PolynomialClockModel(AbsoluteDate.JULIAN_EPOCH, "dummy",
+                                                                                 1e-2));
         for (final ParameterDriver driver: station.getParametersDrivers()) {
             driver.setReferenceDate(AbsoluteDate.ARBITRARY_EPOCH);
         }
@@ -947,6 +952,9 @@ class RangeTest {
         final SpacecraftState[] state = new SpacecraftState[] { new SpacecraftState(orbit) };
         // WHEN
         final Range range = new Range(station, twoWay, epoch, 0., 1., 1., satellite);
+        for (final ParameterDriver driver : range.getParametersDrivers()) {
+            driver.setReferenceDate(epoch);
+        }
         final EstimatedMeasurementBase<Range> estimatedWithoutDerivatives = range.theoreticalEvaluationWithoutDerivatives(0, 0, state, true);
         // THEN
         final EstimatedMeasurement<Range> estimated = range.estimate(0, 0, state);

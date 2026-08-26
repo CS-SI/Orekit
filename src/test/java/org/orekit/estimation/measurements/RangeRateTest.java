@@ -767,7 +767,8 @@ class RangeRateTest {
                 FramesFactory.getITRF(ITRFVersion.ITRF_2020, IERSConventions.IERS_2010, false));
         final GeodeticPoint point = new GeodeticPoint(0., 0., 100.);
         final TopocentricFrame baseFrame = new TopocentricFrame(earth, point, "name");
-        final GroundStation station = new GroundStation(baseFrame, new PolynomialClockModel(AbsoluteDate.JULIAN_EPOCH, 1e-2));
+        final GroundStation station = new GroundStation(baseFrame,
+                                                        new PolynomialClockModel(AbsoluteDate.JULIAN_EPOCH, "dummy", 1e-2));
         for (final ParameterDriver driver: station.getParametersDrivers()) {
             driver.setReferenceDate(AbsoluteDate.ARBITRARY_EPOCH);
         }
@@ -775,6 +776,9 @@ class RangeRateTest {
         final SpacecraftState[] state = new SpacecraftState[] { new SpacecraftState(orbit) };
         // WHEN
         final RangeRate rangeRate = new RangeRate(station, epoch, 0., 1., 1., twoWay, satellite);
+        for (final ParameterDriver driver : rangeRate.getParametersDrivers()) {
+            driver.setReferenceDate(epoch);
+        }
         final EstimatedMeasurementBase<RangeRate> estimatedWithoutDerivatives = rangeRate.theoreticalEvaluationWithoutDerivatives(0, 0, state, true);
         // THEN
         final EstimatedMeasurement<RangeRate> estimated = rangeRate.estimate(0, 0, state);
@@ -820,13 +824,13 @@ class RangeRateTest {
                 FramesFactory.getITRF(ITRFVersion.ITRF_2020, IERSConventions.IERS_2010, false));
         final GeodeticPoint point = new GeodeticPoint(-0.1, 0.1, 100.);
         final TopocentricFrame baseFrame = new TopocentricFrame(earth, point, "name");
-        final PolynomialClockModel stationClock = new PolynomialClockModel(epoch, 0, -1e-4);
+        final PolynomialClockModel stationClock = new PolynomialClockModel(epoch, "dummy", 0, -1e-4);
         final GroundStation station = new GroundStation(baseFrame,stationClock);
         for (final ParameterDriver driver: station.getParametersDrivers()) {
             driver.setReferenceDate(AbsoluteDate.ARBITRARY_EPOCH);
             driver.setSelected(true);
         }
-        final PolynomialClockModel satelliteClock = new PolynomialClockModel(epoch, 0, 1e-3, 0);
+        final PolynomialClockModel satelliteClock = new PolynomialClockModel(epoch, "dummy", 0, 1e-3, 0);
         final ObservableSatellite satellite = new ObservableSatellite(0, null, satelliteClock);
         final SpacecraftState state = new SpacecraftState(orbit);
         // WHEN

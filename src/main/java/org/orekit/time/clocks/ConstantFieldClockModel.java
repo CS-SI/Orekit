@@ -18,6 +18,7 @@
 package org.orekit.time.clocks;
 
 import org.hipparchus.CalculusFieldElement;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 
 /** Field Clock model for a clock with constant offset.
@@ -26,20 +27,28 @@ import org.orekit.time.FieldAbsoluteDate;
  * @since 14.0
  * @see ConstantClockModel
  */
-public class ConstantFieldClockModel<T extends CalculusFieldElement<T>> extends AbstractFieldClockModel<T> {
+public class ConstantFieldClockModel<T extends CalculusFieldElement<T>> implements FieldClockModel<T> {
 
     /** Constant offset. */
     private final T offset;
 
-    /**
-     * Simple constructor.
-     *
-     * @param referenceDate reference date
+    /** Simple constructor.
      * @param offset offset value
      */
-    public ConstantFieldClockModel(final FieldAbsoluteDate<T> referenceDate, final T offset) {
-        super(referenceDate);
+    public ConstantFieldClockModel(final T offset) {
         this.offset = offset;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public AbsoluteDate getValidityStart() {
+        return AbsoluteDate.PAST_INFINITY;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public AbsoluteDate getValidityEnd() {
+        return AbsoluteDate.FUTURE_INFINITY;
     }
 
     /** {@inheritDoc} */
@@ -47,6 +56,12 @@ public class ConstantFieldClockModel<T extends CalculusFieldElement<T>> extends 
     public FieldClockOffset<T> getOffset(final FieldAbsoluteDate<T> date) {
         final T zero = date.getField().getZero();
         return new FieldClockOffset<>(date, offset, zero, zero);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public ClockModel toNonField() {
+        return new ConstantClockModel(offset.getReal());
     }
 
 }

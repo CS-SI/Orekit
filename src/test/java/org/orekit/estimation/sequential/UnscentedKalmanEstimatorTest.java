@@ -1056,7 +1056,7 @@ public class UnscentedKalmanEstimatorTest {
 
         // Create a station
         final OneAxisEllipsoid shape = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.WGS84_EARTH_FLATTENING, FramesFactory.getITRF(IERSConventions.IERS_2010, false));
-        final PolynomialClockModel blankClock = new PolynomialClockModel(reference);
+        final PolynomialClockModel blankClock = new PolynomialClockModel(reference, "dummy");
         final GroundStation station = new GroundStation(new TopocentricFrame(shape, new GeodeticPoint(1.44, 0.2, 100.0), "topo"), blankClock);
 
         // Create three different measurement types

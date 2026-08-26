@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import org.hipparchus.CalculusFieldElement;
@@ -195,6 +196,20 @@ public class ImmutableFieldTimeStampedCache<T extends FieldTimeStamped<KK>, KK e
             return "Empty immutable cache";
         }
 
+    }
+
+    /** Get a non-field version of the instance.
+     * @param <N> non-field elements
+     * @param converter converter to non-field elements
+     * @return non-field version
+     * @since 14.0
+     */
+    public <N extends TimeStamped> ImmutableTimeStampedCache<N> toNonField(final Function<T, N> converter) {
+        final List<N> nonFieldData = new ArrayList<>(data.size());
+        for (int i = 0; i < data.size(); i++) {
+            nonFieldData.add(converter.apply(data.get(i)));
+        }
+        return new ImmutableTimeStampedCache<>(maxNeighborsSize, nonFieldData);
     }
 
 }

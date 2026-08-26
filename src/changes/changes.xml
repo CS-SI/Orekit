@@ -20,6 +20,10 @@
   </properties>
   <body>
       <release version="14.0" date="TBD" description="TBD">
+          <action dev="luc" type="add" issue="2007">
+              Generalized clock models implementations, with both field and non-field
+              versions, as well as conversions between the two.
+          </action>
           <action dev="luc" type="add" issue="2005">
               Added an allowNonChronological boolean parameter to TimeInterval.of.
           </action>

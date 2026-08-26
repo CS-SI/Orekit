@@ -34,6 +34,8 @@ import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+import org.orekit.utils.drivers.ParameterDriver;
+
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -73,6 +75,9 @@ public class RelativisticJ2ClockInterSatellitesPhaseModifierTest {
                                                                                       states[1].getPosition()) / wavelength,
                                                                     wavelength, 1.0, 1.0,
                                                                     new AmbiguityCache());
+        for (final ParameterDriver driver : phase.getParametersDrivers()) {
+            driver.setReferenceDate(date);
+        }
 
         // Inter-satellites phase before applying the modifier
         final EstimatedMeasurementBase<InterSatellitesPhase> estimatedBefore = phase.estimateWithoutDerivatives(states);
@@ -105,6 +110,9 @@ public class RelativisticJ2ClockInterSatellitesPhaseModifierTest {
                                                                                       states[1].getPosition()) / wavelength,
                                                                     wavelength, 1.0, 1.0,
                                                                     cache);
+        for (final ParameterDriver driver : phase.getParametersDrivers()) {
+            driver.setReferenceDate(date);
+        }
 
         // Inter-satellites phase before applying the modifier
         final EstimatedMeasurementBase<InterSatellitesPhase> estimatedBefore = phase.estimateWithoutDerivatives(states);

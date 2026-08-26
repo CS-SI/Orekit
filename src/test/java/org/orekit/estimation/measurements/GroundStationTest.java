@@ -217,7 +217,8 @@ class GroundStationTest {
         final TopocentricFrame base  = context.stations.getFirst().getBaseFrame();
         final BodyShape parent       = base.getParentShape();
         final String changedSuffix   = "-changed";
-        final PolynomialClockModel quadraticClock = new PolynomialClockModel(context.initialOrbit.getDate(), 3.0e-9, 2.0e-9, 1.0e-9);
+        final PolynomialClockModel quadraticClock =
+            new PolynomialClockModel(context.initialOrbit.getDate(), "dummy", 3.0e-9, 2.0e-9, 1.0e-9);
         final GroundStation changed  = new GroundStation(new TopocentricFrame(parent, base.getPoint(),
                                                                               base.getName() + changedSuffix),
                                                          quadraticClock);

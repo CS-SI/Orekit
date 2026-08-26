@@ -518,13 +518,16 @@ class OneWayGNSSPhaseTest {
 
         // Check number of parameter drivers attached to measurement
         List<ParameterDriver> paramDrivers = measurements.getFirst().getParametersDrivers();
-        Assertions.assertEquals(4, paramDrivers.size());
+        Assertions.assertEquals(7, paramDrivers.size());
 
         // Check the parameter names
-        Assertions.assertEquals("sat-0-clock-bias", paramDrivers.getFirst().getName());
+        Assertions.assertEquals("sat-0-clock-bias", paramDrivers.get(0).getName());
         Assertions.assertEquals("sat-0-clock-drift", paramDrivers.get(1).getName());
         Assertions.assertEquals("sat-0-clock-acceleration", paramDrivers.get(2).getName());
-        Assertions.assertEquals("ambiguity-remote-sat-0-154.00", paramDrivers.get(3).getName());
+        Assertions.assertEquals("remote-clock-bias", paramDrivers.get(3).getName());
+        Assertions.assertEquals("remote-clock-drift", paramDrivers.get(4).getName());
+        Assertions.assertEquals("remote-clock-acceleration", paramDrivers.get(5).getName());
+        Assertions.assertEquals("ambiguity-remote-sat-0-154.00", paramDrivers.get(6).getName());
 
         // Print results ? Header
         if (printResults) {
@@ -568,8 +571,9 @@ class OneWayGNSSPhaseTest {
         Utils.setDataRoot("regular-data");
 
         // Create a phase measurement. Remote is set to null since it not used by the test
-        final ObserverSatellite gnssSatellite = new ObserverSatellite("", null, 
-                                                                      new PolynomialClockModel(AbsoluteDate.J2000_EPOCH, 635.0e-6));
+        final ObserverSatellite gnssSatellite =
+            new ObserverSatellite("", null,
+                                  new PolynomialClockModel(AbsoluteDate.J2000_EPOCH, "no-name", 635.0e-6));
         final OneWayGNSSPhase phase = new OneWayGNSSPhase(gnssSatellite,
                                                           AbsoluteDate.J2000_EPOCH, 467614.701,
                                                           PredefinedGnssSignal.G01.getWavelength(), 0.02, 1.0,

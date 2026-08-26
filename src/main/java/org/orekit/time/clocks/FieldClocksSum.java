@@ -17,33 +17,36 @@
 package org.orekit.time.clocks;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.analysis.differentiation.Gradient;
 
-import java.util.Map;
-import java.util.function.DoubleFunction;
-
-/** Clock model for perfect clock with constant zero offset.
+/** Clock model computing the sum of two underlying models.
+ * @param <T> type of the field elements
  * @author Luc Maisonobe
- * @since 12.1
+ * @since 14.0
  */
-public class PerfectClockModel extends ConstantClockModel {
+public class FieldClocksSum<T extends CalculusFieldElement<T>>
+    extends AbstractCombinedFieldClocksPair<T> {
 
     /** Simple constructor.
+     * <p>
+     * The combined clock is {@code clock1 + clock2}
+     * </p>
+     * @param clock1 first underlying clock
+     * @param clock2 second underlying clock
      */
-    public PerfectClockModel() {
-        super(0.0);
+    public FieldClocksSum(final FieldClockModel<T> clock1, final FieldClockModel<T> clock2) {
+        super(clock1, clock2);
     }
 
     /** {@inheritDoc} */
     @Override
-    public <T extends CalculusFieldElement<T>> PerfectFieldClockModel<T> toField(final DoubleFunction<T> converter) {
-        return new PerfectFieldClockModel<>(converter.apply(0.0).getField());
+    protected FieldClockOffset<T> combine(final FieldClockOffset<T> offset1, final FieldClockOffset<T> offset2) {
+        return offset1.add(offset2);
     }
 
     /** {@inheritDoc} */
     @Override
-    public PerfectFieldClockModel<Gradient> toGradient(final int freeParameters, final Map<String, Integer> indices) {
-        return toField(v -> Gradient.constant(freeParameters, v));
+    public ClocksSum toNonField() {
+        return new ClocksSum(getClock1().toNonField(), getClock2().toNonField());
     }
 
 }

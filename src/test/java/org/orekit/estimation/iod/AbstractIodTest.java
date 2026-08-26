@@ -40,6 +40,7 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedPVCoordinates;
+import org.orekit.utils.drivers.ParameterDriver;
 
 public abstract class AbstractIodTest {
     /**
@@ -94,6 +95,9 @@ public abstract class AbstractIodTest {
         final AngularRaDec raDec = new AngularRaDec(observer, gcrf, date, new double[] { 0.0, 0.0 },
                                                     new double[] { 1.0, 1.0 },
                                                     new double[] { 1.0, 1.0 }, new ObservableSatellite(0));
+        for (final ParameterDriver driver : raDec.getParametersDrivers()) {
+            driver.setReferenceDate(date);
+        }
         return (getEstimatedLineOfSight(raDec, prop, date, gcrf));
     }
 
@@ -102,6 +106,9 @@ public abstract class AbstractIodTest {
         final AngularAzEl azEl = new AngularAzEl(observer, date, new double[] { 0.0, 0.0 },
                                                  new double[] { 1.0, 1.0 }, new double[] { 1.0, 1.0 },
                                                  satellite);
+        for (final ParameterDriver driver : azEl.getParametersDrivers()) {
+            driver.setReferenceDate(date);
+        }
         EstimatedMeasurementBase<AngularAzEl> estimated = azEl.estimateWithoutDerivatives(new SpacecraftState[] {prop.propagate(date)});
         return new AngularAzEl(observer, date, estimated.getEstimatedValue(), azEl.getBaseWeight(),
                                azEl.getTheoreticalStandardDeviation(), satellite);

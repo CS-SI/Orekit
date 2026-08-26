@@ -1,4 +1,4 @@
-/* Copyright 2025-2026 Hawkeye 360 (HE360)
+/* Copyright 2022-2026 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,30 +17,36 @@
 package org.orekit.time.clocks;
 
 import org.hipparchus.CalculusFieldElement;
-import org.orekit.time.FieldAbsoluteDate;
 
-/** Container for clock field model.
- *
+/** Clock model computing the difference of two underlying models.
  * @param <T> type of the field elements
- * @author Brian Carter
+ * @author Luc Maisonobe
  * @since 14.0
  */
-public abstract class AbstractFieldClockModel<T extends CalculusFieldElement<T>> implements FieldClockModel<T> {
-
-    /** Clock model reference date. */
-    private final FieldAbsoluteDate<T> referenceDate;
+public class FieldClocksDifference<T extends CalculusFieldElement<T>>
+    extends AbstractCombinedFieldClocksPair<T> {
 
     /** Simple constructor.
-     * @param referenceDate reference date for the elements of this field clock model
+     * <p>
+     * The combined clock is {@code clock1 - clock2}
+     * </p>
+     * @param clock1 first underlying clock
+     * @param clock2 second underlying clock
      */
-    protected AbstractFieldClockModel(final FieldAbsoluteDate<T> referenceDate) {
-        this.referenceDate = referenceDate;
+    public FieldClocksDifference(final FieldClockModel<T> clock1, final FieldClockModel<T> clock2) {
+        super(clock1, clock2);
     }
 
     /** {@inheritDoc} */
     @Override
-    public final FieldAbsoluteDate<T> getReferenceDate() {
-        return this.referenceDate;
+    protected FieldClockOffset<T> combine(final FieldClockOffset<T> offset1, final FieldClockOffset<T> offset2) {
+        return offset1.subtract(offset2);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public ClocksDifference toNonField() {
+        return new ClocksDifference(getClock1().toNonField(), getClock2().toNonField());
     }
 
 }

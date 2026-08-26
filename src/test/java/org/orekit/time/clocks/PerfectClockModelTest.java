@@ -16,8 +16,10 @@
  */
 package org.orekit.time.clocks;
 
+import com.tngtech.archunit.lang.ArchRule;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
+import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -54,12 +56,23 @@ public class PerfectClockModelTest {
         final PerfectClockModel clockModel = new PerfectClockModel();
         for (double dt = 0.02; dt < 0.98; dt += 0.02) {
             final T dtF = field.getZero().newInstance(dt);
-            final FieldClockOffset<T> co = clockModel.getFieldOffset(t0F.shiftedBy(dtF));
+            final FieldClockOffset<T> co = clockModel.
+                                           toField(v -> field.getZero().newInstance(v)).
+                                           getOffset(t0F.shiftedBy(dtF));
             Assertions.assertEquals(dt, co.getDate().durationFrom(t0).getReal(), 1.0e-15);
-            Assertions.assertEquals(0,  co.getBias().getReal(),                1.0e-15);
+            Assertions.assertEquals(0,  co.getBias().getReal(),                  1.0e-15);
             Assertions.assertEquals(0,  co.getRate().getReal(),                  1.0e-15);
             Assertions.assertEquals(0,  co.getAcceleration().getReal(),          1.0e-15);
         }
+    }
+
+    @Test
+    public void testConversion() {
+        final PerfectClockModel clockModel = new PerfectClockModel();
+        Assertions.assertInstanceOf(PerfectFieldClockModel.class,
+                                    clockModel.toField(Binary64::new));
+        Assertions.assertInstanceOf(PerfectClockModel.class,
+                                    clockModel.toField(Binary64::new).toNonField());
     }
 
     @BeforeEach

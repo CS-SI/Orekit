@@ -25,6 +25,7 @@ import org.hipparchus.analysis.polynomials.FieldPolynomialFunction;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.NullArgumentException;
 import org.hipparchus.util.MathUtils;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 
 /** Field Polynomial clock model.
@@ -33,20 +34,41 @@ import org.orekit.time.FieldAbsoluteDate;
  * @since 14.0
  * @see PolynomialClockModel
  */
-public class PolynomialFieldClockModel<T extends CalculusFieldElement<T>> extends AbstractFieldClockModel<T> {
+public class PolynomialFieldClockModel<T extends CalculusFieldElement<T>> implements FieldClockModel<T> {
+
+    /** Reference date. */
+    private final FieldAbsoluteDate<T> referenceDate;
+
+    /** Prefix for the parameters names. */
+    private final String prefix;
 
     /** All term. */
     private final List<T> terms;
 
     /** Simple constructor.
      * @param referenceDate reference date
-     * @param terms polynomial terms
+     * @param prefix        prefix for the parameter names
+     * @param terms         polynomial terms
      */
     @SafeVarargs
     public PolynomialFieldClockModel(final FieldAbsoluteDate<T> referenceDate,
-                                    final T... terms) {
-        super(referenceDate);
-        this.terms = Arrays.asList(terms);
+                                     final String prefix,
+                                     final T... terms) {
+        this.referenceDate = referenceDate;
+        this.prefix        = prefix;
+        this.terms         = Arrays.asList(terms);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public AbsoluteDate getValidityStart() {
+        return AbsoluteDate.PAST_INFINITY;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public AbsoluteDate getValidityEnd() {
+        return AbsoluteDate.FUTURE_INFINITY;
     }
 
     /** Get the clock offset at date.
@@ -56,7 +78,7 @@ public class PolynomialFieldClockModel<T extends CalculusFieldElement<T>> extend
     @Override
     @SuppressWarnings("unchecked")
     public FieldClockOffset<T> getOffset(final FieldAbsoluteDate<T> date) {
-        final T dt = date.durationFrom(getReferenceDate());
+        final T dt = date.durationFrom(referenceDate);
         final List<T> result = new ArrayList<>(3);
         // Loop over all of the terms in order
         // The value of the first offset is the value of the function at time dt from
@@ -74,6 +96,15 @@ public class PolynomialFieldClockModel<T extends CalculusFieldElement<T>> extend
         return new FieldClockOffset<>(date, result);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public PolynomialClockModel toNonField() {
+        final double[] nonFieldTerms = new double[terms.size()];
+        for (int i = 0; i < nonFieldTerms.length; i++) {
+            nonFieldTerms[i] = terms.get(i).getReal();
+        }
+        return new PolynomialClockModel(referenceDate.toAbsoluteDate(), prefix, nonFieldTerms);
+    }
 
     /** Get the derivative of the given coefficients.
      * @param coefficients the list of provided coefficients

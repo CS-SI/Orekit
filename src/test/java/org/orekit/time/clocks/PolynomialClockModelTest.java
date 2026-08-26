@@ -16,6 +16,8 @@
  */
 package org.orekit.time.clocks;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,10 +41,10 @@ class PolynomialClockModelTest {
     @Test
     void testValue() {
         final AbsoluteDate        t0    = AbsoluteDate.GALILEO_EPOCH;
-        final PolynomialClockModel clock = new PolynomialClockModel(t0,
-                                                                  FastMath.scalb(1.0, -8),
-                                                                  FastMath.scalb(1.0, -9),
-                                                                  FastMath.scalb(1.0, -10));
+        final PolynomialClockModel clock = new PolynomialClockModel(t0, "dummy",
+                                                                    FastMath.scalb(1.0, -8),
+                                                                    FastMath.scalb(1.0, -9),
+                                                                    FastMath.scalb(1.0, -10));
         Assertions.assertEquals(1.00 / 256.0, clock.getOffset(t0).getBias(),                1.0e-15);
         Assertions.assertEquals(1.75 / 256.0, clock.getOffset(t0.shiftedBy(1.0)).getBias(), 1.0e-15);
         Assertions.assertEquals(3.00 / 256.0, clock.getOffset(t0.shiftedBy(2.0)).getBias(), 1.0e-15);
@@ -51,23 +53,24 @@ class PolynomialClockModelTest {
     @Test
     void testValueField() {
         final AbsoluteDate        t0    = AbsoluteDate.GALILEO_EPOCH;
-        final PolynomialClockModel clock = new PolynomialClockModel(t0,
-                                                                  FastMath.scalb(1.0, -8),
-                                                                  FastMath.scalb(1.0, -9),
-                                                                  FastMath.scalb(1.0, -10));
+        final PolynomialClockModel clock = new PolynomialClockModel(t0, "dummy",
+                                                                    FastMath.scalb(1.0, -8),
+                                                                    FastMath.scalb(1.0, -9),
+                                                                    FastMath.scalb(1.0, -10));
+        final PolynomialFieldClockModel<Binary64> fClock = clock.toField(Binary64::new);
         final FieldAbsoluteDate<Binary64> t064 = new FieldAbsoluteDate<>(Binary64Field.getInstance(), t0);
-        Assertions.assertEquals(1.00 / 256.0, clock.getFieldOffset(t064).getBias().getReal(),                1.0e-15);
-        Assertions.assertEquals(1.75 / 256.0, clock.getFieldOffset(t064.shiftedBy(1.0)).getBias().getReal(), 1.0e-15);
-        Assertions.assertEquals(3.00 / 256.0, clock.getFieldOffset(t064.shiftedBy(2.0)).getBias().getReal(), 1.0e-15);
+        Assertions.assertEquals(1.00 / 256.0, fClock.getOffset(t064).getBias().getReal(),                1.0e-15);
+        Assertions.assertEquals(1.75 / 256.0, fClock.getOffset(t064.shiftedBy(1.0)).getBias().getReal(), 1.0e-15);
+        Assertions.assertEquals(3.00 / 256.0, fClock.getOffset(t064.shiftedBy(2.0)).getBias().getReal(), 1.0e-15);
     }
 
     @Test
     void testRate() {
         final AbsoluteDate        t0    = AbsoluteDate.GALILEO_EPOCH;
-        final PolynomialClockModel clock = new PolynomialClockModel(t0,
-                                                                  FastMath.scalb(1.0, -8),
-                                                                  FastMath.scalb(1.0, -9),
-                                                                  FastMath.scalb(1.0, -10));
+        final PolynomialClockModel clock = new PolynomialClockModel(t0, "dummy",
+                                                                    FastMath.scalb(1.0, -8),
+                                                                    FastMath.scalb(1.0, -9),
+                                                                    FastMath.scalb(1.0, -10));
         Assertions.assertEquals(1.00 / 512, clock.getOffset(t0).getRate(),                1.0e-15);
         Assertions.assertEquals(2.00 / 512, clock.getOffset(t0.shiftedBy(1.0)).getRate(), 1.0e-15);
         Assertions.assertEquals(3.00 / 512, clock.getOffset(t0.shiftedBy(2.0)).getRate(), 1.0e-15);
@@ -76,20 +79,21 @@ class PolynomialClockModelTest {
     @Test
     void testRateField() {
         final AbsoluteDate        t0    = AbsoluteDate.GALILEO_EPOCH;
-        final PolynomialClockModel clock = new PolynomialClockModel(t0,
-                                                                  FastMath.scalb(1.0, -8),
-                                                                  FastMath.scalb(1.0, -9),
-                                                                  FastMath.scalb(1.0, -10));
+        final PolynomialClockModel clock = new PolynomialClockModel(t0, "dummy",
+                                                                    FastMath.scalb(1.0, -8),
+                                                                    FastMath.scalb(1.0, -9),
+                                                                    FastMath.scalb(1.0, -10));
+        final PolynomialFieldClockModel<Binary64> fClock = clock.toField(Binary64::new);
         final FieldAbsoluteDate<Binary64> t064 = new FieldAbsoluteDate<>(Binary64Field.getInstance(), t0);
-        Assertions.assertEquals(1.00 / 512, clock.getFieldOffset(t064).getRate().getReal(),                1.0e-15);
-        Assertions.assertEquals(2.00 / 512, clock.getFieldOffset(t064.shiftedBy(1.0)).getRate().getReal(), 1.0e-15);
-        Assertions.assertEquals(3.00 / 512, clock.getFieldOffset(t064.shiftedBy(2.0)).getRate().getReal(), 1.0e-15);
+        Assertions.assertEquals(1.00 / 512, fClock.getOffset(t064).getRate().getReal(),                1.0e-15);
+        Assertions.assertEquals(2.00 / 512, fClock.getOffset(t064.shiftedBy(1.0)).getRate().getReal(), 1.0e-15);
+        Assertions.assertEquals(3.00 / 512, fClock.getOffset(t064.shiftedBy(2.0)).getRate().getReal(), 1.0e-15);
     }
 
     @Test
     void testAcceleration() {
         final AbsoluteDate        t0    = AbsoluteDate.GALILEO_EPOCH;
-        final PolynomialClockModel clock = new PolynomialClockModel(t0,
+        final PolynomialClockModel clock = new PolynomialClockModel(t0, "dummy",
                                                                   FastMath.scalb(1.0, -8),
                                                                   FastMath.scalb(1.0, -9),
                                                                   FastMath.scalb(1.0, -10));
@@ -101,25 +105,97 @@ class PolynomialClockModelTest {
     @Test
     void testAccelerationField() {
         final AbsoluteDate        t0    = AbsoluteDate.GALILEO_EPOCH;
-        final PolynomialClockModel clock = new PolynomialClockModel(t0,
+        final PolynomialClockModel clock = new PolynomialClockModel(t0, "dummy",
                                                                   FastMath.scalb(1.0, -8),
                                                                   FastMath.scalb(1.0, -9),
                                                                   FastMath.scalb(1.0, -10));
+        final PolynomialFieldClockModel<Binary64> fClock = clock.toField(Binary64::new);
         final FieldAbsoluteDate<Binary64> t064 = new FieldAbsoluteDate<>(Binary64Field.getInstance(), t0);
-        Assertions.assertEquals(2.00 / 1024, clock.getFieldOffset(t064).getAcceleration().getReal(),                1.0e-15);
-        Assertions.assertEquals(2.00 / 1024, clock.getFieldOffset(t064.shiftedBy(1.0)).getAcceleration().getReal(), 1.0e-15);
-        Assertions.assertEquals(2.00 / 1024, clock.getFieldOffset(t064.shiftedBy(2.0)).getAcceleration().getReal(), 1.0e-15);
+        Assertions.assertEquals(2.00 / 1024, fClock.getOffset(t064).getAcceleration().getReal(),                1.0e-15);
+        Assertions.assertEquals(2.00 / 1024, fClock.getOffset(t064.shiftedBy(1.0)).getAcceleration().getReal(), 1.0e-15);
+        Assertions.assertEquals(2.00 / 1024, fClock.getOffset(t064.shiftedBy(2.0)).getAcceleration().getReal(), 1.0e-15);
     }
 
     @Test
     void testValidity() {
         final AbsoluteDate        t0    = AbsoluteDate.GALILEO_EPOCH;
-        final PolynomialClockModel clock = new PolynomialClockModel(t0,
+        final PolynomialClockModel clock = new PolynomialClockModel(t0, "dummy",
                                                                   FastMath.scalb(1.0, -8),
                                                                   FastMath.scalb(1.0, -9),
                                                                   FastMath.scalb(1.0, -10));
         Assertions.assertEquals(AbsoluteDate.PAST_INFINITY, clock.getValidityStart());
         Assertions.assertEquals(AbsoluteDate.FUTURE_INFINITY, clock.getValidityEnd());
+    }
+
+    @Test
+    void testNoReferenceDateA() {
+        final PolynomialClockModel clock= new PolynomialClockModel(null, "no", 3.5);
+        Assertions.assertEquals(3.5, clock.getOffset(AbsoluteDate.GALILEO_EPOCH).getBias(), 1.0e-15);
+    }
+
+    @Test
+    void testNoReferenceDateB() {
+        final PolynomialClockModel clock=
+            new PolynomialClockModel(new ParameterDriver("a-clock-bias", 2.5, 0.1,
+                                                         Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                                         TimeInterval.UNLIMITED));
+        Assertions.assertEquals(2.5, clock.getOffset(AbsoluteDate.GALILEO_EPOCH).getBias(), 1.0e-15);
+    }
+
+    @Test
+    void testNoReferenceDateException() {
+        try {
+            new PolynomialClockModel(null, "no", 3.5, 0.0);
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.NO_REFERENCE_DATE_FOR_PARAMETER, oe.getSpecifier());
+            Assertions.assertEquals("no-clock-bias", oe.getParts()[0]);
+        }
+    }
+
+    @Test
+    void testNoParameters() {
+        final PolynomialClockModel clockModel = new PolynomialClockModel();
+        Assertions.assertTrue(clockModel.getParametersDrivers().isEmpty());
+        Assertions.assertEquals(0.0, clockModel.getOffset(AbsoluteDate.ARBITRARY_EPOCH).getBias(),         1.0e-15);
+        Assertions.assertEquals(0.0, clockModel.getOffset(AbsoluteDate.ARBITRARY_EPOCH).getRate(),         1.0e-15);
+        Assertions.assertEquals(0.0, clockModel.getOffset(AbsoluteDate.ARBITRARY_EPOCH).getAcceleration(), 1.0e-15);
+    }
+
+    @Test
+    void testInconsistentPrefixParameters() {
+        try {
+            final PolynomialClockModel clockModel =
+                new PolynomialClockModel(Arrays.asList(new ParameterDriver("no-clock-bias", 1.0, 0.25,
+                                                                           Double.NEGATIVE_INFINITY,
+                                                                           Double.POSITIVE_INFINITY,
+                                                                           TimeInterval.UNLIMITED),
+                                                       new ParameterDriver("yes-clock-drift", 1.0, 0.25,
+                                                                           Double.NEGATIVE_INFINITY,
+                                                                           Double.POSITIVE_INFINITY,
+                                                                           TimeInterval.UNLIMITED)));
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, oe.getSpecifier());
+            Assertions.assertEquals("yes-clock-drift", oe.getParts()[0]);
+            Assertions.assertEquals("no-clock-drift", oe.getParts()[1]);
+        }
+    }
+
+    @Test
+    void testWrongSuffix() {
+        try {
+            final PolynomialClockModel clockModel =
+                new PolynomialClockModel(Collections.singletonList(new ParameterDriver("no", 1.0, 0.25,
+                                                                                       Double.NEGATIVE_INFINITY,
+                                                                                       Double.POSITIVE_INFINITY,
+                                                                                       TimeInterval.UNLIMITED)));
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, oe.getSpecifier());
+            Assertions.assertEquals("no",            oe.getParts()[0]);
+            Assertions.assertEquals("no-clock-bias", oe.getParts()[1]);
+        }
     }
 
     @Test
@@ -191,7 +267,7 @@ class PolynomialClockModelTest {
         a2.setSelected(true);
         indices.put(a2.getName(), nbParams++);
 
-        FieldClockModel<Gradient> gradientModel = clock.getFieldModel(nbParams, indices, t0);
+        FieldClockModel<Gradient> gradientModel = clock.toGradient(nbParams, indices);
         final FieldAbsoluteDate<Gradient> t0g = new FieldAbsoluteDate<>(GradientField.getField(nbParams), t0);
 
         final Gradient g0 = gradientModel.getOffset(t0g).getBias();
@@ -218,7 +294,7 @@ class PolynomialClockModelTest {
     void testPerfectClock() {
         // A perfect clock has zero offset, rate, and acceleration at all times
         final AbsoluteDate t0 = AbsoluteDate.GALILEO_EPOCH;
-        final PolynomialClockModel perfectClock = new PolynomialClockModel(t0, 0.0);
+        final PolynomialClockModel perfectClock = new PolynomialClockModel(t0, "dummy", 0.0);
 
         // Test at reference time
         ClockOffset offset0 = perfectClock.getOffset(t0);
@@ -242,16 +318,17 @@ class PolynomialClockModelTest {
     void testPerfectClockField() {
         // Test perfect clock with Field types
         final AbsoluteDate t0 = AbsoluteDate.GALILEO_EPOCH;
-        final PolynomialClockModel perfectClock = new PolynomialClockModel(t0, 0.0);
+        final PolynomialFieldClockModel<Binary64> perfectClock =
+            new PolynomialClockModel(t0, "dummy", 0.0).toField(Binary64::new);
         final FieldAbsoluteDate<Binary64> t064 = new FieldAbsoluteDate<>(Binary64Field.getInstance(), t0);
 
-        FieldClockOffset<Binary64> offset = perfectClock.getFieldOffset(t064);
+        FieldClockOffset<Binary64> offset = perfectClock.getOffset(t064);
         Assertions.assertEquals(0.0, offset.getBias().getReal(), 1.0e-15);
         Assertions.assertEquals(0.0, offset.getRate().getReal(), 1.0e-15);
         Assertions.assertEquals(0.0, offset.getAcceleration().getReal(), 1.0e-15);
 
         // Test at shifted time
-        FieldClockOffset<Binary64> offset1Day = perfectClock.getFieldOffset(t064.shiftedBy(86400.0));
+        FieldClockOffset<Binary64> offset1Day = perfectClock.getOffset(t064.shiftedBy(86400.0));
         Assertions.assertEquals(0.0, offset1Day.getBias().getReal(), 1.0e-15);
         Assertions.assertEquals(0.0, offset1Day.getRate().getReal(), 1.0e-15);
     }
@@ -261,7 +338,7 @@ class PolynomialClockModelTest {
         // A constant clock has a fixed bias but zero rate and acceleration
         final AbsoluteDate t0 = AbsoluteDate.GALILEO_EPOCH;
         final double constantBias = 1.23e-6; // 1.23 microseconds constant offset
-        final PolynomialClockModel constantClock = new PolynomialClockModel(t0, constantBias);
+        final PolynomialClockModel constantClock = new PolynomialClockModel(t0, "dummy", constantBias);
 
         // Test at reference time
         ClockOffset offset0 = constantClock.getOffset(t0);
@@ -289,17 +366,18 @@ class PolynomialClockModelTest {
         // Test constant clock with Field types
         final AbsoluteDate t0 = AbsoluteDate.GALILEO_EPOCH;
         final double constantBias = -5.67e-7; // Negative constant offset
-        final PolynomialClockModel constantClock = new PolynomialClockModel(t0, constantBias);
+        final PolynomialFieldClockModel<Binary64> constantClock =
+            new PolynomialClockModel(t0, "dummy", constantBias).toField(Binary64::new);
         final FieldAbsoluteDate<Binary64> t064 = new FieldAbsoluteDate<>(Binary64Field.getInstance(), t0);
 
         // Test at reference time
-        FieldClockOffset<Binary64> offset0 = constantClock.getFieldOffset(t064);
+        FieldClockOffset<Binary64> offset0 = constantClock.getOffset(t064);
         Assertions.assertEquals(constantBias, offset0.getBias().getReal(), 1.0e-15);
         Assertions.assertEquals(0.0, offset0.getRate().getReal(), 1.0e-15);
         Assertions.assertEquals(0.0, offset0.getAcceleration().getReal(), 1.0e-15);
 
         // Test at different time
-        FieldClockOffset<Binary64> offset1Hour = constantClock.getFieldOffset(t064.shiftedBy(3600.0));
+        FieldClockOffset<Binary64> offset1Hour = constantClock.getOffset(t064.shiftedBy(3600.0));
         Assertions.assertEquals(constantBias, offset1Hour.getBias().getReal(), 1.0e-15);
         Assertions.assertEquals(0.0, offset1Hour.getRate().getReal(), 1.0e-15);
     }
@@ -312,7 +390,7 @@ class PolynomialClockModelTest {
         final double a1 = 2.0e-9;  // rate coefficient
         final double a2 = 3.0e-10; // acceleration coefficient
         final double a3 = 4.0e-11; // jerk coefficient
-        final PolynomialClockModel cubicClock = new PolynomialClockModel(t0, a0, a1, a2, a3);
+        final PolynomialClockModel cubicClock = new PolynomialClockModel(t0, "dummy", a0, a1, a2, a3);
 
         // Test at reference time (t = 0)
         ClockOffset offset0 = cubicClock.getOffset(t0);
@@ -374,18 +452,19 @@ class PolynomialClockModelTest {
         final double a1 = 2.0e-9;
         final double a2 = 3.0e-10;
         final double a3 = 4.0e-11;
-        final PolynomialClockModel cubicClock = new PolynomialClockModel(t0, a0, a1, a2, a3);
+        final PolynomialFieldClockModel<Binary64> cubicClock =
+            new PolynomialClockModel(t0, "dummy", a0, a1, a2, a3).toField(Binary64::new);
         final FieldAbsoluteDate<Binary64> t064 = new FieldAbsoluteDate<>(Binary64Field.getInstance(), t0);
 
         // Test at reference time
-        FieldClockOffset<Binary64> offset0 = cubicClock.getFieldOffset(t064);
+        FieldClockOffset<Binary64> offset0 = cubicClock.getOffset(t064);
         Assertions.assertEquals(a0, offset0.getBias().getReal(), 1.0e-20);
         Assertions.assertEquals(a1, offset0.getRate().getReal(), 1.0e-20);
         Assertions.assertEquals(2.0 * a2, offset0.getAcceleration().getReal(), 1.0e-20);
 
         // Test at t = 2 seconds
         double t2 = 2.0;
-        FieldClockOffset<Binary64> offset2 = cubicClock.getFieldOffset(t064.shiftedBy(t2));
+        FieldClockOffset<Binary64> offset2 = cubicClock.getOffset(t064.shiftedBy(t2));
         double expectedBias2 = a0 + a1 * t2 + a2 * t2 * t2 + a3 * t2 * t2 * t2;
         double expectedRate2 = a1 + 2.0 * a2 * t2 + 3.0 * a3 * t2 * t2;
         double expectedAccel2 = 2.0 * a2 + 6.0 * a3 * t2;
@@ -402,7 +481,7 @@ class PolynomialClockModelTest {
         final double a1 = 1.0e-10;
         final double a2 = 2.0e-11;
         final double a3 = 3.0e-12;
-        final PolynomialClockModel cubicClock = new PolynomialClockModel(t0, a0, a1, a2, a3);
+        final PolynomialClockModel cubicClock = new PolynomialClockModel(t0, "dummy", a0, a1, a2, a3);
 
         // Test that for symmetric times around t0, certain properties hold
         double dt = 100.0; // 100 seconds
@@ -440,16 +519,16 @@ class PolynomialClockModelTest {
     void testAddParameterDriverBasic() {
         // Start with a simple clock with only bias
         final AbsoluteDate t0 = AbsoluteDate.GALILEO_EPOCH;
-        final PolynomialClockModel clock = new PolynomialClockModel(t0);
+        final PolynomialClockModel clock = new PolynomialClockModel(t0, "dummy");
 
         // Initially should have only 1 parameter (bias)
         Assertions.assertEquals(1, clock.getParametersDrivers().size(),
                 "Initial clock should have only bias parameter");
-        Assertions.assertTrue(clock.getParametersDrivers().getFirst().getName().contains("-clock-bias"),
+        Assertions.assertTrue(clock.getParametersDrivers().getFirst().getName().equals("dummy-clock-bias"),
                 "First parameter should be bias");
 
         // Add a drift parameter at index 1
-        final ParameterDriver drift = new ParameterDriver("-clock-drift", 0.0, 1.0,
+        final ParameterDriver drift = new ParameterDriver("dummy-clock-drift", 0.0, 1.0,
                                                           Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
                                                           TimeInterval.UNLIMITED);
         drift.setValue(1.0e-9);
@@ -459,7 +538,7 @@ class PolynomialClockModelTest {
         // Should now have 2 parameters
         Assertions.assertEquals(2, clock.getParametersDrivers().size(),
                 "Clock should have 2 parameters after adding drift");
-        Assertions.assertTrue(clock.getParametersDrivers().get(1).getName().contains("-clock-drift"),
+        Assertions.assertTrue(clock.getParametersDrivers().get(1).getName().contains("dummy-clock-drift"),
                 "Second parameter should be drift");
         Assertions.assertEquals(1.0e-9, clock.getParametersDrivers().get(1).getValue(), 1.0e-15,
                 "Drift value should be preserved");
@@ -469,14 +548,14 @@ class PolynomialClockModelTest {
     void testAddParameterDriverWithGap() {
         // Start with only bias, then add acceleration (skipping drift)
         final AbsoluteDate t0 = AbsoluteDate.GPS_EPOCH;
-        final PolynomialClockModel clock = new PolynomialClockModel(t0, 1.0e-8);
+        final PolynomialClockModel clock = new PolynomialClockModel(t0, "dummy", 1.0e-8);
 
         // Initially should have only 1 parameter (bias)
         Assertions.assertEquals(1, clock.getParametersDrivers().size(),
                 "Initial clock should have only bias parameter");
 
         // Add acceleration at index 2 (should auto-create drift at index 1)
-        final ParameterDriver accel = new ParameterDriver("-clock-acceleration", 0.0, 1.0,
+        final ParameterDriver accel = new ParameterDriver("dummy-clock-acceleration", 0.0, 1.0,
                                                           Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
                                                           TimeInterval.UNLIMITED);
         accel.setValue(2.0e-10);
@@ -488,13 +567,13 @@ class PolynomialClockModelTest {
                 "Clock should have 3 parameters after adding acceleration with gap");
 
         // Check that drift was auto-created with zero value
-        Assertions.assertTrue(clock.getParametersDrivers().get(1).getName().contains("-clock-drift"),
+        Assertions.assertTrue(clock.getParametersDrivers().get(1).getName().contains("dummy-clock-drift"),
                 "Second parameter should be drift (auto-created)");
         Assertions.assertEquals(0.0, clock.getParametersDrivers().get(1).getValue(), 1.0e-15,
                 "Auto-created drift should have zero value");
 
         // Check that acceleration was added correctly
-        Assertions.assertTrue(clock.getParametersDrivers().get(2).getName().contains("-clock-acceleration"),
+        Assertions.assertTrue(clock.getParametersDrivers().get(2).getName().contains("dummy-clock-acceleration"),
                 "Third parameter should be acceleration");
         Assertions.assertEquals(2.0e-10, clock.getParametersDrivers().get(2).getValue(), 1.0e-15,
                 "Acceleration value should be preserved");
@@ -504,7 +583,7 @@ class PolynomialClockModelTest {
     void testAddParameterDriverNullValue() {
         // Test adding null driver creates empty parameter
         final AbsoluteDate t0 = AbsoluteDate.J2000_EPOCH;
-        final PolynomialClockModel clock = new PolynomialClockModel(t0);
+        final PolynomialClockModel clock = new PolynomialClockModel(t0, "dummy");
 
         // Add null driver at index 1
         clock.addParameterDriver(1, null);
@@ -524,7 +603,7 @@ class PolynomialClockModelTest {
     void testAddParameterDriverMultipleGaps() {
         // Test adding a high-order term (index 4) requiring multiple intermediate terms
         final AbsoluteDate t0 = AbsoluteDate.GALILEO_EPOCH;
-        final PolynomialClockModel clock = new PolynomialClockModel(t0, 1.0e-8);
+        final PolynomialClockModel clock = new PolynomialClockModel(t0, "dummy", 1.0e-8);
 
         // Initially should have only 1 parameter (bias)
         Assertions.assertEquals(1, clock.getParametersDrivers().size());
@@ -561,7 +640,7 @@ class PolynomialClockModelTest {
     void testAddParameterDriverFunctionalBehavior() {
         // Test that added parameters actually affect clock behavior
         final AbsoluteDate t0 = AbsoluteDate.GPS_EPOCH;
-        final PolynomialClockModel clock = new PolynomialClockModel(t0, 1.0e-8);
+        final PolynomialClockModel clock = new PolynomialClockModel(t0, "dummy", 1.0e-8);
 
         // Get initial offset
         ClockOffset offset0 = clock.getOffset(t0);
@@ -609,7 +688,7 @@ class PolynomialClockModelTest {
         // Ensure adding parameters doesn't modify existing ones
         final AbsoluteDate t0 = AbsoluteDate.J2000_EPOCH;
         final double biasValue = 5.5e-8;
-        final PolynomialClockModel clock = new PolynomialClockModel(t0, biasValue);
+        final PolynomialClockModel clock = new PolynomialClockModel(t0, "dummy", biasValue);
 
         // Store reference to original bias driver
         ParameterDriver originalBias = clock.getParametersDrivers().getFirst();
@@ -642,6 +721,34 @@ class PolynomialClockModelTest {
                 "Bias should still retain its original value");
         Assertions.assertEquals(1.5e-9, clock.getParametersDrivers().get(1).getValue(), 1.0e-15,
                 "Drift should retain its value");
+    }
+
+    @Test
+    void testConversion() {
+        final AbsoluteDate        t0    = AbsoluteDate.GALILEO_EPOCH;
+        final FieldAbsoluteDate<Binary64> t0F = new FieldAbsoluteDate<>(Binary64Field.getInstance(), t0);
+        final PolynomialClockModel clock = new PolynomialClockModel(t0, "dummy",
+                                                                    FastMath.scalb(1.0, -8),
+                                                                    FastMath.scalb(1.0, -9),
+                                                                    FastMath.scalb(1.0, -10));
+        Assertions.assertEquals(1.00 / 256.0, clock.getOffset(t0).getBias(),                1.0e-15);
+        Assertions.assertEquals(1.75 / 256.0, clock.getOffset(t0.shiftedBy(1.0)).getBias(), 1.0e-15);
+        Assertions.assertEquals(3.00 / 256.0, clock.getOffset(t0.shiftedBy(2.0)).getBias(), 1.0e-15);
+
+        final PolynomialFieldClockModel<Binary64> fieldModel = clock.toField(Binary64::new);
+        final PolynomialClockModel rebuilt = fieldModel.toNonField();
+        for (double dt = 0; dt < 10; dt += 0.0625) {
+            final ClockOffset                cRef     = clock.getOffset(t0.shiftedBy(dt));
+            final FieldClockOffset<Binary64> cField   = fieldModel.getOffset(t0F.shiftedBy(dt));
+            final ClockOffset                cRebuilt = clock.getOffset(t0.shiftedBy(dt));
+            Assertions.assertEquals(cRef.getBias(),         cField.getBias().getReal(),         1.0e-15);
+            Assertions.assertEquals(cRef.getRate(),         cField.getRate().getReal(),         1.0e-15);
+            Assertions.assertEquals(cRef.getAcceleration(), cField.getAcceleration().getReal(), 1.0e-15);
+            Assertions.assertEquals(cRef.getBias(),         cRebuilt.getBias(),                 1.0e-15);
+            Assertions.assertEquals(cRef.getRate(),         cRebuilt.getRate(),                 1.0e-15);
+            Assertions.assertEquals(cRef.getAcceleration(), cRebuilt.getAcceleration(),         1.0e-15);
+        }
+
     }
 
 }

@@ -36,11 +36,29 @@ class FieldClockOffsetTest {
     }
 
     @Test
+    void testConstructorWithoutBias() {
+        final FieldClockOffset<Binary64> fieldClockOffset = new FieldClockOffset<>(FieldAbsoluteDate.getArbitraryEpoch(Binary64Field.getInstance()),
+                new Binary64[]{});
+        assertEquals( 0.0, fieldClockOffset.getBias().getReal(),         1.0e-15);
+        assertEquals( 0.0, fieldClockOffset.getRate().getReal(),         1.0e-15);
+        assertEquals( 0.0, fieldClockOffset.getAcceleration().getReal(), 1.0e-15);
+    }
+
+    @Test
     void testConstructorWithoutDrift() {
         final FieldClockOffset<Binary64> fieldClockOffset = new FieldClockOffset<>(FieldAbsoluteDate.getArbitraryEpoch(Binary64Field.getInstance()),
                 new Binary64[]{new Binary64(3)});
-        assertEquals( 3.0, fieldClockOffset.getBias().getReal(),          1.0e-15);
-        assertEquals( 0.0, fieldClockOffset.getRate().getReal(),          1.0e-15);
+        assertEquals( 3.0, fieldClockOffset.getBias().getReal(),         1.0e-15);
+        assertEquals( 0.0, fieldClockOffset.getRate().getReal(),         1.0e-15);
+        assertEquals( 0.0, fieldClockOffset.getAcceleration().getReal(), 1.0e-15);
+    }
+
+    @Test
+    void testConstructorWithoutAcceleration() {
+        final FieldClockOffset<Binary64> fieldClockOffset = new FieldClockOffset<>(FieldAbsoluteDate.getArbitraryEpoch(Binary64Field.getInstance()),
+                new Binary64[]{new Binary64(3), new Binary64(5)});
+        assertEquals( 3.0, fieldClockOffset.getBias().getReal(),         1.0e-15);
+        assertEquals( 5.0, fieldClockOffset.getRate().getReal(),         1.0e-15);
         assertEquals( 0.0, fieldClockOffset.getAcceleration().getReal(), 1.0e-15);
     }
 

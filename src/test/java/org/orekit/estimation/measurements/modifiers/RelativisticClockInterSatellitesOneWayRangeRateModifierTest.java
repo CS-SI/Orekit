@@ -33,6 +33,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.drivers.ParameterDriver;
 
 public class RelativisticClockInterSatellitesOneWayRangeRateModifierTest {
 
@@ -54,6 +55,9 @@ public class RelativisticClockInterSatellitesOneWayRangeRateModifierTest {
                                                                                         Vector3D.dotProduct(delta.getVelocity(),
                                                                                                             delta.getPosition().normalize()),
                                                                                         1.0, 1.0);
+        for (final ParameterDriver driver : range.getParametersDrivers()) {
+            driver.setReferenceDate(date);
+        }
 
         // Inter-satellites range rate before applying the modifier
         final EstimatedMeasurementBase<InterSatellitesOneWayRangeRate> estimatedBefore = range.estimateWithoutDerivatives(states);

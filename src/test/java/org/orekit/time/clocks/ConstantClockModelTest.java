@@ -25,6 +25,7 @@ import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeInterval;
 import org.orekit.time.TimeScalesFactory;
 
 public class ConstantClockModelTest {
@@ -42,6 +43,7 @@ public class ConstantClockModelTest {
         }
     }
 
+    @Test
     public void testNonZero() {
         final AbsoluteDate t0      = new AbsoluteDate(2020, 4, 1, TimeScalesFactory.getUTC());
         final ConstantClockModel clockModel = new ConstantClockModel(1.0);
@@ -65,12 +67,23 @@ public class ConstantClockModelTest {
         final ConstantClockModel clockModel = new ConstantClockModel(4.0);
         for (double dt = 0.02; dt < 0.98; dt += 0.02) {
             final T dtF = field.getZero().newInstance(dt);
-            final FieldClockOffset<T> co = clockModel.getFieldOffset(t0F.shiftedBy(dtF));
+            final FieldClockOffset<T> co = clockModel.
+                                           toField(v -> field.getZero().newInstance(v)).
+                                           getOffset(t0F.shiftedBy(dtF));
             Assertions.assertEquals(dt, co.getDate().durationFrom(t0).getReal(), 1.0e-15);
             Assertions.assertEquals(4.0,  co.getBias().getReal(),                1.0e-15);
             Assertions.assertEquals(0,  co.getRate().getReal(),                  1.0e-15);
             Assertions.assertEquals(0,  co.getAcceleration().getReal(),          1.0e-15);
         }
+    }
+
+    @Test
+    public void testValidity() {
+        final AbsoluteDate       t0      = new AbsoluteDate(2020, 4, 1, TimeScalesFactory.getUTC());
+        final ConstantClockModel clockModel = new ConstantClockModel(1.0);
+        clockModel.getParametersDrivers().getFirst().setValidity(TimeInterval.of(t0, 10.0));
+        Assertions.assertEquals( 0.0, clockModel.getValidityStart().durationFrom(t0), 1.0e-15);
+        Assertions.assertEquals(10.0, clockModel.getValidityEnd().durationFrom(t0), 1.0e-15);
     }
 
     @BeforeEach

@@ -33,10 +33,10 @@ public class ClockTimeScaleTest {
         final String name = "Galileo+offset";
         final AbsoluteDate        t0    = new AbsoluteDate(2020, 4, 1,
                                                            TimeScalesFactory.getUTC());
-        final PolynomialClockModel clock = new PolynomialClockModel(t0,
-                                                                  FastMath.scalb(1.0, -10),
-                                                                  FastMath.scalb(1.0, -11),
-                                                                  FastMath.scalb(1.0, -12));
+        final PolynomialClockModel clock = new PolynomialClockModel(t0, "",
+                                                                    FastMath.scalb(1.0, -10),
+                                                                    FastMath.scalb(1.0, -11),
+                                                                    FastMath.scalb(1.0, -12));
         final ClockTimeScale positive = new ClockTimeScale(name,
                                                            PredefinedTimeSystem.GALILEO.getTimeScale(TimeScalesFactory.getTimeScales()),
                                                            clock);
@@ -57,10 +57,10 @@ public class ClockTimeScaleTest {
         final String name = "UTC+offset";
         final AbsoluteDate        t0    = new AbsoluteDate(2020, 4, 1,
                                                            TimeScalesFactory.getUTC());
-        final PolynomialClockModel clock = new PolynomialClockModel(t0,
-                                                                  FastMath.scalb(1.0, -10),
-                                                                  FastMath.scalb(1.0, -11),
-                                                                  FastMath.scalb(1.0, -12));
+        final PolynomialClockModel clock = new PolynomialClockModel(t0, "",
+                                                                    FastMath.scalb(1.0, -10),
+                                                                    FastMath.scalb(1.0, -11),
+                                                                    FastMath.scalb(1.0, -12));
         final ClockTimeScale positive = new ClockTimeScale(name,
                                                            TimeScalesFactory.getUTC(),
                                                            clock);

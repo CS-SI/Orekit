@@ -16,13 +16,11 @@
  */
 package org.orekit.time.clocks;
 
-import java.util.Map;
-
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.Gradient;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
-import org.orekit.time.AbsoluteDate;
+
+import java.util.Map;
+import java.util.function.DoubleFunction;
 
 /** Clock model computing the difference of two underlying models.
  * @author Luc Maisonobe
@@ -41,28 +39,23 @@ public class ClocksDifference extends AbstractCombinedClocksPair {
         super(clock1, clock2);
     }
 
+    /** {@inheritDoc} */
     @Override
     protected ClockOffset combine(final ClockOffset offset1, final ClockOffset offset2) {
         return offset1.subtract(offset2);
     }
 
-    /** Combine two offsets.
-     * @param <T> type of the field elements
-     * @param offset1 first offset
-     * @param offset2 second offset
-     * @return combined offset
-     */
+    /** {@inheritDoc} */
     @Override
-    protected <T extends CalculusFieldElement<T>> FieldClockOffset<T> combine(final FieldClockOffset<T> offset1,
-                                                                              final FieldClockOffset<T> offset2) {
-        return offset1.subtract(offset2);
+    public <T extends CalculusFieldElement<T>> FieldClocksDifference<T> toField(final DoubleFunction<T> converter) {
+        return new FieldClocksDifference<>(getClock1().toField(converter), getClock2().toField(converter));
     }
 
+    /** {@inheritDoc} */
     @Override
-    public FieldClockModel<Gradient> getFieldModel(final int freeParameters,
-            final Map<String, Integer> indices, final AbsoluteDate date) {
-        throw new OrekitException(OrekitMessages.INTERNAL_ERROR); // "Unable to sum the field models of two classes"));
+    public FieldClocksDifference<Gradient> toGradient(final int freeParameters, final Map<String, Integer> indices) {
+        return new FieldClocksDifference<>(getClock1().toGradient(freeParameters, indices),
+                                           getClock2().toGradient(freeParameters, indices));
     }
-
 
 }

@@ -315,7 +315,8 @@ class AngularAzElTest {
                 FramesFactory.getITRF(ITRFVersion.ITRF_2020, IERSConventions.IERS_2010, false));
         final GeodeticPoint point = new GeodeticPoint(0., 0., 100.);
         final TopocentricFrame baseFrame = new TopocentricFrame(earth, point, "name");
-        final GroundStation stationWithOffset = new GroundStation(baseFrame, new PolynomialClockModel(epoch.shiftedBy(1), 1.));
+        final GroundStation stationWithOffset = new GroundStation(baseFrame,
+                                                                  new PolynomialClockModel(epoch.shiftedBy(1), "dummy", 1.));
         activateStation(stationWithOffset);
         final ObservableSatellite satellite = new ObservableSatellite(0);
         final SpacecraftState[] state = new SpacecraftState[] { new SpacecraftState(orbit) };

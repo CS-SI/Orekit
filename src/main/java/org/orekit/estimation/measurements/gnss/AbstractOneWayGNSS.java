@@ -88,6 +88,9 @@ public abstract class AbstractOneWayGNSS<T extends ObservedMeasurement<T>> exten
         super(date, false, observedValue, measurementQuality,
               signalTravelTimeModel, Collections.singletonList(local));
         this.observer = observer;
+        for (ParameterDriver driver : observer.getParametersDrivers()) {
+            addParameterDriver(driver);
+        }
     }
 
     /** Observer object sending signal.
@@ -164,8 +167,8 @@ public abstract class AbstractOneWayGNSS<T extends ObservedMeasurement<T>> exten
         final FieldAbsoluteDate<Gradient> gDate = new FieldAbsoluteDate<>(GradientField.getField(nbParams), measurementDate);
 
         // Measured satellite object data
-        final TimeStampedFieldPVCoordinates<Gradient> pvaLocal         = AbstractMeasurement.getCoordinates(states[0], 0, nbParams);
-        final FieldClockModel<Gradient> localClock        = localSat.getFieldClockModel(nbParams, paramIndices, measurementDate);
+        final TimeStampedFieldPVCoordinates<Gradient> pvaLocal = AbstractMeasurement.getCoordinates(states[0], 0, nbParams);
+        final FieldClockModel<Gradient> localClock        = localSat.getFieldClockModel(nbParams, paramIndices);
         final FieldClockOffset<Gradient> localClockOffset = localClock.getOffset(gDate);
 
         // take clock offset into account for arrival date
@@ -185,8 +188,7 @@ public abstract class AbstractOneWayGNSS<T extends ObservedMeasurement<T>> exten
 
         // Remote observer at signal emission time
         final FieldAbsoluteDate<Gradient> emissionDate = arrivalDate.shiftedBy(tauD.negate());
-        final FieldClockModel<Gradient> remoteClock = getObserver().getFieldClockModel(nbParams,
-                paramIndices, emissionDate.toAbsoluteDate());
+        final FieldClockModel<Gradient> remoteClock = getObserver().getFieldClockModel(nbParams, paramIndices);
         final FieldClockOffset<Gradient>  remoteClockOffset = remoteClock.getOffset(emissionDate);
 
         return new CommonParametersWithDerivatives(states[0], paramIndices, tauD,

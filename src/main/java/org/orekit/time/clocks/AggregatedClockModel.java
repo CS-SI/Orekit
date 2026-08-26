@@ -17,15 +17,17 @@
 package org.orekit.time.clocks;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.DoubleFunction;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.drivers.ParameterDriver;
 import org.orekit.utils.TimeSpanMap;
 
@@ -40,11 +42,25 @@ public class AggregatedClockModel implements ClockModel {
     /** Underlying clock models. */
     private final TimeSpanMap<ClockModel> models;
 
+    /** Cached field-based models.
+     * @since 14.0
+     */
+    private final Map<Field<? extends CalculusFieldElement<?>>, AggregatedFieldClockModel<?>> fieldModels;
+
     /** Simple constructor.
      * @param models underlying clock models
      */
     public AggregatedClockModel(final TimeSpanMap<ClockModel> models) {
-        this.models = models;
+
+        try {
+            // we ignore the result, we just want to check some data is present
+            models.getFirstNonNullSpan();
+        } catch (OrekitException oe) {
+            throw new OrekitException(oe, OrekitMessages.NOT_ENOUGH_DATA, 0);
+        }
+
+        this.models      = models;
+        this.fieldModels = new HashMap<>();
     }
 
     /** Get the underlying models.
@@ -82,15 +98,40 @@ public class AggregatedClockModel implements ClockModel {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends CalculusFieldElement<T>> FieldClockOffset<T> getFieldOffset(final FieldAbsoluteDate<T> date) {
-        return getModel(date.toAbsoluteDate()).getFieldOffset(date);
+    @SuppressWarnings("unchecked")
+    public <T extends CalculusFieldElement<T>> AggregatedFieldClockModel<T> toField(final DoubleFunction<T> converter) {
+        // build aggregated models may be costly, so we cache the results
+        return (AggregatedFieldClockModel<T>) fieldModels.computeIfAbsent(converter.apply(0.0).getField(),
+                                                                          f -> buildFieldModel(converter));
+    }
+
+    /**
+     * Build a field model.
+     * @param <T> type of the field elements
+     * @param converter converter to field elements
+     * @return field version of the instance
+     * @since 14.0
+     */
+    private <T extends CalculusFieldElement<T>> AggregatedFieldClockModel<T> buildFieldModel(final DoubleFunction<T> converter) {
+        final TimeSpanMap<FieldClockModel<T>> fieldMap = new TimeSpanMap<>(null);
+        for (TimeSpanMap.Span<ClockModel> span = models.getFirstSpan(); span != null; span = span.next()) {
+            fieldMap.addValidBetween(span.getData() == null ? null : span.getData().toField(converter),
+                                     span.getStart(), span.getEnd());
+        }
+        return new AggregatedFieldClockModel<>(fieldMap);
     }
 
     /** {@inheritDoc} */
     @Override
-    public FieldClockModel<Gradient> getFieldModel(final int freeParameters,
-            final Map<String, Integer> indices, final AbsoluteDate date) {
-        return getModel(date).getFieldModel(freeParameters, indices, date);
+    public AggregatedFieldClockModel<Gradient> toGradient(final int freeParameters, final Map<String, Integer> indices) {
+        final TimeSpanMap<FieldClockModel<Gradient>> fieldMap = new TimeSpanMap<>(null);
+        for (TimeSpanMap.Span<ClockModel> span = models.getFirstSpan(); span != null; span = span.next()) {
+            fieldMap.addValidBetween(span.getData() == null ?
+                                     null :
+                                     span.getData().toGradient(freeParameters, indices),
+                                     span.getStart(), span.getEnd());
+        }
+        return new AggregatedFieldClockModel<>(fieldMap);
     }
 
     /**

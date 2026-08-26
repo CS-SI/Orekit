@@ -75,9 +75,10 @@ public class OneWayGNSSRangeRateCreator
         this.local.getClockModel().getRateDriver().setValue(localClockRate);
         this.local.getClockModel().getAccelerationDriver().setValue(localClockAcceleration);
         this.remoteClk          = new PolynomialClockModel(ephemeris.getMinDate(),
-                                                          remoteClockOffset,
-                                                          remoteClockRate,
-                                                          remoteClockAcceleration);
+                                                           "remote",
+                                                           remoteClockOffset,
+                                                           remoteClockRate,
+                                                           remoteClockAcceleration);
         this.remoteSat          = new ObserverSatellite("", ephemeris, this.remoteClk);
     }
 

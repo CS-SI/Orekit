@@ -373,7 +373,9 @@ public class IonoModifierTest {
         final double remoteClockOffset = 469.0e-9;
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new OneWayGNSSRangeCreator(gnssEphemeris, localClockOffset, remoteClockOffset),
+                                                               new OneWayGNSSRangeCreator(gnssEphemeris,
+                                                                                          localClockOffset,
+                                                                                          remoteClockOffset),
                                                                1.0, 3.0, 300.0);
         propagator.clearStepHandlers();
 
