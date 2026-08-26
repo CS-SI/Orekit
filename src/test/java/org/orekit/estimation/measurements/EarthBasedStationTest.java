@@ -246,7 +246,8 @@ class EarthBasedStationTest {
         final BodyShape parent       = base.getParentShape();
         final double deltaClock      = 0.00084532;
         final String changedSuffix   = "-changed";
-        final PolynomialClockModel blankClock = new PolynomialClockModel(context.initialOrbit.getDate(), 0.0, 0.0, 0.0);
+        final PolynomialClockModel blankClock =
+            new PolynomialClockModel(context.initialOrbit.getDate(), "dummy", 0.0, 0.0, 0.0);
         final EarthBasedStation changed  = new EarthBasedStation(new TopocentricFrame(parent, base.getPoint(),
                                                                               base.getName() + changedSuffix), context.ut1.getEOPHistory(),
                                                          blankClock, context.stations.getFirst().getDisplacements());
@@ -1410,7 +1411,7 @@ class EarthBasedStationTest {
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.NO_REFERENCE_DATE_FOR_PARAMETER, oe.getSpecifier());
-            Assertions.assertEquals("prime-meridian-offset", oe.getParts()[0]);
+            Assertions.assertEquals("dummy-clock-bias", oe.getParts()[0]);
         }
 
         try {
@@ -1423,7 +1424,7 @@ class EarthBasedStationTest {
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.NO_REFERENCE_DATE_FOR_PARAMETER, oe.getSpecifier());
-            Assertions.assertEquals("prime-meridian-offset", oe.getParts()[0]);
+            Assertions.assertEquals("dummy-clock-bias", oe.getParts()[0]);
         }
 
     }

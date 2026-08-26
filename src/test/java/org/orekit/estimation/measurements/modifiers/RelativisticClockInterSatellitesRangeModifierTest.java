@@ -31,6 +31,7 @@ import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.drivers.ParameterDriver;
 
 public class RelativisticClockInterSatellitesRangeModifierTest {
 
@@ -49,6 +50,9 @@ public class RelativisticClockInterSatellitesRangeModifierTest {
                                                                     Vector3D.distance(states[0].getPosition(),
                                                                                       states[1].getPosition()),
                                                                     1.0, 1.0);
+        for (final ParameterDriver driver : range.getParametersDrivers()) {
+            driver.setReferenceDate(date);
+        }
 
         // Inter-satellites range before applying the modifier
         final EstimatedMeasurementBase<InterSatellitesRange> estimatedBefore = range.estimateWithoutDerivatives(states);

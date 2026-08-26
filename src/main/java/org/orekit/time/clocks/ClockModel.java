@@ -16,14 +16,14 @@
  */
 package org.orekit.time.clocks;
 
-import java.util.Map;
-
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.drivers.ParameterDriver;
 import org.orekit.utils.drivers.ParameterDriversProvider;
+
+import java.util.Map;
+import java.util.function.DoubleFunction;
 
 /** Offset clock model.
  * @author Luc Maisonobe
@@ -31,19 +31,19 @@ import org.orekit.utils.drivers.ParameterDriversProvider;
  */
 public interface ClockModel extends ParameterDriversProvider {
 
-    /** Get the accepted parameter term names.
+    /** Get the accepted suffix for parameter names.
      * This creates the list of parameter driver terms that are accepted
-     * @param count the count of the term name being request
-     * @return clock term name
+     * @param term the driver term parameter index requested
+     * @return clock term suffix
      */
-    default String getAcceptedTermName(final Integer count) {
-        final String[] regularNames = {"-clock-bias", "-clock-drift", "-clock-acceleration"};
-        if (count < 3) {
-            return regularNames[count];
-        }
-        return "-clock-term-" + count;
+    default String getAcceptedTermSuffix(final int term) {
+        return switch (term) {
+            case 0 -> "-clock-bias";
+            case 1 -> "-clock-drift";
+            case 2 -> "-clock-acceleration";
+            default -> "-clock-term-" + term;
+        };
     }
-
 
     /** Get validity start.
      * @return model validity start
@@ -69,13 +69,6 @@ public interface ClockModel extends ParameterDriversProvider {
         return getOffset(date).getValue(date);
     }
 
-    /** Get the field clock offset at date.
-     * @param <T> type of the field elements
-     * @param date date at which offset is requested
-     * @return field clock offset
-     */
-    <T extends CalculusFieldElement<T>> FieldClockOffset<T> getFieldOffset(FieldAbsoluteDate<T> date);
-
     /** Get the parameter driver for the clock bias.
      * <p>
      * The bias represents the constant offset of the clock from the reference time scale.
@@ -86,7 +79,7 @@ public interface ClockModel extends ParameterDriversProvider {
      * @since 14.0
      */
     default ParameterDriver getBiasDriver() {
-        return getParameterDriverWithSubstring(getAcceptedTermName(0));
+        return getParameterDriverWithSubstring(getAcceptedTermSuffix(0));
     }
 
     /** Get the parameter driver for the clock rate (drift).
@@ -100,7 +93,7 @@ public interface ClockModel extends ParameterDriversProvider {
      * @since 14.0
      */
     default ParameterDriver getRateDriver() {
-        return getParameterDriverWithSubstring(getAcceptedTermName(1));
+        return getParameterDriverWithSubstring(getAcceptedTermSuffix(1));
     }
 
     /** Get the parameter driver for the clock acceleration.
@@ -114,7 +107,7 @@ public interface ClockModel extends ParameterDriversProvider {
      * @since 14.0
      */
     default ParameterDriver getAccelerationDriver() {
-        return getParameterDriverWithSubstring(getAcceptedTermName(2));
+        return getParameterDriverWithSubstring(getAcceptedTermSuffix(2));
     }
 
     /** Get the parameter driver for a given index.
@@ -128,23 +121,31 @@ public interface ClockModel extends ParameterDriversProvider {
      * @return parameter driver for clock acceleration, or null if not available
      * @since 14.0
      */
-    default ParameterDriver getParameterDriverTerm(final Integer term) {
+    default ParameterDriver getParameterDriverTerm(final int term) {
         return switch (term) {
             case 0 -> getBiasDriver();
             case 1 -> getRateDriver();
             case 2 -> getAccelerationDriver();
-            default -> getParameterDriver(getAcceptedTermName(term));
+            default -> getParameterDriver(getAcceptedTermSuffix(term));
         };
     }
 
     /**
      * Convert to field model.
+     * @param <T> type of the field elements
+     * @param converter converter to field elements
+     * @return field version of the instance
+     * @since 14.0
+     */
+    <T extends CalculusFieldElement<T>> FieldClockModel<T> toField(DoubleFunction<T> converter);
+
+    /**
+     * Convert to gradient model.
      * @param freeParameters total number of free parameters in the gradient
      * @param indices indices of the differentiation parameters in derivatives computations,
      * must be span name and not driver name
-     * @param date date at which model must be valid
      * @return converted clock model
      */
-    FieldClockModel<Gradient> getFieldModel(int freeParameters, Map<String, Integer> indices, AbsoluteDate date);
+    FieldClockModel<Gradient> toGradient(int freeParameters, Map<String, Integer> indices);
 
 }

@@ -262,7 +262,8 @@ class FDOATest {
                 FramesFactory.getITRF(ITRFVersion.ITRF_2020, IERSConventions.IERS_2010, false));
         final GeodeticPoint point = new GeodeticPoint(0., 0., 100.);
         final TopocentricFrame baseFrame = new TopocentricFrame(earth, point, "name");
-        final GroundStation prime = new GroundStation(baseFrame, new PolynomialClockModel(AbsoluteDate.JULIAN_EPOCH, 1e-2));
+        final GroundStation prime = new GroundStation(baseFrame,
+                                                      new PolynomialClockModel(AbsoluteDate.JULIAN_EPOCH, "dummy", 1e-2));
         final GroundStation second = new GroundStation(new TopocentricFrame(earth, new GeodeticPoint(0.1, 0.1, 1e3), "emitter"));
         activateStation(prime);
         activateStation(second);
@@ -300,7 +301,8 @@ class FDOATest {
                 FramesFactory.getITRF(ITRFVersion.ITRF_2020, IERSConventions.IERS_2010, false));
         final GeodeticPoint point = new GeodeticPoint(0., 0., 100.);
         final TopocentricFrame baseFrame = new TopocentricFrame(earth, point, "name");
-        final GroundStation prime = new GroundStation(baseFrame, new PolynomialClockModel(AbsoluteDate.JULIAN_EPOCH, 1e-2));
+        final GroundStation prime = new GroundStation(baseFrame,
+                                                      new PolynomialClockModel(AbsoluteDate.JULIAN_EPOCH, "dummy", 1e-2));
         final GroundStation second = new GroundStation(new TopocentricFrame(earth, new GeodeticPoint(0.1, 0.1, 1e3), "emitter"));
         activateStation(prime);
         activateStation(second);

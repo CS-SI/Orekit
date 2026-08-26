@@ -17,12 +17,16 @@
 package org.orekit.time.clocks;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
+import org.hipparchus.analysis.differentiation.Gradient;
+import org.hipparchus.analysis.differentiation.GradientField;
 import org.hipparchus.analysis.polynomials.PolynomialFunction;
+import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
@@ -108,10 +112,11 @@ public class SampledClockModelTest {
         for (double dt = 0; dt < 10; dt += FastMath.scalb(1, -4)) {
             sample.add(new ClockOffset(t0.shiftedBy(dt), c.value(dt), Double.NaN, Double.NaN));
         }
-        final SampledClockModel clockModel = new SampledClockModel(sample, 4);
+        final SampledFieldClockModel<T> clockModel =
+            new SampledClockModel(sample, 4).toField(v -> field.getZero().newInstance(v));
         for (double dt = 0.02; dt < 0.98; dt += 0.02) {
             final T dtF = field.getZero().newInstance(dt);
-            final FieldClockOffset<T> co = clockModel.getFieldOffset(t0F.shiftedBy(dtF));
+            final FieldClockOffset<T> co = clockModel.getOffset(t0F.shiftedBy(dtF));
             Assertions.assertEquals(dt, co.getDate().durationFrom(t0).getReal(),                  1.0e-15);
             Assertions.assertEquals(c.value(dtF).getReal(),       co.getBias().getReal(),       1.0e-15);
             Assertions.assertEquals(cDot.value(dtF).getReal(),    co.getRate().getReal(),         1.0e-15);
@@ -137,10 +142,11 @@ public class SampledClockModelTest {
         for (double dt = 0; dt < 10; dt += FastMath.scalb(1, -4)) {
             sample.add(new ClockOffset(t0.shiftedBy(dt), c.value(dt), cDot.value(dt), Double.NaN));
         }
-        final SampledClockModel clockModel = new SampledClockModel(sample, 2);
+        final SampledFieldClockModel<T> clockModel =
+            new SampledClockModel(sample, 2).toField(v -> field.getZero().newInstance(v));
         for (double dt = 0.02; dt < 0.98; dt += 0.02) {
             final T dtF = field.getZero().newInstance(dt);
-            final FieldClockOffset<T> co = clockModel.getFieldOffset(t0F.shiftedBy(dtF));
+            final FieldClockOffset<T> co = clockModel.getOffset(t0F.shiftedBy(dtF));
             Assertions.assertEquals(dt, co.getDate().durationFrom(t0).getReal(),                  1.0e-15);
             Assertions.assertEquals(c.value(dtF).getReal(),       co.getBias().getReal(),       1.0e-15);
             Assertions.assertEquals(cDot.value(dtF).getReal(),    co.getRate().getReal(),         1.0e-15);
@@ -158,12 +164,40 @@ public class SampledClockModelTest {
     }
 
     @Test
-    void testGetFieldModel() {
+    void testGetGradientdModel() {
         // GIVEN
-        final ClockOffset offset = mock();
-        final SampledClockModel clockModel = new SampledClockModel(List.of(offset), 1);
+        final ClockOffset offset0 = new ClockOffset(AbsoluteDate.ARBITRARY_EPOCH, 1, 2, 3);
+        final ClockOffset offset1 = new ClockOffset(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(1), 1.1, 2.1, 3.1);
+        final ClockOffset offset2 = new ClockOffset(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(2), 1.2, 2.2, 3.2);
+        final SampledClockModel clockModel =
+            new SampledClockModel(Arrays.asList(offset0, offset1, offset2), 1);
         // WHEN & THEN
-        assertThrows(OrekitException.class, () -> clockModel.getFieldModel(1, new HashMap<>(), AbsoluteDate.ARBITRARY_EPOCH));
+        Assertions.assertEquals(3, clockModel.getCache().getAll().size());
+        final SampledFieldClockModel<Gradient> g = clockModel.toGradient(5, new HashMap<>());
+        final FieldAbsoluteDate<Gradient> gDate = FieldAbsoluteDate.getArbitraryEpoch(GradientField.getField(5));
+        Assertions.assertEquals(5, g.getOffset(gDate).getBias().getFreeParameters());
+
+        Assertions.assertEquals(3, g.getCache().getAll().size());
+        Assertions.assertEquals(3, g.toNonField().getCache().getAll().size());
+
+    }
+
+    @Test
+    void testValidity() {
+
+        final ClockOffset offset0 = new ClockOffset(AbsoluteDate.ARBITRARY_EPOCH, 1, 2, 3);
+        final ClockOffset offset1 = new ClockOffset(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(1), 1.1, 2.1, 3.1);
+        final ClockOffset offset2 = new ClockOffset(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(2), 1.2, 2.2, 3.2);
+        final SampledClockModel clock =
+            new SampledClockModel(Arrays.asList(offset0, offset1, offset2), 1);
+
+        Assertions.assertEquals(AbsoluteDate.ARBITRARY_EPOCH, clock.getValidityStart());
+        Assertions.assertEquals(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(2), clock.getValidityEnd());
+
+        final SampledFieldClockModel<Binary64> clock64 = clock.toField(Binary64::new);
+        Assertions.assertEquals(AbsoluteDate.ARBITRARY_EPOCH, clock64.getValidityStart());
+        Assertions.assertEquals(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(2), clock64.getValidityEnd());
+
     }
 
     @BeforeEach

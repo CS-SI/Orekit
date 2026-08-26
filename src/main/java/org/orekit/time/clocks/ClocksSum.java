@@ -16,13 +16,11 @@
  */
 package org.orekit.time.clocks;
 
-import java.util.Map;
-
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.Gradient;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
-import org.orekit.time.AbsoluteDate;
+
+import java.util.Map;
+import java.util.function.DoubleFunction;
 
 /**
  * Clock model computing the sum of two underlying models.
@@ -50,25 +48,17 @@ public class ClocksSum extends AbstractCombinedClocksPair {
         return offset1.add(offset2);
     }
 
-    /**
-     * Combine two offsets.
-     *
-     * @param <T>     type of the field elements
-     * @param offset1 first offset
-     * @param offset2 second offset
-     * @return combined offset
-     */
+    /** {@inheritDoc} */
     @Override
-    protected <T extends CalculusFieldElement<T>> FieldClockOffset<T> combine(final FieldClockOffset<T> offset1,
-            final FieldClockOffset<T> offset2) {
-        return offset1.add(offset2);
+    public <T extends CalculusFieldElement<T>> FieldClocksSum<T> toField(final DoubleFunction<T> converter) {
+        return new FieldClocksSum<>(getClock1().toField(converter), getClock2().toField(converter));
     }
 
+    /** {@inheritDoc} */
     @Override
-    public FieldClockModel<Gradient> getFieldModel(final int freeParameters,
-            final Map<String, Integer> indices, final AbsoluteDate date) {
-        throw new OrekitException(OrekitMessages.INTERNAL_ERROR); // "Unable to sum the field models of two classes"));
+    public FieldClocksSum<Gradient> toGradient(final int freeParameters, final Map<String, Integer> indices) {
+        return new FieldClocksSum<>(getClock1().toGradient(freeParameters, indices),
+                                    getClock2().toGradient(freeParameters, indices));
     }
-
 
 }

@@ -63,7 +63,8 @@ public class OneWayGNSSPhaseCreator extends MeasurementCreator {
                                   final Vector3D antennaPhaseCenter2) {
         this.ephemeris           = ephemeris;
         this.remoteClk           = new PolynomialClockModel(ephemeris.getMinDate(),
-                                                           remoteClockOffset, 0.0, 0.0);
+                                                            remoteName,
+                                                            remoteClockOffset, 0.0, 0.0);
         this.remoteSat           = new ObserverSatellite(remoteName, ephemeris, remoteClk);
         this.antennaPhaseCenter1 = antennaPhaseCenter1;
         this.antennaPhaseCenter2 = antennaPhaseCenter2;

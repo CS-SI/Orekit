@@ -33,6 +33,7 @@ import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.drivers.ParameterDriver;
 
 public class RelativisticClockInterSatellitesPhaseModifierTest {
 
@@ -54,6 +55,9 @@ public class RelativisticClockInterSatellitesPhaseModifierTest {
                                                                                       states[1].getPosition()) / wavelength,
                                                                     wavelength, 1.0, 1.0,
                                                                     new AmbiguityCache());
+        for (final ParameterDriver driver : phase.getParametersDrivers()) {
+            driver.setReferenceDate(date);
+        }
 
         // Inter-satellites phase before applying the modifier
         final EstimatedMeasurementBase<InterSatellitesPhase> estimatedBefore = phase.estimateWithoutDerivatives(states);
@@ -83,6 +87,9 @@ public class RelativisticClockInterSatellitesPhaseModifierTest {
                                                                                       states[1].getPosition()) / wavelength,
                                                                     wavelength, 1.0, 1.0,
                                                                     new AmbiguityCache());
+        for (final ParameterDriver driver : phase.getParametersDrivers()) {
+            driver.setReferenceDate(date);
+        }
 
         // Inter-satellites phase before applying the modifier
         final EstimatedMeasurementBase<InterSatellitesPhase> estimatedBefore = phase.estimateWithoutDerivatives(states);

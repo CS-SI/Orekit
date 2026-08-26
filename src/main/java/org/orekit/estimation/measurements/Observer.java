@@ -158,7 +158,7 @@ public interface Observer extends MeasurementParticipant {
     default FieldAbsoluteDate<Gradient> getCorrectedReceptionDateField(final AbsoluteDate date,
                                                                        final int nbParams,
                                                                        final Map<String, Integer> paramIndices) {
-        final FieldClockModel<Gradient> fieldClockModel = getFieldClockModel(nbParams, paramIndices, date);
+        final FieldClockModel<Gradient> fieldClockModel = getFieldClockModel(nbParams, paramIndices);
         final GradientField field = GradientField.getField(nbParams);
         final FieldAbsoluteDate<Gradient> fieldDate = new FieldAbsoluteDate<>(field, date);
         final FieldClockOffset<Gradient> localClock = fieldClockModel.getOffset(fieldDate);

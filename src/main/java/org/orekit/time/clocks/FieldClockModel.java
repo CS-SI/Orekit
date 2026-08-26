@@ -17,20 +17,26 @@
 package org.orekit.time.clocks;
 
 import org.hipparchus.CalculusFieldElement;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 
-/** Container for clock field model.
+/** Interface for clock field model.
  *
  * @param <T> type of the field elements
  * @author Brian Carter
  * @since 14.0
  */
 public interface FieldClockModel<T extends CalculusFieldElement<T>> {
-    /** The reference date for the elements of this field clock model.
-     *
-     * @return the field absolute date
-    */
-    FieldAbsoluteDate<T> getReferenceDate();
+
+    /** Get validity start.
+     * @return model validity start
+     */
+    AbsoluteDate getValidityStart();
+
+    /** Get validity end.
+     * @return model validity end
+     */
+    AbsoluteDate getValidityEnd();
 
     /** The field clock offset at a given time.
      *
@@ -38,4 +44,18 @@ public interface FieldClockModel<T extends CalculusFieldElement<T>> {
      * @return the field clock offset
     */
     FieldClockOffset<T> getOffset(FieldAbsoluteDate<T> date);
+
+    /** Get the clock offset value at date.
+     * @param date date at which offset value is requested
+     * @return clock offset value
+     */
+    default T getOffsetValue(final FieldAbsoluteDate<T> date) {
+        return getOffset(date).getValue(date);
+    }
+
+    /** Create a non-field version of the instance.
+     * @return non-field version of the instance
+     */
+    ClockModel toNonField();
+
 }

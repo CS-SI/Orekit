@@ -34,21 +34,21 @@ public class ClockModelTest {
         final ClockModel clock = Mockito.mock(ClockModel.class, Mockito.CALLS_REAL_METHODS);
 
         // Test standard term names (indices 0-2)
-        Assertions.assertEquals("-clock-bias", clock.getAcceptedTermName(0),
+        Assertions.assertEquals("-clock-bias", clock.getAcceptedTermSuffix(0),
                 "Index 0 should be bias");
-        Assertions.assertEquals("-clock-drift", clock.getAcceptedTermName(1),
+        Assertions.assertEquals("-clock-drift", clock.getAcceptedTermSuffix(1),
                 "Index 1 should be drift");
-        Assertions.assertEquals("-clock-acceleration", clock.getAcceptedTermName(2),
+        Assertions.assertEquals("-clock-acceleration", clock.getAcceptedTermSuffix(2),
                 "Index 2 should be acceleration");
 
         // Test higher-order term names (index >= 3)
-        Assertions.assertEquals("-clock-term-3", clock.getAcceptedTermName(3),
+        Assertions.assertEquals("-clock-term-3", clock.getAcceptedTermSuffix(3),
                 "Index 3 should be clock-term-3");
-        Assertions.assertEquals("-clock-term-4", clock.getAcceptedTermName(4),
+        Assertions.assertEquals("-clock-term-4", clock.getAcceptedTermSuffix(4),
                 "Index 4 should be clock-term-4");
-        Assertions.assertEquals("-clock-term-10", clock.getAcceptedTermName(10),
+        Assertions.assertEquals("-clock-term-10", clock.getAcceptedTermSuffix(10),
                 "Index 10 should be clock-term-10");
-        Assertions.assertEquals("-clock-term-100", clock.getAcceptedTermName(100),
+        Assertions.assertEquals("-clock-term-100", clock.getAcceptedTermSuffix(100),
                 "Index 100 should be clock-term-100");
     }
 
@@ -179,8 +179,7 @@ public class ClockModelTest {
         Mockito.when(clock.getParameterDriverWithSubstring(Mockito.anyString())).thenCallRealMethod();
 
         // Should throw exception when bias driver not found
-        Assertions.assertThrows(UnsupportedParameterException.class,
-                () -> clock.getBiasDriver(),
+        Assertions.assertThrows(UnsupportedParameterException.class, clock::getBiasDriver,
                 "Should throw exception when bias driver not available");
     }
 

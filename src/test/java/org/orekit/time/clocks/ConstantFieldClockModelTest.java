@@ -18,8 +18,13 @@ package org.orekit.time.clocks;
 
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeInterval;
+import org.orekit.time.TimeScalesFactory;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ConstantFieldClockModelTest {
@@ -28,12 +33,29 @@ class ConstantFieldClockModelTest {
     void testGetOffset() {
         // GIVEN
         final FieldAbsoluteDate<Binary64> t0 = FieldAbsoluteDate.getArbitraryEpoch(Binary64Field.getInstance());
-        final ConstantFieldClockModel<Binary64> constantFieldClockModel = new ConstantFieldClockModel<>(t0, Binary64.ONE);
+        final ConstantFieldClockModel<Binary64> constantFieldClockModel =
+            new ConstantFieldClockModel<>(Binary64.ONE);
         // WHEN
         final FieldClockOffset<Binary64> offset = constantFieldClockModel.getOffset(t0);
         // THEN
-        assertEquals(1., offset.getBias().getReal());
-        assertEquals(0., offset.getRate().getReal());
-        assertEquals(0., offset.getAcceleration().getReal());
+        assertEquals(1., offset.getBias().getReal(),                           1.0e-15);
+        assertEquals(0., offset.getRate().getReal(),                           1.0e-15);
+        assertEquals(0., offset.getAcceleration().getReal(),                   1.0e-15);
+        assertEquals(1., constantFieldClockModel.getOffsetValue(t0).getReal(), 1.0e-15);
     }
+
+    @Test
+    void testValidity() {
+
+        final AbsoluteDate t0      = new AbsoluteDate(2020, 4, 1, TimeScalesFactory.getUTC());
+        final ConstantClockModel clockModel = new ConstantClockModel(1.0);
+        clockModel.getParametersDrivers().getFirst().setValidity(TimeInterval.of(t0, 10.0));
+        final ConstantFieldClockModel<Binary64> fieldClockModel = clockModel.toField(Binary64::new);
+
+        // beware, the result of this test will change when field parameter drivers are available!
+        Assertions.assertEquals(AbsoluteDate.PAST_INFINITY,   fieldClockModel.getValidityStart());
+        Assertions.assertEquals(AbsoluteDate.FUTURE_INFINITY, fieldClockModel.getValidityEnd());
+
+    }
+
 }

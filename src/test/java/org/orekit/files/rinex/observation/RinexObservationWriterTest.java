@@ -229,7 +229,8 @@ public class RinexObservationWriterTest {
             patched.getHeader().setClockOffsetApplied(robs.getHeader().getClockOffsetApplied());
             if (FastMath.abs(expectedDt) > 1.0e-15) {
                 writer.setReceiverClockModel(new PolynomialClockModel(robs.getHeader().getTFirstObs(),
-                                                                     expectedDt, 0.0, 0.0));
+                                                                      "dummy",
+                                                                      expectedDt, 0.0, 0.0));
             }
             writer.writeCompleteFile(patched);
         }

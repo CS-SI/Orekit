@@ -16,7 +16,6 @@
  */
 package org.orekit.estimation.measurements.gnss;
 
-import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
 import org.hipparchus.analysis.solvers.UnivariateSolver;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -52,7 +51,9 @@ public class OneWayGNSSRangeCreator extends MeasurementCreator {
                                   final Vector3D antennaPhaseCenter2) {
         this.ephemeris           = ephemeris;
         this.remoteClk           = remoteClockOffset;
-        this.remote              = new ObserverSatellite("", ephemeris, new PolynomialClockModel(ephemeris.getMinDate(), remoteClockOffset));
+        this.remote              = new ObserverSatellite("", ephemeris,
+                                                         new PolynomialClockModel(ephemeris.getMinDate(), "",
+                                                                                  remoteClockOffset));
         this.antennaPhaseCenter1 = antennaPhaseCenter1;
         this.antennaPhaseCenter2 = antennaPhaseCenter2;
         this.local               = new ObservableSatellite(0);
@@ -80,16 +81,14 @@ public class OneWayGNSSRangeCreator extends MeasurementCreator {
 
             final UnivariateSolver solver = new BracketingNthOrderBrentSolver(1.0e-12, 5);
 
-            final double downLinkDelay  = solver.solve(1000, new UnivariateFunction() {
-                public double value(final double x) {
-                    final Vector3D other = ephemeris.
-                                    propagate(date.shiftedBy(-x)).
-                                    toTransform().
-                                    getInverse().
-                                    transformPosition(antennaPhaseCenter2);
-                    final double d = Vector3D.distance(position, other);
-                    return d - x * Constants.SPEED_OF_LIGHT;
-                }
+            final double downLinkDelay  = solver.solve(1000, x -> {
+                final Vector3D other = ephemeris.
+                                propagate(date.shiftedBy(-x)).
+                                toTransform().
+                                getInverse().
+                                transformPosition(antennaPhaseCenter2);
+                final double d = Vector3D.distance(position, other);
+                return d - x * Constants.SPEED_OF_LIGHT;
             }, -1.0, 1.0);
             final AbsoluteDate transitDate = currentState.getDate().shiftedBy(-downLinkDelay);
             final Vector3D otherAtTransit =

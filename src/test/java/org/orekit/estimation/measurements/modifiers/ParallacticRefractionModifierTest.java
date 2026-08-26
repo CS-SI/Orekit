@@ -46,6 +46,8 @@ import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 import org.orekit.utils.TrackingCoordinates;
+import org.orekit.utils.drivers.ParameterDriver;
+
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
@@ -103,6 +105,9 @@ class ParallacticRefractionModifierTest {
         final Vector3D geometricRaDec = transform.transformVector(topoPosition);
         final AngularRaDec observedMeasurement = new AngularRaDec(new GroundStation(topocentricFrame), FramesFactory.getFrame(predefined),
                 date, new double[] {geometricRaDec.getAlpha(), geometricRaDec.getDelta()}, new double[2], new double[2], new ObservableSatellite(0));
+        for (final ParameterDriver driver : observedMeasurement.getParametersDrivers()) {
+            driver.setReferenceDate(date);
+        }
         final EstimatedMeasurementBase<AngularRaDec> estimatedMeasurement = observedMeasurement.estimate(0, 0, new SpacecraftState[] {state});
         estimatedMeasurement.setEstimatedValue(geometricRaDec.getAlpha(), geometricRaDec.getDelta());
         final ParallacticRefractionModifier modifier = new ParallacticRefractionModifier();
@@ -133,6 +138,9 @@ class ParallacticRefractionModifierTest {
         final Vector3D geometricRaDec = transform.transformVector(topoPosition);
         final AngularRaDec observedMeasurement = new AngularRaDec(new GroundStation(topocentricFrame), FramesFactory.getICRF(),
                 date, new double[] {geometricRaDec.getAlpha(), geometricRaDec.getDelta()}, new double[2], new double[2], new ObservableSatellite(0));
+        for (final ParameterDriver driver : observedMeasurement.getParametersDrivers()) {
+            driver.setReferenceDate(date);
+        }
         final EstimatedMeasurementBase<AngularRaDec> estimatedMeasurement = observedMeasurement.estimate(0, 0, new SpacecraftState[] {state});
         final ParallacticRefractionModifier modifier = new ParallacticRefractionModifier();
         // WHEN
@@ -160,6 +168,9 @@ class ParallacticRefractionModifierTest {
         final Vector3D geometricRaDec = transform.transformVector(topoPosition);
         final AngularRaDec observedMeasurement = new AngularRaDec(new GroundStation(topocentricFrame), FramesFactory.getICRF(),
                 date, new double[] {geometricRaDec.getAlpha(), geometricRaDec.getDelta()}, new double[2], new double[2], new ObservableSatellite(0));
+        for (final ParameterDriver driver : observedMeasurement.getParametersDrivers()) {
+            driver.setReferenceDate(date);
+        }
         final EstimatedMeasurementBase<AngularRaDec> estimatedMeasurement = observedMeasurement.estimate(0, 0, new SpacecraftState[] {state});
         final double smallTroposphereAltitude = 1e-10;
         final ParallacticRefractionModifier modifier = new ParallacticRefractionModifier(smallTroposphereAltitude, 1.);
@@ -189,6 +200,9 @@ class ParallacticRefractionModifierTest {
         final Vector3D geometricRaDec = transform.transformVector(topoPosition);
         final AngularRaDec observedMeasurement = new AngularRaDec(new GroundStation(topocentricFrame), FramesFactory.getICRF(),
                 date, new double[] {geometricRaDec.getAlpha(), geometricRaDec.getDelta()}, new double[2], new double[2], new ObservableSatellite(0));
+        for (final ParameterDriver driver : observedMeasurement.getParametersDrivers()) {
+            driver.setReferenceDate(date);
+        }
         final EstimatedMeasurementBase<AngularRaDec> estimatedMeasurement = observedMeasurement.estimate(0, 0, new SpacecraftState[] {state});
         final ParallacticRefractionModifier modifier = new ParallacticRefractionModifier();
         // WHEN
@@ -216,6 +230,9 @@ class ParallacticRefractionModifierTest {
         final Vector3D geometricRaDec = transform.transformVector(topoPosition);
         final AngularRaDec observedMeasurement = new AngularRaDec(new GroundStation(topocentricFrame), FramesFactory.getEME2000(),
                 date, new double[] {geometricRaDec.getAlpha(), geometricRaDec.getDelta()}, new double[2], new double[2], new ObservableSatellite(0));
+        for (final ParameterDriver driver : observedMeasurement.getParametersDrivers()) {
+            driver.setReferenceDate(date);
+        }
         final EstimatedMeasurementBase<AngularRaDec> estimatedMeasurement = observedMeasurement.estimate(0, 0, new SpacecraftState[] {state});
         final ParallacticRefractionModifier modifier = new ParallacticRefractionModifier();
         // WHEN
@@ -244,6 +261,9 @@ class ParallacticRefractionModifierTest {
         final Vector3D geometricRaDec = transform.transformVector(topoPosition);
         final AngularRaDec observedMeasurement = new AngularRaDec(new GroundStation(topocentricFrame), FramesFactory.getEME2000(),
                 date, new double[] {geometricRaDec.getAlpha(), geometricRaDec.getDelta()}, new double[2], new double[2], new ObservableSatellite(0));
+        for (final ParameterDriver driver : observedMeasurement.getParametersDrivers()) {
+            driver.setReferenceDate(date);
+        }
         final EstimatedMeasurementBase<AngularRaDec> estimatedMeasurement = observedMeasurement.estimate(0, 0, new SpacecraftState[] {state});
         final ParallacticRefractionModifier modifier = new ParallacticRefractionModifier();
         // WHEN

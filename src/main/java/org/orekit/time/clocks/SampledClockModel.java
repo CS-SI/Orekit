@@ -18,15 +18,13 @@ package org.orekit.time.clocks;
 
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
+import java.util.function.DoubleFunction;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ImmutableTimeStampedCache;
 import org.orekit.utils.drivers.ParameterDriver;
 
@@ -76,38 +74,15 @@ public class SampledClockModel implements ClockModel {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends CalculusFieldElement<T>> FieldClockOffset<T> getFieldOffset(final FieldAbsoluteDate<T> date) {
+    public <T extends CalculusFieldElement<T>> SampledFieldClockModel<T> toField(final DoubleFunction<T> converter) {
+        return new SampledFieldClockModel<>(sample.toField(c -> c.toField(converter)).getAll(),
+                                            sample.getMaxNeighborsSize());
+    }
 
-        // convert the neighbors to field
-        final Field<T> field = date.getField();
-        final T zero = field.getZero();
-        final Stream<FieldClockOffset<T>> fieldSample =
-            sample.
-                getNeighbors(date.toAbsoluteDate()).
-                map(c -> {
-                    final FieldAbsoluteDate<T> dateF = new FieldAbsoluteDate<>(field, c.getDate());
-                    final T                    biasF = zero.newInstance(c.getBias());
-                    final T rateF;
-                    final T accelerationF;
-                    if (Double.isNaN(c.getRate())) {
-                        // no rate available
-                        rateF         = null;
-                        accelerationF = null;
-                    } else {
-                        // rate available
-                        rateF = zero.newInstance(c.getRate());
-                        accelerationF = Double.isNaN(c.getAcceleration()) ?
-                                        null :
-                                        zero.newInstance(c.getAcceleration());
-                    }
-                    return new FieldClockOffset<>(dateF, biasF, rateF, accelerationF);
-                });
-
-        // perform interpolation
-        final FieldClockOffsetHermiteInterpolator<T> interpolator =
-            new FieldClockOffsetHermiteInterpolator<>(sample.getMaxNeighborsSize());
-        return interpolator.interpolate(date, fieldSample);
-
+    /** {@inheritDoc} */
+    @Override
+    public SampledFieldClockModel<Gradient> toGradient(final int freeParameters, final Map<String, Integer> indices) {
+        return toField(v -> Gradient.constant(freeParameters, v));
     }
 
     /** {@inheritDoc} */
@@ -116,12 +91,5 @@ public class SampledClockModel implements ClockModel {
         throw new OrekitException(OrekitMessages.INTERNAL_ERROR);
     }
 
-
-    /** {@inheritDoc} */
-    @Override
-    public FieldClockModel<Gradient> getFieldModel(final int freeParameters,
-            final Map<String, Integer> indices, final AbsoluteDate date) {
-        throw new OrekitException(OrekitMessages.INTERNAL_ERROR);
-    }
 
 }

@@ -34,6 +34,8 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.time.clocks.PolynomialClockModel;
 import org.orekit.utils.Constants;
+import org.orekit.utils.drivers.ParameterDriver;
+
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -64,11 +66,14 @@ public class RelativisticJ2ClockOneWayGNSSRangeModifierTest {
 
         // Measurement
         final OneWayGNSSRange range = new OneWayGNSSRange(new ObserverSatellite("", states[1].getOrbit(), 
-                                                                            new PolynomialClockModel(date)), 
+                                                                            new PolynomialClockModel(date, "dummy")),
                                                           date,
                                                           Vector3D.distance(states[0].getPosition(),
                                                                             states[1].getPosition()),
                                                           1.0, 1.0, new ObservableSatellite(0));
+        for (final ParameterDriver driver : range.getParametersDrivers()) {
+            driver.setReferenceDate(date);
+        }
 
         // Inter-satellites range before applying the modifier
         final EstimatedMeasurementBase<OneWayGNSSRange> estimatedBefore = range.estimateWithoutDerivatives(states);

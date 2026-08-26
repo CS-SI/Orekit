@@ -33,6 +33,7 @@ import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.time.clocks.PolynomialClockModel;
+import org.orekit.utils.drivers.ParameterDriver;
 
 public class RelativisticClockOneWayGNSSRangeModifierTest {
 
@@ -47,11 +48,14 @@ public class RelativisticClockOneWayGNSSRangeModifierTest {
 
         // Measurement
         final OneWayGNSSRange range = new OneWayGNSSRange(new ObserverSatellite("", states[1].getOrbit(), 
-                                                                            new PolynomialClockModel(date)), 
+                                                                                new PolynomialClockModel(date, "")),
                                                           date,
                                                           Vector3D.distance(states[0].getPosition(),
                                                                             states[1].getPosition()),
                                                           1.0, 1.0, new ObservableSatellite(0));
+        for (final ParameterDriver driver : range.getParametersDrivers()) {
+            driver.setReferenceDate(range.getDate());
+        }
 
         // Inter-satellites range before applying the modifier
         final EstimatedMeasurementBase<OneWayGNSSRange> estimatedBefore = range.estimateWithoutDerivatives(states);

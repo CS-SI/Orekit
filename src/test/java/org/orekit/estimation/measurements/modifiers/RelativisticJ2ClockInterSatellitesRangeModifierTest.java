@@ -32,6 +32,8 @@ import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+import org.orekit.utils.drivers.ParameterDriver;
+
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -63,6 +65,11 @@ public class RelativisticJ2ClockInterSatellitesRangeModifierTest {
                                                                     Vector3D.distance(states[0].getPosition(),
                                                                                       states[1].getPosition()),
                                                                     1.0, 1.0);
+        for (final ObservableSatellite satellite : range.getSatellites()) {
+            for (final ParameterDriver driver : satellite.getClockModel().getParametersDrivers()) {
+                driver.setReferenceDate(range.getDate());
+            }
+        }
 
         // Inter-satellites range before applying the modifier
         final EstimatedMeasurementBase<InterSatellitesRange> estimatedBefore = range.estimateWithoutDerivatives(states);

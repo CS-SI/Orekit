@@ -18,6 +18,7 @@ package org.orekit.time;
 
 import org.hipparchus.CalculusFieldElement;
 import org.orekit.time.clocks.ClockModel;
+import org.orekit.time.clocks.FieldClockModel;
 
 /** Time scale with clock offset from another time scale.
  * @author Luc Maisonobe
@@ -56,7 +57,8 @@ public class ClockTimeScale implements TimeScale {
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>> T offsetFromTAI(final FieldAbsoluteDate<T> date) {
-        return reference.offsetFromTAI(date).add(clockModel.getFieldOffset(date).getBias());
+        final FieldClockModel<T> fieldClockModel = clockModel.toField(v -> date.getField().getZero().newInstance(v));
+        return reference.offsetFromTAI(date).add(fieldClockModel.getOffset(date).getBias());
     }
 
     /** {@inheritDoc} */

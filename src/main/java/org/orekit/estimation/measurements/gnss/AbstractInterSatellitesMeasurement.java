@@ -114,7 +114,7 @@ public abstract class AbstractInterSatellitesMeasurement<T extends ObservedMeasu
      */
     protected FieldClockModel<Gradient> getRemoteClock(final int freeParameters,
                                                        final Map<String, Integer> indices) {
-        return getRemoteClock().getFieldModel(freeParameters, indices, getDate());
+        return getRemoteClock().toGradient(freeParameters, indices);
     }
 
     /** Return the FieldPVCoordinatesProvider.
@@ -203,7 +203,7 @@ public abstract class AbstractInterSatellitesMeasurement<T extends ObservedMeasu
 
         // local and remote satellites
         final TimeStampedFieldPVCoordinates<Gradient> pvaLocal         = getCoordinates(states[0], 0, nbParams);
-        final FieldClockModel<Gradient>               localClock       = getSatellites().getFirst().getFieldClockModel(nbParams, paramIndices, getDate());
+        final FieldClockModel<Gradient>               localClock       = getSatellites().getFirst().getFieldClockModel(nbParams, paramIndices);
         final FieldClockOffset<Gradient>              localClockOffset = localClock.getOffset(gDate);
         final FieldPVCoordinatesProvider<Gradient>    remotePV         = getRemotePV(states[1], nbParams);
 

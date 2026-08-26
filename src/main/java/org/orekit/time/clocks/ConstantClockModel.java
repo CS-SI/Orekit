@@ -19,12 +19,12 @@ package org.orekit.time.clocks;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.function.DoubleFunction;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.util.FastMath;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeInterval;
 import org.orekit.utils.drivers.ParameterDriver;
 
@@ -35,14 +35,14 @@ import org.orekit.utils.drivers.ParameterDriver;
  * @since 14.0
  */
 public class ConstantClockModel implements ClockModel {
+
     /** Constant offset. */
     private final ParameterDriver offset;
 
     /**
      * Simple constructor.
      *
-     * @param offset
-     *               constant offset
+     * @param offset constant offset
      */
     public ConstantClockModel(final double offset) {
         this.offset = new ParameterDriver("a0", 0.0, FastMath.scalb(1.0, -10),
@@ -51,17 +51,16 @@ public class ConstantClockModel implements ClockModel {
         this.offset.setValue(offset);
     }
 
-
     /** {@inheritDoc} */
     @Override
     public AbsoluteDate getValidityStart() {
-        return AbsoluteDate.PAST_INFINITY;
+        return offset.getValidity().getStartDate();
     }
 
     /** {@inheritDoc} */
     @Override
     public AbsoluteDate getValidityEnd() {
-        return AbsoluteDate.FUTURE_INFINITY;
+        return offset.getValidity().getEndDate();
     }
 
     /** {@inheritDoc} */
@@ -78,17 +77,14 @@ public class ConstantClockModel implements ClockModel {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends CalculusFieldElement<T>> FieldClockOffset<T> getFieldOffset(final FieldAbsoluteDate<T> date) {
-        final AbsoluteDate aDate = date.toAbsoluteDate();
-        final T zero = date.getField().getZero();
-        return new FieldClockOffset<>(date, zero.newInstance(offset.getValue()), zero, zero);
+    public <T extends CalculusFieldElement<T>> ConstantFieldClockModel<T> toField(final DoubleFunction<T> converter) {
+        return new ConstantFieldClockModel<>(converter.apply(offset.getValue()));
     }
 
     /** {@inheritDoc} */
     @Override
-    public FieldClockModel<Gradient> getFieldModel(final int freeParameters,
-        final Map<String, Integer> indices, final AbsoluteDate date) {
-        return new ConstantFieldClockModel<>(null, Gradient.constant(freeParameters, offset.getValue()));
+    public ConstantFieldClockModel<Gradient> toGradient(final int freeParameters, final Map<String, Integer> indices) {
+        return toField(v -> Gradient.constant(freeParameters, v));
     }
 
 }

@@ -159,6 +159,16 @@ public class FieldClockOffset<T extends CalculusFieldElement<T>> implements Fiel
         return acceleration;
     }
 
+    /** Get the value of the clock offset at a given time.
+     * @param givenDate the date at which to evaluate the clock offset
+     * @return The value of the clock in seconds from the given date
+     * @since 14.0
+     */
+    public T getValue(final FieldAbsoluteDate<T> givenDate) {
+        final T dt = givenDate.durationFrom(date);
+        return dt.multiply(dt.multiply(getAcceleration()).add(getRate())).add(getBias());
+    }
+
     /** Negate instance.
      * <p>
      * The instance is not modified, a new instance is created
@@ -169,6 +179,15 @@ public class FieldClockOffset<T extends CalculusFieldElement<T>> implements Fiel
      */
     public FieldClockOffset<T> negate() {
         return new FieldClockOffset<>(getDate(), bias.negate(), rate.negate(), acceleration.negate());
+    }
+
+    /** Get a non-field version of the instance.
+     * @return non-field version
+     * @since 14.0
+     */
+    public ClockOffset toNonField() {
+        return new ClockOffset(date.toAbsoluteDate(), bias.getReal(),
+                               rate.getReal(), acceleration.getReal());
     }
 
 }

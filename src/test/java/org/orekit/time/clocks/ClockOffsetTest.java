@@ -30,11 +30,20 @@ class ClockOffsetTest {
     }
 
     @Test
+    void testConstructorWithoutBias() {
+        final ClockOffset clockOffset = new ClockOffset(AbsoluteDate.ARBITRARY_EPOCH, new double[] {});
+        Assertions.assertEquals(AbsoluteDate.ARBITRARY_EPOCH, clockOffset.getDate());
+        Assertions.assertEquals( 0.0, clockOffset.getBias(),         1.0e-15);
+        Assertions.assertEquals( 0.0, clockOffset.getRate(),         1.0e-15);
+        Assertions.assertEquals( 0.0, clockOffset.getAcceleration(), 1.0e-15);
+    }
+
+    @Test
     void testConstructorWithoutDrift() {
         final ClockOffset clockOffset = new ClockOffset(AbsoluteDate.ARBITRARY_EPOCH, new double[] {1.0});
         Assertions.assertEquals(AbsoluteDate.ARBITRARY_EPOCH, clockOffset.getDate());
-        Assertions.assertEquals( 1.0, clockOffset.getBias(),          1.0e-15);
-        Assertions.assertEquals( 0.0, clockOffset.getRate(),          1.0e-15);
+        Assertions.assertEquals( 1.0, clockOffset.getBias(),         1.0e-15);
+        Assertions.assertEquals( 0.0, clockOffset.getRate(),         1.0e-15);
         Assertions.assertEquals( 0.0, clockOffset.getAcceleration(), 1.0e-15);
     }
 
@@ -42,8 +51,8 @@ class ClockOffsetTest {
     void testConstructorWithoutAcceleration() {
         final ClockOffset clockOffset = new ClockOffset(AbsoluteDate.ARBITRARY_EPOCH, new double[] {1.0, 2.0});
         Assertions.assertEquals(AbsoluteDate.ARBITRARY_EPOCH, clockOffset.getDate());
-        Assertions.assertEquals( 1.0, clockOffset.getBias(),          1.0e-15);
-        Assertions.assertEquals( 2.0, clockOffset.getRate(),          1.0e-15);
+        Assertions.assertEquals( 1.0, clockOffset.getBias(),         1.0e-15);
+        Assertions.assertEquals( 2.0, clockOffset.getRate(),         1.0e-15);
         Assertions.assertEquals( 0.0, clockOffset.getAcceleration(), 1.0e-15);
     }
 

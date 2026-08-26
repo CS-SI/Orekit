@@ -581,6 +581,9 @@ class InterSatellitesRangeTest {
         // WHEN
         final InterSatellitesRange range = new InterSatellitesRange(sat0, sat1, false, epoch, 0., new MeasurementQuality(new double[] {1.}),
                 instantaneousSignal);
+        for (final ParameterDriver driver : range.getParametersDrivers()) {
+            driver.setReferenceDate(epoch);
+        }
         final EstimatedMeasurementBase<InterSatellitesRange> estimated = range.estimateWithoutDerivatives(state);
         // THEN
         final double expectedRange = orbit.getPosition().subtract(otherOrbit.getPosition()).getNorm2();
@@ -601,9 +604,9 @@ class InterSatellitesRangeTest {
         final CartesianOrbit orbit = new CartesianOrbit(pvCoordinates, gcrf, epoch, Constants.EGM96_EARTH_MU);
         final SpacecraftState[] state = new SpacecraftState[] { new SpacecraftState(orbit),
                 new SpacecraftState(TestUtils.getDefaultOrbit(epoch))};
-        final PolynomialClockModel clock0 = new PolynomialClockModel(epoch, 0.1);
+        final PolynomialClockModel clock0 = new PolynomialClockModel(epoch, "dummy", 0.1);
         final ObservableSatellite sat0 = new ObservableSatellite(0, null, clock0);
-        final PolynomialClockModel clock1 = new PolynomialClockModel(epoch, 0.2, 0.01);
+        final PolynomialClockModel clock1 = new PolynomialClockModel(epoch, "dummy", 0.2, 0.01);
         final ObservableSatellite sat1 = new ObservableSatellite(1, null, clock1);
         // WHEN
         final InterSatellitesRange range = new InterSatellitesRange(sat0, sat1, twoWay, epoch, 0., 1., 1.);
