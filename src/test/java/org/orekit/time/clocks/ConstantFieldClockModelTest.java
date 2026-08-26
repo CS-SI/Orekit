@@ -16,7 +16,6 @@
  */
 package org.orekit.time.clocks;
 
-import org.hipparchus.analysis.function.Abs;
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.Assertions;

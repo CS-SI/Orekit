@@ -179,8 +179,7 @@ public class ClockModelTest {
         Mockito.when(clock.getParameterDriverWithSubstring(Mockito.anyString())).thenCallRealMethod();
 
         // Should throw exception when bias driver not found
-        Assertions.assertThrows(UnsupportedParameterException.class,
-                () -> clock.getBiasDriver(),
+        Assertions.assertThrows(UnsupportedParameterException.class, clock::getBiasDriver,
                 "Should throw exception when bias driver not available");
     }
 

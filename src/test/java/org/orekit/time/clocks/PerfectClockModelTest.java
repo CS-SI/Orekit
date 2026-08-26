@@ -16,7 +16,6 @@
  */
 package org.orekit.time.clocks;
 
-import com.tngtech.archunit.lang.ArchRule;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.util.Binary64;
