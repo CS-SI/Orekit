@@ -259,6 +259,22 @@
        They are used to pass data back and forth between classes
     -->
   <Match>
+    <Class name="org.orekit.time.clocks$AggregatedFieldClockModel"/>
+    <Or>
+      <Method name="getModels" params=""/>
+    </Or>
+    <Bug pattern="EI_EXPOSE_REP" />
+  </Match>
+  <Match>
+    <Class name="org.orekit.time.clocks$AggregatedFieldClockModel"/>
+    <Method name="&lt;init>"/>
+    <Bug pattern="EI_EXPOSE_REP2" />
+  </Match>
+
+  <!-- The following internal representation exposure are intentional,
+       They are used to pass data back and forth between classes
+    -->
+  <Match>
     <Class name="org.orekit.files.sinex.orbex.Data"/>
     <Or>
       <Method name="orbit" />
