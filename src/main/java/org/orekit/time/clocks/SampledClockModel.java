@@ -16,14 +16,13 @@
  */
 package org.orekit.time.clocks;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.DoubleFunction;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.Gradient;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ImmutableTimeStampedCache;
 import org.orekit.utils.drivers.ParameterDriver;
@@ -88,8 +87,7 @@ public class SampledClockModel implements ClockModel {
     /** {@inheritDoc} */
     @Override
     public List<ParameterDriver> getParametersDrivers() {
-        throw new OrekitException(OrekitMessages.INTERNAL_ERROR);
+        return Collections.emptyList();
     }
-
 
 }
