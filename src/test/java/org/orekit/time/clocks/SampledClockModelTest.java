@@ -33,11 +33,9 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
-import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 
 public class SampledClockModelTest {
@@ -160,7 +158,7 @@ public class SampledClockModelTest {
         final ClockOffset offset = mock();
         final SampledClockModel clockModel = new SampledClockModel(List.of(offset), 1);
         // WHEN & THEN
-        assertThrows(OrekitException.class, clockModel::getParametersDrivers);
+        Assertions.assertTrue(clockModel.getParametersDrivers().isEmpty());
     }
 
     @Test
