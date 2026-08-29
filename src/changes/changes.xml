@@ -20,6 +20,9 @@
   </properties>
   <body>
     <release version="13.1.8" date="TBD" description="TBD">
+        <action dev="serrof" type="fix" issue="2006">
+            Keep additional data in NumericalGradientConverter if force does not just depend on position.
+        </action>
         <action dev="ltafur" type="fix" issue="2003">
             Fixed NRLMSISE00 withSwitch overwriting the main switches with the cross-terms array, and made the helium and oxygen turbopause cutoffs inclusive.
         </action>
