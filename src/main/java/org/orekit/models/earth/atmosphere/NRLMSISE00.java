@@ -16,6 +16,8 @@
  */
 package org.orekit.models.earth.atmosphere;
 
+import java.util.Arrays;
+
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.exception.LocalizedCoreFormats;
@@ -38,10 +40,8 @@ import org.orekit.time.DateTimeComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
-import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ExtendedPositionProvider;
-
-import java.util.Arrays;
+import org.orekit.utils.IERSConventions;
 
 
 /** This class implements the mathematical representation of the 2001
@@ -1098,7 +1098,7 @@ public class NRLMSISE00 extends AbstractSunInfluencedAtmosphere {
                       final ExtendedPositionProvider sun,
                       final BodyShape earth,
                       final TimeScale ut) {
-        this(parameters, sun, earth, allOnes(), allOnes(), ut, LocalSolarTimeMode.MEAN);
+        this(parameters, sun, earth, allOnes(), allOnes(), ut, LocalSolarTimeMode.APPARENT);
     }
 
     /** Constructor.

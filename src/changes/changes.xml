@@ -31,7 +31,7 @@
               Added validity interval for ParameterDrivers.
           </action>
           <action dev="ltafur" type="fix" issue="2003">
-              Changed NRLMSISE00 to use mean local solar time by default, with withLocalSolarTimeMode to select apparent time.
+              Added in NRLMSISE00 withLocalSolarTimeMode to select apparrent time.
           </action>
           <action dev="ltafur" type="fix" issue="2003">
               Fixed NRLMSISE00 withSwitch overwriting the main switches with the cross-terms array, and made the helium and oxygen turbopause cutoffs inclusive.

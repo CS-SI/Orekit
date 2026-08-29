@@ -16,6 +16,10 @@
  */
 package org.orekit.models.earth.atmosphere;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
@@ -49,11 +53,9 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+import org.orekit.utils.ExtendedPositionProvider;
 import org.orekit.utils.IERSConventions;
-
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import static org.mockito.Mockito.mock;
 
 
 class NRLMSISE00Test {
@@ -299,13 +301,23 @@ class NRLMSISE00Test {
         Assertions.assertEquals(rhoItrf64.getReal(), rhoGcrf64.getReal(), rhoItrf64.getReal() * 1.0e-10);
     }
 
+    @Test
+    void testDefaultLocalSolarTime() {
+        // GIVEN
+        final InputParams ip = new InputParams();
+        // WHEN
+        final NRLMSISE00 meanAtm = new NRLMSISE00(ip, mock(ExtendedPositionProvider.class), mock(OneAxisEllipsoid.class)).withSwitch(9, -1);
+        // THEN
+        Assertions.assertEquals(NRLMSISE00.LocalSolarTimeMode.APPARENT, meanAtm.getLocalSolarTimeMode());
+    }
+
     /** The NRLMSISE-00 coefficients were fitted with <em>mean</em> local solar time
      * (the reference driver defines it as {@code stl = sec/3600 + glong/15}), so mean
      * must be the default and must drive the diurnal terms — not apparent solar time,
      * which additionally carries the equation of time. */
     @Test
     void testMeanVsApparentLocalSolarTime() throws
-        InstantiationException, IllegalAccessException,
+        IllegalAccessException,
         IllegalArgumentException, InvocationTargetException,
         NoSuchMethodException, SecurityException {
 
@@ -315,8 +327,7 @@ class NRLMSISE00Test {
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                             Constants.WGS84_EARTH_FLATTENING, itrf);
 
-        // the default convention is mean local solar time
-        final NRLMSISE00 meanAtm = new NRLMSISE00(ip, sun, earth).withSwitch(9, -1);
+        final NRLMSISE00 meanAtm = new NRLMSISE00(ip, sun, earth).withSwitch(9, -1).withLocalSolarTimeMode(NRLMSISE00.LocalSolarTimeMode.MEAN);
         Assertions.assertEquals(NRLMSISE00.LocalSolarTimeMode.MEAN, meanAtm.getLocalSolarTimeMode());
 
         // withLocalSolarTimeMode is immutable (leaves the original untouched) and
