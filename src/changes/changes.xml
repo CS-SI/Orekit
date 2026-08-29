@@ -30,6 +30,15 @@
           <action dev="luc" type="add" >
               Added validity interval for ParameterDrivers.
           </action>
+          <action dev="ltafur" type="update" issue="2003">
+              Use MEAN as default solar time mode.
+          </action>
+          <action dev="ltafur" type="fix" issue="2003">
+              Added in NRLMSISE00 withLocalSolarTimeMode to select apparrent time.
+          </action>
+          <action dev="ltafur" type="fix" issue="2003">
+              Fixed NRLMSISE00 withSwitch overwriting the main switches with the cross-terms array, and made the helium and oxygen turbopause cutoffs inclusive.
+          </action>
           <action dev="luc" type="add" issue="2002">
               Added index-based access to spans in TimeSpanMap.
           </action>
