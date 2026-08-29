@@ -1098,7 +1098,7 @@ public class NRLMSISE00 extends AbstractSunInfluencedAtmosphere {
                       final ExtendedPositionProvider sun,
                       final BodyShape earth,
                       final TimeScale ut) {
-        this(parameters, sun, earth, allOnes(), allOnes(), ut, LocalSolarTimeMode.APPARENT);
+        this(parameters, sun, earth, allOnes(), allOnes(), ut, LocalSolarTimeMode.MEAN);
     }
 
     /** Constructor.

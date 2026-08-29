@@ -30,6 +30,9 @@
           <action dev="luc" type="add" >
               Added validity interval for ParameterDrivers.
           </action>
+          <action dev="ltafur" type="update" issue="2003">
+              Use MEAN as default solar time mode.
+          </action>
           <action dev="ltafur" type="fix" issue="2003">
               Added in NRLMSISE00 withLocalSolarTimeMode to select apparrent time.
           </action>
