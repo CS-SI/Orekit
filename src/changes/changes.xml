@@ -20,6 +20,9 @@
   </properties>
   <body>
     <release version="13.1.8" date="TBD" description="TBD">
+        <action dev="serrof" type="fix" issue="2004">
+            Added angular derivatives to JPL inertial frames.
+        </action>
         <action dev="DDega" type="fix" issue="1996">
             Added angular derivatives to MOD, TOD and Ecliptic scalar and field transforms
             and optimized their kinematic transforms.
