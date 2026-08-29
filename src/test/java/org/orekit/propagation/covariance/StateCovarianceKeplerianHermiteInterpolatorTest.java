@@ -443,8 +443,11 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
         // Drag
         final double        cd            = 2.2;
         final IsotropicDrag dragSensitive = new IsotropicDragBuilder(crossSection).addDragCoeff(cd).build();
+        // NRLMSISE00 defaults to mean local solar time; the non-regression reference
+        // values for this case were captured with apparent local solar time, so keep it.
         final Atmosphere atmosphere =
-                new NRLMSISE00(new CssiSpaceWeatherData(CssiSpaceWeatherData.DEFAULT_SUPPORTED_NAMES), sun, earthShape);
+                new NRLMSISE00(new CssiSpaceWeatherData(CssiSpaceWeatherData.DEFAULT_SUPPORTED_NAMES), sun, earthShape)
+                        .withLocalSolarTimeMode(NRLMSISE00.LocalSolarTimeMode.APPARENT);
         final DragForce dragForce = new DragForce(atmosphere, dragSensitive, false);
         propagator.addForceModel(dragForce);
 
