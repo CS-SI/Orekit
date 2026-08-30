@@ -1016,7 +1016,7 @@ public class NRLMSISE00 extends AbstractSunInfluencedAtmosphere {
      * equation of time up to about ±16 min) is inconsistent with that calibration and
      * introduces a spurious seasonal density modulation of a few percent.
      * </p>
-     * @since 14.0
+     * @since 13.1.8
      */
     public enum LocalSolarTimeMode {
 
@@ -1175,7 +1175,7 @@ public class NRLMSISE00 extends AbstractSunInfluencedAtmosphere {
      * @param mode local solar time convention driving the diurnal density terms
      * @return a <em>new</em> instance, with the local solar time convention changed
      * @see LocalSolarTimeMode
-     * @since 14.0
+     * @since 13.1.8
      */
     public NRLMSISE00 withLocalSolarTimeMode(final LocalSolarTimeMode mode) {
         return new NRLMSISE00(inputParams, getSun(), earth, sw.clone(), swc.clone(), ut, mode);
@@ -1184,7 +1184,7 @@ public class NRLMSISE00 extends AbstractSunInfluencedAtmosphere {
     /** Get the local solar time convention driving the diurnal density terms.
      * @return local solar time convention
      * @see LocalSolarTimeMode
-     * @since 14.0
+     * @since 13.1.8
      */
     public LocalSolarTimeMode getLocalSolarTimeMode() {
         return lstMode;
