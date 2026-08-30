@@ -19,7 +19,7 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
-    <release version="13.1.8" date="TBD" description="TBD">
+    <release version="13.1.8" date="2026-08-30" description="Orekit 13.1.8 is a patch release. It solves bugs related to NRLMSISE, numerical state transition matrix and rates in pseudo-inertial frames.">
         <action dev="serrof" type="fix" issue="2006">
             Keep additional data in NumericalGradientConverter if force does not just depend on position.
         </action>
