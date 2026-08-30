@@ -19,6 +19,27 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
+    <release version="13.1.8" date="2026-08-30" description="Orekit 13.1.8 is a patch release. It solves bugs related to NRLMSISE, numerical state transition matrix and rates in pseudo-inertial frames.">
+        <action dev="serrof" type="fix" issue="2006">
+            Keep additional data in NumericalGradientConverter if force does not just depend on position.
+        </action>
+        <action dev="ltafur" type="fix" issue="2003">
+            Fixed NRLMSISE00 withSwitch overwriting the main switches with the cross-terms array, and made the helium and oxygen turbopause cutoffs inclusive.
+        </action>
+        <action dev="ltafur" type="fix" issue="2003">
+            Fixed NRLMSISE00 withSwitch overwriting the main switches with the cross-terms array, and made the helium and oxygen turbopause cutoffs inclusive.
+        </action>
+        <action dev="serrof" type="fix" issue="2004">
+            Added angular derivatives to JPL inertial frames.
+        </action>
+        <action dev="DDega" type="fix" issue="1996">
+            Added angular derivatives to MOD, TOD and Ecliptic scalar and field transforms
+            and optimized their kinematic transforms.
+        </action>
+        <action dev="ltafur" type="fix" issue="1993">
+            Fixed NRLMSISE00 local solar time to be computed in the Earth-fixed body frame.
+        </action>
+    </release>
     <release version="13.1.7" date="2026-07-03" description="Orekit 13.1.7 is a patch release. It solves various bugs related to propagators, solid tides and Alpha-5 parsing.">
       <action dev="luc" type="fix" issue="1977">
           Fixed AbstractPropagatorConverter.getRMS().

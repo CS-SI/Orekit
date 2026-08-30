@@ -39,7 +39,7 @@ import org.orekit.utils.IERSConventions;
  * <p>It is sometimes called Mean of Date (MoD) frame.
  * @author Pascal Parraud
  */
-class MODProvider implements TransformProvider {
+class MODProvider implements FieldBasedTransformProvider {
 
     /** Conventions. */
     private final IERSConventions conventions;
@@ -68,47 +68,34 @@ class MODProvider implements TransformProvider {
         fieldR4 = new HashMap<>();
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public Transform getTransform(final AbsoluteDate date) {
-
-        // compute the precession angles phiA, omegaA, chiA
-        final double[] angles = precessionFunction.value(date);
-
-        // complete precession
-        final Rotation precession = r4.compose(new Rotation(RotationOrder.ZXZ, RotationConvention.FRAME_TRANSFORM,
-                                                            -angles[0], -angles[1], angles[2]),
-                                               RotationConvention.FRAME_TRANSFORM);
-
-        // set up the transform from parent GCRF
-        return new Transform(date, precession);
-
-    }
-
-    /** {@inheritDoc} */
-    @SuppressWarnings("unchecked")
-    @Override
-    public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
+    /** Compute the complete precession rotation.
+     * @param date current date
+     * @param <T> type of the field elements
+     * @return complete precession rotation
+     */
+    public <T extends CalculusFieldElement<T>> FieldRotation<T> getRotation(final FieldAbsoluteDate<T> date) {
 
         // compute the precession angles phiA, omegaA, chiA
         final T[] angles = precessionFunction.value(date);
 
-        final FieldRotation<T> fR4;
-        synchronized (fieldR4) {
-            fR4 = (FieldRotation<T>) fieldR4.computeIfAbsent(date.getField(),
-                                                             f -> new FieldRotation<>((Field<T>) f, r4));
-        }
-
         // complete precession
-        final FieldRotation<T> precession = fR4.compose(new FieldRotation<>(RotationOrder.ZXZ, RotationConvention.FRAME_TRANSFORM,
-                                                                            angles[0].negate(),
-                                                                            angles[1].negate(),
-                                                                            angles[2]),
-                                                        RotationConvention.FRAME_TRANSFORM);
+        return getR4(date.getField()).compose(
+                        new FieldRotation<>(RotationOrder.ZXZ, RotationConvention.FRAME_TRANSFORM,
+                                            angles[0].negate(), angles[1].negate(), angles[2]),
+                        RotationConvention.FRAME_TRANSFORM);
 
-        // set up the transform from parent GCRF
-        return new FieldTransform<>(date, precession);
+    }
 
+    /** Get the constant rotation converted to the specified field.
+     * @param field field to which the elements belong
+     * @param <T> type of the field elements
+     * @return constant rotation converted to the specified field
+     */
+    @SuppressWarnings("unchecked")
+    private <T extends CalculusFieldElement<T>> FieldRotation<T> getR4(final Field<T> field) {
+        synchronized (fieldR4) {
+            return (FieldRotation<T>) fieldR4.computeIfAbsent(field, f -> new FieldRotation<>(field, r4));
+        }
     }
 
 }

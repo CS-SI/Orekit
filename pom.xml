@@ -3,7 +3,7 @@
   <groupId>org.orekit</groupId>
   <artifactId>orekit</artifactId>
   <packaging>jar</packaging>
-  <version>13.1.7</version>
+  <version>13.1.8</version>
   <name>OREKIT</name>
   <url>https://www.orekit.org/</url>
 
@@ -408,6 +408,12 @@
       <name>Ioanna Stypsanelli</name>
     </contributor>
     <contributor>
+      <name>Jerome Tabeaud</name>
+    </contributor>
+    <contributor>
+      <name>Luke Tafur</name>
+    </contributor>
+    <contributor>
       <name>Michael Turner</name>
     </contributor>
     <contributor>
@@ -421,6 +427,9 @@
     </contributor>
     <contributor>
       <name>Koenraad Rietveld</name>
+    </contributor>
+    <contributor>
+      <name>Davide Degavi</name>
     </contributor>
   </contributors>
 
