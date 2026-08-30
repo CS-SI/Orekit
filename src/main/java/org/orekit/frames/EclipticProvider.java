@@ -19,12 +19,9 @@ package org.orekit.frames;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
-import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalarFunction;
 import org.orekit.time.TimeScales;
@@ -45,7 +42,7 @@ import org.orekit.utils.IERSConventions;
  *
  * @since 7.0
  */
-public class EclipticProvider implements TransformProvider {
+public class EclipticProvider implements FieldBasedTransformProvider {
 
     /** IERS conventions. */
     private final IERSConventions conventions;
@@ -78,20 +75,16 @@ public class EclipticProvider implements TransformProvider {
         this.obliquity   = conventions.getMeanObliquityFunction(timeScales);
     }
 
-    @Override
-    public Transform getTransform(final AbsoluteDate date) {
-        //mean obliquity of date
-        final double epsA = obliquity.value(date);
-        return new Transform(date, new Rotation(Vector3D.MINUS_I, epsA, RotationConvention.VECTOR_OPERATOR));
-    }
-
-    @Override
-    public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
+    /** Compute the ecliptic rotation.
+     * @param date current date
+     * @param <T> type of the field elements
+     * @return ecliptic rotation
+     */
+    public <T extends CalculusFieldElement<T>> FieldRotation<T> getRotation(final FieldAbsoluteDate<T> date) {
         //mean obliquity of date
         final T epsA = obliquity.value(date);
-        return new FieldTransform<>(date, new FieldRotation<>(FieldVector3D.getMinusI(date.getField()),
-                                                              epsA,
-                                                              RotationConvention.VECTOR_OPERATOR));
+        return new FieldRotation<>(FieldVector3D.getMinusI(date.getField()), epsA,
+                                   RotationConvention.VECTOR_OPERATOR);
     }
 
 }

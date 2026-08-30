@@ -16,6 +16,8 @@
  */
 package org.orekit.models.earth.atmosphere;
 
+import java.util.Arrays;
+
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.exception.LocalizedCoreFormats;
@@ -38,10 +40,8 @@ import org.orekit.time.DateTimeComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
-import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ExtendedPositionProvider;
-
-import java.util.Arrays;
+import org.orekit.utils.IERSConventions;
 
 
 /** This class implements the mathematical representation of the 2001
@@ -109,6 +109,15 @@ import java.util.Arrays;
  *  <li>set to  1, the daily Ap only is used (first element of ap array),</li>
  *  <li>set to -1, the entire array of ap is used, including 3 hr ap indices.</li>
  *  </ul>
+ *  <p>
+ *  The diurnal density terms are driven by the local solar time. The reference
+ *  implementation defines this as <em>mean</em> local solar time
+ *  ({@code stl = sec/3600 + glong/15}, i.e. UT plus geographic longitude), and that is
+ *  the convention the empirical coefficients were fitted with, so it is the default here.
+ *  {@link #withLocalSolarTimeMode(LocalSolarTimeMode)} can select apparent solar time (the
+ *  true Sun hour angle, which additionally carries the equation of time) for backward
+ *  compatibility or sensitivity studies. See {@link LocalSolarTimeMode}.
+ *  </p>
  *  <p>
  *  The NRLMSISE-00 model was developed by Mike Picone, Alan Hedin, and Doug Drob.<br>
  *  They also wrote a NRLMSISE-00 distribution package in FORTRAN available at:<br>
@@ -997,6 +1006,30 @@ public class NRLMSISE00 extends AbstractSunInfluencedAtmosphere {
     /** NRLMSISE-00 minimum temperature, used in many cases in density computation. */
     private static final double MIN_TEMP = 50.;
 
+    /** Convention used to compute the local solar time driving the diurnal density terms.
+     * <p>
+     * The NRLMSISE-00 empirical coefficients were fitted using <em>mean</em> local solar
+     * time (the reference Fortran driver defines it as {@code stl = sec/3600 + glong/15},
+     * i.e. UT plus geographic longitude, with no equation of time). The independent
+     * variable fed to the model must therefore use the same convention it was calibrated
+     * with; feeding apparent solar time (the true Sun hour angle, which includes the
+     * equation of time up to about ±16 min) is inconsistent with that calibration and
+     * introduces a spurious seasonal density modulation of a few percent.
+     * </p>
+     * @since 13.1.8
+     */
+    public enum LocalSolarTimeMode {
+
+        /** Mean local solar time (UT + geographic longitude), matching the NRLMSISE-00
+         * reference driver. The Sun position is not used. */
+        MEAN,
+
+        /** Apparent local solar time, computed as the satellite/true-Sun hour angle about
+         * Earth's rotation axis. Includes the equation of time. */
+        APPARENT;
+
+    }
+
     // Fields
 
     /** External data container. */
@@ -1013,6 +1046,9 @@ public class NRLMSISE00 extends AbstractSunInfluencedAtmosphere {
 
     /** UT time scale. */
     private final TimeScale ut;
+
+    /** Local solar time convention driving the diurnal density terms. */
+    private final LocalSolarTimeMode lstMode;
 
     /** Constructor.
      * <p>
@@ -1062,7 +1098,7 @@ public class NRLMSISE00 extends AbstractSunInfluencedAtmosphere {
                       final ExtendedPositionProvider sun,
                       final BodyShape earth,
                       final TimeScale ut) {
-        this(parameters, sun, earth, allOnes(), allOnes(), ut);
+        this(parameters, sun, earth, allOnes(), allOnes(), ut, LocalSolarTimeMode.APPARENT);
     }
 
     /** Constructor.
@@ -1080,19 +1116,22 @@ public class NRLMSISE00 extends AbstractSunInfluencedAtmosphere {
      * @param sw switches for main effects
      * @param swc switches for cross effects
      * @param ut UT time scale.
+     * @param lstMode local solar time convention driving the diurnal density terms
      */
     private NRLMSISE00(final NRLMSISE00InputParameters parameters,
                        final ExtendedPositionProvider sun,
                        final BodyShape earth,
                        final int[] sw,
                        final int[] swc,
-                       final TimeScale ut) {
+                       final TimeScale ut,
+                       final LocalSolarTimeMode lstMode) {
         super(sun);
         this.inputParams = parameters;
         this.earth       = earth;
         this.sw          = sw;
         this.swc         = swc;
-        this.ut = ut;
+        this.ut          = ut;
+        this.lstMode     = lstMode;
     }
 
     /** Change a switch.
@@ -1120,11 +1159,35 @@ public class NRLMSISE00 extends AbstractSunInfluencedAtmosphere {
             } else {
                 newSw[number] = 0;
             }
-            newSwc[number] = newSw[number];
+            // cross-terms flag follows the reference TSELEC: 1 for |value| of 1 or 2
+            newSwc[number] = (FastMath.abs(value) == 1 || FastMath.abs(value) == 2) ? 1 : 0;
         }
 
-        return new NRLMSISE00(inputParams, getSun(), earth, newSwc, newSwc, ut);
+        return new NRLMSISE00(inputParams, getSun(), earth, newSw, newSwc, ut, lstMode);
 
+    }
+
+    /** Change the local solar time convention.
+     * <p>
+     * This method creates a new instance, the current instance is
+     * not changed at all!
+     * </p>
+     * @param mode local solar time convention driving the diurnal density terms
+     * @return a <em>new</em> instance, with the local solar time convention changed
+     * @see LocalSolarTimeMode
+     * @since 13.1.8
+     */
+    public NRLMSISE00 withLocalSolarTimeMode(final LocalSolarTimeMode mode) {
+        return new NRLMSISE00(inputParams, getSun(), earth, sw.clone(), swc.clone(), ut, mode);
+    }
+
+    /** Get the local solar time convention driving the diurnal density terms.
+     * @return local solar time convention
+     * @see LocalSolarTimeMode
+     * @since 13.1.8
+     */
+    public LocalSolarTimeMode getLocalSolarTimeMode() {
+        return lstMode;
     }
 
     /** Create an array of switches set to 1.
@@ -1166,7 +1229,7 @@ public class NRLMSISE00 extends AbstractSunInfluencedAtmosphere {
         final double lat = FastMath.toDegrees(inBody.getLatitude());
 
         // compute local solar time
-        final double lst = localSolarTime(date, position, frame);
+        final double lst = localSolarTime(date, position, frame, lon);
 
         // get solar activity data and compute
         final Output out = new Output(doy, sec, lat, lon, lst, inputParams.getAverageFlux(date),
@@ -1202,7 +1265,7 @@ public class NRLMSISE00 extends AbstractSunInfluencedAtmosphere {
         final T lat = FastMath.toDegrees(inBody.getLatitude());
 
         // compute local solar time
-        final T lst = localSolarTime(date, position, frame);
+        final T lst = localSolarTime(date, position, frame, lon);
 
         // get solar activity data and compute
         final FieldOutput<T> out = new FieldOutput<>(doy, sec, lat, lon, lst,
@@ -1219,15 +1282,31 @@ public class NRLMSISE00 extends AbstractSunInfluencedAtmosphere {
      * @param date current date
      * @param position current position in frame
      * @param frame the frame in which is defined the position
+     * @param longitude geographic longitude (degrees), already computed by the caller
      * @return the local solar time (hour in [0, 24[)
      */
     private double localSolarTime(final AbsoluteDate date,
                                   final Vector3D position,
-                                  final Frame frame) {
-        final Vector3D sunPos = getSunPosition(date, frame);
+                                  final Frame frame,
+                                  final double longitude) {
+        if (lstMode == LocalSolarTimeMode.MEAN) {
+            // mean local solar time: UT (hours) + geographic longitude (hours), matching the
+            // NRLMSISE-00 reference driver (stl = sec/3600 + glong/15). The Sun is not used.
+            // The longitude is reused from the caller rather than re-running the ellipsoid transform.
+            final DateTimeComponents dtc = date.getComponents(ut);
+            final double sec = date.durationFrom(new AbsoluteDate(dtc.getDate(), TimeComponents.H00, ut));
+            final double lst = sec / 3600. + longitude / 15.;
+            return lst - 24. * FastMath.floor(lst / 24.);
+        }
+        // apparent local solar time: the hour angle below is only meaningful about Earth's
+        // rotation axis, so the position and Sun must be expressed in the Earth-fixed body
+        // frame (see issue 1993); DTM2000 performs the identical computation the same way
+        final Frame bodyFrame = earth.getBodyFrame();
+        final Vector3D pBody  = frame.getStaticTransformTo(bodyFrame, date).transformPosition(position);
+        final Vector3D sunPos = getSunPosition(date, bodyFrame);
         final double lst = FastMath.PI + FastMath.atan2(
-                sunPos.getX() * position.getY() - sunPos.getY() * position.getX(),
-                sunPos.getX() * position.getX() + sunPos.getY() * position.getY());
+                sunPos.getX() * pBody.getY() - sunPos.getY() * pBody.getX(),
+                sunPos.getX() * pBody.getX() + sunPos.getY() * pBody.getY());
         return lst * 12. / FastMath.PI;
     }
 
@@ -1235,15 +1314,31 @@ public class NRLMSISE00 extends AbstractSunInfluencedAtmosphere {
      * @param date current date
      * @param position current position in frame
      * @param frame the frame in which is defined the position
+     * @param longitude geographic longitude (degrees), already computed by the caller
      * @param <T> type of the filed elements
      * @return the local solar time (hour in [0, 24[)
      */
     private <T extends CalculusFieldElement<T>> T localSolarTime(final FieldAbsoluteDate<T> date,
                                                              final FieldVector3D<T> position,
-                                                             final Frame frame) {
-        final FieldVector3D<T> sunPos = getSunPosition(date, frame);
-        final T y  = position.getY().multiply(sunPos.getX()).subtract(position.getX().multiply(sunPos.getY()));
-        final T x  = position.getX().multiply(sunPos.getX()).add(position.getY().multiply(sunPos.getY()));
+                                                             final Frame frame,
+                                                             final T longitude) {
+        if (lstMode == LocalSolarTimeMode.MEAN) {
+            // mean local solar time: UT (hours) + geographic longitude (hours), matching the
+            // NRLMSISE-00 reference driver (stl = sec/3600 + glong/15). The Sun is not used.
+            // The longitude is reused from the caller rather than re-running the ellipsoid transform.
+            final DateTimeComponents dtc = date.toAbsoluteDate().getComponents(ut);
+            final T sec = date.durationFrom(new AbsoluteDate(dtc.getDate(), TimeComponents.H00, ut));
+            final T lst = sec.divide(3600.).add(longitude.divide(15.));
+            return lst.subtract(lst.divide(24.).floor().multiply(24.));
+        }
+        // apparent local solar time: the hour angle below is only meaningful about Earth's
+        // rotation axis, so the position and Sun must be expressed in the Earth-fixed body
+        // frame (see issue 1993); DTM2000 performs the identical computation the same way
+        final Frame bodyFrame = earth.getBodyFrame();
+        final FieldVector3D<T> pBody  = frame.getStaticTransformTo(bodyFrame, date).transformPosition(position);
+        final FieldVector3D<T> sunPos = getSunPosition(date, bodyFrame);
+        final T y  = pBody.getY().multiply(sunPos.getX()).subtract(pBody.getX().multiply(sunPos.getY()));
+        final T x  = pBody.getX().multiply(sunPos.getX()).add(pBody.getY().multiply(sunPos.getY()));
         final T hl = y.atan2(x).add(y.getPi());
 
         return hl.divide(y.getPi()).multiply(12.);
@@ -1586,7 +1681,7 @@ public class NRLMSISE00 extends AbstractSunInfluencedAtmosphere {
             /*  Diffusive density at Alt */
             diffusiveDensity = densu(alt, db04, tinf, tlb, HE_MASS, alpha[0], PTM[5], s);
             setDensity(HELIUM, diffusiveDensity);
-            if (sw[15] != 0 && alt < altl[0]) {
+            if (sw[15] != 0 && alt <= altl[0]) {
                 /*  Turbopause */
                 final double zh04 = PDM[0][2];
                 /*  Mixed density at Zlb */
@@ -1612,7 +1707,7 @@ public class NRLMSISE00 extends AbstractSunInfluencedAtmosphere {
             /* Diffusive density at Alt */
             diffusiveDensity = densu(alt, db16, tinf, tlb, O_MASS, alpha[1], PTM[5], s);
             setDensity(ATOMIC_OXYGEN, diffusiveDensity);
-            if (sw[15] != 0 && alt < altl[1]) {
+            if (sw[15] != 0 && alt <= altl[1]) {
                 /* Turbopause */
                 final double zh16 = PDM[1][2];
                 /* Mixed density at Zlb */
@@ -3000,7 +3095,7 @@ public class NRLMSISE00 extends AbstractSunInfluencedAtmosphere {
             /*  Diffusive density at Alt */
             diffusiveDensity = densu(alt, db04, tinf, tlb, HE_MASS, alpha[0], PTM[5], s);
             setDensity(HELIUM, diffusiveDensity);
-            if (sw[15] != 0 && alt.getReal() < altl[0]) {
+            if (sw[15] != 0 && alt.getReal() <= altl[0]) {
                 /*  Turbopause */
                 final double zh04 = PDM[0][2];
                 /*  Mixed density at Zlb */
@@ -3026,7 +3121,7 @@ public class NRLMSISE00 extends AbstractSunInfluencedAtmosphere {
             /* Diffusive density at Alt */
             diffusiveDensity = densu(alt, db16, tinf, tlb, O_MASS, alpha[1], PTM[5], s);
             setDensity(ATOMIC_OXYGEN, diffusiveDensity);
-            if (sw[15] != 0 && alt.getReal() < altl[1]) {
+            if (sw[15] != 0 && alt.getReal() <= altl[1]) {
                 /* Turbopause */
                 final double zh16 = PDM[1][2];
                 /* Mixed density at Zlb */

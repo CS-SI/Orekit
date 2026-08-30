@@ -10,8 +10,8 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Predefined;
 import org.orekit.time.AbsoluteDate;
-
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ShiftablePVCoordinatesHolderTest {
 
@@ -35,7 +35,7 @@ class ShiftablePVCoordinatesHolderTest {
         final Vector3D position = testShiftablePVCoordinatesHolder.getPosition(shiftedDate, frame);
         // THEN
         final PVCoordinates expected = testShiftablePVCoordinatesHolder.getPVCoordinates(shiftedDate, frame);
-        assertEquals(expected.getPosition(), position);
+        assertArrayEquals(expected.getPosition().toArray(), position.toArray(), 1e-15);
     }
 
     @ParameterizedTest

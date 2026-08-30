@@ -26,24 +26,24 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
 import org.orekit.orbits.CartesianOrbit;
-import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.FieldOrbit;
+import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.DerivativeStateUtils;
+import org.orekit.utils.FieldAbsolutePVCoordinates;
 import org.orekit.utils.FieldAngularCoordinates;
 import org.orekit.utils.FieldPVCoordinates;
-import org.orekit.utils.FieldAbsolutePVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversProvider;
+import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.TimeStampedFieldAngularCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
-import org.orekit.utils.TimeSpanMap.Span;
 
 /** Converter for states and parameters arrays.
  *  @author Luc Maisonobe
@@ -232,7 +232,11 @@ public abstract class AbstractGradientConverter {
                                                gAttitude).withMass(gMass);
             }
 
-            gStates.set(nbParams, spacecraftState);
+            if (s0.getAdditionalDataValues().size() == 0) {
+                gStates.set(nbParams, spacecraftState);
+            } else {
+                gStates.set(nbParams, spacecraftState.withAdditionalData(s0.getAdditionalDataValues()));
+            }
 
         }
 

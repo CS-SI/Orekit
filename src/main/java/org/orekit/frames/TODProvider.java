@@ -18,10 +18,8 @@ package org.orekit.frames;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
-import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
-import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalarFunction;
 import org.orekit.time.TimeScales;
@@ -33,7 +31,7 @@ import org.orekit.utils.IERSConventions;
  * <p>Transform is computed with reference to the {@link MODProvider Mean of Date} frame.</p>
  * @author Pascal Parraud
  */
-class TODProvider implements EOPBasedTransformProvider {
+class TODProvider implements FieldBasedTransformProvider, EOPBasedTransformProvider {
 
     /** Conventions. */
     private final IERSConventions conventions;
@@ -96,41 +94,12 @@ class TODProvider implements EOPBasedTransformProvider {
                 obliquityFunction, nutationFunction);
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public Transform getTransform(final AbsoluteDate date) {
-
-        // compute nutation angles
-        final double[] angles = nutationFunction.value(date);
-
-        // compute the mean obliquity of the ecliptic
-        final double moe = obliquityFunction.value(date);
-
-        double dpsi = angles[0];
-        double deps = angles[1];
-        if (eopHistory != null) {
-            // apply the corrections for the nutation parameters
-            final double[] correction = eopHistory.getEquinoxNutationCorrection(date);
-            dpsi += correction[0];
-            deps += correction[1];
-        }
-
-        // compute the true obliquity of the ecliptic
-        final double toe = moe + deps;
-
-        // complete nutation
-        final Rotation nutation = new Rotation(RotationOrder.XZX, RotationConvention.FRAME_TRANSFORM,
-                                               moe, -dpsi, -toe);
-
-        // set up the transform from parent MOD
-        return new Transform(date, nutation);
-
-    }
-
-    /** Replace the instance with a data transfer object for serialization.
-    /** {@inheritDoc} */
-    @Override
-    public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
+    /** Compute the complete nutation rotation.
+     * @param date current date
+     * @param <T> type of the field elements
+     * @return complete nutation rotation
+     */
+    public <T extends CalculusFieldElement<T>> FieldRotation<T> getRotation(final FieldAbsoluteDate<T> date) {
 
         // compute nutation angles
         final T[] angles = nutationFunction.value(date);
@@ -151,11 +120,8 @@ class TODProvider implements EOPBasedTransformProvider {
         final T toe = moe.add(deps);
 
         // complete nutation
-        final FieldRotation<T> nutation = new FieldRotation<>(RotationOrder.XZX, RotationConvention.FRAME_TRANSFORM,
-                                                              moe, dpsi.negate(), toe.negate());
-
-        // set up the transform from parent MOD
-        return new FieldTransform<>(date, nutation);
+        return new FieldRotation<>(RotationOrder.XZX, RotationConvention.FRAME_TRANSFORM,
+                                   moe, dpsi.negate(), toe.negate());
 
     }
 

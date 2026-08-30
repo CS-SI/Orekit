@@ -231,12 +231,12 @@ class OrbitBlenderTest {
 
         // When & Then
         doTestInterpolation(stateInterpolator, DEFAULT_SERGEI_PROPAGATION_TIME, DEFAUTL_SERGEI_TABULATED_TIMESTEP,
-                            0.05089773438,
-                            0.08108628367,
-                            0.05166761723,
-                            0.08292401514,
-                            0.09968362604,
-                            0.14667310362,
+                            0.05089773763,
+                            0.08108628063,
+                            0.05166761792,
+                            0.08292401924,
+                            0.09968363271,
+                            0.14667309756,
                             1e-10, false);
     }
 
@@ -258,12 +258,12 @@ class OrbitBlenderTest {
 
         // When & Then
         doTestInterpolation(stateInterpolator, DEFAULT_SERGEI_PROPAGATION_TIME, DEFAUTL_SERGEI_TABULATED_TIMESTEP,
-                            0.05089773438,
-                            0.08108628367,
-                            0.05166761723,
-                            0.08292401514,
-                            0.09968362604,
-                            0.14667310362,
+                            0.05089773763,
+                            0.08108628063,
+                            0.05166761792,
+                            0.08292401924,
+                            0.09968363271,
+                            0.14667309756,
                             1e-10, false);
     }
 
@@ -290,12 +290,12 @@ class OrbitBlenderTest {
 
         // When & Then
         doTestInterpolation(stateInterpolator, DEFAULT_SERGEI_PROPAGATION_TIME, DEFAUTL_SERGEI_TABULATED_TIMESTEP,
-                            0.11579334066,
-                            0.05907467596,
-                            0.11794333545,
-                            0.06383465358,
-                            0.20911527596,
-                            0.09169202411,
+                            0.11579334161,
+                            0.05907467794,
+                            0.11794334472,
+                            0.06383464975,
+                            0.20911527395,
+                            0.09169202583,
                             1e-10, false);
     }
 
@@ -325,12 +325,12 @@ class OrbitBlenderTest {
 
         // When & Then
         doTestInterpolation(stateInterpolator, DEFAULT_SERGEI_PROPAGATION_TIME, DEFAUTL_SERGEI_TABULATED_TIMESTEP,
-                            0.1157933406,
-                            0.0590746759,
-                            0.1179433354,
-                            0.0638346535,
-                            0.2091152759,
-                            0.0916920241,
+                            0.11579334161,
+                            0.05907467794,
+                            0.11794334472,
+                            0.06383464975,
+                            0.20911527395,
+                            0.09169202583,
                             1e-10, false);
     }
 
@@ -354,12 +354,12 @@ class OrbitBlenderTest {
 
         // When & Then
         doTestInterpolation(stateInterpolator, DEFAULT_SERGEI_PROPAGATION_TIME, DEFAUTL_SERGEI_TABULATED_TIMESTEP,
-                            0.00772918411,
-                            0.01125709070,
-                            0.00809814259,
-                            0.01223704691,
-                            0.01444320557,
-                            0.01639950271,
+                            0.00772918336,
+                            0.01125708540,
+                            0.00809813879,
+                            0.01223703656,
+                            0.01444320197,
+                            0.01639949381,
                             1e-10, false);
                             
     }
@@ -387,12 +387,12 @@ class OrbitBlenderTest {
 
         // When & Then
         doTestInterpolation(stateInterpolator, DEFAULT_SERGEI_PROPAGATION_TIME, DEFAUTL_SERGEI_TABULATED_TIMESTEP,
-                            0.00772918411,
-                            0.01125709070,
-                            0.00809814259,
-                            0.01223704691,
-                            0.01444320557,
-                            0.01639950271,
+                            0.00772918336,
+                            0.01125708540,
+                            0.00809813879,
+                            0.01223703656,
+                            0.01444320197,
+                            0.01639949381,
                             1e-10, false);
     }
 
