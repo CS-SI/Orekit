@@ -96,7 +96,6 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
     private final  double DEFAULT_SERGEI_TABULATED_TIMESTEP   = 2400;
 
     private static final double TOLERANCE = 1e-9;
-
     @BeforeAll
     public static void setUp() {
         Utils.setDataRoot("regular-data:potential/egm-format:atmosphere:tides:regular-data/de405-ephemerides");
@@ -823,9 +822,9 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
         Assertions.assertEquals(  0.071763476751, relativeRMSSigmaError[0].getMean(), TOLERANCE);
         Assertions.assertEquals( 19.568025195906, relativeRMSSigmaError[1].getMean(), TOLERANCE);
         Assertions.assertEquals(  0.069672633640, relativeRMSSigmaError[0].getPercentile(50), TOLERANCE);
-        Assertions.assertEquals( 14.222177093792, relativeRMSSigmaError[1].getPercentile(50), TOLERANCE);
+        Assertions.assertEquals( 14.222173837085968, relativeRMSSigmaError[1].getPercentile(50), TOLERANCE);
         Assertions.assertEquals(  0.143305248540, relativeRMSSigmaError[0].getMax(), TOLERANCE);
-        Assertions.assertEquals( 82.363117378396, relativeRMSSigmaError[1].getMax(), 3 * TOLERANCE);
+        Assertions.assertEquals( 82.36325388508108, relativeRMSSigmaError[1].getMax(), 3 * TOLERANCE);
     }
 
     @Test

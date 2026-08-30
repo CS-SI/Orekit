@@ -28,13 +28,12 @@ import org.orekit.attitudes.FieldAttitude;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.FieldOrbit;
-import org.orekit.orbits.PositionAngleBased;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.DerivativeStateUtils;
-import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.FieldAbsolutePVCoordinates;
+import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.drivers.ParameterDriver;
 import org.orekit.utils.drivers.ParameterDriversProvider;
 import org.orekit.utils.TimeStampedFieldAngularCoordinates;
@@ -254,16 +253,20 @@ public abstract class AbstractGradientConverter {
             final FieldAttitude<Gradient> gAttitude = extend(s0.getAttitude(), freeParameters);
 
             // orbit or absolute position-velocity coordinates
-            final FieldSpacecraftState<Gradient> spacecraftState =
+            FieldSpacecraftState<Gradient> spacecraftState =
                 s0.isOrbitDefined() ?
                 new FieldSpacecraftState<>(extend(s0.getOrbit(), freeParameters), gAttitude) :
                 new FieldSpacecraftState<>(extend(s0.getAbsPVA(), freeParameters), gAttitude);
 
             // mass
             final Gradient gMass = extend(s0.getMass(), freeParameters);
+            spacecraftState = spacecraftState.withMass(gMass);
 
-            gStates.set(nbParams, spacecraftState.withMass(gMass));
-
+            if (s0.getAdditionalDataValues().size() == 0) {
+                gStates.set(nbParams, spacecraftState);
+            } else {
+                gStates.set(nbParams, spacecraftState.withAdditionalData(s0.getAdditionalDataValues()));
+            }
         }
 
         return gStates.get(nbParams);

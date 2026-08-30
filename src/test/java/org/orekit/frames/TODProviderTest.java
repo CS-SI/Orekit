@@ -16,19 +16,30 @@
  */
 package org.orekit.frames;
 
+import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
+import org.hipparchus.analysis.differentiation.UnivariateDerivative1Field;
+import org.hipparchus.analysis.differentiation.UnivariateDerivative2;
+import org.hipparchus.analysis.differentiation.UnivariateDerivative2Field;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
+import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.Binary64;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.orekit.Utils;
 import org.orekit.data.DataContext;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.AngularCoordinates;
 import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
@@ -40,6 +51,13 @@ import java.io.FileNotFoundException;
 
 
 public class TODProviderTest {
+
+    @ParameterizedTest
+    @EnumSource(IERSConventions.class)
+    public void testRawTransformKinematics(final IERSConventions conventions) {
+        checkRawTransformKinematics(conventions, null);
+        checkRawTransformKinematics(conventions, FramesFactory.getEOPHistory(conventions, true));
+    }
 
     @Test
     public void testRotationRate() {
@@ -381,6 +399,108 @@ public class TODProviderTest {
         Vector3D dV = result.getVelocity().subtract(reference.getVelocity());
         Assertions.assertEquals(expectedPositionError, dP.getNorm(), 0.01 * expectedPositionError);
         Assertions.assertEquals(expectedVelocityError, dV.getNorm(), 0.01 * expectedVelocityError);
+    }
+
+    private void checkRawTransformKinematics(final IERSConventions conventions,
+                                             final EOPHistory eopHistory) {
+        final TODProvider provider = new TODProvider(conventions, eopHistory,
+                                                     DataContext.getDefault().getTimeScales());
+        final AbsoluteDate date = new AbsoluteDate(2004, 4, 6, 7, 51, 28.386009,
+                                                   TimeScalesFactory.getUTC());
+        final Transform scalarTransform = provider.getTransform(date);
+        final KinematicTransform kinematicTransform = provider.getKinematicTransform(date);
+
+        final double[] angles = conventions.getNutationFunction(DataContext.getDefault().getTimeScales()).value(date);
+        final double moe = conventions.getMeanObliquityFunction(DataContext.getDefault().getTimeScales()).value(date);
+        double dpsi = angles[0];
+        double deps = angles[1];
+        if (eopHistory != null) {
+            final double[] correction = eopHistory.getEquinoxNutationCorrection(date);
+            dpsi += correction[0];
+            deps += correction[1];
+        }
+        final Rotation referenceRotation =
+                        new Rotation(RotationOrder.XZX, RotationConvention.FRAME_TRANSFORM,
+                                     moe, -dpsi, -moe - deps);
+
+        final UnivariateDerivative2Field ud2Field = UnivariateDerivative2Field.getInstance();
+        final FieldAbsoluteDate<UnivariateDerivative2> ud2Date =
+                        new FieldAbsoluteDate<>(ud2Field, date).shiftedBy(new UnivariateDerivative2(0, 1, 0));
+        final FieldTransform<UnivariateDerivative2> derivativeTransform = provider.getTransform(ud2Date);
+        final AngularCoordinates embeddedDerivatives = new AngularCoordinates(derivativeTransform.getRotation());
+
+        final UnivariateDerivative1Field ud1Field = UnivariateDerivative1Field.getInstance();
+        final FieldAbsoluteDate<UnivariateDerivative1> ud1Date =
+                        new FieldAbsoluteDate<>(ud1Field, date).shiftedBy(new UnivariateDerivative1(0, 1));
+        final FieldKinematicTransform<UnivariateDerivative1> derivativeKinematicTransform =
+                        provider.getKinematicTransform(ud1Date);
+        final AngularCoordinates embeddedKinematicDerivatives =
+                        new AngularCoordinates(derivativeKinematicTransform.getRotation());
+
+        final FieldAbsoluteDate<Binary64> binaryDate =
+                        new FieldAbsoluteDate<>(Binary64Field.getInstance(), date);
+        final FieldTransform<Binary64> binaryTransform = provider.getTransform(binaryDate);
+        final FieldKinematicTransform<Binary64> binaryKinematicTransform =
+                        provider.getKinematicTransform(binaryDate);
+
+        Assertions.assertEquals(0.0, Rotation.distance(referenceRotation, scalarTransform.getRotation()), 2.0e-15);
+        Assertions.assertEquals(0.0,
+                                Rotation.distance(binaryTransform.getRotation().toRotation(),
+                                                  scalarTransform.getRotation()),
+                                2.0e-15);
+        Assertions.assertEquals(0.0,
+                                Vector3D.distance(binaryTransform.getRotationRate().toVector3D(),
+                                                  scalarTransform.getRotationRate()),
+                                2.0e-22);
+        Assertions.assertEquals(0.0,
+                                Vector3D.distance(binaryTransform.getRotationAcceleration().toVector3D(),
+                                                  scalarTransform.getRotationAcceleration()),
+                                2.0e-28);
+        Assertions.assertEquals(0.0,
+                                Vector3D.distance(embeddedDerivatives.getRotationRate(),
+                                                  derivativeTransform.getRotationRate().toVector3D()),
+                                2.0e-22);
+        Assertions.assertEquals(0.0,
+                                Vector3D.distance(embeddedDerivatives.getRotationAcceleration(),
+                                                  derivativeTransform.getRotationAcceleration().toVector3D()),
+                                2.0e-28);
+        Assertions.assertEquals(0.0,
+                                Rotation.distance(kinematicTransform.getRotation(), scalarTransform.getRotation()),
+                                2.0e-15);
+        Assertions.assertEquals(0.0,
+                                Vector3D.distance(kinematicTransform.getRotationRate(), scalarTransform.getRotationRate()),
+                                2.0e-22);
+        Assertions.assertEquals(0.0,
+                                Rotation.distance(binaryKinematicTransform.getRotation().toRotation(),
+                                                  binaryTransform.getRotation().toRotation()),
+                                2.0e-15);
+        Assertions.assertEquals(0.0,
+                                Vector3D.distance(binaryKinematicTransform.getRotationRate().toVector3D(),
+                                                  binaryTransform.getRotationRate().toVector3D()),
+                                2.0e-22);
+        Assertions.assertEquals(0.0,
+                                Vector3D.distance(embeddedKinematicDerivatives.getRotationRate(),
+                                                  derivativeKinematicTransform.getRotationRate().toVector3D()),
+                                2.0e-22);
+
+        final Vector3D position = new Vector3D(42000000.0, -13000000.0, 5000000.0);
+        final double h = 1.0;
+        final Vector3D pM = provider.getTransform(date.shiftedBy(-h)).transformPosition(position);
+        final Vector3D pP = provider.getTransform(date.shiftedBy(+h)).transformPosition(position);
+        final Vector3D finiteDifference = new Vector3D(-1.0 / (2.0 * h), pM, 1.0 / (2.0 * h), pP);
+        final Vector3D transformedVelocity =
+                        scalarTransform.transformPVCoordinates(new PVCoordinates(position)).getVelocity();
+        Assertions.assertEquals(0.0, Vector3D.distance(finiteDifference, transformedVelocity), 5.0e-8);
+
+        final PVCoordinates pv = new PVCoordinates(position, new Vector3D(1200.0, 2900.0, -400.0));
+        final PVCoordinates transformedPV = scalarTransform.transformPVCoordinates(pv);
+        final PVCoordinates transformedOnlyPV = kinematicTransform.transformOnlyPV(pv);
+        Assertions.assertEquals(0.0,
+                                Vector3D.distance(transformedPV.getPosition(), transformedOnlyPV.getPosition()),
+                                2.0e-9);
+        Assertions.assertEquals(0.0,
+                                Vector3D.distance(transformedPV.getVelocity(), transformedOnlyPV.getVelocity()),
+                                2.0e-12);
     }
 
     private void checkRotation(double[][] reference, Transform t, double epsilon) {

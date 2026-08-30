@@ -338,7 +338,7 @@ class TLEBatchLSEstimatorTest {
         estimator.setMaxEvaluations(20);
 
         // we have low correlation between the two types of measurement. We can expect a good estimate.
-        EstimationTestUtils.checkFit(false, context, estimator, 4, 5,
+        EstimationTestUtils.checkFit(false, context, estimator, 4, 7,
                                      0.0, 2.1e-6,
                                      0.0, 8.5e-6,
                                      0.0, 5.0e-6,

@@ -16,6 +16,7 @@
  */
 package org.orekit.propagation.numerical;
 
+
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.linear.DecompositionSolver;
@@ -43,6 +44,7 @@ import java.io.Serial;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /** Abstract generator for numerical State Transition Matrix.
  * @author Luc Maisonobe
@@ -254,10 +256,8 @@ abstract class AbstractStateTransitionMatrixGenerator implements AdditionalDeriv
 
         // evaluate contribution of all force models
         final AttitudeProvider equivalentAttitudeProvider = wrapAttitudeProviderIfPossible();
-        final boolean isThereAnyForceNotDependingOnlyOnPosition = getForceModels().stream().anyMatch(force -> !force.dependsOnPositionOnly());
         final NumericalGradientConverter posOnlyConverter = new NumericalGradientConverter(state, SPACE_DIMENSION, equivalentAttitudeProvider);
-        final NumericalGradientConverter fullConverter = isThereAnyForceNotDependingOnlyOnPosition ?
-                new NumericalGradientConverter(state, getStateDimension(), equivalentAttitudeProvider) : posOnlyConverter;
+        final NumericalGradientConverter fullConverter = buildFullConverter(state, equivalentAttitudeProvider, posOnlyConverter);
         final SpacecraftState stateForParameters = state.withAdditionalData(new LocalDoubleArrayDictionary(state.getAdditionalDataValues()));
 
         for (final ForceModel forceModel : getForceModels()) {
@@ -276,6 +276,24 @@ abstract class AbstractStateTransitionMatrixGenerator implements AdditionalDeriv
 
         return factor;
 
+    }
+
+    /**
+     * Method building a gradient converter.
+     * @param state template
+     * @param provider attitude provider
+     * @param positionOnlyConverter default, already-built converter for position only
+     * @return gradient converter
+     * @since 13.1.8
+     */
+    private NumericalGradientConverter buildFullConverter(final SpacecraftState state, final AttitudeProvider provider,
+                                                          final NumericalGradientConverter positionOnlyConverter) {
+        if (getForceModels().stream().allMatch(ForceModel::dependsOnPositionOnly)) {
+            return positionOnlyConverter;
+        }
+        // check if additional data other than STM is stored
+        final boolean keepAdditionalData = state.getAdditionalDataValues().getData().stream().anyMatch(data -> !Objects.equals(data.getKey(), getName()));
+        return new NumericalGradientConverter(state, getStateDimension(), provider, keepAdditionalData);
     }
 
     /**

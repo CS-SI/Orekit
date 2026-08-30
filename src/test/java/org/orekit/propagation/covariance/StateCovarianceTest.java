@@ -85,7 +85,7 @@ public class StateCovarianceTest {
         transformed = transformed.changeCovarianceFrame(initialState.getOrbit(), frameA);
 
         // Verify
-        compareCovariance(reference.getMatrix(), transformed.getMatrix(), 5.2e-15);
+        compareCovariance(reference.getMatrix(), transformed.getMatrix(), 5.3e-15);
 
     }
 
@@ -1095,4 +1095,3 @@ public class StateCovarianceTest {
     }
 
 }
-

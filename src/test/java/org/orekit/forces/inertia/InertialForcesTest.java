@@ -25,6 +25,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
+import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.random.GaussianRandomGenerator;
@@ -41,11 +42,17 @@ import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.AbstractLegacyForceModelTest;
 import org.orekit.forces.ForceModel;
+import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
+import org.orekit.forces.gravity.potential.GravityFieldFactory;
+import org.orekit.forces.gravity.potential.ICGEMFormatReader;
+import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
@@ -65,6 +72,43 @@ import org.orekit.utils.PVCoordinates;
 
 
 public class InertialForcesTest extends AbstractLegacyForceModelTest {
+
+    @Test
+    void testTodPropagationWithOrdinaryInertialForces() {
+        Utils.setDataRoot("regular-data:potential/icgem-format");
+        GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
+
+        final Frame eme2000 = FramesFactory.getEME2000();
+        final Frame tod = FramesFactory.getTOD(IERSConventions.IERS_2010, true);
+        final AbsoluteDate date = new AbsoluteDate(2025, 4, 3, 12, 0, 0.0, TimeScalesFactory.getUTC());
+        final double mu = Constants.EIGEN5C_EARTH_MU;
+        final Orbit emeOrbit = new KeplerianOrbit(7000000.0, 0.001, FastMath.toRadians(51.6),
+                                                 0.3, 0.4, 0.5, PositionAngleType.TRUE,
+                                                 eme2000, date, mu);
+        final Orbit todOrbit = new CartesianOrbit(emeOrbit.getPVCoordinates(tod), tod, mu);
+        final NormalizedSphericalHarmonicsProvider gravity = GravityFieldFactory.getNormalizedProvider(20, 20);
+
+        final NumericalPropagator emePropagator =
+                        new NumericalPropagator(new ClassicalRungeKuttaIntegrator(30.0));
+        emePropagator.setOrbitType(OrbitType.CARTESIAN);
+        emePropagator.addForceModel(new HolmesFeatherstoneAttractionModel(
+                        FramesFactory.getITRF(IERSConventions.IERS_2010, true), gravity));
+        emePropagator.setInitialState(new SpacecraftState(emeOrbit));
+
+        final NumericalPropagator todPropagator =
+                        new NumericalPropagator(new ClassicalRungeKuttaIntegrator(30.0));
+        todPropagator.setOrbitType(OrbitType.CARTESIAN);
+        todPropagator.addForceModel(new HolmesFeatherstoneAttractionModel(
+                        FramesFactory.getITRF(IERSConventions.IERS_2010, true), gravity));
+        todPropagator.addForceModel(new InertialForces(eme2000));
+        todPropagator.setInitialState(new SpacecraftState(todOrbit));
+
+        final AbsoluteDate target = date.shiftedBy(Constants.JULIAN_DAY);
+        final PVCoordinates emeFinal = emePropagator.propagate(target).getPVCoordinates(eme2000);
+        final PVCoordinates todFinal = todPropagator.propagate(target).getPVCoordinates(eme2000);
+        Assertions.assertEquals(0.0, Vector3D.distance(emeFinal.getPosition(), todFinal.getPosition()), 0.01);
+        Assertions.assertEquals(0.0, Vector3D.distance(emeFinal.getVelocity(), todFinal.getVelocity()), 2.0e-5);
+    }
 
     @Override
     protected FieldVector3D<DerivativeStructure> accelerationDerivatives(final ForceModel forceModel, final FieldSpacecraftState<DerivativeStructure> state) {

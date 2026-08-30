@@ -16,9 +16,12 @@
  */
 package org.orekit.propagation.numerical;
 
+import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.AbstractGradientConverter;
+import org.orekit.utils.FieldDataDictionary;
 
 /** Converter for states and parameters arrays.
  * @author Luc Maisonobe
@@ -26,19 +29,34 @@ import org.orekit.propagation.AbstractGradientConverter;
  */
 class NumericalGradientConverter extends AbstractGradientConverter {
 
-    /** Simple constructor.
+
+    /** Constructor.
+     * @param state regular state
+     * @param freeStateParameters number of free parameters, either 3 (position) or 6 (position-velocity)
+     * @param provider provider to use if attitude needs to be recomputed
+     * @param keepAdditionalData flag to keep additional data
+     * @since 13.1.8
+     */
+    NumericalGradientConverter(final SpacecraftState state, final int freeStateParameters,
+                               final AttitudeProvider provider, final boolean keepAdditionalData) {
+
+        super(freeStateParameters);
+
+        // initialize the list with the state having 0 force model parameters
+        final AttitudeProvider passedAttitudeProvider = freeStateParameters > 3 ? provider : null;
+        final FieldSpacecraftState<Gradient> basicGradientState = buildBasicGradientSpacecraftState(state,
+                freeStateParameters, passedAttitudeProvider);
+        initStates(keepAdditionalData ? basicGradientState.withAdditionalData(new FieldDataDictionary<>(basicGradientState.getMass().getField(), state.getAdditionalDataValues().toMap())) : basicGradientState);
+    }
+
+    /** Simple constructor with default values.
      * @param state regular state
      * @param freeStateParameters number of free parameters, either 3 (position) or 6 (position-velocity)
      * @param provider provider to use if attitude needs to be recomputed
      */
     NumericalGradientConverter(final SpacecraftState state, final int freeStateParameters,
                                final AttitudeProvider provider) {
-
-        super(freeStateParameters);
-
-        // initialize the list with the state having 0 force model parameters
-        initStates(buildBasicGradientSpacecraftState(state, freeStateParameters, freeStateParameters > 3 ? provider : null));
-
+        this(state, freeStateParameters, provider, false);
     }
 
 }
