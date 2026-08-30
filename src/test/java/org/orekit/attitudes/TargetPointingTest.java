@@ -20,7 +20,11 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.complex.ComplexField;
-import org.hipparchus.geometry.euclidean.threed.*;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Line;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.RotationConvention;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.AfterEach;
@@ -35,7 +39,12 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.StaticTransform;
-import org.orekit.orbits.*;
+import org.orekit.orbits.CircularOrbit;
+import org.orekit.orbits.FieldCircularOrbit;
+import org.orekit.orbits.FieldOrbit;
+import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.orbits.Orbit;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -444,7 +453,7 @@ class TargetPointingTest {
         final Vector3D actualPosition = law.getTargetPosition(circOrbit, circOrbit.getDate(), circOrbit.getFrame());
         // THEN
         final Vector3D expectedPosition = law.getTargetPV(circOrbit, circOrbit.getDate(), circOrbit.getFrame()).getPosition();
-        Assertions.assertEquals(expectedPosition, actualPosition);
+        Assertions.assertArrayEquals(expectedPosition.toArray(), actualPosition.toArray(), 1e-15);
     }
 
     @Test

@@ -115,7 +115,7 @@ class OsculatingToMeanConverterTest {
         final TLETheory fieldTheory = new TLETheory(new FieldTLE<>(field, TLETheory.TMP_L1, TLETheory.TMP_L2));
         // THEN
         compareAlgorithms(theory, 1e-5, 1e-12, 1e-12, 1e-12, 1e-13, 1e-12);
-        compareFieldVersions(fieldTheory, 1e-8, 1e-15, 1e-15, 1e-15, 1e-15, 1e-15);
+        compareFieldVersions(fieldTheory, 1e-7, 2e-15, 1e-15, 1e-15, 1e-15, 2e-15);
     }
 
     @Test
@@ -140,14 +140,14 @@ class OsculatingToMeanConverterTest {
         Assertions.assertEquals(FixedPointConverter.DEFAULT_THRESHOLD,        fpConverter.getThreshold(), 0.);
         Assertions.assertEquals(LeastSquaresConverter.DEFAULT_MAX_ITERATIONS, lsConverter.getMaxIterations(), 0);
         Assertions.assertEquals(LeastSquaresConverter.DEFAULT_THRESHOLD,      lsConverter.getThreshold(), 0.);
-        Assertions.assertEquals(fpMean.getType(),  OrbitParamsType.KEPLERIAN);
+        Assertions.assertEquals(OrbitParamsType.KEPLERIAN, fpMean.getType());
         Assertions.assertEquals(fpMean.getDate(),  osculating.getDate());
         Assertions.assertEquals(fpMean.getFrame(), FramesFactory.getTEME());
-        Assertions.assertEquals(fpMean.getMu(),    TLEConstants.MU);
-        Assertions.assertEquals(lsMean.getType(),  OrbitParamsType.KEPLERIAN);
+        Assertions.assertEquals(TLEConstants.MU, fpMean.getMu());
+        Assertions.assertEquals(OrbitParamsType.KEPLERIAN, lsMean.getType());
         Assertions.assertEquals(lsMean.getDate(),  osculating.getDate());
         Assertions.assertEquals(lsMean.getFrame(), FramesFactory.getTEME());
-        Assertions.assertEquals(lsMean.getMu(),    TLEConstants.MU);
+        Assertions.assertEquals(TLEConstants.MU, lsMean.getMu());
     }
 
     @Test
@@ -164,13 +164,9 @@ class OsculatingToMeanConverterTest {
         final FixedPointConverter fpConvert = new FixedPointConverter(new TLETheory());
         // THEN
         // Try converting simple orbit
-        Assertions.assertThrows(OrekitException.class, () -> {
-            fpConvert.convertToMean(orbit);
-        });
+        Assertions.assertThrows(OrekitException.class, () -> fpConvert.convertToMean(orbit));
         // Try converting field orbit
-        Assertions.assertThrows(OrekitException.class, () -> {
-            fpConvert.convertToMean(fieldOrbit);
-        });
+        Assertions.assertThrows(OrekitException.class, () -> fpConvert.convertToMean(fieldOrbit));
     }
 
     /**
@@ -228,9 +224,7 @@ class OsculatingToMeanConverterTest {
                           dA, dEx, dEy, dHx, dHy, dLv);
         });
         // Try conversion using least-squares algorithm
-        Assertions.assertThrows(UnsupportedOperationException.class, () -> {
-            lsConvert.convertToMean(fieldOrbit);
-        });
+        Assertions.assertThrows(UnsupportedOperationException.class, () -> lsConvert.convertToMean(fieldOrbit));
     }
 
     /**

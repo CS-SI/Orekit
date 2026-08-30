@@ -18,15 +18,8 @@ package org.orekit.bodies;
 
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
-import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.hipparchus.geometry.euclidean.threed.Rotation;
-import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.Precision;
-import org.orekit.bodies.JPLEphemeridesLoader.EphemerisType;
-import org.orekit.bodies.JPLEphemeridesLoader.ZeroRawPVProvider;
 import org.orekit.frames.FieldKinematicTransform;
 import org.orekit.frames.FieldStaticTransform;
 import org.orekit.frames.FieldTransform;
@@ -36,16 +29,12 @@ import org.orekit.frames.OriginTransformProvider;
 import org.orekit.frames.Predefined;
 import org.orekit.frames.StaticTransform;
 import org.orekit.frames.Transform;
-import org.orekit.frames.TransformProvider;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.time.TimeOffset;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
-
-import java.util.concurrent.TimeUnit;
 
 /** Implementation of the {@link CelestialBody} interface using JPL or INPOP ephemerides.
  * @author Luc Maisonobe
@@ -58,9 +47,6 @@ class JPLCelestialBody implements CelestialBody {
     /** Regular expression for supported files names. */
     private final String supportedNames;
 
-    /** Ephemeris type to generate. */
-    private final JPLEphemeridesLoader.EphemerisType generateType;
-
     /** Raw position-velocity provider. */
     private final JPLEphemeridesLoader.RawPVProvider rawPVProvider;
 
@@ -69,9 +55,6 @@ class JPLCelestialBody implements CelestialBody {
 
     /** Scaling factor for position-velocity. */
     private final double scale;
-
-    /** IAU pole. */
-    private final IAUPole iauPole;
 
     /** Body's PV coordinates are defined in this frame. */
     private final Frame definingFrameAlignedWithIcrf;
@@ -107,11 +90,9 @@ class JPLCelestialBody implements CelestialBody {
         this.gm             = gm;
         this.scale          = scale;
         this.supportedNames = supportedNames;
-        this.generateType   = generateType;
         this.rawPVProvider  = rawPVProvider;
-        this.iauPole        = iauPole;
         this.definingFrameAlignedWithIcrf = definingFrameAlignedWithICRF;
-        if (rawPVProvider instanceof ZeroRawPVProvider) {
+        if (rawPVProvider instanceof JPLEphemeridesLoader.ZeroRawPVProvider) {
             // no translation or rotation needed, use directly
             // might be better to have a method instead of using "instanceof"
             // but the classes are tightly coupled and package private
@@ -119,7 +100,7 @@ class JPLCelestialBody implements CelestialBody {
         } else {
             // translation needed
             final String icrfName;
-            if (EphemerisType.SOLAR_SYSTEM_BARYCENTER == generateType) {
+            if (JPLEphemeridesLoader.EphemerisType.SOLAR_SYSTEM_BARYCENTER == generateType) {
                 // in Orekit FramesFactory.getICRF() is implemented by
                 // CelestialBodyFactor.getSsb().getInertiallyOrientedFrame()
                 // so have to match Predefined.ICRF
@@ -138,9 +119,10 @@ class JPLCelestialBody implements CelestialBody {
             this.inertialFrame = icrfAlignedFrame;
             this.bodyFrame = icrfAlignedFrame;
         } else {
-            this.inertialFrame = new InertiallyOriented(icrfAlignedFrame);
-            this.bodyFrame      = new BodyOriented();
+            this.inertialFrame  = new InertiallyOriented(new JPLInertialTransformProvider(icrfAlignedFrame, this, iauPole));
+            this.bodyFrame      = new BodyOriented(new JPLRotatingTransformProvider(iauPole));
         }
+
     }
 
     /** {@inheritDoc} */
@@ -272,110 +254,12 @@ class JPLCelestialBody implements CelestialBody {
         /** Suffix for inertial frame name. */
         private static final String INERTIAL_FRAME_SUFFIX = "/inertial";
 
-        /**
-         * Simple constructor.
-         *
-         * @param bodyIcrf body centered ICRF aligned frame.
+        /** Simple constructor.
+         * @param transformProvider transform provider to frame in which celestial body coordinates are defined
          * @since 14.0
          */
-        InertiallyOriented(final Frame bodyIcrf) {
-            super(bodyIcrf, new TransformProvider() {
-
-                /** {@inheritDoc} */
-                public Transform getTransform(final AbsoluteDate date) {
-
-                    // compute rotation from ICRF frame to self,
-                    // as per the "Report of the IAU/IAG Working Group on Cartographic
-                    // Coordinates and Rotational Elements of the Planets and Satellites"
-                    // These definitions are common for all recent versions of this report
-                    // published every three years, the precise values of pole direction
-                    // and W angle coefficients may vary from publication year as models are
-                    // adjusted. These coefficients are not in this class, they are in the
-                    // specialized classes that do implement the getPole and getPrimeMeridianAngle
-                    // methods
-                    final Vector3D pole  = iauPole.getPole(date);
-                    final Vector3D qNode = iauPole.getNode(date);
-                    final Transform rotation =
-                                    new Transform(date, new Rotation(pole, qNode, Vector3D.PLUS_K, Vector3D.PLUS_I));
-
-                    // update transform from parent to self
-                    return rotation;
-
-                }
-
-                @Override
-                public StaticTransform getStaticTransform(final AbsoluteDate date) {
-                    // compute rotation from ICRF frame to self,
-                    // as per the "Report of the IAU/IAG Working Group on Cartographic
-                    // Coordinates and Rotational Elements of the Planets and Satellites"
-                    // These definitions are common for all recent versions of this report
-                    // published every three years, the precise values of pole direction
-                    // and W angle coefficients may vary from publication year as models are
-                    // adjusted. These coefficients are not in this class, they are in the
-                    // specialized classes that do implement the getPole and getPrimeMeridianAngle
-                    // methods
-                    final Vector3D pole  = iauPole.getPole(date);
-                    final Vector3D qNode = iauPole.getNode(date);
-                    final Rotation rotation =
-                                    new Rotation(pole, qNode, Vector3D.PLUS_K, Vector3D.PLUS_I);
-
-                    // update transform from parent to self
-                    return StaticTransform.of(date, rotation);
-                }
-
-                /** {@inheritDoc} */
-                public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
-
-                    // compute rotation from ICRF frame to self,
-                    // as per the "Report of the IAU/IAG Working Group on Cartographic
-                    // Coordinates and Rotational Elements of the Planets and Satellites"
-                    // These definitions are common for all recent versions of this report
-                    // published every three years, the precise values of pole direction
-                    // and W angle coefficients may vary from publication year as models are
-                    // adjusted. These coefficients are not in this class, they are in the
-                    // specialized classes that do implement the getPole and getPrimeMeridianAngle
-                    // methods
-                    final FieldVector3D<T> pole  = iauPole.getPole(date);
-                    FieldVector3D<T> qNode = FieldVector3D.crossProduct(Vector3D.PLUS_K, pole);
-                    if (qNode.getNorm2Sq().getReal() < Precision.SAFE_MIN) {
-                        qNode = FieldVector3D.getPlusI(date.getField());
-                    }
-                    final FieldTransform<T> rotation =
-                                    new FieldTransform<>(date,
-                                                    new FieldRotation<>(pole,
-                                                                    qNode,
-                                                                    FieldVector3D.getPlusK(date.getField()),
-                                                                    FieldVector3D.getPlusI(date.getField())));
-
-                    // update transform from parent to self
-                    return rotation;
-
-                }
-
-                @Override
-                public <T extends CalculusFieldElement<T>> FieldStaticTransform<T> getStaticTransform(final FieldAbsoluteDate<T> date) {
-                    // field
-                    final Field<T> field = date.getField();
-
-                    // compute rotation from ICRF frame to self,
-                    // as per the "Report of the IAU/IAG Working Group on Cartographic
-                    // Coordinates and Rotational Elements of the Planets and Satellites"
-                    // These definitions are common for all recent versions of this report
-                    // published every three years, the precise values of pole direction
-                    // and W angle coefficients may vary from publication year as models are
-                    // adjusted. These coefficients are not in this class, they are in the
-                    // specialized classes that do implement the getPole and getPrimeMeridianAngle
-                    // methods
-                    final FieldVector3D<T> pole  = iauPole.getPole(date);
-                    final FieldVector3D<T> qNode = iauPole.getNode(date);
-                    final FieldRotation<T> rotation =
-                                    new FieldRotation<>(pole, qNode, FieldVector3D.getPlusK(field), FieldVector3D.getPlusI(field));
-
-                    // update transform from parent to self
-                    return FieldStaticTransform.of(date, rotation);
-                }
-
-            }, name + INERTIAL_FRAME_SUFFIX, true);
+        InertiallyOriented(final JPLInertialTransformProvider transformProvider) {
+            super(transformProvider.getDefiningFrame(), transformProvider, name + INERTIAL_FRAME_SUFFIX, true);
         }
 
     }
@@ -391,35 +275,11 @@ class JPLCelestialBody implements CelestialBody {
         /**
          * Simple constructor.
          *
+         * @param transformProvider transform provider to body-fixed frame
          * @since 14.0
          */
-        BodyOriented() {
-            super(inertialFrame, new TransformProvider() {
-
-                /** {@inheritDoc} */
-                public Transform getTransform(final AbsoluteDate date) {
-                    final TimeOffset dt = new TimeOffset(10, TimeUnit.SECONDS);
-                    final double w0 = iauPole.getPrimeMeridianAngle(date);
-                    final double w1 = iauPole.getPrimeMeridianAngle(date.shiftedBy(dt));
-                    return new Transform(date,
-                            new Rotation(Vector3D.PLUS_K, w0, RotationConvention.FRAME_TRANSFORM),
-                            new Vector3D((w1 - w0) / dt.toDouble(), Vector3D.PLUS_K));
-                }
-
-                /** {@inheritDoc} */
-                public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
-                    final TimeOffset dt = new TimeOffset(10, TimeUnit.SECONDS);
-                    final T w0 = iauPole.getPrimeMeridianAngle(date);
-                    final T w1 = iauPole.getPrimeMeridianAngle(date.shiftedBy(dt));
-                    return new FieldTransform<>(date,
-                            new FieldRotation<>(FieldVector3D.getPlusK(date.getField()), w0,
-                                    RotationConvention.FRAME_TRANSFORM),
-                            new FieldVector3D<>(
-                                    w1.subtract(w0).divide(dt.toDouble()),
-                                    Vector3D.PLUS_K));
-                }
-
-            }, name + BODY_FRAME_SUFFIX, false);
+        BodyOriented(final JPLRotatingTransformProvider transformProvider) {
+            super(inertialFrame, transformProvider, name + BODY_FRAME_SUFFIX, false);
         }
     }
 }

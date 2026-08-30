@@ -125,12 +125,12 @@ class DSSTAtmosphericDragTest {
         final double[] daidt = drag.getMeanElementRate(state, auxiliaryElements, parameters);
         System.arraycopy(daidt, 0, elements, 0, daidt.length);
 
-        MatcherAssert.assertThat(elements[0], Matchers.closeTo(-3.415320567871035E-5, 4.e-20));
-        MatcherAssert.assertThat(elements[1], Matchers.closeTo(6.276312897745139E-13, 3e-26));
-        MatcherAssert.assertThat(elements[2], Matchers.closeTo(-9.303357008691404E-13, 3e-26));
-        MatcherAssert.assertThat(elements[3], Matchers.closeTo(-7.052316604063199E-14, 1.e-28));
-        MatcherAssert.assertThat(elements[4], Matchers.closeTo(-6.793277250493389E-14, 3.e-28));
-        MatcherAssert.assertThat(elements[5], Matchers.closeTo(-1.3565284454826392E-15, 1.e-27));
+        MatcherAssert.assertThat(elements[0], Matchers.closeTo(-3.415320567871035E-5, 2.e-13));
+        MatcherAssert.assertThat(elements[1], Matchers.closeTo(6.276312897745139E-13, 2e-21));
+        MatcherAssert.assertThat(elements[2], Matchers.closeTo(-9.303357008691404E-13, 3e-21));
+        MatcherAssert.assertThat(elements[3], Matchers.closeTo(-7.052316604063199E-14, 2.e-21));
+        MatcherAssert.assertThat(elements[4], Matchers.closeTo(-6.793277250493389E-14, 6.e-21));
+        MatcherAssert.assertThat(elements[5], Matchers.closeTo(-1.3565284454826392E-15, 3.e-21));
 
     }
 

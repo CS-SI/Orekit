@@ -25,6 +25,8 @@ import java.util.Set;
 
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,6 +39,8 @@ import org.orekit.data.LazyLoadedDataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.StaticTransform;
+import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
@@ -320,6 +324,32 @@ public class JPLEphemeridesLoaderTest {
         Utils.setDataRoot("2007");
         final int nChecked = testPo("/2007/testpo.440");
         MatcherAssert.assertThat(nChecked, Matchers.is(11));
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = JPLEphemeridesLoader.EphemerisType.class, names = {"SUN", "MERCURY", "VENUS", "MARS", "EARTH",
+            "MOON", "JUPITER", "SATURN", "URANUS", "NEPTUNE"})
+    void testTransformRotatingToInertial(final JPLEphemeridesLoader.EphemerisType ephemerisType) {
+
+        // GIVEN
+        Utils.setDataRoot("regular-data");
+        final JPLEphemeridesLoader jplEphemeridesLoader =
+                new JPLEphemeridesLoader(JPLEphemeridesLoader.DEFAULT_DE_SUPPORTED_NAMES, ephemerisType);
+
+        // WHEN
+        final CelestialBody body = jplEphemeridesLoader.loadCelestialBody(ephemerisType.name());
+        final Frame inertial = body.getInertiallyOrientedFrame();
+        final Frame rotating = body.getBodyOrientedFrame();
+        final Transform transform = rotating.getTransformTo(inertial, AbsoluteDate.ARBITRARY_EPOCH);
+        final StaticTransform staticTransform = rotating.getStaticTransformTo(inertial, AbsoluteDate.ARBITRARY_EPOCH);
+
+        // THEN
+        Assertions.assertEquals(staticTransform.getTranslation(), transform.getTranslation());
+        Assertions.assertEquals(Vector3D.ZERO, transform.getTranslation());
+        Assertions.assertEquals(Vector3D.ZERO, transform.getVelocity());
+        Assertions.assertEquals(Vector3D.ZERO, transform.getAcceleration());
+        Assertions.assertEquals(Vector3D.ZERO, Vector3D.MINUS_K.crossProduct(transform.getRotation().getAxis(RotationConvention.FRAME_TRANSFORM)));
+        Assertions.assertEquals(0., Rotation.distance(staticTransform.getRotation(), transform.getRotation()));
     }
 
     /**

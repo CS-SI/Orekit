@@ -96,7 +96,6 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
     private final  double DEFAULT_SERGEI_TABULATED_TIMESTEP   = 2400;
 
     private static final double TOLERANCE = 1e-9;
-
     @BeforeAll
     public static void setUp() {
         Utils.setDataRoot("regular-data:potential/egm-format:atmosphere:tides:regular-data/de405-ephemerides");

@@ -16,6 +16,7 @@
  */
 package org.orekit.propagation.numerical;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -36,6 +37,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.orekit.TestUtils;
 import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FrameAlignedProvider;
@@ -69,6 +71,7 @@ import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
+import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.DormandPrince54IntegratorBuilder;
@@ -81,6 +84,7 @@ import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
+import org.orekit.utils.DataDictionary;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.drivers.ParameterDriver;
 import org.orekit.utils.TimeSpanMap;
@@ -93,6 +97,45 @@ class ExtendedStateTransitionMatrixGeneratorTest {
     void setUp() {
         Utils.setDataRoot("orbit-determination/february-2016:potential/icgem-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
+    }
+
+    @Test
+    void testIssue2006() {
+        // GIVEN
+        final String dataName = "a";
+        final ForceModel forceModel = new ForceModel() {
+            @Override
+            public boolean dependsOnPositionOnly() {
+                return false;
+            }
+
+            @Override
+            public Vector3D acceleration(SpacecraftState s, double[] parameters) {
+                return null;
+            }
+
+            @Override
+            public <T extends CalculusFieldElement<T>> FieldVector3D<T> acceleration(FieldSpacecraftState<T> s, T[] parameters) {
+                s.getAdditionalData("a");
+                return FieldVector3D.getZero(s.getDate().getField());
+            }
+
+            @Override
+            public List<ParameterDriver> getParametersDrivers() {
+                return Collections.emptyList();
+            }
+        };
+        final List<ForceModel> forceModels  = new ArrayList<>();
+        forceModels.add(forceModel);
+        final DataDictionary dataDictionary = new DataDictionary();
+        dataDictionary.put(dataName, "b");
+        final SpacecraftState state = new SpacecraftState(TestUtils.getDefaultOrbit(AbsoluteDate.ARBITRARY_EPOCH))
+                .withAdditionalData(dataDictionary);
+        final ExtendedStateTransitionMatrixGenerator generator = new ExtendedStateTransitionMatrixGenerator("stm", forceModels,
+                new FrameAlignedProvider(state.getFrame()));
+
+        // WHEN
+        Assertions.assertDoesNotThrow(() -> generator.computePartials(state));
     }
 
     @Test

@@ -55,6 +55,7 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ExtendedPositionProvider;
 import org.orekit.utils.IERSConventions;
+
 import static org.mockito.Mockito.mock;
 
 
