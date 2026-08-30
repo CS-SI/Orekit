@@ -52,7 +52,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
@@ -90,14 +90,14 @@ public class InertialForcesTest extends AbstractLegacyForceModelTest {
 
         final NumericalPropagator emePropagator =
                         new NumericalPropagator(new ClassicalRungeKuttaIntegrator(30.0));
-        emePropagator.setOrbitType(OrbitType.CARTESIAN);
+        emePropagator.setOrbitParamsType(OrbitParamsType.CARTESIAN);
         emePropagator.addForceModel(new HolmesFeatherstoneAttractionModel(
                         FramesFactory.getITRF(IERSConventions.IERS_2010, true), gravity));
         emePropagator.setInitialState(new SpacecraftState(emeOrbit));
 
         final NumericalPropagator todPropagator =
                         new NumericalPropagator(new ClassicalRungeKuttaIntegrator(30.0));
-        todPropagator.setOrbitType(OrbitType.CARTESIAN);
+        todPropagator.setOrbitParamsType(OrbitParamsType.CARTESIAN);
         todPropagator.addForceModel(new HolmesFeatherstoneAttractionModel(
                         FramesFactory.getITRF(IERSConventions.IERS_2010, true), gravity));
         todPropagator.addForceModel(new InertialForces(eme2000));

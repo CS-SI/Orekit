@@ -20,12 +20,13 @@ package org.orekit.bodies;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.Precision;
 import org.orekit.frames.FieldKinematicTransform;
 import org.orekit.frames.FieldStaticTransform;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.KinematicTransform;
+import org.orekit.frames.OriginTransformProvider;
+import org.orekit.frames.Predefined;
 import org.orekit.frames.StaticTransform;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
@@ -46,9 +47,6 @@ class JPLCelestialBody implements CelestialBody {
     /** Regular expression for supported files names. */
     private final String supportedNames;
 
-    /** Ephemeris type to generate. */
-    private final JPLEphemeridesLoader.EphemerisType generateType;
-
     /** Raw position-velocity provider. */
     private final JPLEphemeridesLoader.RawPVProvider rawPVProvider;
 
@@ -57,9 +55,6 @@ class JPLCelestialBody implements CelestialBody {
 
     /** Scaling factor for position-velocity. */
     private final double scale;
-
-    /** IAU pole. */
-    private final IAUPole iauPole;
 
     /** Body's PV coordinates are defined in this frame. */
     private final Frame definingFrameAlignedWithIcrf;
@@ -95,11 +90,9 @@ class JPLCelestialBody implements CelestialBody {
         this.gm             = gm;
         this.scale          = scale;
         this.supportedNames = supportedNames;
-        this.generateType   = generateType;
         this.rawPVProvider  = rawPVProvider;
-        this.iauPole        = iauPole;
         this.definingFrameAlignedWithIcrf = definingFrameAlignedWithICRF;
-        if (rawPVProvider instanceof ZeroRawPVProvider) {
+        if (rawPVProvider instanceof JPLEphemeridesLoader.ZeroRawPVProvider) {
             // no translation or rotation needed, use directly
             // might be better to have a method instead of using "instanceof"
             // but the classes are tightly coupled and package private
@@ -107,7 +100,7 @@ class JPLCelestialBody implements CelestialBody {
         } else {
             // translation needed
             final String icrfName;
-            if (EphemerisType.SOLAR_SYSTEM_BARYCENTER == generateType) {
+            if (JPLEphemeridesLoader.EphemerisType.SOLAR_SYSTEM_BARYCENTER == generateType) {
                 // in Orekit FramesFactory.getICRF() is implemented by
                 // CelestialBodyFactor.getSsb().getInertiallyOrientedFrame()
                 // so have to match Predefined.ICRF
@@ -126,9 +119,8 @@ class JPLCelestialBody implements CelestialBody {
             this.inertialFrame = icrfAlignedFrame;
             this.bodyFrame = icrfAlignedFrame;
         } else {
-            this.inertialFrame  = new InertiallyOriented(new JPLInertialTransformProvider(definingFrameAlignedWithICRF, this, iauPole),
-                    inertialFrameName);
-            this.bodyFrame      = new BodyOriented(bodyOrientedFrameName, new JPLRotatingTransformProvider(iauPole));
+            this.inertialFrame  = new InertiallyOriented(new JPLInertialTransformProvider(icrfAlignedFrame, this, iauPole));
+            this.bodyFrame      = new BodyOriented(new JPLRotatingTransformProvider(iauPole));
         }
 
     }
@@ -264,10 +256,10 @@ class JPLCelestialBody implements CelestialBody {
 
         /** Simple constructor.
          * @param transformProvider transform provider to frame in which celestial body coordinates are defined
-         * @param frameName name to use (if null a default name will be built)
+         * @since 14.0
          */
-        InertiallyOriented(final JPLInertialTransformProvider transformProvider, final String frameName) {
-            super(transformProvider.getDefiningFrame(), transformProvider, frameName == null ? name + INERTIAL_FRAME_SUFFIX : frameName, true);
+        InertiallyOriented(final JPLInertialTransformProvider transformProvider) {
+            super(transformProvider.getDefiningFrame(), transformProvider, name + INERTIAL_FRAME_SUFFIX, true);
         }
 
     }
@@ -283,11 +275,11 @@ class JPLCelestialBody implements CelestialBody {
         /**
          * Simple constructor.
          *
-         * @param frameName name to use (if null a default name will be built)
          * @param transformProvider transform provider to body-fixed frame
+         * @since 14.0
          */
-        BodyOriented(final String frameName, final JPLRotatingTransformProvider transformProvider) {
-            super(inertialFrame, transformProvider, frameName == null ? name + BODY_FRAME_SUFFIX : frameName, false);
+        BodyOriented(final JPLRotatingTransformProvider transformProvider) {
+            super(inertialFrame, transformProvider, name + BODY_FRAME_SUFFIX, false);
         }
     }
 }

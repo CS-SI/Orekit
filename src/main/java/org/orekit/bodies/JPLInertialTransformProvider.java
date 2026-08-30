@@ -146,7 +146,7 @@ class JPLInertialTransformProvider implements TransformProvider {
         // methods
         final Vector3D pole  = iauPole.getPole(date);
         Vector3D qNode = iauPole.getNode(date);
-        if (qNode.getNormSq() < Precision.SAFE_MIN) {
+        if (qNode.getNorm2Sq() < Precision.SAFE_MIN) {
             qNode = Vector3D.crossProduct(Vector3D.PLUS_K, pole);
         }
         final Rotation rotation = new Rotation(pole, qNode, Vector3D.PLUS_K, Vector3D.PLUS_I);
@@ -215,7 +215,7 @@ class JPLInertialTransformProvider implements TransformProvider {
         // methods
         final FieldVector3D<T> pole  = iauPole.getPole(date);
         FieldVector3D<T> qNode = iauPole.getNode(date);
-        if (qNode.getNormSq().getReal() < Precision.SAFE_MIN) {
+        if (qNode.getNorm2Sq().getReal() < Precision.SAFE_MIN) {
             qNode = FieldVector3D.crossProduct(Vector3D.PLUS_K, pole);
         }
         return new FieldRotation<>(pole, qNode, FieldVector3D.getPlusK(date.getField()),

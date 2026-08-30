@@ -26,17 +26,18 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
 import org.orekit.orbits.CartesianOrbit;
-import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.FieldOrbit;
+import org.orekit.orbits.OrbitParamsType;
+import org.orekit.orbits.PositionAngleBased;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.DerivativeStateUtils;
 import org.orekit.utils.FieldAbsolutePVCoordinates;
 import org.orekit.utils.FieldPVCoordinates;
+import org.orekit.utils.TimeStampedFieldAngularCoordinates;
 import org.orekit.utils.drivers.ParameterDriver;
 import org.orekit.utils.drivers.ParameterDriversProvider;
-import org.orekit.utils.TimeStampedFieldAngularCoordinates;
 
 /** Converter for states and parameters arrays.
  *  @author Luc Maisonobe
@@ -312,7 +313,6 @@ public abstract class AbstractGradientConverter {
         final int freeParameters = state.getMass().getFreeParameters();
         final List<ParameterDriver> drivers = parametricModel.getParametersDrivers();
 
-        final AbsoluteDate date = state.getDate().toAbsoluteDate();
         final Gradient[] parameters = new Gradient[drivers.size()];
         int index = freeStateParameters;
         int i = 0;

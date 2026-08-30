@@ -309,7 +309,7 @@ class NRLMSISE00Test {
         // WHEN
         final NRLMSISE00 meanAtm = new NRLMSISE00(ip, mock(ExtendedPositionProvider.class), mock(OneAxisEllipsoid.class)).withSwitch(9, -1);
         // THEN
-        Assertions.assertEquals(NRLMSISE00.LocalSolarTimeMode.APPARENT, meanAtm.getLocalSolarTimeMode());
+        Assertions.assertEquals(NRLMSISE00.LocalSolarTimeMode.MEAN, meanAtm.getLocalSolarTimeMode());
     }
 
     /** The NRLMSISE-00 coefficients were fitted with <em>mean</em> local solar time
