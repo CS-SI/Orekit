@@ -67,7 +67,6 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.FieldAbsolutePVCoordinates;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.drivers.ParameterDriver;
 import org.orekit.utils.TimeStampedPVCoordinates;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -448,11 +447,6 @@ class SwitchEventHandlerTest {
         }
 
         @Override
-        public boolean dependsOnPositionOnly() {
-            return false;
-        }
-
-        @Override
         public Vector3D acceleration(SpacecraftState s, double[] parameters) {
             return s.getDate().isBeforeOrEqualTo(switchDate) ? accelerationBefore : accelerationAfter;
         }
@@ -462,9 +456,5 @@ class SwitchEventHandlerTest {
             return null;
         }
 
-        @Override
-        public List<ParameterDriver> getParametersDrivers() {
-            return Collections.emptyList();
-        }
     }
 }

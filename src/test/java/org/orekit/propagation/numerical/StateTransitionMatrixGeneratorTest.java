@@ -16,6 +16,12 @@
  */
 package org.orekit.propagation.numerical;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Stream;
+
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
@@ -54,8 +60,17 @@ import org.orekit.forces.maneuvers.propulsion.PropulsionModel;
 import org.orekit.forces.maneuvers.trigger.DateBasedManeuverTriggers;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
-import org.orekit.orbits.*;
-import org.orekit.propagation.*;
+import org.orekit.orbits.CartesianOrbit;
+import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.orbits.Orbit;
+import org.orekit.orbits.OrbitParamsType;
+import org.orekit.orbits.PositionAngleType;
+import org.orekit.propagation.AdditionalDataProvider;
+import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.MatricesHarvester;
+import org.orekit.propagation.PropagatorsParallelizer;
+import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
@@ -69,13 +84,6 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.drivers.ParameterDriver;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Stream;
-
 import static org.hamcrest.CoreMatchers.is;
 
 /** Unit tests for {@link StateTransitionMatrixGenerator}. */
@@ -739,11 +747,6 @@ class StateTransitionMatrixGeneratorTest {
         @Override
         public Stream<EventDetector> getEventDetectors() {
             return Stream.empty();
-        }
-
-        @Override
-        public List<ParameterDriver> getParametersDrivers() {
-            return Collections.emptyList();
         }
 
         @Override

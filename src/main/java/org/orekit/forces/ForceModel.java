@@ -16,6 +16,8 @@
  */
 package org.orekit.forces;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.stream.Stream;
 
 import org.hipparchus.CalculusFieldElement;
@@ -31,6 +33,7 @@ import org.orekit.propagation.numerical.FieldTimeDerivativesEquations;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.drivers.ParameterDriver;
 import org.orekit.utils.drivers.ParameterDriversProvider;
 
 /** This interface represents a force modifying spacecraft motion.
@@ -160,11 +163,12 @@ public interface ForceModel extends ParameterDriversProvider, EventDetectorsProv
 
     /** Check if force model depends on position only at a given, fixed date.
      * @return true if force model depends on position only, false
-     * if it depends on mass or velocity, either directly or due to a dependency
-     * on attitude
+     * if it depends on mass or velocity, either directly or due to a dependency on attitude. False by default.
      * @since 9.0
      */
-    boolean dependsOnPositionOnly();
+    default boolean dependsOnPositionOnly() {
+        return false;
+    }
 
     /** Check if force model depends on attitude's rotation rate or acceleration at a given, fixed date.
      * If false, it essentially means that at most the attitude's rotation is used when computing the acceleration vector.
@@ -194,4 +198,12 @@ public interface ForceModel extends ParameterDriversProvider, EventDetectorsProv
      * @since 9.0
      */
     <T extends CalculusFieldElement<T>> FieldVector3D<T> acceleration(FieldSpacecraftState<T> s, T[] parameters);
+
+    /** {@inheritDoc}
+     * By default, no parameters. Override, for instance, to enable partial derivatives.
+     * */
+    @Override
+    default List<ParameterDriver> getParametersDrivers() {
+        return Collections.emptyList();
+    }
 }

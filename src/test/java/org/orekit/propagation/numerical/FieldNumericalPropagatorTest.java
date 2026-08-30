@@ -17,9 +17,7 @@
 package org.orekit.propagation.numerical;
 
 import java.lang.reflect.Array;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -78,15 +76,35 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.models.earth.atmosphere.DTM2000;
 import org.orekit.models.earth.atmosphere.data.MarshallSolarActivityFutureEstimation;
-import org.orekit.orbits.*;
-import org.orekit.propagation.*;
-import org.orekit.propagation.events.*;
+import org.orekit.orbits.FieldCartesianOrbit;
+import org.orekit.orbits.FieldEquinoctialOrbit;
+import org.orekit.orbits.FieldKeplerianOrbit;
+import org.orekit.orbits.FieldOrbit;
+import org.orekit.orbits.OrbitParamsType;
+import org.orekit.orbits.PositionAngleType;
+import org.orekit.propagation.CartesianToleranceProvider;
+import org.orekit.propagation.FieldAdditionalDataProvider;
+import org.orekit.propagation.FieldBoundedPropagator;
+import org.orekit.propagation.FieldEphemerisGenerator;
+import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.PropagationType;
+import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.ToleranceProvider;
+import org.orekit.propagation.events.DateDetector;
+import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.FieldAbstractDetector;
+import org.orekit.propagation.events.FieldApsideDetector;
+import org.orekit.propagation.events.FieldDateDetector;
+import org.orekit.propagation.events.FieldEventDetectionSettings;
+import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.events.functions.EventFunction;
 import org.orekit.propagation.events.handlers.FieldContinueOnEvent;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.handlers.FieldStopOnEvent;
 import org.orekit.propagation.events.handlers.ResetDerivativesOnEvent;
-import org.orekit.propagation.integration.*;
+import org.orekit.propagation.integration.FieldAbstractIntegratedPropagator;
+import org.orekit.propagation.integration.FieldAdditionalDerivativesProvider;
+import org.orekit.propagation.integration.FieldCombinedDerivatives;
 import org.orekit.propagation.sampling.FieldOrekitStepHandler;
 import org.orekit.propagation.sampling.FieldOrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
@@ -98,8 +116,10 @@ import org.orekit.time.TimeInterval;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.time.UTCScale;
-import org.orekit.utils.*;
-import org.orekit.utils.drivers.ParameterDriver;
+import org.orekit.utils.Constants;
+import org.orekit.utils.FieldPVCoordinates;
+import org.orekit.utils.IERSConventions;
+import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 class FieldNumericalPropagatorTest {
 
@@ -1921,11 +1941,6 @@ class FieldNumericalPropagatorTest {
             }
 
             @Override
-            public boolean dependsOnPositionOnly() {
-                return false;
-            }
-
-            @Override
             public Vector3D acceleration(SpacecraftState s, double[] parameters) {
                 return null; // not used
             }
@@ -1933,11 +1948,6 @@ class FieldNumericalPropagatorTest {
             @Override
             public <T extends CalculusFieldElement<T>> FieldVector3D<T> acceleration(FieldSpacecraftState<T> s, T[] parameters) {
                 return FieldVector3D.getZero(s.getDate().getField());
-            }
-
-            @Override
-            public List<ParameterDriver> getParametersDrivers() {
-                return new ArrayList<>();
             }
         };
     }
@@ -2261,11 +2271,6 @@ class FieldNumericalPropagatorTest {
         @Override
         public <T extends CalculusFieldElement<T>> FieldVector3D<T> acceleration(FieldSpacecraftState<T> s, T[] parameters) {
             return FieldVector3D.getZero(s.getDate().getField());
-        }
-
-        @Override
-        public List<ParameterDriver> getParametersDrivers() {
-            return new ArrayList<>();
         }
     }
 

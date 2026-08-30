@@ -16,10 +16,6 @@
  */
 package org.orekit.propagation.semianalytical.dsst;
 
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
-
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -124,8 +120,11 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.drivers.ParameterDriver;
 import org.orekit.utils.TimeStampedPVCoordinates;
+import org.orekit.utils.drivers.ParameterDriver;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 
 class DSSTPropagatorTest {
 
@@ -1735,12 +1734,6 @@ class DSSTPropagatorTest {
         @Override
         public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(final Field<T> field) {
             return Stream.empty();
-        }
-
-
-        @Override
-        public List<ParameterDriver> getParametersDrivers() {
-            return Collections.emptyList();
         }
 
     }

@@ -16,6 +16,9 @@
  */
 package org.orekit.attitudes;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -39,7 +42,6 @@ import org.orekit.propagation.analytical.FieldEcksteinHechlerPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.FieldTimeInterpolator;
-import org.orekit.time.FieldTimeStamped;
 import org.orekit.time.TimeInterpolator;
 import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.Constants;
@@ -49,10 +51,6 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
 import org.orekit.utils.TimeStampedAngularCoordinatesHermiteInterpolator;
 import org.orekit.utils.TimeStampedFieldAngularCoordinates;
 import org.orekit.utils.TimeStampedFieldAngularCoordinatesHermiteInterpolator;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import static org.mockito.Mockito.mock;
 
 public class FieldAttitudeInterpolatorTest {

@@ -18,7 +18,6 @@ package org.orekit.propagation.numerical;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
@@ -130,7 +129,6 @@ import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
-import org.orekit.utils.drivers.ParameterDriver;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 class NumericalPropagatorTest {
@@ -1822,11 +1820,6 @@ class NumericalPropagatorTest {
             }
 
             @Override
-            public boolean dependsOnPositionOnly() {
-                return false;
-            }
-
-            @Override
             public Vector3D acceleration(SpacecraftState s, double[] parameters) {
                 return Vector3D.ZERO;
             }
@@ -1834,11 +1827,6 @@ class NumericalPropagatorTest {
             @Override
             public <T extends CalculusFieldElement<T>> FieldVector3D<T> acceleration(FieldSpacecraftState<T> s, T[] parameters) {
                 return null; // not used
-            }
-
-            @Override
-            public List<ParameterDriver> getParametersDrivers() {
-                return new ArrayList<>();
             }
         };
     }
@@ -1990,11 +1978,6 @@ class NumericalPropagatorTest {
             }
 
             @Override
-            public boolean dependsOnPositionOnly() {
-                return false;
-            }
-
-            @Override
             public Vector3D acceleration(SpacecraftState s, double[] parameters) {
                 return Vector3D.ZERO;
             }
@@ -2004,10 +1987,6 @@ class NumericalPropagatorTest {
                 return null;
             }
 
-            @Override
-            public List<ParameterDriver> getParametersDrivers() {
-                return Collections.emptyList();
-            }
         };
         final List<ForceModel> forceModels = new ArrayList<>();
         forceModels.add(dummyForceDependingOnRates);
@@ -2088,11 +2067,6 @@ class NumericalPropagatorTest {
     private static class ForceModelAdapter implements ForceModel {
 
         @Override
-        public boolean dependsOnPositionOnly() {
-            return false;
-        }
-
-        @Override
         public boolean isSupported(String name) {
             return false;
         }
@@ -2132,10 +2106,6 @@ class NumericalPropagatorTest {
             return Stream.empty();
         }
 
-        @Override
-        public List<ParameterDriver> getParametersDrivers() {
-            return Collections.emptyList();
-        }
     }
 
 }

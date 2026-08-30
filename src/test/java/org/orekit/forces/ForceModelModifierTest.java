@@ -1,6 +1,6 @@
 package org.orekit.forces;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.hipparchus.CalculusFieldElement;
@@ -100,7 +100,7 @@ class ForceModelModifierTest {
 
         @Override
         public boolean dependsOnPositionOnly() {
-            return false;
+            return true;
         }
 
         @Override
@@ -115,7 +115,7 @@ class ForceModelModifierTest {
 
         @Override
         public List<ParameterDriver> getParametersDrivers() {
-            return Collections.emptyList();
+            return new ArrayList<>();
         }
     }
 }
