@@ -30,10 +30,6 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalarFunction;
-import org.orekit.utils.drivers.ParameterDriver;
-
-import java.util.Collections;
-import java.util.List;
 
 /** J2-only force model.
  * This class models the oblateness part alone of the central body's potential (degree 2 and order 0),
@@ -239,9 +235,4 @@ public class J2OnlyPerturbation implements ForceModel {
         return new FieldVector3D<>(componentX, componentY, componentZ).scalarMultiply(factor);
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public List<ParameterDriver> getParametersDrivers() {
-        return Collections.emptyList();
-    }
 }

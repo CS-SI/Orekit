@@ -134,12 +134,6 @@ public class Maneuver implements ForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public boolean dependsOnPositionOnly() {
-        return false;
-    }
-
-    /** {@inheritDoc} */
-    @Override
     public void init(final SpacecraftState initialState, final AbsoluteDate target) {
         propulsionModel.init(initialState, target);
         maneuverTriggers.init(initialState, target);

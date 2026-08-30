@@ -16,6 +16,8 @@
  */
 package org.orekit.gnss.metric.messages.rtcm;
 
+import java.util.ArrayList;
+
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,21 +25,14 @@ import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
-import org.orekit.gnss.SatelliteSystem;
-import org.orekit.gnss.attitude.GenericGNSS;
 import org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1046;
 import org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1046Data;
 import org.orekit.gnss.metric.parser.ByteArrayEncodedMessage;
 import org.orekit.gnss.metric.parser.EncodedMessage;
 import org.orekit.gnss.metric.parser.RtcmMessagesParser;
-import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.gnss.GNSSPropagator;
 import org.orekit.propagation.analytical.gnss.data.GalileoNavigationMessage;
-import org.orekit.time.AbsoluteDate;
-import org.orekit.time.GNSSDate;
 import org.orekit.utils.IERSConventions;
-
-import java.util.ArrayList;
 
 public class Rtcm1046Test {
 

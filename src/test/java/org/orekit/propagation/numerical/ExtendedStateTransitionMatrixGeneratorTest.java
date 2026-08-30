@@ -86,8 +86,8 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.DataDictionary;
 import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.drivers.ParameterDriver;
 import org.orekit.utils.TimeSpanMap;
+import org.orekit.utils.drivers.ParameterDriver;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -105,11 +105,6 @@ class ExtendedStateTransitionMatrixGeneratorTest {
         final String dataName = "a";
         final ForceModel forceModel = new ForceModel() {
             @Override
-            public boolean dependsOnPositionOnly() {
-                return false;
-            }
-
-            @Override
             public Vector3D acceleration(SpacecraftState s, double[] parameters) {
                 return null;
             }
@@ -118,11 +113,6 @@ class ExtendedStateTransitionMatrixGeneratorTest {
             public <T extends CalculusFieldElement<T>> FieldVector3D<T> acceleration(FieldSpacecraftState<T> s, T[] parameters) {
                 s.getAdditionalData("a");
                 return FieldVector3D.getZero(s.getDate().getField());
-            }
-
-            @Override
-            public List<ParameterDriver> getParametersDrivers() {
-                return Collections.emptyList();
             }
         };
         final List<ForceModel> forceModels  = new ArrayList<>();

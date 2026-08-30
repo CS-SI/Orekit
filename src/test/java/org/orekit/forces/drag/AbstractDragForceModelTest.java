@@ -36,12 +36,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.DerivativeStateUtils;
-import org.orekit.utils.drivers.ParameterDriver;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
-
-import java.util.Collections;
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -180,11 +175,6 @@ class AbstractDragForceModelTest {
         @Override
         public <T extends CalculusFieldElement<T>> FieldVector3D<T> acceleration(FieldSpacecraftState<T> s, T[] parameters) {
             return null;
-        }
-
-        @Override
-        public List<ParameterDriver> getParametersDrivers() {
-            return Collections.emptyList();
         }
     }
 

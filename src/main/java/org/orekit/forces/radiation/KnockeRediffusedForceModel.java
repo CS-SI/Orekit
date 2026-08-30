@@ -151,13 +151,6 @@ public class KnockeRediffusedForceModel implements ForceModel {
         this.referenceEpoch    = new AbsoluteDate(1981, 12, 22, 0, 0, 0.0, utc);
     }
 
-
-    /** {@inheritDoc} */
-    @Override
-    public boolean dependsOnPositionOnly() {
-        return false;
-    }
-
     /** {@inheritDoc} */
     @Override
     public Vector3D acceleration(final SpacecraftState s,

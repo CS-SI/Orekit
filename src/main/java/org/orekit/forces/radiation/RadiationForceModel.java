@@ -26,10 +26,4 @@ import org.orekit.forces.ForceModel;
  */
 public interface RadiationForceModel extends ForceModel {
 
-    /** {@inheritDoc} */
-    @Override
-    default boolean dependsOnPositionOnly() {
-        return false;
-    }
-
 }

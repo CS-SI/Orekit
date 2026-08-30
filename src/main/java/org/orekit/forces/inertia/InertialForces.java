@@ -16,9 +16,6 @@
  */
 package org.orekit.forces.inertia;
 
-import java.util.Collections;
-import java.util.List;
-
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -33,7 +30,6 @@ import org.orekit.frames.Transform;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.utils.AbsolutePVCoordinates;
-import org.orekit.utils.drivers.ParameterDriver;
 
 /** Inertial force model.
  * <p>
@@ -78,12 +74,6 @@ public class InertialForces implements ForceModel {
                                                      referenceInertialFrame.getName());
         }
         this.referenceInertialFrame = referenceInertialFrame;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public boolean dependsOnPositionOnly() {
-        return false;
     }
 
     /** {@inheritDoc} */
@@ -133,9 +123,4 @@ public class InertialForces implements ForceModel {
 
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public List<ParameterDriver> getParametersDrivers() {
-        return Collections.emptyList();
-    }
 }

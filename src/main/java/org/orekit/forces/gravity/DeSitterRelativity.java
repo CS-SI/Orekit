@@ -110,12 +110,6 @@ public class DeSitterRelativity implements ForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public boolean dependsOnPositionOnly() {
-        return false;
-    }
-
-    /** {@inheritDoc} */
-    @Override
     public Vector3D acceleration(final SpacecraftState s, final double[] parameters) {
 
         // Useful constant

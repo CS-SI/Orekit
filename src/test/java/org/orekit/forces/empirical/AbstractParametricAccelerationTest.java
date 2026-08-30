@@ -16,6 +16,8 @@
  */
 package org.orekit.forces.empirical;
 
+import java.util.stream.Stream;
+
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -33,11 +35,6 @@ import org.orekit.propagation.events.EventDetector;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.drivers.ParameterDriver;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Stream;
 
 class AbstractParametricAccelerationTest {
 
@@ -115,11 +112,6 @@ class AbstractParametricAccelerationTest {
         @Override
         public <T extends CalculusFieldElement<T>> FieldVector3D<T> acceleration(FieldSpacecraftState<T> s, T[] parameters) {
             return null;
-        }
-
-        @Override
-        public List<ParameterDriver> getParametersDrivers() {
-            return Collections.emptyList();
         }
     }
 }

@@ -16,6 +16,8 @@
  */
 package org.orekit.forces.drag;
 
+import java.util.Arrays;
+
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -29,8 +31,6 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinates;
-
-import java.util.Arrays;
 
 /**
  * Base class for drag force models.
@@ -89,12 +89,6 @@ public abstract class AbstractDragForceModel implements ForceModel {
      */
     public Atmosphere getAtmosphereForField() {
         return atmosphereForField;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public boolean dependsOnPositionOnly() {
-        return false;
     }
 
     /**

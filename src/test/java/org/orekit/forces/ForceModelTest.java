@@ -24,16 +24,22 @@ import org.hipparchus.util.Binary64;
 import org.junit.jupiter.api.Test;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.utils.drivers.ParameterDriver;
-
-import java.util.Collections;
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 class ForceModelTest {
+
+    @Test
+    void testTrivialDefaultImplementations() {
+        // GIVEN
+        final TestForce force = new TestForce();
+        // WHEN
+        assertFalse(force.dependsOnPositionOnly());
+        assertTrue(force.getParametersDrivers().isEmpty());
+    }
 
     @Test
     void testGetMassDerivative() {
@@ -43,7 +49,6 @@ class ForceModelTest {
         // WHEN
         final double massDerivative = force.getMassDerivative(mockedState, new double[0]);
         // THEN
-        @SuppressWarnings("unchecked")
         final FieldSpacecraftState<Binary64> mockedFieldState = mock();
         when(mockedFieldState.getMass()).thenReturn(Binary64.ZERO);
         final Binary64 fieldMassDerivative = force.getMassDerivative(mockedFieldState, null);
@@ -51,11 +56,6 @@ class ForceModelTest {
     }
 
     private static class TestForce implements ForceModel {
-
-        @Override
-        public boolean dependsOnPositionOnly() {
-            return false;
-        }
 
         @Override
         public Vector3D acceleration(SpacecraftState s, double[] parameters) {
@@ -67,9 +67,5 @@ class ForceModelTest {
             return null;
         }
 
-        @Override
-        public List<ParameterDriver> getParametersDrivers() {
-            return Collections.emptyList();
-        }
     }
 }
