@@ -129,6 +129,9 @@
           <action dev="rafa" type="fix" issue="1950">
               Implement logic from Algorithm 2 from Izzo's 2014 paper to correct nMax in LambertSolver.
           </action>
+          <action dev="Nicolas Kaikati" type="add" issue="1935">
+          Added an Observer for LeastSquaresConverter.
+          </action>
           <action dev="evan" type="fix" issue="1914">
               Account for central body in CCSDS NDM when ModifiedFrame is used.
               When parsing a CCSDS file Earth-centered ICRF is GCRF.
