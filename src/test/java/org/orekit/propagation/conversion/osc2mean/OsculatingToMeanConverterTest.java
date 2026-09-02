@@ -21,10 +21,12 @@ import java.util.List;
 
 import org.hipparchus.optim.nonlinear.vector.leastsquares.GaussNewtonOptimizer;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresOptimizer;
+import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresProblem.Evaluation;
 import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.orekit.Utils;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
@@ -54,6 +56,23 @@ class OsculatingToMeanConverterTest {
     private Binary64Field field;
 
     private boolean doPrint;
+
+    private boolean verbose = false;
+
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
+
+    private static class VerboseObserver implements LeastSquaresConverterObserver{
+        @Override
+        public void evaluationPerformed(int iterationsCount, int evaluationCounts, Orbit currentMeanOrbit, Evaluation evaluation) {
+            System.out.println("RMS: " + evaluation.getRMS());
+            System.out.println("Iterations Counts: " + iterationsCount);
+            System.out.println("Evaluation Counts: " + evaluationCounts);
+            System.out.println("Current Mean Orbit PV Coordinates: " + currentMeanOrbit.getPVCoordinates());
+            System.out.println("Current Mean Orbit Date: " + currentMeanOrbit.getDate());
+        }
+    }
 
     @BeforeEach
     void setUp() {
@@ -129,6 +148,10 @@ class OsculatingToMeanConverterTest {
         // Mean orbit converters
         final FixedPointConverter   fpConverter = new FixedPointConverter(theory);
         final LeastSquaresConverter lsConverter = new LeastSquaresConverter(theory, optimizer);
+        // Add Observer if verbose is True
+        if (verbose){
+            lsConverter.setObserver(new VerboseObserver());
+        }
         // WHEN
         final Orbit fpMean = fpConverter.convertToMean(osculating);
         final Orbit lsMean = lsConverter.convertToMean(osculating);
@@ -169,6 +192,31 @@ class OsculatingToMeanConverterTest {
         Assertions.assertThrows(OrekitException.class, () -> fpConvert.convertToMean(fieldOrbit));
     }
 
+    @Test
+    void testLeastSquaresObserver() {
+        // GIVEN
+        // Mean theory
+        final BrouwerLyddaneTheory theory = new BrouwerLyddaneTheory(getProvider(5),
+                                                                     BrouwerLyddanePropagator.M2);
+        // Least Squares Converter
+        final LeastSquaresConverter lsConvert = new LeastSquaresConverter(theory, optimizer);
+
+        // Observer
+        final LeastSquaresConverterObserver observer = Mockito.mock(LeastSquaresConverterObserver.class);
+        lsConvert.setObserver(observer);
+
+        // WHEN 
+        // Convert osculating orbit to mean orbit
+        final Orbit mean = lsConvert.convertToMean(osculating);
+
+        // THEN
+        Assertions.assertNotNull(mean);
+
+        // observer was called at least once with a non-null mean orbit
+        Mockito.verify(observer, Mockito.atLeastOnce()).evaluationPerformed(Mockito.anyInt(), Mockito.anyInt(),
+                                                                            Mockito.notNull(), Mockito.any());
+    }
+
     /**
      * Compares fixed-point and lest-squares algorithms for a given theory.
      * @param theory the theory to consider
@@ -186,6 +234,10 @@ class OsculatingToMeanConverterTest {
         // Mean orbit converters
         final FixedPointConverter   fpConvert = new FixedPointConverter(theory);
         final LeastSquaresConverter lsConvert = new LeastSquaresConverter(theory, optimizer);
+        // Add Observer if verbose is True
+        if (verbose){
+            lsConvert.setObserver(new VerboseObserver());
+        }
         // WHEN
         final Orbit fpMean = fpConvert.convertToMean(osculating);
         final Orbit lsMean = lsConvert.convertToMean(osculating);
@@ -216,6 +268,10 @@ class OsculatingToMeanConverterTest {
         // Mean orbit converters
         final FixedPointConverter   fpConvert = new FixedPointConverter(theory);
         final LeastSquaresConverter lsConvert = new LeastSquaresConverter(theory, optimizer);
+        // Add Observer if verbose is True
+        if (verbose){
+            lsConvert.setObserver(new VerboseObserver());
+        }
         // THEN
         // Try conversion using fixed point algorithm
         Assertions.assertDoesNotThrow(() -> {
@@ -300,6 +356,10 @@ class OsculatingToMeanConverterTest {
 
         Assertions.assertEquals(0, lsConvert.getIterationsNb());
         Assertions.assertEquals(0, lsConvert.getRMS());
+        // Add Observer if verbose is True
+        if (verbose){
+            lsConvert.setObserver(new VerboseObserver());
+        }
         // WHEN
         final Orbit lsMean = lsConvert.convertToMean(osculating);
         // THEN
