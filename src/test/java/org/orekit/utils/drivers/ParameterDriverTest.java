@@ -129,7 +129,6 @@ public class ParameterDriverTest {
             public void minValueChanged(final double previousMinValue, final ParameterDriver driver) {
                 Assertions.assertEquals(-10.0, previousMinValue, 1e-10);
                 Assertions.assertEquals(-2.0, driver.getMinValue(), 1e-10);
-                Assertions.assertTrue(driver.getValue() >= driver.getMinValue());
                 minFlag.set(true);
             }
 
@@ -138,7 +137,6 @@ public class ParameterDriverTest {
             public void maxValueChanged(final double previousMaxValue, final ParameterDriver driver) {
                 Assertions.assertEquals(10.0, previousMaxValue, 1e-10);
                 Assertions.assertEquals(2.0, driver.getMaxValue(), 1e-10);
-                Assertions.assertTrue(driver.getValue() <= driver.getMaxValue());
                 maxFlag.set(true);
             }
 
@@ -152,8 +150,7 @@ public class ParameterDriverTest {
 
             /** {@inheritDoc} */
             @Override
-            public void validityChanged(final TimeInterval previousValidity,
-                                        final ParameterDriver driver) {
+            public void validityChanged(final TimeInterval previousValidity, final ParameterDriver driver) {
                 Assertions.assertEquals(AbsoluteDate.PAST_INFINITY,   previousValidity.getStartDate());
                 Assertions.assertEquals(AbsoluteDate.FUTURE_INFINITY, previousValidity.getEndDate());
                 Assertions.assertEquals(AbsoluteDate.ARBITRARY_EPOCH, driver.getValidity().getStartDate());

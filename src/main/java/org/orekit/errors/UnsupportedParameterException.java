@@ -19,10 +19,9 @@ package org.orekit.errors;
 import java.io.Serial;
 import java.util.List;
 
-import org.orekit.utils.drivers.ParameterDriver;
-import org.orekit.utils.drivers.ParameterDriversProvider;
+import org.orekit.utils.drivers.BaseParameterDriver;
 
-/** Exception for unsupported {@link ParameterDriver} in a model implementing {@link ParameterDriversProvider}.
+/** Exception for unsupported {@link BaseParameterDriver} in a model implementing {@link org.orekit.utils.drivers.BaseParameterObserver}.
  *
  * @author Maxime Journot
  * @author Luc Maisonobe
@@ -45,7 +44,7 @@ public class UnsupportedParameterException extends OrekitException {
      * @param parameterName name of the parameter driver that is not supported by the model
      * @param parameterDrivers list of the model's parameter drivers
      */
-    public UnsupportedParameterException(final String parameterName, final List<ParameterDriver> parameterDrivers) {
+    public UnsupportedParameterException(final String parameterName, final List<? extends BaseParameterDriver<?, ?>> parameterDrivers) {
         super(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, parameterName, getSupportedNames(parameterDrivers));
     }
 
@@ -54,17 +53,18 @@ public class UnsupportedParameterException extends OrekitException {
      * @param parameterDrivers list of model parameter drivers
      * @return supported parameter names as a String
      */
-    private static String getSupportedNames(final List<ParameterDriver> parameterDrivers) {
+    private static String getSupportedNames(final List<? extends BaseParameterDriver<?, ?>> parameterDrivers) {
         final StringBuilder builder = new StringBuilder();
-        for (final ParameterDriver driver : parameterDrivers) {
-            if (builder.length() > 0) {
+        for (final BaseParameterDriver<?, ?> driver : parameterDrivers) {
+            if (!builder.isEmpty()) {
                 builder.append(COMMA_SEP);
             }
             builder.append(driver.getName());
         }
-        if (builder.length() == 0) {
+        if (builder.isEmpty()) {
             builder.append(NO_PARAMETER);
         }
         return builder.toString();
     }
+
 }

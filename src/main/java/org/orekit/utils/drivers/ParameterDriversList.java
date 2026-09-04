@@ -34,7 +34,7 @@ import org.orekit.time.AbsoluteDate;
  * {@code dn} are added to the list and both correspond to parameter
  * name "P", then {@link #getDrivers()} will return a list containing
  * a delegating driver {@code delegateD} for the same name "P".
- * Afterwards, whenever either {@link ParameterDriver#setValue(double)}
+ * Afterward, whenever either {@link ParameterDriver#setValue(double)}
  * or {@link ParameterDriver#setReferenceDate(AbsoluteDate)} is called
  * on any of the {@code n+1} instances {@code d1}, {@code d2}... {@code dn}
  * or {@code delegateD}, the call will be automatically forwarded to the

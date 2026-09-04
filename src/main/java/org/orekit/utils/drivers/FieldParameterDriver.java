@@ -1,4 +1,4 @@
-/* Copyright 2002-2026 CS GROUP
+/* Copyright 2022-2026 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,60 +16,31 @@
  */
 package org.orekit.utils.drivers;
 
-import java.util.Map;
-
-import org.hipparchus.analysis.differentiation.Gradient;
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.analysis.differentiation.FieldGradient;
 import org.hipparchus.util.FastMath;
-import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeInterval;
 
-/** Class allowing to drive the value of a parameter.
- * <p>
- * This class is typically used as a bridge between an estimation algorithm
- * (typically orbit determination or optimizer) and an internal parameter in
- * a physical model that needs to be tuned. The physical model will expose to
- * the algorithm a set of instances of this class so the algorithm can call the
- * {@link #setValue(double)} method to update the parameter value.
- * </p>
- * <p>
- * Any object can be notified when any of value, name, selection status… are changed.
- * This is done by {@link #addObserver(ParameterObserver)}  registering} a
- * {@link ParameterObserver ParameterObserver} to the parameter driver.
- * <p>
- * This design has two major goals. First, it allows an external algorithm to drive
- * internal parameters blindly, as it only needs to get a list of instances of this
- * class, without knowing what they really drive. Second, it allows the physical
- * model to not expose directly setters methods for its parameters. In order to be
- * able to modify the parameter value, the algorithm <em>must</em> retrieve a
- * parameter driver.
- * </p>
- * <p>
- * As of versions 12.X and 13.X, it was possible to set up time-dependent values
- * within a single {@code ParameterDriver}. This feature has been replaced by
- * {@link ParameterDriversSequence} as of 14.0, which is simpler and also allows
- * finer selection, making it possible to select only a subset of the parameters
- * along a timeline. Starting with version 14.0, {@code ParameterDriver} instances
- * only hold one value, which can have a restricted validity range.
- * </p>
- * @see ParameterObserver
- * @author Luc Maisonobe
- * @author Melina Vanel
- * @since 8.0
- */
-public class ParameterDriver extends BaseParameterDriver<ParameterDriver, ParameterObserver> {
+import java.util.Map;
 
-    /** Reference date.
-     * @since 9.0
-     */
-    private AbsoluteDate referenceDate;
+/** Field version of {@link ParameterDriver}.
+ * @param <T> type of the field elements
+ * @see FieldParameterObserver
+ * @author Luc Maisonobe
+ * @since 14.0
+ */
+public class FieldParameterDriver<T extends CalculusFieldElement<T>>
+    extends BaseParameterDriver<FieldParameterDriver<T>, FieldParameterObserver<T>> {
+
+    /** Reference date. */
+    private FieldAbsoluteDate<T> referenceDate;
 
     /** Reference value. */
-    private double referenceValue;
+    private T referenceValue;
 
-    /** Current value.
-     * @since 14.0
-     */
-    private double value;
+    /** Current value. */
+    private T value;
 
     /**
      * Simple constructor.
@@ -85,10 +56,10 @@ public class ParameterDriver extends BaseParameterDriver<ParameterDriver, Parame
      * @param maxValue       maximum value allowed
      * @param validity       validity interval
      */
-    public ParameterDriver(final String name,
-                           final double referenceValue, final double scale,
-                           final double minValue, final double maxValue,
-                           final TimeInterval validity) {
+    public FieldParameterDriver(final String name,
+                                final T referenceValue, final double scale,
+                                final double minValue, final double maxValue,
+                                final TimeInterval validity) {
         super(name, scale, minValue, maxValue, validity);
         this.referenceValue = referenceValue;
         this.value          = referenceValue;
@@ -96,20 +67,18 @@ public class ParameterDriver extends BaseParameterDriver<ParameterDriver, Parame
 
     /** Get current reference date.
      * @return current reference date (null if it was never set)
-     * @since 9.0
      */
-    public AbsoluteDate getReferenceDate() {
+    public FieldAbsoluteDate<T> getReferenceDate() {
         return referenceDate;
     }
 
     /** Set reference date.
      * @param newReferenceDate new reference date
-     * @since 9.0
      */
-    public void setReferenceDate(final AbsoluteDate newReferenceDate) {
-        final AbsoluteDate previousReferenceDate = getReferenceDate();
+    public void setReferenceDate(final FieldAbsoluteDate<T> newReferenceDate) {
+        final FieldAbsoluteDate<T> previousReferenceDate = getReferenceDate();
         referenceDate = newReferenceDate;
-        for (final ParameterObserver observer : getObservers()) {
+        for (final FieldParameterObserver<T> observer : getObservers()) {
             observer.referenceDateChanged(previousReferenceDate, this);
         }
     }
@@ -117,18 +86,17 @@ public class ParameterDriver extends BaseParameterDriver<ParameterDriver, Parame
     /** Get reference parameter value.
      * @return reference parameter value
      */
-    public double getReferenceValue() {
+    public T getReferenceValue() {
         return referenceValue;
     }
 
     /** Set reference parameter value.
-     * @since 9.3
      * @param referenceValue the reference value to set.
      */
-    public void setReferenceValue(final double referenceValue) {
-        final double previousReferenceValue = this.referenceValue;
+    public void setReferenceValue(final T referenceValue) {
+        final T previousReferenceValue = this.referenceValue;
         this.referenceValue = referenceValue;
-        for (final ParameterObserver observer : getObservers()) {
+        for (final FieldParameterObserver<T> observer : getObservers()) {
             observer.referenceValueChanged(previousReferenceValue, this);
         }
     }
@@ -136,7 +104,7 @@ public class ParameterDriver extends BaseParameterDriver<ParameterDriver, Parame
     /** Get current parameter value.
      * @return current parameter value
      */
-    public double getValue() {
+    public T getValue() {
         return value;
     }
 
@@ -144,13 +112,12 @@ public class ParameterDriver extends BaseParameterDriver<ParameterDriver, Parame
      * @param freeParameters total number of free parameters in the gradient
      * @param indices indices of the differentiation parameters in derivatives computations
      * @return value with derivatives
-     * @since 10.2
      */
-    public Gradient getValue(final int freeParameters, final Map<String, Integer> indices) {
+    public FieldGradient<T> getValue(final int freeParameters, final Map<String, Integer> indices) {
         final Integer index = indices.get(getName());
         return (index == null) ?
-               Gradient.constant(freeParameters, getValue()) :
-               Gradient.variable(freeParameters, index, getValue());
+               FieldGradient.constant(freeParameters, getValue()) :
+               FieldGradient.variable(freeParameters, index, getValue());
     }
 
     /** Set parameter value.
@@ -162,10 +129,10 @@ public class ParameterDriver extends BaseParameterDriver<ParameterDriver, Parame
      * </p>
      * @param newValue new value to set
      */
-    public void setValue(final double newValue) {
-        final double previousValue = value;
+    public void setValue(final T newValue) {
+        final T previousValue = value;
         value = FastMath.max(FastMath.min(newValue, getMaxValue()), getMinValue());
-        for (final ParameterObserver observer : getObservers()) {
+        for (final FieldParameterObserver<T> observer : getObservers()) {
             observer.valueChanged(previousValue, this);
         }
     }
@@ -178,8 +145,8 @@ public class ParameterDriver extends BaseParameterDriver<ParameterDriver, Parame
      * </p>
      * @return normalized value
      */
-    public double getNormalizedValue() {
-        return (value - referenceValue) / getScale();
+    public T getNormalizedValue() {
+        return value.subtract(referenceValue).divide(getScale());
     }
 
     /** Set normalized value.
@@ -190,12 +157,11 @@ public class ParameterDriver extends BaseParameterDriver<ParameterDriver, Parame
      * </p>
      * @param normalized value
      */
-    public void setNormalizedValue(final double normalized) {
-        setValue(referenceValue + getScale() * normalized);
+    public void setNormalizedValue(final T normalized) {
+        setValue(referenceValue.add(normalized.multiply(getScale())));
     }
 
     /** Set minimum parameter value.
-     * @since 9.3
      * @param minValue the minimum value to set.
      */
     public void setMinValue(final double minValue) {
@@ -203,15 +169,14 @@ public class ParameterDriver extends BaseParameterDriver<ParameterDriver, Parame
         // base handling of the new minimum value
         super.setMinValue(minValue);
 
-        if (value < minValue) {
+        if (value.getReal() < minValue) {
             // clip value to minimum
-            setValue(minValue);
+            setValue(value.newInstance(minValue));
         }
 
     }
 
     /** Set maximum parameter value.
-     * @since 9.3
      * @param maxValue the maximum value to set.
      */
     public void setMaxValue(final double maxValue) {
@@ -219,9 +184,9 @@ public class ParameterDriver extends BaseParameterDriver<ParameterDriver, Parame
         // base handling of the new maximum value
         super.setMaxValue(maxValue);
 
-        if (value > maxValue) {
+        if (value.getReal() > maxValue) {
             // clip value to maximum
-            setValue(maxValue);
+            setValue(value.newInstance(maxValue));
         }
 
     }
@@ -230,7 +195,7 @@ public class ParameterDriver extends BaseParameterDriver<ParameterDriver, Parame
      * @return text representation of the parameter, in the form name = value.
      */
     public String toString() {
-        return getName() + " = " + value;
+        return getName() + " = " + value.getReal();
     }
 
 }
