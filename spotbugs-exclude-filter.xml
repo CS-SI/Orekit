@@ -238,11 +238,9 @@
     <Bug pattern="FE_FLOATING_POINT_EQUALITY" />
   </Match>
 
-  <!-- These rules are disabled as the upgrade to java 21 led to a massive amount of false positives
-    -->
+  <!-- These rules are disabled as the upgrade to java 21 led to a massive amount of false positives -->
   <Match>
-    <Class name="org.orekit.*"/>
-    <Bug pattern="EI_EXPOSE_REP, EI_EXPOSE_REP2" />
+    <Bug pattern="EI_EXPOSE_REP,EI_EXPOSE_REP2" />
   </Match>
 
   <!-- the following is an intended switch fall-through in the SP3Parser -->
