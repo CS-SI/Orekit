@@ -27,13 +27,15 @@ import org.orekit.utils.TimeSpanMap;
  * @param <P> type of the parameter driver
  * @param <O> type of the parameter observer
  * @param <S> type of the parameters drivers sequence
+ * @param <B> type of the parameters drivers sequence builder
  * @author Luc Maisonobe
  * @since 14.0
  */
 public abstract class BaseParameterDriversSequenceBuilder<T,
                                                           P extends BaseParameterDriver<P, O>,
                                                           O extends BaseParameterObserver<P, O>,
-                                                          S extends BaseParameterDriversSequence<P, O>> {
+                                                          S extends BaseParameterDriversSequence<P, O>,
+                                                          B extends BaseParameterDriversSequenceBuilder<T, P, O, S, B>> {
 
     /** Prefix for drivers limited to one time span. */
     public static final String SPAN_PREFIX = "span-";
@@ -62,20 +64,22 @@ public abstract class BaseParameterDriversSequenceBuilder<T,
      * addReferenceValue(referenceValue, earliestValidityDate, latestValidityDate)} method as many times
      * as needed to cover the usage range before the {@link #build() build()} method can be called.
      * </p>
-     * @param baseName base name of the parameters
-     * @param scale    scaling factor to convert the parameters value to
-     *                 non-dimensional (typically set to the expected standard deviation
-     *                 of the parameter), it must be non-zero
-     * @param minValue minimum value allowed
-     * @param maxValue maximum value allowed
+     * @param baseName     base name of the parameters
+     * @param scale        scaling factor to convert the parameters value to
+     *                     non-dimensional (typically set to the expected standard deviation
+     *                     of the parameter), it must be non-zero
+     * @param minValue     minimum value allowed
+     * @param maxValue     maximum value allowed
+     * @param defaultValue default value valid throughout timeline
      */
     protected BaseParameterDriversSequenceBuilder(final String baseName, final double scale,
-                                                  final double minValue, final double maxValue) {
+                                                  final double minValue, final double maxValue,
+                                                  final T defaultValue) {
         this.baseName = baseName;
         this.scale    = scale;
         this.minValue = minValue;
         this.maxValue = maxValue;
-        this.spans    = new TimeSpanMap<>(null);
+        this.spans    = new TimeSpanMap<>(defaultValue);
     }
 
     /** Add a reference value throughout timeline.
@@ -86,7 +90,7 @@ public abstract class BaseParameterDriversSequenceBuilder<T,
      * @param referenceValue reference value
      * @return the instance itself, allowing use of the fluent interface pattern
      */
-    public BaseParameterDriversSequenceBuilder<T, P, O, S> addReferenceValue(final T referenceValue) {
+    public B addReferenceValue(final T referenceValue) {
         return addReferenceValue(referenceValue, AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY);
     }
 
@@ -96,11 +100,13 @@ public abstract class BaseParameterDriversSequenceBuilder<T,
      * @param latestValidityDate   date before which the coefficient is valid
      * @return the instance itself, allowing use of the fluent interface pattern
      */
-    public BaseParameterDriversSequenceBuilder<T, P, O, S> addReferenceValue(final T referenceValue,
-                                                                             final AbsoluteDate earliestValidityDate,
-                                                                             final AbsoluteDate latestValidityDate) {
+    public B addReferenceValue(final T referenceValue,
+                               final AbsoluteDate earliestValidityDate,
+                               final AbsoluteDate latestValidityDate) {
         spans.addValidBetween(referenceValue, earliestValidityDate, latestValidityDate);
-        return this;
+        @SuppressWarnings("unchecked")
+        final B self = (B) this;
+        return self;
     }
 
     /** Build a {@link BaseParameterDriversSequence}.

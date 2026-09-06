@@ -28,7 +28,8 @@ public class ParameterDriversSequenceBuilder extends
     BaseParameterDriversSequenceBuilder<Double,
                                         ParameterDriver,
                                         ParameterObserver,
-                                        ParameterDriversSequence> {
+                                        ParameterDriversSequence,
+                                        ParameterDriversSequenceBuilder> {
 
     /** Constructor for an initially empty builder.
      * <p>
@@ -40,16 +41,18 @@ public class ParameterDriversSequenceBuilder extends
      * method as many times as needed to cover the usage range before the {@link #build() build()} method can be
      * called.
      * </p>
-     * @param baseName base name of the parameters
-     * @param scale    scaling factor to convert the parameters value to
-     *                 non-dimensional (typically set to the expected standard deviation
-     *                 of the parameter), it must be non-zero
-     * @param minValue minimum value allowed
-     * @param maxValue maximum value allowed
+     * @param baseName     base name of the parameters
+     * @param scale        scaling factor to convert the parameters value to
+     *                     non-dimensional (typically set to the expected standard deviation
+     *                     of the parameter), it must be non-zero
+     * @param minValue     minimum value allowed
+     * @param maxValue     maximum value allowed
+     * @param defaultValue default value valid throughout timeline
      */
     public ParameterDriversSequenceBuilder(final String baseName, final double scale,
-                                           final double minValue, final double maxValue) {
-        super(baseName, scale, minValue, maxValue);
+                                           final double minValue, final double maxValue,
+                                           final Double defaultValue) {
+        super(baseName, scale, minValue, maxValue, defaultValue);
     }
 
     /** {@inheritDoc} */

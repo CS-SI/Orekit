@@ -30,7 +30,8 @@ public class FieldParameterDriversSequenceBuilder<T extends CalculusFieldElement
     extends BaseParameterDriversSequenceBuilder<T,
                                                 FieldParameterDriver<T>,
                                                 FieldParameterObserver<T>,
-                                                FieldParameterDriversSequence<T>> {
+                                                FieldParameterDriversSequence<T>,
+                                                FieldParameterDriversSequenceBuilder<T>> {
 
     /** Constructor for an initially empty builder.
      * <p>
@@ -48,10 +49,12 @@ public class FieldParameterDriversSequenceBuilder<T extends CalculusFieldElement
      *                 of the parameter), it must be non-zero
      * @param minValue minimum value allowed
      * @param maxValue maximum value allowed
+     * @param defaultValue default value valid throughout timeline
      */
     public FieldParameterDriversSequenceBuilder(final String baseName, final double scale,
-                                                final double minValue, final double maxValue) {
-        super(baseName, scale, minValue, maxValue);
+                                                final double minValue, final double maxValue,
+                                                final T defaultValue) {
+        super(baseName, scale, minValue, maxValue, defaultValue);
     }
 
     /** {@inheritDoc} */
