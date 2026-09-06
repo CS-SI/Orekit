@@ -20,6 +20,10 @@
   </properties>
   <body>
       <release version="14.0" date="TBD" description="TBD">
+          <action dev="vcucchie" type="fix" issue="1738">
+              Fixed date indexing in GenericTimeStampedCache, which used a 1 microsecond
+              quantization. Exact time offsets are now used instead (attosecond accuracy).
+          </action>
           <action dev="serrof" type="update" issue="2009">
               Added more default implementations in ForceModel.
           </action>

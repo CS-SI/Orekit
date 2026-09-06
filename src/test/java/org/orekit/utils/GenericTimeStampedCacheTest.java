@@ -24,6 +24,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
@@ -33,6 +34,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitIllegalArgumentException;
@@ -45,6 +48,7 @@ import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.propagation.events.ElevationDetector;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeOffset;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 
@@ -421,6 +425,155 @@ public class GenericTimeStampedCacheTest {
             // New propagation should not throw an ArithmeticException
             Assertions.assertDoesNotThrow(() -> tlePropagator.propagate(ephemerisStartDate, ephemerisEndDate));
         }
+    }
+
+    @Test
+    void testIssue1738() throws TimeStampedCacheException {
+        // GIVEN
+        final double                                step   = 10.0;
+        final GenericTimeStampedCache<AbsoluteDate> cache  = createCache(10, step, 2);
+        final AbsoluteDate                          anchor = AbsoluteDate.GALILEO_EPOCH;
+        cache.getNeighbors(anchor);
+        final AbsoluteDate entry = anchor.shiftedBy(3 * step);
+
+        // WHEN
+        // one nanosecond before a cached entry: the former one microsecond quantization rounded the
+        // date up to that entry, so both returned neighbors were after the requested date
+        final AbsoluteDate       central   = entry.shiftedBy(new TimeOffset(-1L, TimeOffset.NANOSECOND));
+        final List<AbsoluteDate> neighbors = cache.getNeighbors(central).toList();
+
+        // THEN
+        Assertions.assertEquals(2, neighbors.size());
+        Assertions.assertEquals(entry.shiftedBy(-step), neighbors.get(0));
+        Assertions.assertEquals(entry, neighbors.get(1));
+    }
+
+    static Stream<TimeOffset> subMicrosecondOffsets() {
+        return Stream.of(new TimeOffset(999L, TimeOffset.NANOSECOND),
+                         new TimeOffset(-999L, TimeOffset.NANOSECOND),
+                         TimeOffset.NANOSECOND,
+                         TimeOffset.NANOSECOND.negate(),
+                         TimeOffset.PICOSECOND,
+                         TimeOffset.PICOSECOND.negate(),
+                         TimeOffset.ATTOSECOND,
+                         TimeOffset.ATTOSECOND.negate());
+    }
+
+    @ParameterizedTest
+    @MethodSource("subMicrosecondOffsets")
+    @DisplayName("Test that neighbors bracket the requested date for offsets below the former quantum step")
+    void testNeighborsBracketDate(final TimeOffset offset) throws TimeStampedCacheException {
+        // GIVEN
+        final double                                step   = 10.0;
+        final GenericTimeStampedCache<AbsoluteDate> cache  = createCache(10, step, 2);
+        final AbsoluteDate                          anchor = AbsoluteDate.GALILEO_EPOCH;
+        cache.getNeighbors(anchor);
+
+        // WHEN & THEN
+        // the slot initially holds the entries 0 and 1 only, so this covers its boundaries as well
+        for (final int index : new int[] { 0, 1, 5 }) {
+            final AbsoluteDate       central   = anchor.shiftedBy(index * step).shiftedBy(offset);
+            final List<AbsoluteDate> neighbors = cache.getNeighbors(central).toList();
+            Assertions.assertEquals(2, neighbors.size());
+            Assertions.assertTrue(neighbors.get(0).compareTo(central) <= 0,
+                                  "first neighbor " + neighbors.get(0) + " is after " + central);
+            Assertions.assertTrue(neighbors.get(1).compareTo(central) >= 0,
+                                  "second neighbor " + neighbors.get(1) + " is before " + central);
+        }
+    }
+
+    @Test
+    @DisplayName("Test that the new slot interval is not rounded to the former quantum step anymore")
+    void testNewSlotIntervalIsNotQuantized() {
+        // GIVEN
+        final Generator generator = new Generator(AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY, 10.0);
+
+        // WHEN
+        final GenericTimeStampedCache<AbsoluteDate> cache =
+                new GenericTimeStampedCache<>(2, 10, Constants.JULIAN_YEAR, 1.0e-9, generator);
+
+        // THEN
+        // the former one microsecond quantization rounded this interval down to zero
+        Assertions.assertEquals(1.0e-9, cache.getNewSlotQuantumGap(), 1.0e-18);
+    }
+
+    @Test
+    @DisplayName("Test that a zero new slot interval creates a new slot for a sub-microsecond gap")
+    void testNewSlotForSubMicrosecondGap() throws TimeStampedCacheException {
+        // GIVEN
+        final Generator generator = new Generator(AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY, 10.0);
+        final GenericTimeStampedCache<AbsoluteDate> cache =
+                new GenericTimeStampedCache<>(2, 10, Constants.JULIAN_YEAR, 0.0, generator);
+        cache.getNeighbors(AbsoluteDate.GALILEO_EPOCH);
+        Assertions.assertEquals(1, cache.getSlots());
+
+        // WHEN
+        cache.getNeighbors(cache.getLatest().shiftedBy(TimeOffset.NANOSECOND));
+
+        // THEN
+        Assertions.assertEquals(2, cache.getSlots());
+    }
+
+    @Test
+    @DisplayName("Test that neighbors selection stays accurate when the reference date is far away")
+    void testNeighborsWithFarAwayReferenceDate() throws TimeStampedCacheException {
+        // GIVEN
+        final double                                step  = 10.0;
+        final GenericTimeStampedCache<AbsoluteDate> cache = createCache(10, step, 2);
+
+        // the first call sets the internal reference date used to index all entries
+        cache.getNeighbors(AbsoluteDate.J2000_EPOCH.shiftedBy(-Constants.JULIAN_CENTURY + Constants.JULIAN_DAY));
+
+        // two centuries later, the offsets from the reference date are large enough for the former
+        // quantized indexing to lose more than one microsecond of accuracy
+        final AbsoluteDate anchor = AbsoluteDate.J2000_EPOCH.shiftedBy(Constants.JULIAN_CENTURY - Constants.JULIAN_DAY);
+        cache.getNeighbors(anchor);
+        final AbsoluteDate entry = anchor.shiftedBy(3 * step);
+
+        // WHEN
+        final AbsoluteDate       central   = entry.shiftedBy(new TimeOffset(-1L, TimeOffset.NANOSECOND));
+        final List<AbsoluteDate> neighbors = cache.getNeighbors(central).toList();
+
+        // THEN
+        Assertions.assertEquals(2, neighbors.size());
+        Assertions.assertEquals(entry.shiftedBy(-step), neighbors.get(0));
+        Assertions.assertEquals(entry, neighbors.get(1));
+    }
+
+    @Test
+    @DisplayName("Test that a NaN new slot interval is neutralized as a zero gap")
+    void testNaNNewSlotInterval() throws TimeStampedCacheException {
+        // GIVEN
+        final double    step      = 10.0;
+        final Generator generator = new Generator(AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY, step);
+
+        // WHEN
+        final GenericTimeStampedCache<AbsoluteDate> cache =
+                new GenericTimeStampedCache<>(2, 10, Constants.JULIAN_YEAR, Double.NaN, generator);
+        cache.getNeighbors(AbsoluteDate.GALILEO_EPOCH);
+        cache.getNeighbors(AbsoluteDate.GALILEO_EPOCH.shiftedBy(step));
+
+        // THEN
+        Assertions.assertEquals(0.0, cache.getNewSlotQuantumGap(), 0.0);
+        Assertions.assertEquals(1, cache.getSlots());
+    }
+
+    @Test
+    @DisplayName("Test that an infinite new slot interval always extends the existing slot")
+    void testInfiniteNewSlotInterval() throws TimeStampedCacheException {
+        // GIVEN
+        final double    step      = 10.0;
+        final Generator generator = new Generator(AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY, step);
+
+        // WHEN
+        // the former quantized gap overflowed for an infinite interval and created spurious slots
+        final GenericTimeStampedCache<AbsoluteDate> cache =
+                new GenericTimeStampedCache<>(2, 10, Constants.JULIAN_YEAR, Double.POSITIVE_INFINITY, generator);
+        cache.getNeighbors(AbsoluteDate.GALILEO_EPOCH);
+        cache.getNeighbors(AbsoluteDate.GALILEO_EPOCH.shiftedBy(100 * step));
+
+        // THEN
+        Assertions.assertEquals(1, cache.getSlots());
     }
 
     private int testMultipleSingleThread(GenericTimeStampedCache<AbsoluteDate> cache, Mode mode, int slots)

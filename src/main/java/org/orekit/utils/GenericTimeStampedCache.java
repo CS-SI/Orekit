@@ -33,6 +33,7 @@ import org.orekit.errors.OrekitIllegalStateException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.TimeStampedCacheException;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeOffset;
 import org.orekit.time.TimeStamped;
 
 /** Generic thread-safe cache for {@link TimeStamped time-stamped} data.
@@ -46,9 +47,6 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
     /** Default number of independent cached time slots. */
     public static final int DEFAULT_CACHED_SLOTS_NUMBER = 10;
 
-    /** Quantum step. */
-    private static final double QUANTUM_STEP = 1.0e-6;
-
     /** Reference date for indexing. */
     private final AtomicReference<AbsoluteDate> reference;
 
@@ -58,8 +56,8 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
     /** Maximum duration span in seconds of one slot. */
     private final double maxSpan;
 
-    /** Quantum gap above which a new slot is created instead of extending an existing one. */
-    private final long newSlotQuantumGap;
+    /** Time gap above which a new slot is created instead of extending an existing one. */
+    private final TimeOffset newSlotQuantumGap;
 
     /** Generator to use for yet non-cached data. */
     private final TimeStampedGenerator<T> generator;
@@ -92,7 +90,7 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
      * @param maxSpan maximum duration span in seconds of one slot
      * (can be set to {@code Double.POSITIVE_INFINITY} if desired)
      * @param newSlotInterval time interval above which a new slot is created
-     * instead of extending an existing one
+     * instead of extending an existing one ({@code Double.NaN} is interpreted as 0)
      * @param generator generator to use for yet non-existent data
      */
     public GenericTimeStampedCache(final int maxNeighborsSize, final int maxSlots, final double maxSpan,
@@ -108,7 +106,7 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
      * @param maxSpan maximum duration span in seconds of one slot
      * (can be set to {@code Double.POSITIVE_INFINITY} if desired)
      * @param newSlotInterval time interval above which a new slot is created
-     * instead of extending an existing one
+     * instead of extending an existing one ({@code Double.NaN} is interpreted as 0)
      * @param generator generator to use for yet non-existent data
      * @param overridingMeanStep overriding mean step designed for non-homogeneous tabulated values. To be used for example
      *                    when caching monthly tabulated values. Use {@code Double.NaN} otherwise.
@@ -138,7 +136,8 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
         this.reference          = new AtomicReference<>();
         this.maxSlots           = maxSlots;
         this.maxSpan            = maxSpan;
-        this.newSlotQuantumGap  = FastMath.round(newSlotInterval / QUANTUM_STEP);
+        // a NaN interval would make every comparison in selectSlot true, hence a new slot at each call
+        this.newSlotQuantumGap  = new TimeOffset(Double.isNaN(newSlotInterval) ? 0.0 : newSlotInterval);
         this.generator          = generator;
         this.overridingMeanStep = overridingMeanStep;
         this.maxNeighborsSize   = maxNeighborsSize;
@@ -171,15 +170,14 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
         return maxSpan;
     }
 
-    /** Get quantum gap above which a new slot is created instead of extending an existing one.
+    /** Get the time gap above which a new slot is created instead of extending an existing one.
      * <p>
-     * The quantum gap is the {@code newSlotInterval} value provided at construction
-     * rounded to the nearest quantum step used internally by the cache.
+     * This gap is the {@code newSlotInterval} value provided at construction.
      * </p>
-     * @return quantum gap in seconds
+     * @return gap in seconds
      */
     public double getNewSlotQuantumGap() {
-        return newSlotQuantumGap * QUANTUM_STEP;
+        return newSlotQuantumGap.toDouble();
     }
 
     /** Get the number of calls to the {@link #getNeighbors(AbsoluteDate)} method.
@@ -303,7 +301,7 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
         lock.readLock().lock();
         try {
             getNeighborsCalls.incrementAndGet();
-            final long dateQuantum = quantum(central);
+            final TimeOffset dateQuantum = quantum(central);
             return selectSlot(central, dateQuantum).getNeighbors(central, dateQuantum, n);
         } finally {
             lock.readLock().unlock();
@@ -311,16 +309,22 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
 
     }
 
-    /** Convert a date to a rough global quantum.
+    /** Convert a date to its exact offset from the cache reference date.
+     * <p>
+     * This offset is the key used to index both slots and entries. The reference date is
+     * the first date converted by the cache, so the offset has no meaning outside of it.
+     * Despite the {@code quantum} naming kept throughout this class for historical reasons,
+     * the offset is not quantized.
+     * </p>
      * <p>
      * We own a global read lock while calling this method.
      * </p>
      * @param date date to convert
-     * @return quantum corresponding to the date
+     * @return offset of the date from the reference date
      */
-    private long quantum(final AbsoluteDate date) {
+    private TimeOffset quantum(final AbsoluteDate date) {
         reference.compareAndSet(null, date);
-        return FastMath.round(date.durationFrom(reference.get()) / QUANTUM_STEP);
+        return date.accurateDurationFrom(reference.get());
     }
 
     /** Select a slot containing a date.
@@ -328,17 +332,17 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
      * We own a global read lock while calling this method.
      * </p>
      * @param date target date
-     * @param dateQuantum global quantum of the date
+     * @param dateQuantum offset of the date from the cache reference date
      * @return slot covering the date
      */
-    private Slot selectSlot(final AbsoluteDate date, final long dateQuantum) {
+    private Slot selectSlot(final AbsoluteDate date, final TimeOffset dateQuantum) {
 
         Slot selected = null;
 
         int index = slots.isEmpty() ? 0 : slotIndex(dateQuantum);
         if (slots.isEmpty() ||
-            slots.get(index).getEarliestQuantum() > dateQuantum + newSlotQuantumGap ||
-            slots.get(index).getLatestQuantum()   < dateQuantum - newSlotQuantumGap) {
+            slots.get(index).getEarliestQuantum().compareTo(dateQuantum.add(newSlotQuantumGap)) > 0 ||
+            slots.get(index).getLatestQuantum().compareTo(dateQuantum.subtract(newSlotQuantumGap)) < 0) {
             // no existing slot is suitable
 
             // upgrade the read lock to a write lock so we can change the list of available slots
@@ -350,13 +354,13 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
                 // the list while we were waiting for the write lock
                 index = slots.isEmpty() ? 0 : slotIndex(dateQuantum);
                 if (slots.isEmpty() ||
-                    slots.get(index).getEarliestQuantum() > dateQuantum + newSlotQuantumGap ||
-                    slots.get(index).getLatestQuantum()   < dateQuantum - newSlotQuantumGap) {
+                    slots.get(index).getEarliestQuantum().compareTo(dateQuantum.add(newSlotQuantumGap)) > 0 ||
+                    slots.get(index).getLatestQuantum().compareTo(dateQuantum.subtract(newSlotQuantumGap)) < 0) {
 
                     // we really need to create a new slot in the current thread
                     // (no other threads have created it while we were waiting for the lock)
                     if (!slots.isEmpty() &&
-                        slots.get(index).getLatestQuantum() < dateQuantum - newSlotQuantumGap) {
+                        slots.get(index).getLatestQuantum().compareTo(dateQuantum.subtract(newSlotQuantumGap)) < 0) {
                         ++index;
                     }
 
@@ -403,22 +407,25 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
      * <p>
      * We own a global read lock while calling this method.
      * </p>
-     * @param dateQuantum quantum of the date to search for
+     * @param dateQuantum offset of the date to search for
      * @return the slot in which the date could be cached
      */
-    private int slotIndex(final long dateQuantum) {
+    private int slotIndex(final TimeOffset dateQuantum) {
 
         int  iInf = 0;
-        final long qInf = slots.get(iInf).getEarliestQuantum();
+        final TimeOffset qInf = slots.get(iInf).getEarliestQuantum();
         int  iSup = slots.size() - 1;
-        final long qSup = slots.get(iSup).getLatestQuantum();
+        final TimeOffset qSup = slots.get(iSup).getLatestQuantum();
         while (iSup - iInf > 0) {
-            final int iInterp = (int) ((iInf * (qSup - dateQuantum) + iSup * (dateQuantum - qInf)) / (qSup - qInf));
+            final double dInf    = qSup.subtract(dateQuantum).toDouble();
+            final double dSup    = dateQuantum.subtract(qInf).toDouble();
+            final double dSpan   = qSup.subtract(qInf).toDouble();
+            final int iInterp = (int) ((iInf * dInf + iSup * dSup) / dSpan);
             final int iMed    = FastMath.max(iInf, FastMath.min(iInterp, iSup));
             final Slot slot   = slots.get(iMed);
-            if (dateQuantum < slot.getEarliestQuantum()) {
+            if (dateQuantum.compareTo(slot.getEarliestQuantum()) < 0) {
                 iSup = iMed - 1;
-            } else if (dateQuantum > slot.getLatestQuantum()) {
+            } else if (dateQuantum.compareTo(slot.getLatestQuantum()) > 0) {
                 iInf = FastMath.min(iSup, iMed + 1);
             } else {
                 return iMed;
@@ -435,11 +442,11 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
         /** Cached time-stamped entries. */
         private final List<Entry> cache;
 
-        /** Earliest quantum. */
-        private final AtomicLong earliestQuantum;
+        /** Offset of the earliest date contained in the slot from the cache reference date. */
+        private final AtomicReference<TimeOffset> earliestQuantum;
 
-        /** Latest quantum. */
-        private final AtomicLong latestQuantum;
+        /** Offset of the latest date contained in the slot from the cache reference date. */
+        private final AtomicReference<TimeOffset> latestQuantum;
 
         /** Index from a previous recent call. */
         private final AtomicInteger guessedIndex;
@@ -462,8 +469,8 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
             for (final T entry : generateAndCheck(null, generationDate)) {
                 cache.add(new Entry(entry, quantum(entry.getDate())));
             }
-            earliestQuantum = new AtomicLong(cache.getFirst().getQuantum());
-            latestQuantum   = new AtomicLong(cache.getLast().getQuantum());
+            earliestQuantum = new AtomicReference<>(cache.getFirst().getQuantum());
+            latestQuantum   = new AtomicReference<>(cache.getLast().getQuantum());
 
             while (cache.size() < maxNeighborsSize) {
                 // we need to generate more entries
@@ -499,10 +506,10 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
             return cache.getFirst().getData();
         }
 
-        /** Get the quantum of the earliest date contained in the slot.
-         * @return quantum of the earliest date contained in the slot
+        /** Get the offset of the earliest date contained in the slot.
+         * @return offset of the earliest date contained in the slot
          */
-        public long getEarliestQuantum() {
+        public TimeOffset getEarliestQuantum() {
             return earliestQuantum.get();
         }
 
@@ -513,10 +520,10 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
             return cache.getLast().getData();
         }
 
-        /** Get the quantum of the latest date contained in the slot.
-         * @return quantum of the latest date contained in the slot
+        /** Get the offset of the latest date contained in the slot.
+         * @return offset of the latest date contained in the slot
          */
-        public long getLatestQuantum() {
+        public TimeOffset getLatestQuantum() {
             return latestQuantum.get();
         }
 
@@ -566,11 +573,11 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
          * since the number of leap seconds cannot be arbitrarily increased.
          * </p>
          * @param central central date
-         * @param dateQuantum global quantum of the date
+         * @param dateQuantum offset of the date from the cache reference date
          * @param n number of neighbors
          * @return a new array containing date neighbors
          */
-        public Stream<T> getNeighbors(final AbsoluteDate central, final long dateQuantum, final int n) {
+        public Stream<T> getNeighbors(final AbsoluteDate central, final TimeOffset dateQuantum, final int n) {
             int index         = entryIndex(central, dateQuantum);
             int firstNeighbor = index - (n - 1) / 2;
 
@@ -658,29 +665,29 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
          * We own a local read lock while calling this method.
          * </p>
          * @param date date
-         * @param dateQuantum global quantum of the date
+         * @param dateQuantum offset of the date from the cache reference date
          * @return index in the array such that entry[index] is before
          * date and entry[index + 1] is after date (or they are at array boundaries)
          */
-        private int entryIndex(final AbsoluteDate date, final long dateQuantum) {
+        private int entryIndex(final AbsoluteDate date, final TimeOffset dateQuantum) {
 
             // first quick guesses, assuming a recent search was close enough
             final int guess = guessedIndex.get();
             if (guess > 0 && guess < cache.size()) {
-                if (cache.get(guess).getQuantum() <= dateQuantum) {
-                    if (guess + 1 < cache.size() && cache.get(guess + 1).getQuantum() > dateQuantum) {
+                if (cache.get(guess).getQuantum().compareTo(dateQuantum) <= 0) {
+                    if (guess + 1 < cache.size() && cache.get(guess + 1).getQuantum().compareTo(dateQuantum) > 0) {
                         // good guess!
                         return guess;
                     } else {
                         // perhaps we have simply shifted just one point forward ?
-                        if (guess + 2 < cache.size() && cache.get(guess + 2).getQuantum() > dateQuantum) {
+                        if (guess + 2 < cache.size() && cache.get(guess + 2).getQuantum().compareTo(dateQuantum) > 0) {
                             guessedIndex.set(guess + 1);
                             return guess + 1;
                         }
                     }
                 } else {
                     // perhaps we have simply shifted just one point backward ?
-                    if (guess > 1 && cache.get(guess - 1).getQuantum() <= dateQuantum) {
+                    if (guess > 1 && cache.get(guess - 1).getQuantum().compareTo(dateQuantum) <= 0) {
                         guessedIndex.set(guess - 1);
                         return guess - 1;
                     }
@@ -688,27 +695,30 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
             }
 
             // quick guesses have failed, we need to perform a full blown search
-            if (dateQuantum < getEarliestQuantum()) {
+            if (dateQuantum.compareTo(getEarliestQuantum()) < 0) {
                 // date if before the first entry
                 return -1;
-            } else if (dateQuantum > getLatestQuantum()) {
+            } else if (dateQuantum.compareTo(getLatestQuantum()) > 0) {
                 // date is after the last entry
                 return cache.size();
             } else {
 
                 // try to get an existing entry
                 int  iInf = 0;
-                final long qInf = cache.get(iInf).getQuantum();
+                final TimeOffset qInf = cache.get(iInf).getQuantum();
                 int  iSup = cache.size() - 1;
-                final long qSup = cache.get(iSup).getQuantum();
+                final TimeOffset qSup = cache.get(iSup).getQuantum();
                 while (iSup - iInf > 0) {
                     // within a continuous slot, entries are expected to be roughly linear
-                    final int iInterp = (int) ((iInf * (qSup - dateQuantum) + iSup * (dateQuantum - qInf)) / (qSup - qInf));
+                    final double dInf    = qSup.subtract(dateQuantum).toDouble();
+                    final double dSup    = dateQuantum.subtract(qInf).toDouble();
+                    final double dSpan   = qSup.subtract(qInf).toDouble();
+                    final int iInterp = (int) ((iInf * dInf + iSup * dSup) / dSpan);
                     final int iMed    = FastMath.max(iInf + 1, FastMath.min(iInterp, iSup));
                     final Entry entry = cache.get(iMed);
-                    if (dateQuantum < entry.getQuantum()) {
+                    if (dateQuantum.compareTo(entry.getQuantum()) < 0) {
                         iSup = iMed - 1;
-                    } else if (dateQuantum > entry.getQuantum()) {
+                    } else if (dateQuantum.compareTo(entry.getQuantum()) > 0) {
                         iInf = iMed;
                     } else {
                         guessedIndex.set(iMed);
@@ -731,10 +741,10 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
 
             // insert data at start
             boolean inserted = false;
-            final long q0 = earliestQuantum.get();
+            final TimeOffset q0 = earliestQuantum.get();
             for (int i = 0; i < data.size(); ++i) {
-                final long quantum = quantum(data.get(i).getDate());
-                if (quantum < q0) {
+                final TimeOffset quantum = quantum(data.get(i).getDate());
+                if (quantum.compareTo(q0) < 0) {
                     cache.add(i, new Entry(data.get(i), quantum));
                     inserted = true;
                 } else {
@@ -770,11 +780,11 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
 
             // append data at end
             boolean appended = false;
-            final long qn = latestQuantum.get();
+            final TimeOffset qn = latestQuantum.get();
             final int  n  = cache.size();
             for (int i = data.size() - 1; i >= 0; --i) {
-                final long quantum = quantum(data.get(i).getDate());
-                if (quantum > qn) {
+                final TimeOffset quantum = quantum(data.get(i).getDate());
+                if (quantum.compareTo(qn) > 0) {
                     cache.add(n, new Entry(data.get(i), quantum));
                     appended = true;
                 } else {
@@ -830,22 +840,22 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
             /** Entry data. */
             private final T data;
 
-            /** Global quantum of the entry. */
-            private final long quantum;
+            /** Offset of the entry date from the cache reference date. */
+            private final TimeOffset quantum;
 
             /** Simple constructor.
              * @param data entry data
-             * @param quantum entry quantum
+             * @param quantum offset of the entry date
              */
-            Entry(final T data, final long quantum) {
+            Entry(final T data, final TimeOffset quantum) {
                 this.quantum = quantum;
                 this.data  = data;
             }
 
-            /** Get the quantum.
-             * @return quantum
+            /** Get the offset of the entry date.
+             * @return offset of the entry date
              */
-            public long getQuantum() {
+            public TimeOffset getQuantum() {
                 return quantum;
             }
 
