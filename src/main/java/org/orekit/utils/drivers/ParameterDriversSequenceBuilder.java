@@ -59,7 +59,7 @@ public class ParameterDriversSequenceBuilder extends
     @Override
     protected ParameterDriver buildDriver(final String name, final Double referenceValue, final double scale,
                                           final double minValue, final double maxValue, final TimeInterval validity) {
-            return new ParameterDriver(name, referenceValue, scale, minValue, maxValue, validity);
+        return new ParameterDriver(name, referenceValue, scale, minValue, maxValue, validity);
     }
 
     /** {@inheritDoc} */

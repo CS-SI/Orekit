@@ -61,7 +61,7 @@ public class FieldParameterDriversSequenceBuilder<T extends CalculusFieldElement
     @Override
     protected FieldParameterDriver<T> buildDriver(final String name, final T referenceValue, final double scale,
                                                   final double minValue, final double maxValue, final TimeInterval validity) {
-            return new FieldParameterDriver<>(name, referenceValue, scale, minValue, maxValue, validity);
+        return new FieldParameterDriver<>(name, referenceValue, scale, minValue, maxValue, validity);
     }
 
     /** {@inheritDoc} */

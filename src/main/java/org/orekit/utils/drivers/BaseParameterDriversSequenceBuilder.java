@@ -171,15 +171,15 @@ public abstract class BaseParameterDriversSequenceBuilder<T,
     /** Build a parameter driver.
      * @param name           name of the parameter
      * @param referenceValue reference value of the parameter
-     * @param scale          scaling factor to convert the parameters value to non-dimensional (typically set to the
+     * @param scaleFactor    scaling factor to convert the parameters value to non-dimensional (typically set to the
      *                       expected standard deviation of the parameter), it must be non-zero
-     * @param minValue       minimum value allowed
-     * @param maxValue       maximum value allowed
+     * @param min            minimum value allowed
+     * @param max            maximum value allowed
      * @param validity       validity interval
      * @return               built parameter driver
      */
-    protected abstract P buildDriver(String name, T referenceValue, double scale,
-                                     double minValue, double maxValue, TimeInterval validity);
+    protected abstract P buildDriver(String name, T referenceValue, double scaleFactor,
+                                     double min, double max, TimeInterval validity);
 
     /** Build a sequence.
      * @param drivers drivers sequence
