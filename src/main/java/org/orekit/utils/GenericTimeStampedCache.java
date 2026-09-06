@@ -170,14 +170,24 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
         return maxSpan;
     }
 
-    /** Get the time gap above which a new slot is created instead of extending an existing one.
+    /** Get the time interval above which a new slot is created instead of extending an existing one.
      * <p>
-     * This gap is the {@code newSlotInterval} value provided at construction.
+     * This interval is the {@code newSlotInterval} value provided at construction.
      * </p>
-     * @return gap in seconds
+     * @return interval in seconds
+     * @since 14.0
      */
-    public double getNewSlotQuantumGap() {
+    public double getNewSlotInterval() {
         return newSlotInterval.toDouble();
+    }
+
+    /** Get the time gap above which a new slot is created instead of extending an existing one.
+     * @return gap in seconds
+     * @deprecated as of 14.0, replaced by {@link #getNewSlotInterval()}
+     */
+    @Deprecated
+    public double getNewSlotQuantumGap() {
+        return getNewSlotInterval();
     }
 
     /** Get the number of calls to the {@link #getNeighbors(AbsoluteDate)} method.

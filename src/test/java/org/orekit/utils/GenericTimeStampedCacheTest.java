@@ -65,7 +65,7 @@ public class GenericTimeStampedCacheTest {
         Assertions.assertEquals(4, cache.getGenerateCalls());
         Assertions.assertEquals(0, cache.getSlotsEvictions());
         Assertions.assertEquals(10, cache.getMaxSlots());
-        Assertions.assertEquals(Constants.JULIAN_DAY, cache.getNewSlotQuantumGap(), 1.0e-10);
+        Assertions.assertEquals(Constants.JULIAN_DAY, cache.getNewSlotInterval(), 1.0e-10);
         Assertions.assertEquals(Constants.JULIAN_YEAR, cache.getMaxSpan(), 1.0e-10);
     }
 
@@ -494,7 +494,7 @@ public class GenericTimeStampedCacheTest {
 
         // THEN
         // the former one microsecond quantization rounded this interval down to zero
-        Assertions.assertEquals(1.0e-9, cache.getNewSlotQuantumGap(), 1.0e-18);
+        Assertions.assertEquals(1.0e-9, cache.getNewSlotInterval(), 1.0e-18);
     }
 
     @Test
@@ -554,7 +554,7 @@ public class GenericTimeStampedCacheTest {
         cache.getNeighbors(AbsoluteDate.GALILEO_EPOCH.shiftedBy(step));
 
         // THEN
-        Assertions.assertEquals(0.0, cache.getNewSlotQuantumGap(), 0.0);
+        Assertions.assertEquals(0.0, cache.getNewSlotInterval(), 0.0);
         Assertions.assertEquals(1, cache.getSlots());
     }
 

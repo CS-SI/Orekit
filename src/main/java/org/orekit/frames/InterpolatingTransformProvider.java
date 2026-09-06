@@ -138,7 +138,7 @@ public class InterpolatingTransformProvider implements TransformProvider {
                     new GenericTimeStampedCache<>(cache.getMaxNeighborsSize(),
                             cache.getMaxSlots(),
                             cache.getMaxSpan(),
-                            cache.getNewSlotQuantumGap(),
+                            cache.getNewSlotInterval(),
                             new FieldTransformGenerator<>(date.getField(),
                                     cache.getMaxNeighborsSize(),
                                     rawProvider,
