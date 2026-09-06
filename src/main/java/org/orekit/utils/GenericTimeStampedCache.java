@@ -339,10 +339,12 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
 
         Slot selected = null;
 
-        int index = slots.isEmpty() ? 0 : slotIndex(dateQuantum);
+        int              index = slots.isEmpty() ? 0 : slotIndex(dateQuantum);
+        final TimeOffset upper = dateQuantum.add(newSlotQuantumGap);
+        final TimeOffset lower = dateQuantum.subtract(newSlotQuantumGap);
         if (slots.isEmpty() ||
-            slots.get(index).getEarliestQuantum().compareTo(dateQuantum.add(newSlotQuantumGap)) > 0 ||
-            slots.get(index).getLatestQuantum().compareTo(dateQuantum.subtract(newSlotQuantumGap)) < 0) {
+            slots.get(index).getEarliestQuantum().compareTo(upper) > 0 ||
+            slots.get(index).getLatestQuantum().compareTo(lower) < 0) {
             // no existing slot is suitable
 
             // upgrade the read lock to a write lock so we can change the list of available slots
@@ -354,13 +356,13 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
                 // the list while we were waiting for the write lock
                 index = slots.isEmpty() ? 0 : slotIndex(dateQuantum);
                 if (slots.isEmpty() ||
-                    slots.get(index).getEarliestQuantum().compareTo(dateQuantum.add(newSlotQuantumGap)) > 0 ||
-                    slots.get(index).getLatestQuantum().compareTo(dateQuantum.subtract(newSlotQuantumGap)) < 0) {
+                    slots.get(index).getEarliestQuantum().compareTo(upper) > 0 ||
+                    slots.get(index).getLatestQuantum().compareTo(lower) < 0) {
 
                     // we really need to create a new slot in the current thread
                     // (no other threads have created it while we were waiting for the lock)
                     if (!slots.isEmpty() &&
-                        slots.get(index).getLatestQuantum().compareTo(dateQuantum.subtract(newSlotQuantumGap)) < 0) {
+                        slots.get(index).getLatestQuantum().compareTo(lower) < 0) {
                         ++index;
                     }
 
@@ -403,26 +405,33 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
 
     }
 
-    /** Get the index of the slot in which a date could be cached.
+    /**
+     * Get the index of the slot in which a date could be cached.
      * <p>
      * We own a global read lock while calling this method.
      * </p>
+     *
      * @param dateQuantum offset of the date to search for
      * @return the slot in which the date could be cached
      */
     private int slotIndex(final TimeOffset dateQuantum) {
 
-        int  iInf = 0;
-        final TimeOffset qInf = slots.get(iInf).getEarliestQuantum();
-        int  iSup = slots.size() - 1;
-        final TimeOffset qSup = slots.get(iSup).getLatestQuantum();
+        // Hot path case
+        if (slots.size() == 1) {
+            return 0;
+        }
+
+        int              iInf  = 0;
+        int              iSup  = slots.size() - 1;
+        final TimeOffset qInf  = slots.get(iInf).getEarliestQuantum();
+        final TimeOffset qSup  = slots.get(iSup).getLatestQuantum();
+        final double     dInf  = qSup.subtract(dateQuantum).toDouble();
+        final double     dSup  = dateQuantum.subtract(qInf).toDouble();
+        final double     dSpan = qSup.subtract(qInf).toDouble();
         while (iSup - iInf > 0) {
-            final double dInf    = qSup.subtract(dateQuantum).toDouble();
-            final double dSup    = dateQuantum.subtract(qInf).toDouble();
-            final double dSpan   = qSup.subtract(qInf).toDouble();
-            final int iInterp = (int) ((iInf * dInf + iSup * dSup) / dSpan);
-            final int iMed    = FastMath.max(iInf, FastMath.min(iInterp, iSup));
-            final Slot slot   = slots.get(iMed);
+            final int  iInterp = (int) ((iInf * dInf + iSup * dSup) / dSpan);
+            final int  iMed    = FastMath.max(iInf, FastMath.min(iInterp, iSup));
+            final Slot slot    = slots.get(iMed);
             if (dateQuantum.compareTo(slot.getEarliestQuantum()) < 0) {
                 iSup = iMed - 1;
             } else if (dateQuantum.compareTo(slot.getLatestQuantum()) > 0) {
@@ -702,17 +711,16 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
                 // date is after the last entry
                 return cache.size();
             } else {
-
                 // try to get an existing entry
                 int  iInf = 0;
-                final TimeOffset qInf = cache.get(iInf).getQuantum();
                 int  iSup = cache.size() - 1;
+                final TimeOffset qInf = cache.get(iInf).getQuantum();
                 final TimeOffset qSup = cache.get(iSup).getQuantum();
+                final double dInf    = qSup.subtract(dateQuantum).toDouble();
+                final double dSup    = dateQuantum.subtract(qInf).toDouble();
+                final double dSpan   = qSup.subtract(qInf).toDouble();
                 while (iSup - iInf > 0) {
                     // within a continuous slot, entries are expected to be roughly linear
-                    final double dInf    = qSup.subtract(dateQuantum).toDouble();
-                    final double dSup    = dateQuantum.subtract(qInf).toDouble();
-                    final double dSpan   = qSup.subtract(qInf).toDouble();
                     final int iInterp = (int) ((iInf * dInf + iSup * dSup) / dSpan);
                     final int iMed    = FastMath.max(iInf + 1, FastMath.min(iInterp, iSup));
                     final Entry entry = cache.get(iMed);
