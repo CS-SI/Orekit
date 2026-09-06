@@ -16,19 +16,21 @@
  */
 package org.orekit.utils.drivers;
 
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeInterval;
 import org.orekit.utils.TimeSpanMap;
 
-/** Builder for {@link ParameterDriversSequence}.
+/** Builder for {@link FieldParameterDriversSequence}.
+ * @param <T> type of the field elements
  * @author Luc Maisonobe
  * @since 14.0
  */
-public class ParameterDriversSequenceBuilder extends
-    BaseParameterDriversSequenceBuilder<Double,
-                                        ParameterDriver,
-                                        ParameterObserver,
-                                        ParameterDriversSequence> {
+public class FieldParameterDriversSequenceBuilder<T extends CalculusFieldElement<T>>
+    extends BaseParameterDriversSequenceBuilder<T,
+                                                FieldParameterDriver<T>,
+                                                FieldParameterObserver<T>,
+                                                FieldParameterDriversSequence<T>> {
 
     /** Constructor for an initially empty builder.
      * <p>
@@ -47,22 +49,22 @@ public class ParameterDriversSequenceBuilder extends
      * @param minValue minimum value allowed
      * @param maxValue maximum value allowed
      */
-    public ParameterDriversSequenceBuilder(final String baseName, final double scale,
-                                           final double minValue, final double maxValue) {
+    public FieldParameterDriversSequenceBuilder(final String baseName, final double scale,
+                                                final double minValue, final double maxValue) {
         super(baseName, scale, minValue, maxValue);
     }
 
     /** {@inheritDoc} */
     @Override
-    protected ParameterDriver buildDriver(final String name, final Double referenceValue, final double scale,
-                                          final double minValue, final double maxValue, final TimeInterval validity) {
-            return new ParameterDriver(name, referenceValue, scale, minValue, maxValue, validity);
+    protected FieldParameterDriver<T> buildDriver(final String name, final T referenceValue, final double scale,
+                                                  final double minValue, final double maxValue, final TimeInterval validity) {
+            return new FieldParameterDriver<>(name, referenceValue, scale, minValue, maxValue, validity);
     }
 
     /** {@inheritDoc} */
     @Override
-    protected ParameterDriversSequence buildSequence(final TimeSpanMap<ParameterDriver> drivers) {
-        return new ParameterDriversSequence(drivers);
+    protected FieldParameterDriversSequence<T> buildSequence(final TimeSpanMap<FieldParameterDriver<T>> drivers) {
+        return new FieldParameterDriversSequence<>(drivers);
     }
 
 }
