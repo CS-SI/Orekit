@@ -18,6 +18,7 @@ package org.orekit.utils.drivers;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
+import org.hipparchus.analysis.differentiation.FieldGradient;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
@@ -32,6 +33,8 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeInterval;
 import org.orekit.time.TimeOffset;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class FieldParameterDriverTest {
@@ -45,15 +48,67 @@ public class FieldParameterDriverTest {
         FieldParameterDriver<T> p1 =
             new FieldParameterDriver<>("p1",
                                        field.getZero().newInstance(7.0),
-                                       1.0, -10.0, +10.0,
+                                       2.0, -10.0, +10.0,
                                        TimeInterval.of(AbsoluteDate.ARBITRARY_EPOCH,
                                                       AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(TimeOffset.DAY),
                                                       false));
-        Assertions.assertEquals(7.0, p1.getValue().getReal(), 1e-10);
+        Assertions.assertEquals( 7.0, p1.getValue().getReal(), 1e-10);
         p1.setValue(field.getZero().newInstance(3.0));
-        Assertions.assertEquals(3.0, p1.getValue().getReal(), 1e-10);
+        Assertions.assertEquals( 3.0, p1.getValue().getReal(), 1e-10);
+        Assertions.assertEquals( 7.0, p1.getReferenceValue().getReal(), 1e-10);
+        Assertions.assertEquals(-2.0, p1.getNormalizedValue().getReal(), 1e-10);
+        p1.setNormalizedValue(field.getOne());
+        Assertions.assertEquals( 1.0, p1.getNormalizedValue().getReal(), 1e-10);
+        Assertions.assertEquals( 9.0, p1.getValue().getReal(), 1e-10);
+        Assertions.assertEquals("p1 = 9.0", p1.toString());
 
 	}
+
+    @Test
+    public void testGradient() {
+        doTestGradient(Binary64Field.getInstance());
+    }
+
+    private <T extends CalculusFieldElement<T>> void doTestGradient(final Field<T> field) {
+
+        final Map<String, Integer> map = new HashMap<>();
+        map.put("x", 0);
+        map.put("y", 1);
+        map.put("z", 2);
+        map.put("t", 3);
+
+        FieldParameterDriver<T> z =
+            new FieldParameterDriver<>("z", field.getZero().newInstance(7.0),
+                                       2.0, -10.0, +10.0,
+                                       TimeInterval.of(AbsoluteDate.ARBITRARY_EPOCH,
+                                                       AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(TimeOffset.DAY),
+                                                       false));
+        FieldGradient<T> gInMap = z.getValue(4, map);
+        Assertions.assertEquals(4,    gInMap.getFreeParameters());
+        Assertions.assertEquals( 7.0, gInMap.getValue().getReal(), 1e-10);
+        Assertions.assertEquals(4,    gInMap.getGradient().length);
+        Assertions.assertEquals( 0.0, gInMap.getGradient()[0].getReal(), 1e-10);
+        Assertions.assertEquals( 0.0, gInMap.getGradient()[1].getReal(), 1e-10);
+        Assertions.assertEquals( 1.0, gInMap.getGradient()[2].getReal(), 1e-10);
+        Assertions.assertEquals( 0.0, gInMap.getGradient()[3].getReal(), 1e-10);
+
+        FieldParameterDriver<T> u =
+            new FieldParameterDriver<>("u",
+                                       field.getZero().newInstance(7.0),
+                                       2.0, -10.0, +10.0,
+                                       TimeInterval.of(AbsoluteDate.ARBITRARY_EPOCH,
+                                                       AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(TimeOffset.DAY),
+                                                       false));
+        FieldGradient<T> gUnknown = u.getValue(4, map);
+        Assertions.assertEquals(4,    gUnknown.getFreeParameters());
+        Assertions.assertEquals( 7.0, gUnknown.getValue().getReal(), 1e-10);
+        Assertions.assertEquals(4,    gUnknown.getGradient().length);
+        Assertions.assertEquals( 0.0, gUnknown.getGradient()[0].getReal(), 1e-10);
+        Assertions.assertEquals( 0.0, gUnknown.getGradient()[1].getReal(), 1e-10);
+        Assertions.assertEquals( 0.0, gUnknown.getGradient()[2].getReal(), 1e-10);
+        Assertions.assertEquals( 0.0, gUnknown.getGradient()[3].getReal(), 1e-10);
+
+    }
 
     @Test
     public void testNonChronologicalInterval() {

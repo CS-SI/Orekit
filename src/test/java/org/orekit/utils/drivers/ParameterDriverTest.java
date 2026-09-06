@@ -16,6 +16,7 @@
  */
 package org.orekit.utils.drivers;
 
+import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
@@ -28,6 +29,8 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeInterval;
 import org.orekit.time.TimeOffset;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ParameterDriverTest {
@@ -35,15 +38,60 @@ public class ParameterDriverTest {
 	@Test
     public void testPDriverConstruction() {
         ParameterDriver p1 =
-            new ParameterDriver("p1", 7.0, 1.0, -10.0, +10.0,
+            new ParameterDriver("p1", 7.0, 2.0, -10.0, +10.0,
                                 TimeInterval.of(AbsoluteDate.ARBITRARY_EPOCH,
                                                 AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(TimeOffset.DAY),
                                                 false));
         Assertions.assertEquals(7.0, p1.getValue(), 1e-10);
         p1.setValue(3.0);
         Assertions.assertEquals(3.0, p1.getValue(), 1e-10);
+        Assertions.assertEquals( 7.0, p1.getReferenceValue(), 1e-10);
+        Assertions.assertEquals(-2.0, p1.getNormalizedValue(), 1e-10);
+        p1.setNormalizedValue(1.0);
+        Assertions.assertEquals( 1.0, p1.getNormalizedValue(), 1e-10);
+        Assertions.assertEquals( 9.0, p1.getValue(), 1e-10);
+        Assertions.assertEquals("p1 = 9.0", p1.toString());
 
 	}
+
+    @Test
+    public void testGradient() {
+
+        final Map<String, Integer> map = new HashMap<>();
+        map.put("x", 0);
+        map.put("y", 1);
+        map.put("z", 2);
+        map.put("t", 3);
+
+        ParameterDriver z =
+            new ParameterDriver("z", 7.0, 2.0, -10.0, +10.0,
+                                TimeInterval.of(AbsoluteDate.ARBITRARY_EPOCH,
+                                                AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(TimeOffset.DAY),
+                                                false));
+        Gradient gInMap = z.getValue(4, map);
+        Assertions.assertEquals(4,    gInMap.getFreeParameters());
+        Assertions.assertEquals( 7.0, gInMap.getValue(), 1e-10);
+        Assertions.assertEquals(4,    gInMap.getGradient().length);
+        Assertions.assertEquals( 0.0, gInMap.getGradient()[0], 1e-10);
+        Assertions.assertEquals( 0.0, gInMap.getGradient()[1], 1e-10);
+        Assertions.assertEquals( 1.0, gInMap.getGradient()[2], 1e-10);
+        Assertions.assertEquals( 0.0, gInMap.getGradient()[3], 1e-10);
+
+        ParameterDriver u =
+            new ParameterDriver("u", 7.0, 2.0, -10.0, +10.0,
+                                TimeInterval.of(AbsoluteDate.ARBITRARY_EPOCH,
+                                                AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(TimeOffset.DAY),
+                                                false));
+        Gradient gUnknown = u.getValue(4, map);
+        Assertions.assertEquals(4,    gUnknown.getFreeParameters());
+        Assertions.assertEquals( 7.0, gUnknown.getValue(), 1e-10);
+        Assertions.assertEquals(4,    gUnknown.getGradient().length);
+        Assertions.assertEquals( 0.0, gUnknown.getGradient()[0], 1e-10);
+        Assertions.assertEquals( 0.0, gUnknown.getGradient()[1], 1e-10);
+        Assertions.assertEquals( 0.0, gUnknown.getGradient()[2], 1e-10);
+        Assertions.assertEquals( 0.0, gUnknown.getGradient()[3], 1e-10);
+
+    }
 
     @Test
     public void testNonChronologicalInterval() {

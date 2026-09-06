@@ -77,7 +77,7 @@ class FieldParameterDriversProviderTest {
         final FieldParameterDriver<T> driverFirst =
             new FieldParameterDriver<>("satellite-clock-bias", field.getZero(), 1.0, -1.0, 1.0, TimeInterval.UNLIMITED);
         final FieldParameterDriver<T> driverSecond =
-            new FieldParameterDriver<>("station-clock-bias", field.getZero(), 1.0, -1.0, 1.0, TimeInterval.UNLIMITED);
+            new FieldParameterDriver<>("station-clock-bias", field.getOne(), 1.0, -1.0, 1.0, TimeInterval.UNLIMITED);
         final FieldParameterDriversProvider<T> provider = new FieldParameterDriversProvider<>() {
             /** {@inheritDoc} */
             @Override
@@ -85,6 +85,9 @@ class FieldParameterDriversProviderTest {
                 return Arrays.asList(driverFirst, driverSecond);
             }
         };
+        Assertions.assertEquals(2,  provider.getParameters().length);
+        Assertions.assertSame(field.getZero(),  provider.getParameters()[0]);
+        Assertions.assertSame(field.getOne(),  provider.getParameters()[1]);
 
         // Test substring that matches both drivers throws exception
         Assertions.assertThrows(UnsupportedParameterException.class,
