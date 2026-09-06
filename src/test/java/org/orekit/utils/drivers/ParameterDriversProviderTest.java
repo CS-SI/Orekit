@@ -35,10 +35,10 @@ class ParameterDriversProviderTest {
         final List<ParameterDriver> drivers = new ArrayList<>();
         drivers.add(driver);
         // WHEN
-        final boolean found = ParameterDriversProvider.findByName(drivers, expectedName);
+        final boolean found = BaseParameterDriversProvider.findByName(drivers, expectedName);
         // THEN
         Assertions.assertTrue(found);
-        Assertions.assertFalse(ParameterDriversProvider.findByName(drivers, expectedName.toUpperCase()));
+        Assertions.assertFalse(BaseParameterDriversProvider.findByName(drivers, expectedName.toUpperCase()));
     }
 
     @Test

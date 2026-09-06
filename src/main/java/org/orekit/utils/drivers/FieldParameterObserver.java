@@ -1,4 +1,4 @@
-/* Copyright 2002-2026 CS GROUP
+/* Copyright 20Z2-2026 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,14 +16,17 @@
  */
 package org.orekit.utils.drivers;
 
-import org.orekit.time.AbsoluteDate;
+import org.hipparchus.CalculusFieldElement;
+import org.orekit.time.FieldAbsoluteDate;
 
 /** Interface for observing parameters changes.
- * @see ParameterDriver
+ * @param <T> type of the field elements
+ * @see FieldParameterDriver
  * @author Luc Maisonobe
- * @since 8.0
+ * @since 14.0
  */
-public interface ParameterObserver extends BaseParameterObserver<ParameterDriver, ParameterObserver> {
+public interface FieldParameterObserver<T extends CalculusFieldElement<T>>
+    extends BaseParameterObserver<FieldParameterDriver<T>, FieldParameterObserver<T>> {
 
     /** Notify that a parameter reference date has been changed.
      * <p>
@@ -32,9 +35,9 @@ public interface ParameterObserver extends BaseParameterObserver<ParameterDriver
      * @param previousReferenceDate previous date (null if it is the first time
      * the reference date is changed)
      * @param driver parameter driver that has been changed
-     * @since 9.0
      */
-    default void referenceDateChanged(final AbsoluteDate previousReferenceDate, final ParameterDriver driver) {
+    default void referenceDateChanged(final FieldAbsoluteDate<T> previousReferenceDate,
+                                      final FieldParameterDriver<T> driver) {
         // nothing by default
     }
 
@@ -44,9 +47,8 @@ public interface ParameterObserver extends BaseParameterObserver<ParameterDriver
      * </p>
      * @param previousReferenceValue previous reference value
      * @param driver parameter driver that has been changed
-     * @since 9.0
      */
-    default void referenceValueChanged(final double previousReferenceValue, final ParameterDriver driver) {
+    default void referenceValueChanged(final T previousReferenceValue, final FieldParameterDriver<T> driver) {
         // nothing by default
     }
 
@@ -54,6 +56,6 @@ public interface ParameterObserver extends BaseParameterObserver<ParameterDriver
      * @param previousValue previous value
      * @param driver        parameter driver that has been changed
      */
-    void valueChanged(double previousValue, ParameterDriver driver);
+    void valueChanged(T previousValue, FieldParameterDriver<T> driver);
 
 }

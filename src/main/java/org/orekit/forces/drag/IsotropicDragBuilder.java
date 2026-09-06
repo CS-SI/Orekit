@@ -62,7 +62,8 @@ public class IsotropicDragBuilder {
      */
     public IsotropicDragBuilder(final double crossSection, final double dragCoeffMin, final double dragCoeffMax) {
         this.builder      = new ParameterDriversSequenceBuilder(DragSensitive.DRAG_COEFFICIENT,
-                                                                SCALE, dragCoeffMin, dragCoeffMax);
+                                                                SCALE, dragCoeffMin, dragCoeffMax,
+                                                                null);
         this.crossSection = crossSection;
     }
 

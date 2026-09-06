@@ -1,4 +1,4 @@
-/* Copyright 2002-2026 CS GROUP
+/* Copyright 2022-2026 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,15 +16,16 @@
  */
 package org.orekit.utils.drivers;
 
+import org.hipparchus.CalculusFieldElement;
+import org.orekit.time.FieldAbsoluteDate;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
-import org.orekit.time.AbsoluteDate;
-
-/** Class managing several {@link ParameterDriver parameter drivers},
+/** Class managing several {@link FieldParameterDriver parameter drivers},
  * taking care of duplicated names.
  * <p>
  * Once parameter drivers sharing the same name have been added to
@@ -34,25 +35,24 @@ import org.orekit.time.AbsoluteDate;
  * {@code dn} are added to the list and both correspond to parameter
  * name "P", then {@link #getDrivers()} will return a list containing
  * a delegating driver {@code delegateD} for the same name "P".
- * Afterward, whenever either {@link ParameterDriver#setValue(double)}
- * or {@link ParameterDriver#setReferenceDate(AbsoluteDate)} is called
+ * Afterward, whenever either {@link FieldParameterDriver#setValue(CalculusFieldElement)}
+ * or {@link FieldParameterDriver#setReferenceDate(FieldAbsoluteDate)} is called
  * on any of the {@code n+1} instances {@code d1}, {@code d2}... {@code dn}
  * or {@code delegateD}, the call will be automatically forwarded to the
  * {@code n} remaining instances, hence ensuring they remain consistent
  * with each other.
  * </p>
+ * @param <T> type of the field elements
  * @author Luc Maisonobe
- * @author Mélina Vanel
- * @since 8.0
+ * @since 14.0
  */
-public class ParameterDriversList {
+public class FieldParameterDriversList<T extends CalculusFieldElement<T>> {
 
     /** Managed drivers. */
-    private final List<DelegatingDriver> delegating;
+    private final List<FieldDelegatingDriver<T>> delegating;
 
-    /** Creates an empty list.
-     */
-    public ParameterDriversList() {
+    /** Creates an empty list. */
+    public FieldParameterDriversList() {
         this.delegating = new ArrayList<>();
     }
 
@@ -66,10 +66,10 @@ public class ParameterDriversList {
      * </p>
      * @param driver driver to add
      */
-    public void add(final ParameterDriver driver) {
+    public void add(final FieldParameterDriver<T> driver) {
 
-        final DelegatingDriver existingHere = findByName(driver.getName());
-        final DelegatingDriver alreadyBound = getAssociatedDelegatingDriver(driver);
+        final FieldDelegatingDriver<T> existingHere = findByName(driver.getName());
+        final FieldDelegatingDriver<T> alreadyBound = getAssociatedFieldDelegatindDriver(driver);
 
         if (existingHere != null) {
             if (alreadyBound != null) {
@@ -86,33 +86,32 @@ public class ParameterDriversList {
                 alreadyBound.addOwner(this);
             } else {
                 // this is the first driver we have for this parameter name
-                delegating.add(new DelegatingDriver(this, driver));
+                delegating.add(new FieldDelegatingDriver<>(this, driver));
             }
         }
 
     }
 
-    /** Get a {@link DelegatingDriver delegating driver} bound to a driver.
+    /** Get a {@link FieldDelegatingDriver delegating driver} bound to a driver.
      * @param driver driver to check
-     * @return a {@link DelegatingDriver delegating driver} bound to a driver, or
-     * null if this driver is not associated with any {@link DelegatingDriver delegating driver}
-     * @since 9.1
+     * @return a {@link FieldDelegatingDriver delegating driver} bound to a driver, or
+     * null if this driver is not associated with any {@link FieldDelegatingDriver delegating driver}
      */
-    private DelegatingDriver getAssociatedDelegatingDriver(final ParameterDriver driver) {
-        for (final ParameterObserver observer : driver.getObservers()) {
-            if (observer instanceof ChangesForwarder forwarder) {
-                return forwarder.getDelegatingDriver();
+    private FieldDelegatingDriver<T> getAssociatedFieldDelegatindDriver(final FieldParameterDriver<T> driver) {
+        for (final FieldParameterObserver<T> observer : driver.getObservers()) {
+            if (observer instanceof FieldChangesForwarder<T> forwarder) {
+                return forwarder.getFieldDelegatindDriver();
             }
         }
         return null;
     }
 
-    /** Replace a {@link DelegatingDriver delegating driver}.
+    /** Replace a {@link FieldDelegatingDriver delegating driver}.
      * @param oldDelegating delegating driver to replace
      * @param newDelegating new delegating driver to use
-     * @since 10.1
      */
-    private void replaceDelegating(final DelegatingDriver oldDelegating, final DelegatingDriver newDelegating) {
+    private void replaceDelegating(final FieldDelegatingDriver<T> oldDelegating,
+                                   final FieldDelegatingDriver<T> newDelegating) {
         for (int i = 0; i < delegating.size(); ++i) {
             if (delegating.get(i) == oldDelegating) {
                 delegating.set(i, newDelegating);
@@ -120,13 +119,12 @@ public class ParameterDriversList {
         }
     }
 
-    /** Find  a {@link DelegatingDriver delegating driver} by name.
+    /** Find  a {@link FieldDelegatingDriver delegating driver} by name.
      * @param name name to check
-     * @return a {@link DelegatingDriver delegating driver} managing this parameter name
-     * @since 9.1
+     * @return a {@link FieldDelegatingDriver delegating driver} managing this parameter name
      */
-    public DelegatingDriver findByName(final String name) {
-        for (final DelegatingDriver d : delegating) {
+    public FieldDelegatingDriver<T> findByName(final String name) {
+        for (final FieldDelegatingDriver<T> d : delegating) {
             if (d.getName().equals(name)) {
                 return d;
             }
@@ -137,7 +135,7 @@ public class ParameterDriversList {
     /** Sort the parameters lexicographically.
      */
     public void sort() {
-        delegating.sort(Comparator.comparing(ParameterDriver::getName));
+        delegating.sort(Comparator.comparing(FieldParameterDriver::getName));
     }
 
     /** Filter parameters to keep only one type of selection status.
@@ -145,11 +143,11 @@ public class ParameterDriversList {
      * selected} parameters will be kept, the other ones will be removed
      */
     public void filter(final boolean selected) {
-        for (final Iterator<DelegatingDriver> iterator = delegating.iterator(); iterator.hasNext();) {
-            final DelegatingDriver delegatingDriver = iterator.next();
-            if (delegatingDriver.isSelected() != selected) {
+        for (final Iterator<FieldDelegatingDriver<T>> iterator = delegating.iterator(); iterator.hasNext();) {
+            final FieldDelegatingDriver<T> FieldDelegatindDriver = iterator.next();
+            if (FieldDelegatindDriver.isSelected() != selected) {
                 iterator.remove();
-                delegatingDriver.removeOwner(this);
+                FieldDelegatindDriver.removeOwner(this);
             }
         }
     }
@@ -171,26 +169,27 @@ public class ParameterDriversList {
      * </p>
      * @return unmodifiable view of the list of delegating drivers
      */
-    public List<DelegatingDriver> getDrivers() {
+    public List<FieldDelegatingDriver<T>> getDrivers() {
         return Collections.unmodifiableList(delegating);
     }
 
     /** Specialized driver delegating to several other managing
      * the same parameter name.
+     * @param <T> type of the field elements
      */
-    public static class DelegatingDriver extends ParameterDriver {
+    public static class FieldDelegatingDriver<T extends CalculusFieldElement<T>> extends FieldParameterDriver<T> {
 
         /** Lists owning this delegating driver. */
-        private final List<ParameterDriversList> owners;
+        private final List<FieldParameterDriversList<T>> owners;
 
         /** Observer for propagating changes between all drivers. */
-        private ChangesForwarder forwarder;
+        private FieldChangesForwarder<T> forwarder;
 
         /** Simple constructor.
          * @param owner list owning this delegating driver
          * @param driver first driver in the series
          */
-        DelegatingDriver(final ParameterDriversList owner, final ParameterDriver driver) {
+        FieldDelegatingDriver(final FieldParameterDriversList<T> owner, final FieldParameterDriver<T> driver) {
             super(driver.getName(), driver.getReferenceValue(),
                   driver.getScale(), driver.getMinValue(), driver.getMaxValue(),
                   driver.getValidity());
@@ -203,7 +202,7 @@ public class ParameterDriversList {
             setSelected(driver.isSelected());
 
             // set up a change forwarder observing both the raw driver and the delegating driver
-            this.forwarder = new ChangesForwarder(this, driver);
+            this.forwarder = new FieldChangesForwarder<>(this, driver);
             addObserver(forwarder);
             driver.addObserver(forwarder);
 
@@ -212,15 +211,14 @@ public class ParameterDriversList {
         /** Add an owner for this delegating driver.
          * @param owner owner to add
          */
-        void addOwner(final ParameterDriversList owner) {
+        void addOwner(final FieldParameterDriversList<T> owner) {
             owners.add(owner);
         }
 
         /** Remove one owner of this driver.
          * @param owner owner to remove delegating driver from
-         * @since 10.1
          */
-        private void removeOwner(final ParameterDriversList owner) {
+        private void removeOwner(final FieldParameterDriversList<T> owner) {
             owners.removeIf(parameterDriversList -> parameterDriversList == owner);
         }
 
@@ -232,7 +230,7 @@ public class ParameterDriversList {
          * <p>
          * @param driver driver to add
          */
-        private void add(final ParameterDriver driver) {
+        private void add(final FieldParameterDriver<T> driver) {
 
             setValue(driver.getValue());
             setReferenceDate(driver.getReferenceDate());
@@ -258,7 +256,7 @@ public class ParameterDriversList {
          * <p>
          * @param other instance to merge
          */
-        private void merge(final DelegatingDriver other) {
+        private void merge(final FieldDelegatingDriver<T> other) {
 
             if (other.forwarder == forwarder) {
                 // we are attempting to merge an instance with either itself
@@ -275,10 +273,10 @@ public class ParameterDriversList {
             }
 
             // move around drivers
-            for (final ParameterDriver otherDriver : other.forwarder.getDrivers()) {
+            for (final FieldParameterDriver<T> otherDriver : other.forwarder.getDrivers()) {
                 // as drivers are added one at a time and always refer back to a single
-                // DelegatingDriver (through the ChangesForwarder), they cannot be
-                // referenced by two different DelegatingDriver. We can blindly move
+                // FieldDelegatindDriver (through the FieldChangesForwarder), they cannot be
+                // referenced by two different FieldDelegatindDriver. We can blindly move
                 // around all drivers, there cannot be any duplicates
                 forwarder.add(otherDriver);
                 otherDriver.replaceObserver(other.forwarder, forwarder);
@@ -289,7 +287,7 @@ public class ParameterDriversList {
             other.forwarder = forwarder;
 
             // replace merged instance with current instance in former owners
-            for (final ParameterDriversList otherOwner : other.owners) {
+            for (final FieldParameterDriversList<T> otherOwner : other.owners) {
                 owners.add(otherOwner);
                 otherOwner.replaceDelegating(other, this);
             }
@@ -302,106 +300,104 @@ public class ParameterDriversList {
          * </p>
          * @return raw drivers to which this one delegates
          */
-        public List<ParameterDriver> getRawDrivers() {
+        public List<FieldParameterDriver<T>> getRawDrivers() {
             return Collections.unmodifiableList(forwarder.getDrivers());
         }
 
     }
 
     /** Local observer for propagating changes, avoiding infinite recursion. */
-    private static class ChangesForwarder implements ParameterObserver {
+    private static class FieldChangesForwarder<T extends CalculusFieldElement<T>> implements FieldParameterObserver<T> {
 
-        /** DelegatingDriver we are associated with. */
-        private final DelegatingDriver delegating;
+        /** FieldDelegatindDriver we are associated with. */
+        private final FieldDelegatingDriver<T> delegating;
 
         /** Drivers synchronized together by the instance. */
-        private final List<ParameterDriver> drivers;
+        private final List<FieldParameterDriver<T>> drivers;
 
         /** Root of the current update chain. */
-        private ParameterDriver root;
+        private FieldParameterDriver<T> root;
 
         /** Depth of the current update chain. */
         private int depth;
 
         /** Simple constructor.
-         * @param delegating delegatingDriver we are associated with
+         * @param delegating FieldDelegatindDriver we are associated with
          * @param driver first driver in the series
          */
-        ChangesForwarder(final DelegatingDriver delegating, final ParameterDriver driver) {
+        FieldChangesForwarder(final FieldDelegatingDriver<T> delegating, final FieldParameterDriver<T> driver) {
             this.delegating = delegating;
             this.drivers    = new ArrayList<>();
             drivers.add(driver);
         }
 
-        /** Get the {@link DelegatingDriver} associated with this instance.
-         * @return {@link DelegatingDriver} associated with this instance
-         * @since 9.1
+        /** Get the {@link FieldDelegatingDriver} associated with this instance.
+         * @return {@link FieldDelegatingDriver} associated with this instance
          */
-        DelegatingDriver getDelegatingDriver() {
+        FieldDelegatingDriver<T> getFieldDelegatindDriver() {
             return delegating;
         }
 
         /** Add a driver to the list synchronized together by the instance.
          * @param driver driver to add
-         * @since 10.1
          */
-        void add(final ParameterDriver driver) {
+        void add(final FieldParameterDriver<T> driver) {
             drivers.add(driver);
         }
 
         /** Get the drivers synchronized together by the instance.
          * @return drivers synchronized together by the instance.
-         * @since 10.1
          */
-        public List<ParameterDriver> getDrivers() {
+        public List<FieldParameterDriver<T>> getDrivers() {
             return drivers;
         }
 
         /** {@inheritDoc} */
         @Override
-        public void valueChanged(final double previousValue, final ParameterDriver driver) {
+        public void valueChanged(final T previousValue, final FieldParameterDriver<T> driver) {
             updateAll(driver, d -> d.setValue(driver.getValue()));
         }
 
         /** {@inheritDoc} */
         @Override
-        public void referenceDateChanged(final AbsoluteDate previousReferenceDate, final ParameterDriver driver) {
+        public void referenceDateChanged(final FieldAbsoluteDate<T> previousReferenceDate,
+                                         final FieldParameterDriver<T> driver) {
             updateAll(driver, d -> d.setReferenceDate(driver.getReferenceDate()));
         }
 
         /** {@inheritDoc} */
         @Override
-        public void nameChanged(final String previousName, final ParameterDriver driver) {
+        public void nameChanged(final String previousName, final FieldParameterDriver<T> driver) {
             updateAll(driver, d -> d.setName(driver.getName()));
         }
 
         /** {@inheritDoc} */
         @Override
-        public void selectionChanged(final boolean previousSelection, final ParameterDriver driver) {
+        public void selectionChanged(final boolean previousSelection, final FieldParameterDriver<T> driver) {
             updateAll(driver, d -> d.setSelected(driver.isSelected()));
         }
 
         /** {@inheritDoc} */
         @Override
-        public void referenceValueChanged(final double previousReferenceValue, final ParameterDriver driver) {
+        public void referenceValueChanged(final T previousReferenceValue, final FieldParameterDriver<T> driver) {
             updateAll(driver, d -> d.setReferenceValue(driver.getReferenceValue()));
         }
 
         /** {@inheritDoc} */
         @Override
-        public void minValueChanged(final double previousMinValue, final ParameterDriver driver) {
+        public void minValueChanged(final double previousMinValue, final FieldParameterDriver<T> driver) {
             updateAll(driver, d -> d.setMinValue(driver.getMinValue()));
         }
 
         /** {@inheritDoc} */
         @Override
-        public void maxValueChanged(final double previousMaxValue, final ParameterDriver driver) {
+        public void maxValueChanged(final double previousMaxValue, final FieldParameterDriver<T> driver) {
             updateAll(driver, d -> d.setMaxValue(driver.getMaxValue()));
         }
 
         /** {@inheritDoc} */
         @Override
-        public void scaleChanged(final double previousScale, final ParameterDriver driver) {
+        public void scaleChanged(final double previousScale, final FieldParameterDriver<T> driver) {
             updateAll(driver, d -> d.setScale(driver.getScale()));
         }
 
@@ -409,23 +405,23 @@ public class ParameterDriversList {
          * @param driver driver triggering the update
          * @param updater updater to use
          */
-        private void updateAll(final ParameterDriver driver, final Updater updater) {
+        private void updateAll(final FieldParameterDriver<T> driver, final FieldUpdater<T> updater) {
 
             final boolean firstCall = depth++ == 0;
             if (firstCall) {
                 root = driver;
             }
 
-            if (driver == getDelegatingDriver()) {
+            if (driver == getFieldDelegatindDriver()) {
                 // propagate change downwards, which will trigger recursive calls
-                for (final ParameterDriver d : drivers) {
+                for (final FieldParameterDriver<T> d : drivers) {
                     if (d != root) {
                         updater.update(d);
                     }
                 }
             } else if (firstCall) {
                 // first call started from an underlying driver, propagate change upwards
-                updater.update(getDelegatingDriver());
+                updater.update(getFieldDelegatindDriver());
             }
 
             if (--depth == 0) {
@@ -439,11 +435,11 @@ public class ParameterDriversList {
 
     /** Interface for updating parameters. */
     @FunctionalInterface
-    private interface Updater {
+    private interface FieldUpdater<T extends CalculusFieldElement<T>> {
         /** Update a driver.
          * @param driver driver to update
          */
-        void update(ParameterDriver driver);
+        void update(FieldParameterDriver<T> driver);
     }
 
 }

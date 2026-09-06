@@ -37,8 +37,8 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.drivers.BaseParameterDriversProvider;
 import org.orekit.utils.drivers.ParameterDriver;
-import org.orekit.utils.drivers.ParameterDriversProvider;
 import org.orekit.utils.TimeSpanMap;
 import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.TimeSpanMap.Transition;
@@ -388,7 +388,7 @@ public class TimeSpanDragForce extends AbstractDragForceModel {
      * @return true if the name was found, false otherwise
      */
     private boolean findByName(final List<ParameterDriver> driversList, final String name) {
-        return ParameterDriversProvider.findByName(driversList, name);
+        return BaseParameterDriversProvider.findByName(driversList, name);
     }
 
     /** Get the dates of the transitions for the drag sensitive models {@link TimeSpanMap}.
