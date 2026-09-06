@@ -20,6 +20,10 @@
   </properties>
   <body>
     <release version="13.1.9" date="TBD" description="TBD">
+        <action dev="vcucchie" type="fix" issue="1738">
+          Fixed date indexing in GenericTimeStampedCache, which used a 1 microsecond
+          quantization. Exact time offsets are now used instead (attosecond accuracy).
+        </action>
         <action dev="luc" type="fix" issue="2023">
           Fixed EOP fitting when leap seconds are present.
         </action>
