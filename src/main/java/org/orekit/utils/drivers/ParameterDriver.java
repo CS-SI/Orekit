@@ -33,8 +33,8 @@ import org.orekit.time.TimeInterval;
  * </p>
  * <p>
  * Any object can be notified when any of value, name, selection status… are changed.
- * This is done by {@link #addObserver(ParameterObserver)}  registering} a
- * {@link ParameterObserver ParameterObserver} to the parameter driver.
+ * This is done by {@link BaseParameterDriver#addObserver(BaseParameterObserver)
+ * registering} a {@link ParameterObserver parameter observer} to the parameter driver.
  * <p>
  * This design has two major goals. First, it allows an external algorithm to drive
  * internal parameters blindly, as it only needs to get a list of instances of this
