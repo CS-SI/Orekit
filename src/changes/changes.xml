@@ -20,6 +20,9 @@
   </properties>
   <body>
       <release version="14.0" date="TBD" description="TBD">
+          <action dev="maxime" type="fix" issue="2014">
+              Silence code smells in SpotBugs for SonarQube.
+          </action>
           <action dev="luc" type="add" issue="2012">
               Fixed spurious non-zero velocity appearing when transforming
               SP3 files between Earth and inertial frames.

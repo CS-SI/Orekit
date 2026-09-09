@@ -207,7 +207,7 @@
     <Bug pattern="CNT_ROUGH_CONSTANT_VALUE" />
   </Match>
   <Match>
-    <Class name="~.*\.IonosphereKlobucharMessage$"/>
+    <Class name="~.*\.IonosphereBaseMessage$"/>
     <Bug pattern="CNT_ROUGH_CONSTANT_VALUE" />
   </Match>
   
@@ -513,8 +513,7 @@
     <Bug pattern="NP_NULL_PARAM_DEREF" />
   </Match>
 
-  <!-- the following is a false positive as this should never happen
-       with files embedded in Orekit -->
+  <!-- the following is a false positive as this should never happen with files embedded in Orekit -->
   <Match>
     <Class name="~.*\.IERSConventions$"/>
     <Method name="loadLoveNumbers" />
@@ -531,5 +530,22 @@
     <Bug pattern="UR_UNINIT_READ_CALLED_FROM_SUPER_CONSTRUCTOR" />
   </Match>
 
+  <!-- the equality tests here are convergence criteria: the series is summed and the
+       Halley-Newton iteration is stopped when the value no longer changes at machine
+       precision, as prescribed by the Gooding and Odell algorithm -->
+  <Match>
+    <Class name="org.orekit.orbits.KeplerianAnomalyUtility" />
+    <Method name="hyperbolicMeanToEccentric" params="double,double" returns="double" />
+    <Bug pattern="FE_FLOATING_POINT_EQUALITY" />
+  </Match>
+
+  <!-- the following is a false positive: the readLine method called here is not
+     BufferedReader.readLine but CompactRinexFormat's own helper, which never
+     returns null (it throws an OrekitException at end of file instead) -->
+  <Match>
+    <Class name="~.*\.HatanakaCompressFilter\$CompactRinexFormat$"/>
+    <Method name="uncompressSection" />
+    <Bug pattern="NP_IMMEDIATE_DEREFERENCE_OF_READLINE" />
+  </Match>
 </FindBugsFilter>
 
