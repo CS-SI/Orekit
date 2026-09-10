@@ -30,20 +30,11 @@ import org.hipparchus.util.SinCos;
  */
 class GridEntry {
 
-    /** Conversion factor from degrees to mill arcseconds. */
-    public static final int DEG_TO_MAS = 3600000;
-
     /** Latitude (radian). */
     private final double latitude;
 
-    /** Latitude key (mas). */
-    private final int latKey;
-
     /** Longitude (radian). */
     private final double longitude;
-
-    /** Longitude key (mas). */
-    private final int lonKey;
 
     /** Undulation. */
     private final double undulation;
@@ -56,34 +47,26 @@ class GridEntry {
 
     /** Build an entry from its components.
      * @param latitude latitude (radian)
-     * @param latKey latitude key (mas)
      * @param longitude longitude (radian)
-     * @param lonKey longitude key (mas)
      * @param undulation undulation (m)
      * @param hS height correction
      * @param models seasonal models
      */
-    GridEntry(final double latitude, final int latKey, final double longitude, final int lonKey,
+    GridEntry(final double latitude, final double longitude,
               final double undulation, final double hS, final Map<SeasonalModelType, SeasonalModel> models) {
 
-        this.latitude     = latitude;
-        this.latKey       = latKey;
-        this.longitude    = longitude;
-        this.lonKey       = lonKey;
-        this.undulation   = undulation;
-        this.hS           = hS;
-        this.models       = models;
+        this.latitude   = latitude;
+        this.longitude  = longitude;
+        this.undulation = undulation;
+        this.hS         = hS;
+        this.models     = models;
     }
 
     /** Build a new entry 360° to the East of instance.
      * @return new wrapping entry (always same type as instance)
      */
     public GridEntry buildWrappedEntry() {
-        return new GridEntry(latitude, latKey,
-                             longitude + MathUtils.TWO_PI,
-                             lonKey + DEG_TO_MAS * 360,
-                             undulation, hS,
-                             models);
+        return new GridEntry(latitude, longitude + MathUtils.TWO_PI, undulation, hS, models);
     }
 
     /** Get latitude (radian).
@@ -93,25 +76,11 @@ class GridEntry {
         return latitude;
     }
 
-    /** Get latitude key (mas).
-     * @return latitude key (mas)
-     */
-    public int getLatKey() {
-        return latKey;
-    }
-
     /** Get longitude (radian).
      * @return longitude (radian)
      */
     public double getLongitude() {
         return longitude;
-    }
-
-    /** Get longitude key (mas).
-     * @return longitude key (mas)
-     */
-    public int getLonKey() {
-        return lonKey;
     }
 
     /** Get undulation.

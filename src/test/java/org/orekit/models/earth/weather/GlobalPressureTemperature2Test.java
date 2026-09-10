@@ -317,7 +317,7 @@ public class GlobalPressureTemperature2Test {
 
         Utils.setDataRoot("regular-data");
 
-        final String fileName = "corrupted-irregular-grid-gpt3_15.grd";
+        final String fileName = "corrupted-irregular-grid.grd";
         final URL url = GlobalPressureTemperature2Test.class.getClassLoader().getResource("gpt-grid/" + fileName);
         try {
             new GlobalPressureTemperature2(new DataSource(url.toURI()),
