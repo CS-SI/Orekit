@@ -26,8 +26,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedSet;
-import java.util.TreeSet;
 import java.util.regex.Pattern;
 
 import org.hipparchus.util.FastMath;
@@ -133,9 +131,7 @@ class GptNParser implements DataLoader {
     @Override
     public void loadData(final InputStream input, final String name) throws IOException {
 
-        final SortedSet<Integer> latSample = new TreeSet<>();
-        final SortedSet<Integer> lonSample = new TreeSet<>();
-        final List<GridEntry>    entries   = new ArrayList<>();
+        final List<GridEntry> entries = new ArrayList<>();
 
         // Open stream and parse data
         try (InputStreamReader isr = new InputStreamReader(input, StandardCharsets.UTF_8);
@@ -150,17 +146,14 @@ class GptNParser implements DataLoader {
                     parseHeader(line, lineNumber, name);
                 } else if (!line.isEmpty()) {
                     // read grid data
-                    final GridEntry entry = parseEntry(line, lineNumber, name);
-                    latSample.add(entry.getLatKey());
-                    lonSample.add(entry.getLonKey());
-                    entries.add(entry);
+                    entries.add(parseEntry(line, lineNumber, name));
                 }
 
             }
         }
 
         // organize entries in a grid that wraps around Earth in longitude
-        grid = new Grid(latSample, lonSample, entries, name);
+        grid = new Grid(entries, name);
 
     }
 
@@ -244,7 +237,7 @@ class GptNParser implements DataLoader {
 
     /** Check if header label is what we are looking for.
      * @param label label to check
-     * @param lookingFor label we are looking for, or null if we don't known what to expect
+     * @param lookingFor label we are looking for, or null if we don't know what to expect
      * @param line grid line
      * @param lineNumber line number
      * @param name file name
@@ -286,9 +279,7 @@ class GptNParser implements DataLoader {
             }
 
             return new GridEntry(FastMath.toRadians(latDegree),
-                                 (int) FastMath.rint(latDegree * GridEntry.DEG_TO_MAS),
                                  FastMath.toRadians(lonDegree),
-                                 (int) FastMath.rint(lonDegree * GridEntry.DEG_TO_MAS),
                                  Double.parseDouble(fields[undulationIndex]),
                                  Double.parseDouble(fields[heightCorrectionIndex]),
                                  models);

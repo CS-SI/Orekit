@@ -17,7 +17,7 @@
 package org.orekit.models.earth.weather;
 
 import java.util.List;
-import java.util.SortedSet;
+import java.util.function.ToDoubleFunction;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
@@ -27,6 +27,7 @@ import org.hipparchus.util.SinCos;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.utils.Constants;
+import org.orekit.utils.units.Unit;
 
 /** Container for a complete grid.
  * @author Bryan Cazabonne
@@ -35,50 +36,36 @@ import org.orekit.utils.Constants;
  */
 class Grid {
 
-    /** Latitude sample. */
-    private final SortedSet<Integer> latitudeSample;
+    /** Latitude indexer. */
+    private final Indexer latitudeIndexer;
 
-    /** Longitude sample. */
-    private final SortedSet<Integer> longitudeSample;
+    /** Longitude indexer. */
+    private final Indexer longitudeIndexer;
 
     /** Grid entries. */
     private final GridEntry[][] entries;
 
     /** Simple constructor.
-     * @param latitudeSample latitude sample
-     * @param longitudeSample longitude sample
      * @param loadedEntries loaded entries, organized as a simple list
      * @param name file name
      */
-    Grid(final SortedSet<Integer> latitudeSample, final SortedSet<Integer> longitudeSample,
-         final List<GridEntry> loadedEntries, final String name) {
+    Grid(final List<GridEntry> loadedEntries, final String name) {
 
-        final int nA         = latitudeSample.size();
-        final int nO         = longitudeSample.size() + 1; // we add one here for wrapping the grid
-        this.entries         = new GridEntry[nA][nO];
-        this.latitudeSample  = latitudeSample;
-        this.longitudeSample = longitudeSample;
+        // set up indexers
+        latitudeIndexer  = new Indexer(loadedEntries, GridEntry::getLatitude, name);
+        longitudeIndexer = new Indexer(loadedEntries, GridEntry::getLongitude, name);
 
-        // organize entries in the regular grid
+        // organize entries in the regular grid (with one extra column for wrapping in longitude)
+        entries = new GridEntry[latitudeIndexer.n][longitudeIndexer.n + 1];
         for (final GridEntry entry : loadedEntries) {
-            final int latitudeIndex  = latitudeSample.headSet(entry.getLatKey() + 1).size() - 1;
-            final int longitudeIndex = longitudeSample.headSet(entry.getLonKey() + 1).size() - 1;
-            entries[latitudeIndex][longitudeIndex] = entry;
+            final int ia = latitudeIndexer.index(entry.getLatitude());
+            final int io = longitudeIndexer.index(entry.getLongitude());
+            entries[ia][io] = entry;
         }
 
-        // finalize the grid
-        for (final GridEntry[] row : entries) {
-
-            // check for missing entries
-            for (int longitudeIndex = 0; longitudeIndex < nO - 1; ++longitudeIndex) {
-                if (row[longitudeIndex] == null) {
-                    throw new OrekitException(OrekitMessages.IRREGULAR_OR_INCOMPLETE_GRID, name);
-                }
-            }
-
-            // wrap the grid around the Earth in longitude
-            row[nO - 1] = row[0].buildWrappedEntry();
-
+        // wrap the grid around the Earth in longitude
+        for (int ia = 0; ia < latitudeIndexer.n; ia++) {
+            entries[ia][longitudeIndexer.n] = entries[ia][0].buildWrappedEntry();
         }
 
     }
@@ -88,13 +75,8 @@ class Grid {
      * @return index of South entries in the grid
      */
     private int getSouthIndex(final double latitude) {
-
-        final int latKey = (int) FastMath.rint(FastMath.toDegrees(latitude) * GridEntry.DEG_TO_MAS);
-        final int index  = latitudeSample.headSet(latKey + 1).size() - 1;
-
         // make sure we have at least one point remaining on North by clipping to size - 2
-        return FastMath.min(index, latitudeSample.size() - 2);
-
+        return FastMath.min(latitudeIndexer.index(latitude), latitudeIndexer.n - 2);
     }
 
     /** Get index of West entries in the grid.
@@ -102,12 +84,8 @@ class Grid {
      * @return index of West entries in the grid
      */
     private int getWestIndex(final double longitude) {
-
-        final int lonKey = (int) FastMath.rint(FastMath.toDegrees(longitude) * GridEntry.DEG_TO_MAS);
-
-        // we don't do clipping in longitude because we have added a row to wrap around the Earth
-        return longitudeSample.headSet(lonKey + 1).size() - 1;
-
+        // we don't do clipping in longitude because we have added a column to wrap around the Earth
+        return longitudeIndexer.index(longitude);
     }
 
     /** Get interpolator within a cell.
@@ -185,6 +163,96 @@ class Grid {
             hasAll &= entries[0][0].hasModel(type);
         }
         return hasAll;
+    }
+
+    /** Indexer for latitude/longitude.
+     * @since 14.0
+     */
+    private static class Indexer {
+
+        /** Minimum value. */
+        private final double min;
+
+        /** Step between values. */
+        private final double step;
+
+        /** Number of sampling points. */
+        private final int n;
+
+        /** Build an indexer.
+         * @param entries   all loaded entries
+         * @param extractor extractor for the coordinate we are looking for
+         * @param name      file name
+         */
+        Indexer(final List<GridEntry> entries, final ToDoubleFunction<GridEntry> extractor, final String name) {
+
+            final double tolerance = Unit.parse("mas").toSI(1.0);
+
+            // look for minimum and maximum grid row/column
+            double inf = Double.POSITIVE_INFINITY;
+            double sup = Double.NEGATIVE_INFINITY;
+            for (final GridEntry entry : entries) {
+               final double coordinate = extractor.applyAsDouble(entry);
+                inf = FastMath.min(inf, coordinate);
+                sup = FastMath.max(sup, coordinate);
+            }
+
+            // look for first step
+            double firstStep = Double.POSITIVE_INFINITY;
+            for (final GridEntry entry : entries) {
+                final double delta = extractor.applyAsDouble(entry) - inf;
+                if (delta > tolerance) {
+                    // this entry does not belong to the minimum grid row/column
+                    firstStep = FastMath.min(firstStep, delta);
+                }
+            }
+
+            // store grid characteristics
+            this.min  = inf;
+            this.step = firstStep;
+            this.n    = 1 + (int) FastMath.rint((sup - inf) / firstStep);
+
+            // check regularity
+            final boolean[] found = new boolean[n];
+            for (final GridEntry entry : entries) {
+                final double coordinate = extractor.applyAsDouble(entry);
+                final int    k          = index(coordinate);
+                found[k] = true;
+
+                // check entry is exactly at expected coordinate
+                if (FastMath.abs(coordinate - value(k)) > tolerance) {
+                    throw new OrekitException(OrekitMessages.IRREGULAR_OR_INCOMPLETE_GRID, name);
+                }
+            }
+
+            // check all regularly spaced coordinates are present in the loaded entries
+            for (final boolean b : found) {
+                if (!b) {
+                    throw new OrekitException(OrekitMessages.IRREGULAR_OR_INCOMPLETE_GRID, name);
+                }
+            }
+
+        }
+
+        /** Find index corresponding to coordinate.
+         * @param coordinate coordinate along axis
+         * @return index of grid point at or just below coordinate
+         */
+        public int index(final double coordinate) {
+            if ((int) FastMath.floor((coordinate - min) / step) < 0) {
+                System.out.println("gotcha!");
+            }
+            return (int) FastMath.floor((coordinate - min) / step);
+        }
+
+        /** Find value corresponding to index.
+         * @param index index in the sampled grid
+         * @return value along axis
+         */
+        public double value(final int index) {
+            return min + index * step;
+        }
+
     }
 
 }

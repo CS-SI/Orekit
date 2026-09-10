@@ -20,6 +20,9 @@
   </properties>
   <body>
       <release version="14.0" date="TBD" description="TBD">
+          <action dev="luc" type="add" issue="2020">
+              Improved performance of Global Pressure Temperature models.
+          </action>
           <action dev="luc" type="add" issue="2012">
               Fixed spurious non-zero velocity appearing when transforming
               SP3 files between Earth and inertial frames.
