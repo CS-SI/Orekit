@@ -21,6 +21,7 @@ import org.hipparchus.Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathArrays;
+import org.hipparchus.util.Precision;
 import org.hipparchus.util.SinCos;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
@@ -53,6 +54,26 @@ import org.orekit.utils.TrackingCoordinates;
  */
 public class ViennaThree extends AbstractVienna {
 
+    /** Cache for primitive double point.
+     * @since 14.0
+     */
+    private double cachedLatitudeD;
+
+    /** Cache for primitive double Legendre polynomials.
+     * @since 14.0
+     */
+    private LegendrePolynomials cachedPolynomialsD;
+
+    /** Cache for field point.
+     * @since 14.0
+     */
+    private CalculusFieldElement<?> cachedLatitudeF;
+
+    /** Cache for field Legendre polynomials.
+     * @since 14.0
+     */
+    private FieldLegendrePolynomials<?> cachedPolynomialsF;
+
     /** Build a new instance.
      * @param aProvider provider for a<sub>h</sub> and a<sub>w</sub> coefficients
      * @param gProvider provider for {@link AzimuthalGradientCoefficients} and {@link FieldAzimuthalGradientCoefficients}
@@ -64,6 +85,13 @@ public class ViennaThree extends AbstractVienna {
                        final TroposphericModel zenithDelayProvider,
                        final TimeScale utc) {
         super(aProvider, gProvider, zenithDelayProvider, utc);
+
+        // start with empty caches
+        cachedLatitudeD    = Double.NaN;
+        cachedPolynomialsD = null;
+        cachedLatitudeF    = null;
+        cachedPolynomialsF = null;
+
     }
 
     /** {@inheritDoc} */
@@ -78,10 +106,8 @@ public class ViennaThree extends AbstractVienna {
         // Day of year computation
         final double dofyear = getDayOfYear(date);
 
-        // Compute Legendre Polynomials Pnm(cos(0.5 * pi - phi))
-        final int degree = 12;
-        final int order  = 12;
-        final LegendrePolynomials p = new LegendrePolynomials(degree, order, FastMath.sin(point.getLatitude()));
+        // Get Legendre Polynomials Pnm(cos(0.5 * pi - phi))
+        final LegendrePolynomials p = getPolynomials(point);
 
         // Compute trigonometric functions of longitude
         final SinCos[] sc = new SinCos[13];
@@ -179,10 +205,8 @@ public class ViennaThree extends AbstractVienna {
         // Day of year computation
         final T dofyear = getDayOfYear(date);
 
-        // Compute Legendre Polynomials Pnm(cos(0.5 * pi - phi))
-        final int degree = 12;
-        final int order  = 12;
-        final FieldLegendrePolynomials<T> p = new FieldLegendrePolynomials<>(degree, order, FastMath.sin(point.getLatitude()));
+        // Get Legendre Polynomials Pnm(cos(0.5 * pi - phi))
+        final FieldLegendrePolynomials<T> p = getPolynomials(point);
 
         // Compute trigonometric functions of longitude
         final FieldSinCos<T>[] sc = new FieldSinCos[13];
@@ -263,6 +287,46 @@ public class ViennaThree extends AbstractVienna {
                                                              trackingCoordinates.getElevation());
 
         return function;
+    }
+
+    /** Get Legendre polynomials.
+     * @param point ground point
+     * @return Legendre polynomials for the point
+     * @since 14.0
+     */
+    private synchronized LegendrePolynomials getPolynomials(final GeodeticPoint point) {
+        if (!Precision.equals(point.getLatitude(), cachedLatitudeD, 0)) {
+            // we need to compute and cache the Legendre polynomials for this point
+            final int degree = 12;
+            final int order  = 12;
+            cachedLatitudeD = point.getLatitude();
+            cachedPolynomialsD = new LegendrePolynomials(degree, order, FastMath.sin(point.getLatitude()));
+        }
+
+        // use the cached polynomials
+        return cachedPolynomialsD;
+
+    }
+
+    /** Get Legendre polynomials.
+     * @param <T> type of the field elements
+     * @param point ground point
+     * @return Legendre polynomials for the point
+     * @since 14.0
+     */
+    private synchronized <T extends CalculusFieldElement<T>> FieldLegendrePolynomials<T>
+        getPolynomials(final FieldGeodeticPoint<T> point) {
+        if (!point.getLatitude().equals(cachedLatitudeF)) {
+            // we need to compute and cache the Legendre polynomials for this point
+            final int degree = 12;
+            final int order  = 12;
+            cachedLatitudeF    = point.getLatitude();
+            cachedPolynomialsF = new FieldLegendrePolynomials<>(degree, order, FastMath.sin(point.getLatitude()));
+        }
+
+        // use the cached polynomials
+        return (FieldLegendrePolynomials<T>) cachedPolynomialsF;
+
     }
 
     /** Computes the empirical temporal information for the mapping function
