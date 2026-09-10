@@ -19,7 +19,10 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
-    <release version="13.1.8" date="TBD" description="TBD">
+    <release version="13.1.9" date="TBD" description="TBD">
+        <action dev="luc" type="fix" issue="2019">
+          Improved tidal displacement performance.
+        </action>
         <action dev="luc" type="fix" issue="2018">
           Avoid unnecessary recomputation in Vienna 3 tropospheric model.
         </action>
