@@ -454,6 +454,18 @@
               Update PredefinedIAUPoles to WGCCRE 2015 report
           </action>
     </release>
+    <release version="13.1.8" date="TBD" description="TBD">
+        <action dev="luc" type="fix" issue="2018">
+          Avoid unnecessary recomputation in Vienna 3 tropospheric model.
+        </action>
+        <action dev="luc" type="fix" issue="2012">
+          Fixed spurious non-zero velocity appearing when transforming
+          SP3 files between Earth and inertial frames.
+        </action>
+        <action dev="luc" type="fix" issue="1965" due-to="Julian Rengstorf">
+          Align OpsStatus enum with the SANA Operational Status registry.
+        </action>
+    </release>
     <release version="13.1.8" date="2026-08-30" description="Orekit 13.1.8 is a patch release. It solves bugs related to NRLMSISE, numerical state transition matrix and rates in pseudo-inertial frames.">
         <action dev="serrof" type="fix" issue="2006">
             Keep additional data in NumericalGradientConverter if force does not just depend on position.
