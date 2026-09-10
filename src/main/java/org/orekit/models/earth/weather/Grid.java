@@ -58,14 +58,25 @@ class Grid {
         // organize entries in the regular grid (with one extra column for wrapping in longitude)
         entries = new GridEntry[latitudeIndexer.n][longitudeIndexer.n + 1];
         for (final GridEntry entry : loadedEntries) {
-            final int ia = latitudeIndexer.index(entry.getLatitude());
-            final int io = longitudeIndexer.index(entry.getLongitude());
+            final int ia = latitudeIndexer.closeIndex(entry.getLatitude());
+            final int io = longitudeIndexer.closeIndex(entry.getLongitude());
             entries[ia][io] = entry;
         }
 
         // wrap the grid around the Earth in longitude
         for (int ia = 0; ia < latitudeIndexer.n; ia++) {
-            entries[ia][longitudeIndexer.n] = entries[ia][0].buildWrappedEntry();
+            if (entries[ia][0] != null) {
+                entries[ia][longitudeIndexer.n] = entries[ia][0].buildWrappedEntry();
+            }
+        }
+
+        // check all regularly spaced coordinates are present in the loaded entries
+        for (final GridEntry[] row : entries) {
+            for (final GridEntry entry : row) {
+                if (entry == null) {
+                    throw new OrekitException(OrekitMessages.IRREGULAR_OR_INCOMPLETE_GRID, name);
+                }
+            }
         }
 
     }
@@ -76,7 +87,7 @@ class Grid {
      */
     private int getSouthIndex(final double latitude) {
         // make sure we have at least one point remaining on North by clipping to size - 2
-        return FastMath.min(latitudeIndexer.index(latitude), latitudeIndexer.n - 2);
+        return FastMath.min(latitudeIndexer.lowIndex(latitude), latitudeIndexer.n - 2);
     }
 
     /** Get index of West entries in the grid.
@@ -85,7 +96,7 @@ class Grid {
      */
     private int getWestIndex(final double longitude) {
         // we don't do clipping in longitude because we have added a column to wrap around the Earth
-        return longitudeIndexer.index(longitude);
+        return longitudeIndexer.lowIndex(longitude);
     }
 
     /** Get interpolator within a cell.
@@ -192,7 +203,7 @@ class Grid {
             double inf = Double.POSITIVE_INFINITY;
             double sup = Double.NEGATIVE_INFINITY;
             for (final GridEntry entry : entries) {
-               final double coordinate = extractor.applyAsDouble(entry);
+                final double coordinate = extractor.applyAsDouble(entry);
                 inf = FastMath.min(inf, coordinate);
                 sup = FastMath.max(sup, coordinate);
             }
@@ -213,21 +224,10 @@ class Grid {
             this.n    = 1 + (int) FastMath.rint((sup - inf) / firstStep);
 
             // check regularity
-            final boolean[] found = new boolean[n];
             for (final GridEntry entry : entries) {
                 final double coordinate = extractor.applyAsDouble(entry);
-                final int    k          = index(coordinate);
-                found[k] = true;
-
-                // check entry is exactly at expected coordinate
-                if (FastMath.abs(coordinate - value(k)) > tolerance) {
-                    throw new OrekitException(OrekitMessages.IRREGULAR_OR_INCOMPLETE_GRID, name);
-                }
-            }
-
-            // check all regularly spaced coordinates are present in the loaded entries
-            for (final boolean b : found) {
-                if (!b) {
+                final double rebuilt = min + closeIndex(coordinate) * step;
+                if (FastMath.abs(coordinate - rebuilt) > tolerance) {
                     throw new OrekitException(OrekitMessages.IRREGULAR_OR_INCOMPLETE_GRID, name);
                 }
             }
@@ -238,19 +238,16 @@ class Grid {
          * @param coordinate coordinate along axis
          * @return index of grid point at or just below coordinate
          */
-        public int index(final double coordinate) {
-            if ((int) FastMath.floor((coordinate - min) / step) < 0) {
-                System.out.println("gotcha!");
-            }
+        public int lowIndex(final double coordinate) {
             return (int) FastMath.floor((coordinate - min) / step);
         }
 
-        /** Find value corresponding to index.
-         * @param index index in the sampled grid
-         * @return value along axis
+        /** Find index corresponding to coordinate.
+         * @param coordinate coordinate along axis
+         * @return index of grid point closest to coordinate
          */
-        public double value(final int index) {
-            return min + index * step;
+        public int closeIndex(final double coordinate) {
+            return (int) FastMath.rint((coordinate - min) / step);
         }
 
     }
