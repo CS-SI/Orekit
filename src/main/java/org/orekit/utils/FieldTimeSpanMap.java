@@ -784,7 +784,7 @@ public class FieldTimeSpanMap<T, F extends CalculusFieldElement<F>> {
          * <p>
          * When moving a transition to past or future infinity, it will be disconnected
          * from the time span it initially belonged to as the next or previous time
-         * span validity will be extends to infinity.
+         * span validity will be extended to infinity.
          * </p>
          * @param newDate new transition date
          * @param eraseOverridden if true, spans that are entirely between current
@@ -792,26 +792,26 @@ public class FieldTimeSpanMap<T, F extends CalculusFieldElement<F>> {
          * spans exist, an exception will be triggered
          */
         public void resetDate(final FieldAbsoluteDate<F> newDate, final boolean eraseOverridden) {
-            if (newDate.isAfter(date)) {
-                // we are moving the transition towards future
+            synchronized (map) {
+                if (newDate.isAfter(date)) {
+                    // we are moving the transition towards future
 
-                // find span after new date
-                Span<S, F> newAfter = after;
-                while (newAfter.getEndTransition() != null &&
-                       newAfter.getEndTransition().getDate().isBeforeOrEqualTo(newDate)) {
-                    if (eraseOverridden) {
-                        map.nbSpans--;
-                    } else {
-                        // forbidden collision detected
-                        throw new OrekitException(OrekitMessages.TRANSITION_DATES_COLLISION,
-                                                  date.toAbsoluteDate(),
-                                                  newDate.toAbsoluteDate(),
-                                                  newAfter.getEndTransition().getDate().toAbsoluteDate());
+                    // find span after new date
+                    Span<S, F> newAfter = after;
+                    while (newAfter.getEndTransition() != null &&
+                           newAfter.getEndTransition().getDate().isBeforeOrEqualTo(newDate)) {
+                        if (eraseOverridden) {
+                            map.nbSpans--;
+                        } else {
+                            // forbidden collision detected
+                            throw new OrekitException(OrekitMessages.TRANSITION_DATES_COLLISION,
+                                                      date.toAbsoluteDate(),
+                                                      newDate.toAbsoluteDate(),
+                                                      newAfter.getEndTransition().getDate().toAbsoluteDate());
+                        }
+                        newAfter = newAfter.next();
                     }
-                    newAfter = newAfter.next();
-                }
 
-                synchronized (map) {
                     // perform update
                     date = newDate;
                     after = newAfter;
@@ -824,28 +824,26 @@ public class FieldTimeSpanMap<T, F extends CalculusFieldElement<F>> {
                         map.lastSpan = before;
                         before.end   = null;
                     }
-                }
 
-            } else {
-                // we are moving transition towards the past
+                } else {
+                    // we are moving transition towards the past
 
-                // find span before new date
-                Span<S, F> newBefore = before;
-                while (newBefore.getStartTransition() != null &&
-                       newBefore.getStartTransition().getDate().isAfterOrEqualTo(newDate)) {
-                    if (eraseOverridden) {
-                        map.nbSpans--;
-                    } else {
-                        // forbidden collision detected
-                        throw new OrekitException(OrekitMessages.TRANSITION_DATES_COLLISION,
-                                                  date.toAbsoluteDate(),
-                                                  newDate.toAbsoluteDate(),
-                                                  newBefore.getStartTransition().getDate().toAbsoluteDate());
+                    // find span before new date
+                    Span<S, F> newBefore = before;
+                    while (newBefore.getStartTransition() != null &&
+                           newBefore.getStartTransition().getDate().isAfterOrEqualTo(newDate)) {
+                        if (eraseOverridden) {
+                            map.nbSpans--;
+                        } else {
+                            // forbidden collision detected
+                            throw new OrekitException(OrekitMessages.TRANSITION_DATES_COLLISION,
+                                                      date.toAbsoluteDate(),
+                                                      newDate.toAbsoluteDate(),
+                                                      newBefore.getStartTransition().getDate().toAbsoluteDate());
+                        }
+                        newBefore = newBefore.previous();
                     }
-                    newBefore = newBefore.previous();
-                }
 
-                synchronized (map) {
                     // perform update
                     date = newDate;
                     before = newBefore;
@@ -858,8 +856,8 @@ public class FieldTimeSpanMap<T, F extends CalculusFieldElement<F>> {
                         map.firstSpan = after;
                         after.start   = null;
                     }
-                }
 
+                }
             }
         }
 
