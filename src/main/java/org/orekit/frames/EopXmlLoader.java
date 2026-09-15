@@ -112,7 +112,7 @@ class EopXmlLoader extends AbstractEopLoader implements EopHistoryLoader {
 
         /** {@inheritDoc} */
         @Override
-        public Collection<EOPEntry> parse(final DataSource source)
+        public List<EOPEntry> parse(final DataSource source)
             throws IOException, OrekitException {
             try {
                 this.history = new ArrayList<>();

@@ -302,7 +302,7 @@ class BulletinBFilesLoader extends AbstractEopLoader implements EopHistoryLoader
 
         /** {@inheritDoc} */
         @Override
-        public Collection<EOPEntry> parse(final DataSource source)
+        public List<EOPEntry> parse(final DataSource source)
             throws IOException {
 
             // set up a reader for line-oriented bulletin B files

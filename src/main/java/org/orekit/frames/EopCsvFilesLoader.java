@@ -180,7 +180,7 @@ class EopCsvFilesLoader extends AbstractEopLoader implements EopHistoryLoader {
         }
 
         /** {@inheritDoc} */
-        public Collection<EOPEntry> parse(final DataSource source)
+        public List<EOPEntry> parse(final DataSource source)
             throws IOException, OrekitException {
 
             final List<EOPEntry> history = new ArrayList<>();

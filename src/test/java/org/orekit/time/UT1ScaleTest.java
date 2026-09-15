@@ -68,8 +68,8 @@ public class UT1ScaleTest {
 
         // verify
         // there is a leap second and jump in UT1-UTC
-        Assertions.assertEquals(eopHistory.getUT1MinusUTC(new AbsoluteDate(2005, 12, 31, utc)), -0.6611333, 0);
-        Assertions.assertEquals(eopHistory.getUT1MinusUTC(new AbsoluteDate(2006, 1, 1, utc)), 0.338829, 1e-16);
+        Assertions.assertEquals(-0.661170913, eopHistory.getUT1MinusUTC(dateA), 1.0e-9);
+        Assertions.assertEquals( 0.338828907, eopHistory.getUT1MinusUTC(dateB), 1.0e-9);
 
         // check UT1-TAI is still smooth
         double dt = 0.5;

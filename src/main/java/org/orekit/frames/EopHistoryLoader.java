@@ -18,6 +18,7 @@ package org.orekit.frames;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
 
 import org.orekit.data.DataSource;
 import org.orekit.time.TimeScales;
@@ -49,7 +50,7 @@ public interface EopHistoryLoader {
          * @return parsed EOP entries.
          * @exception IOException if {@code input} throws one during parsing.
          */
-        Collection<EOPEntry> parse(DataSource source) throws IOException;
+        List<EOPEntry> parse(DataSource source) throws IOException;
 
         /**
          * Create a new parser for EOP data in the rapid and predicted XML format.

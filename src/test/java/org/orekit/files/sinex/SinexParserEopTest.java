@@ -28,7 +28,6 @@ import org.orekit.frames.EOPHistory;
 import org.orekit.frames.ITRFVersion;
 import org.orekit.frames.LazyLoadedFrames;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
@@ -37,10 +36,9 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.units.Unit;
 import org.orekit.utils.units.UnitsConverter;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 public class SinexParserEopTest {
 
@@ -64,15 +62,18 @@ public class SinexParserEopTest {
         // Extracting the data parsed in the Sinex loader to fill the history set
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_2010.getNutationCorrectionConverter();
-        SortedSet<EOPEntry> history = new TreeSet<>(new ChronologicalComparator());
+        List<EOPEntry> history = new ArrayList<>();
         sinex.getEopLoader(ITRFVersion.ITRF_2014).fillHistory(converter, history);
+        final EOPHistory eopHistory =
+            new EOPHistory(IERSConventions.IERS_2010, EOPHistory.DEFAULT_INTERPOLATION_DEGREE, history,
+                           true, DataContext.getDefault().getTimeScales());
 
         final UnitsConverter unitConvRad = new UnitsConverter(Unit.parse("mas"), Unit.RADIAN);
         AbsoluteDate date1 = new AbsoluteDate(new DateComponents(2019, 1, 1), utc).shiftedBy(Constants.JULIAN_DAY * (350));
         AbsoluteDate date2 = new AbsoluteDate(new DateComponents(2019, 1, 1), utc).shiftedBy(Constants.JULIAN_DAY * (352));
 
         // Check size of set
-        Assertions.assertEquals(4, history.size());
+        Assertions.assertEquals(4, eopHistory.getEntries().size());
 
         // Test if the values are correctly extracted
         EOPEntry firstEntry = history.getFirst();
@@ -80,9 +81,6 @@ public class SinexParserEopTest {
         Assertions.assertEquals(unitConvRad.convert(0.274820464392703E+03), firstEntry.getY(), 1e-15);
         Assertions.assertEquals(-0.172036907064256E+03, firstEntry.getUT1MinusUTC() * 1000, 1e-15);
 
-        // Test if a valid EOPHistory object can be built
-        EOPHistory eopHistory = new EOPHistory(IERSConventions.IERS_2010, EOPHistory.DEFAULT_INTERPOLATION_DEGREE,
-                                               history, true, DataContext.getDefault().getTimeScales());
         Assertions.assertEquals(-0.172046001405041, eopHistory.getUT1MinusUTC(date1), 1e-15);
         Assertions.assertEquals(unitConvRad.convert(0.994323310003336E+02), eopHistory.getPoleCorrection(date1).getXp(), 1e-15);
         Assertions.assertEquals(unitConvRad.convert(0.275001985187467E+03), eopHistory.getPoleCorrection(date1).getYp(), 1e-15);
@@ -122,7 +120,7 @@ public class SinexParserEopTest {
         // Extracting the data parsed in the Sinex loader to fill the history set
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_2010.getNutationCorrectionConverter();
-        SortedSet<EOPEntry> history = new TreeSet<>(new ChronologicalComparator());
+        List<EOPEntry> history = new ArrayList<>();
         sinex.getEopLoader(ITRFVersion.ITRF_2014).fillHistory(converter, history);
 
         final UnitsConverter unitConvRad = new UnitsConverter(Unit.parse("mas"), Unit.RADIAN);
@@ -169,7 +167,7 @@ public class SinexParserEopTest {
         // Extracting the data parsed in the Sinex loader to fill the history set
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_2010.getNutationCorrectionConverter();
-        SortedSet<EOPEntry> history = new TreeSet<>(new ChronologicalComparator());
+        List<EOPEntry> history = new ArrayList<>();
         sinex.getEopLoader(ITRFVersion.ITRF_2014).fillHistory(converter, history);
 
         // Setting up the date
@@ -209,7 +207,7 @@ public class SinexParserEopTest {
 
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_2010.getNutationCorrectionConverter();
-        SortedSet<EOPEntry> history = new TreeSet<>(new ChronologicalComparator());
+        List<EOPEntry> history = new ArrayList<>();
         sinex.getEopLoader(ITRFVersion.ITRF_2014).fillHistory(converter, history);
         final UnitsConverter unitConvRad = new UnitsConverter(Unit.parse("mas"), Unit.RADIAN);
 
@@ -237,9 +235,11 @@ public class SinexParserEopTest {
 
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_2010.getNutationCorrectionConverter();
-        SortedSet<EOPEntry> history = new TreeSet<>(new ChronologicalComparator());
+        List<EOPEntry> history = new ArrayList<>();
         sinex.getEopLoader(ITRFVersion.ITRF_2014).fillHistory(converter, history);
-
+        final EOPHistory eopHistory =
+            new EOPHistory(IERSConventions.IERS_2010, EOPHistory.DEFAULT_INTERPOLATION_DEGREE, history,
+                           true, DataContext.getDefault().getTimeScales());
         AbsoluteDate dateStart = new AbsoluteDate(new DateComponents(2019, 1, 1), utc).shiftedBy(Constants.JULIAN_DAY * 350);
         AbsoluteDate dateStartPlusOne = dateStart.shiftedBy(+1.0);
         AbsoluteDate dateInFile = new AbsoluteDate(new DateComponents(2019, 1, 1), utc).shiftedBy(Constants.JULIAN_DAY * 350 + 45000.0);
@@ -248,10 +248,8 @@ public class SinexParserEopTest {
 
         List<AbsoluteDate> listDates = Arrays.asList(dateStart, dateStartPlusOne, dateInFile, dateEndMinusOne, dateEnd);
 
-        int cpt = 0;
-        for (EOPEntry entry : history) {
-            Assertions.assertEquals(listDates.get(cpt), entry.getDate());
-            cpt = cpt+1;
+        for (int i = 0; i < listDates.size(); i++) {
+            Assertions.assertEquals(listDates.get(i), eopHistory.getEntries().get(i).getDate());
         }
 
     }
@@ -264,7 +262,7 @@ public class SinexParserEopTest {
 
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_2010.getNutationCorrectionConverter();
-        SortedSet<EOPEntry> history = new TreeSet<>(new ChronologicalComparator());
+        List<EOPEntry> history = new ArrayList<>();
         sinex.getEopLoader(ITRFVersion.ITRF_2014).fillHistory(converter, history);
 
         final UnitsConverter unitConvRad = new UnitsConverter(Unit.parse("mas"), Unit.RADIAN);
