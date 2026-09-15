@@ -17,16 +17,13 @@
 package org.orekit.frames;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeSet;
 import java.util.function.Supplier;
 
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
-import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScales;
 import org.orekit.utils.Constants;
@@ -326,16 +323,14 @@ public class LazyLoadedEop {
                 addDefaultEOP1980HistoryLoaders(null, null, null, null, null, null, utcSupplier);
             }
 
-            // TimeStamped based set needed to remove duplicates
             OrekitException pendingException = null;
-            final Collection<EOPEntry> data = new TreeSet<>(new ChronologicalComparator());
+            final List<EOPEntry> data = new ArrayList<>();
 
             // try to load canonical data if available
             if (eopHistoryLoaders.containsKey(conventions)) {
                 for (final EopHistoryLoader loader : eopHistoryLoaders.get(conventions)) {
                     try {
-                        loader.fillHistory(conventions.getNutationCorrectionConverter(timeScales),
-                                           data);
+                        loader.fillHistory(conventions.getNutationCorrectionConverter(timeScales), data);
                     } catch (OrekitException oe) {
                         pendingException = oe;
                     }
