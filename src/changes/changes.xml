@@ -458,6 +458,9 @@
           </action>
     </release>
     <release version="13.1.9" date="TBD" description="TBD">
+        <action dev="luc" type="fix" issue="2023">
+          Fixed EOP fitting when leap seconds are present.
+        </action>
         <action dev="luc" type="fix" issue="2019">
           Improved tidal displacement performance.
         </action>
