@@ -16,6 +16,8 @@
  */
 package org.orekit.frames;
 
+import org.hipparchus.util.FastMath;
+
 import java.io.Serial;
 import java.io.Serializable;
 
@@ -68,11 +70,46 @@ public class EOPFitter implements Serializable {
      * @return fitted model
      */
     public EOPFittedModel fit(final EOPHistory rawHistory) {
-        return new EOPFittedModel(dut1Fitter.fit(rawHistory, EOPEntry::getUT1MinusUTC),
+        return new EOPFittedModel(dut1Fitter.fit(rawHistory, new DUT1Smoother()::smoothedDUT1),
                                   xPFitter.fit(rawHistory, EOPEntry::getX),
                                   yPFitter.fit(rawHistory, EOPEntry::getY),
                                   dxFitter.fit(rawHistory, EOPEntry::getDx),
                                   dyFitter.fit(rawHistory, EOPEntry::getDy));
+    }
+
+    /** Smoother removing DUT₁ discontinuities.
+     * @since 14.0
+     */
+    private static class DUT1Smoother {
+
+        /** Previously processed dut₁. */
+        private double previous;
+
+        /** Simple constructor.
+         */
+        DUT1Smoother() {
+            this.previous = Double.NaN;
+        }
+
+        /** Extract smoothed DUT₁.
+         * @param entry EOP entry
+         * @return DUT₁ with discontinuities removed
+         */
+        public double smoothedDUT1(final EOPEntry entry) {
+
+            // original DUT₁
+            final double dut1 = entry.getUT1MinusUTC();
+
+            // cumulative leaps encountered since start
+            final int leaps = Double.isNaN(previous) ? 0 : (int) FastMath.rint(dut1 - previous);
+
+            // compensate leaps
+            previous = dut1 - leaps;
+
+            return previous;
+
+        }
+
     }
 
 }
