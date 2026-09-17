@@ -154,18 +154,24 @@ public class TidalDisplacementTest {
         }
 
         // fake providers generating only the positions from the reference program test
-        PVCoordinatesProvider fakeSun  = (date, frame) -> new TimeStampedPVCoordinates(date,
-                                                                                       new Vector3D(137859926952.015,
-                                                                                                    54228127881.435,
-                                                                                                    23509422341.6960),
-                                                                                       Vector3D.ZERO,
-                                                                                       Vector3D.ZERO);
-        PVCoordinatesProvider fakeMoon = (date, frame) -> new TimeStampedPVCoordinates(date,
-                                                                                       new Vector3D(-179996231.920342,
-                                                                                                    -312468450.131567,
-                                                                                                    -169288918.592160),
-                                                                                       Vector3D.ZERO,
-                                                                                       Vector3D.ZERO);
+        PVCoordinatesProvider fakeSun  = (date, frame) -> {
+            final TimeStampedPVCoordinates pvItrf = new TimeStampedPVCoordinates(date,
+                                                                                 new Vector3D(137859926952.015,
+                                                                                              54228127881.435,
+                                                                                              23509422341.6960),
+                                                                                 Vector3D.ZERO,
+                                                                                 Vector3D.ZERO);
+            return itrf.getTransformTo(frame, date).transformPVCoordinates(pvItrf);
+        };
+        PVCoordinatesProvider fakeMoon = (date, frame) -> {
+            final TimeStampedPVCoordinates pvItrf = new TimeStampedPVCoordinates(date,
+                                                                                 new Vector3D(-179996231.920342,
+                                                                                              -312468450.131567,
+                                                                                              -169288918.592160),
+                                                                                 Vector3D.ZERO,
+                                                                                 Vector3D.ZERO);
+            return itrf.getTransformTo(frame, date).transformPVCoordinates(pvItrf);
+        };
 
         TidalDisplacement td = new TidalDisplacement(re, sunEarthSystemMassRatio, earthMoonMassRatio,
                                                      fakeSun, fakeMoon, conventions, removePermanentDeformation);

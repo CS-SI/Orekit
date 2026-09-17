@@ -451,7 +451,7 @@ class BulletinAFilesLoader extends AbstractEopLoader implements EopHistoryLoader
 
         /** {@inheritDoc} */
         @Override
-        public Collection<EOPEntry> parse(final DataSource source)
+        public List<EOPEntry> parse(final DataSource source)
             throws IOException {
 
             // create a new list for entries parsed from this file

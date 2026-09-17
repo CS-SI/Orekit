@@ -204,7 +204,7 @@ class RapidDataAndPredictionColumnsLoader extends AbstractEopLoader
 
         /** {@inheritDoc} */
         @Override
-        public Collection<EOPEntry> parse(final DataSource source)
+        public List<EOPEntry> parse(final DataSource source)
             throws IOException {
 
             final List<EOPEntry> history = new ArrayList<>();
