@@ -31,6 +31,7 @@ import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.hipparchus.optim.ConvergenceChecker;
 import org.hipparchus.optim.SimpleVectorValueChecker;
+import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresAdapter;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresBuilder;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresFactory;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresOptimizer;
@@ -75,6 +76,9 @@ public class LeastSquaresConverter implements OsculatingToMeanConverter {
 
     /** Convergence checker for optimization algorithm. */
     private ConvergenceChecker<LeastSquaresProblem.Evaluation> checker;
+
+    /** Observer for iterations. */
+    private LeastSquaresConverterObserver observer;
 
     /** RMS. */
     private double rms;
@@ -170,6 +174,14 @@ public class LeastSquaresConverter implements OsculatingToMeanConverter {
         this.optimizer = optimizer;
     }
 
+
+    /** Set an observer for iterations.
+     * @param observer observer to be notified at the end of each evaluation
+     */
+    public void setObserver(final LeastSquaresConverterObserver observer) {
+        this.observer = observer;
+    }
+
     /** {@inheritDoc} */
     @Override
     public double getThreshold() {
@@ -256,7 +268,7 @@ public class LeastSquaresConverter implements OsculatingToMeanConverter {
         }
 
         // Constructs the least squares problem
-        final LeastSquaresProblem problem = new LeastSquaresBuilder().
+        final LeastSquaresProblem rawProblem = new LeastSquaresBuilder().
                                             maxIterations(maxIterations).
                                             maxEvaluations(Integer.MAX_VALUE).
                                             checker(checker).
@@ -265,6 +277,8 @@ public class LeastSquaresConverter implements OsculatingToMeanConverter {
                                             target(stateVector).
                                             start(startState).
                                             build();
+
+        final LeastSquaresProblem problem = new TappedLSProblem(rawProblem, initialized);
 
         // Solve least squares
         final LeastSquaresOptimizer.Optimum optimum = optimizer.optimize(problem);
@@ -392,6 +406,43 @@ public class LeastSquaresConverter implements OsculatingToMeanConverter {
             // Return
             return osculating;
 
+        }
+
+    }
+
+    /** Wrapper used to tap counters and notify the observer. */
+    private class TappedLSProblem extends LeastSquaresAdapter {
+        /** Orbit used to initialize conversion. */
+        private final Orbit initialized;
+
+        /** Simple constructor.
+         * @param problem underlying problem
+         * @param initialized orbit used to initialize conversion
+         */
+        TappedLSProblem(final LeastSquaresProblem problem, final Orbit initialized) {
+            super(problem);
+            this.initialized       = initialized;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public Evaluation evaluate(final RealVector point) {
+            final Evaluation evaluation = super.evaluate(point);
+
+            if (observer != null) {
+                final Vector3D pEstimated = new Vector3D(point.getSubVector(0, 3).toArray());
+                final Vector3D vEstimated = new Vector3D(point.getSubVector(3, 3).toArray());
+                final Orbit currentMean = new CartesianOrbit(new PVCoordinates(pEstimated, vEstimated),
+                                                             initialized.getFrame(), initialized.getDate(),
+                                                             initialized.getMu());
+
+                observer.evaluationPerformed(getIterationCounter().getCount(),
+                                             getEvaluationCounter().getCount(),
+                                             currentMean,
+                                             evaluation);
+            }
+
+            return evaluation;
         }
 
     }

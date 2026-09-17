@@ -29,8 +29,8 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.drivers.BaseParameterDriversProvider;
 import org.orekit.utils.drivers.ParameterDriver;
-import org.orekit.utils.drivers.ParameterDriversProvider;
 import org.orekit.utils.TimeSpanMap;
 import org.orekit.utils.TimeSpanMap.Span;
 
@@ -257,7 +257,7 @@ public class TimeSpanParametricAcceleration extends AbstractParametricAccelerati
             // Add all the parameter drivers of the time span
             for (ParameterDriver driver : span.getData().getParametersDrivers()) {
                 // Add the driver only if the name does not exist already
-                if (!ParameterDriversProvider.findByName(listParameterDrivers, driver.getName())) {
+                if (!BaseParameterDriversProvider.findByName(listParameterDrivers, driver.getName())) {
                     listParameterDrivers.add(driver);
                 }
             }

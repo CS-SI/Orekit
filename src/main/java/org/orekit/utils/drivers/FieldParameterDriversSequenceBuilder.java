@@ -16,20 +16,22 @@
  */
 package org.orekit.utils.drivers;
 
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeInterval;
 import org.orekit.utils.TimeSpanMap;
 
-/** Builder for {@link ParameterDriversSequence}.
+/** Builder for {@link FieldParameterDriversSequence}.
+ * @param <T> type of the field elements
  * @author Luc Maisonobe
  * @since 14.0
  */
-public class ParameterDriversSequenceBuilder extends
-    BaseParameterDriversSequenceBuilder<Double,
-                                        ParameterDriver,
-                                        ParameterObserver,
-                                        ParameterDriversSequence,
-                                        ParameterDriversSequenceBuilder> {
+public class FieldParameterDriversSequenceBuilder<T extends CalculusFieldElement<T>>
+    extends BaseParameterDriversSequenceBuilder<T,
+                                                FieldParameterDriver<T>,
+                                                FieldParameterObserver<T>,
+                                                FieldParameterDriversSequence<T>,
+                                                FieldParameterDriversSequenceBuilder<T>> {
 
     /** Constructor for an initially empty builder.
      * <p>
@@ -41,31 +43,31 @@ public class ParameterDriversSequenceBuilder extends
      * method as many times as needed to cover the usage range before the {@link #build() build()} method can be
      * called.
      * </p>
-     * @param baseName     base name of the parameters
-     * @param scale        scaling factor to convert the parameters value to
-     *                     non-dimensional (typically set to the expected standard deviation
-     *                     of the parameter), it must be non-zero
-     * @param minValue     minimum value allowed
-     * @param maxValue     maximum value allowed
+     * @param baseName base name of the parameters
+     * @param scale    scaling factor to convert the parameters value to
+     *                 non-dimensional (typically set to the expected standard deviation
+     *                 of the parameter), it must be non-zero
+     * @param minValue minimum value allowed
+     * @param maxValue maximum value allowed
      * @param defaultValue default value valid throughout timeline
      */
-    public ParameterDriversSequenceBuilder(final String baseName, final double scale,
-                                           final double minValue, final double maxValue,
-                                           final Double defaultValue) {
+    public FieldParameterDriversSequenceBuilder(final String baseName, final double scale,
+                                                final double minValue, final double maxValue,
+                                                final T defaultValue) {
         super(baseName, scale, minValue, maxValue, defaultValue);
     }
 
     /** {@inheritDoc} */
     @Override
-    protected ParameterDriver buildDriver(final String name, final Double referenceValue, final double scale,
-                                          final double minValue, final double maxValue, final TimeInterval validity) {
-        return new ParameterDriver(name, referenceValue, scale, minValue, maxValue, validity);
+    protected FieldParameterDriver<T> buildDriver(final String name, final T referenceValue, final double scale,
+                                                  final double minValue, final double maxValue, final TimeInterval validity) {
+        return new FieldParameterDriver<>(name, referenceValue, scale, minValue, maxValue, validity);
     }
 
     /** {@inheritDoc} */
     @Override
-    protected ParameterDriversSequence buildSequence(final TimeSpanMap<ParameterDriver> drivers) {
-        return new ParameterDriversSequence(drivers);
+    protected FieldParameterDriversSequence<T> buildSequence(final TimeSpanMap<FieldParameterDriver<T>> drivers) {
+        return new FieldParameterDriversSequence<>(drivers);
     }
 
 }

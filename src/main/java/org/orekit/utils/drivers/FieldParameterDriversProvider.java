@@ -1,4 +1,4 @@
-/* Copyright 2002-2026 CS GROUP
+/* Copyright 2022-2026 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,44 +16,27 @@
  */
 package org.orekit.utils.drivers;
 
-import java.util.List;
-
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
 import org.hipparchus.util.MathArrays;
 
-/** Provider for {@link ParameterDriver parameters drivers}.
+import java.util.List;
+
+/** Provider for {@link FieldParameterDriver parameters drivers}.
+ * @param <T> type of the field elements
  * @author Luc Maisonobe
- * @author Melina Vanel
- * @author Maxime Journot
- * @since 11.2
+ * @since 14.0
  */
-public interface ParameterDriversProvider extends BaseParameterDriversProvider<ParameterDriver, ParameterObserver> {
+public interface FieldParameterDriversProvider<T extends CalculusFieldElement<T>>
+    extends BaseParameterDriversProvider<FieldParameterDriver<T>, FieldParameterObserver<T>> {
 
     /** Get model parameters.
      * @return model parameters
-     * @since 12.0
      */
-    default double[] getParameters() {
-        final List<ParameterDriver> drivers = getParametersDrivers();
-        final double[] parameters = new double[drivers.size()];
+    default T[] getParameters() {
+        final List<FieldParameterDriver<T>> drivers = getParametersDrivers();
+        final T[] parameters = MathArrays.buildArray(drivers.getFirst().getValue().getField(), drivers.size());
         for (int i = 0; i < drivers.size(); ++i) {
             parameters[i] = drivers.get(i).getValue();
-        }
-        return parameters;
-    }
-
-    /** Get model parameters.
-     * @param field field to which the elements belong
-     * @param <T> type of the elements
-     * @return model parameters
-     * @since 9.0
-     */
-    default <T extends CalculusFieldElement<T>> T[] getParameters(final Field<T> field) {
-        final List<ParameterDriver> drivers = getParametersDrivers();
-        final T[] parameters = MathArrays.buildArray(field, drivers.size());
-        for (int i = 0; i < drivers.size(); ++i) {
-            parameters[i] = field.getZero().newInstance(drivers.get(i).getValue());
         }
         return parameters;
     }

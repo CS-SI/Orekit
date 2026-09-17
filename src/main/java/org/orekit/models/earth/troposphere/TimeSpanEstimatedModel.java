@@ -29,8 +29,8 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.FieldTrackingCoordinates;
+import org.orekit.utils.drivers.BaseParameterDriversProvider;
 import org.orekit.utils.drivers.ParameterDriver;
-import org.orekit.utils.drivers.ParameterDriversProvider;
 import org.orekit.utils.TimeSpanMap;
 import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.TrackingCoordinates;
@@ -96,7 +96,7 @@ public class TimeSpanEstimatedModel implements TroposphericModel {
             // Add all the parameter drivers of each span
             for (ParameterDriver tropoDriver : span.getData().getParametersDrivers()) {
                 // Add the driver only if the name does not exist already
-                if (!ParameterDriversProvider.findByName(listTroposphericParameterDrivers, tropoDriver.getName())) {
+                if (!BaseParameterDriversProvider.findByName(listTroposphericParameterDrivers, tropoDriver.getName())) {
                     listTroposphericParameterDrivers.add(tropoDriver);
                 }
             }

@@ -324,7 +324,7 @@ public class GlobalPressureTemperature2wTest {
 
         Utils.setDataRoot("regular-data");
 
-        final String fileName = "corrupted-irregular-grid-gpt3_15.grd";
+        final String fileName = "corrupted-irregular-grid.grd";
         final URL url = GlobalPressureTemperature2wTest.class.getClassLoader().getResource("gpt-grid/" + fileName);
         try {
             new GlobalPressureTemperature2w(new DataSource(url.toURI()),
@@ -390,6 +390,24 @@ public class GlobalPressureTemperature2wTest {
             Assertions.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
             Assertions.assertEquals(4, ((Integer) oe.getParts()[0]).intValue());
             Assertions.assertTrue(((String) oe.getParts()[1]).endsWith(fileName));
+        }
+
+    }
+
+    @Test
+    public void testCorruptedMissingGridPoint() throws IOException, URISyntaxException {
+
+        Utils.setDataRoot("regular-data");
+
+        final String fileName = "corrupted-missing-grid-point.grd";
+        final URL url = GlobalPressureTemperature2wTest.class.getClassLoader().getResource("gpt-grid/" + fileName);
+        try {
+            new GlobalPressureTemperature2w(new DataSource(url.toURI()),
+                                            DataContext.getDefault().getTimeScales());
+            Assertions.fail("An exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.IRREGULAR_OR_INCOMPLETE_GRID, oe.getSpecifier());
+            Assertions.assertTrue(((String) oe.getParts()[0]).endsWith(fileName));
         }
 
     }

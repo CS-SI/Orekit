@@ -1,4 +1,4 @@
-/* Copyright 2002-2026 CS GROUP
+/* Copyright 2022-2026 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,8 +16,11 @@
  */
 package org.orekit.utils.drivers;
 
-import org.hipparchus.analysis.differentiation.Gradient;
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
+import org.hipparchus.analysis.differentiation.FieldGradient;
 import org.hipparchus.exception.LocalizedCoreFormats;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,6 +29,7 @@ import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeInterval;
 import org.orekit.time.TimeOffset;
 
@@ -33,29 +37,39 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class ParameterDriverTest {
+public class FieldParameterDriverTest {
 
 	@Test
-    public void testPDriverConstruction() {
-        ParameterDriver p1 =
-            new ParameterDriver("p1", 7.0, 2.0, -10.0, +10.0,
-                                TimeInterval.of(AbsoluteDate.ARBITRARY_EPOCH,
-                                                AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(TimeOffset.DAY),
-                                                false));
-        Assertions.assertEquals(7.0, p1.getValue(), 1e-10);
-        p1.setValue(3.0);
-        Assertions.assertEquals(3.0, p1.getValue(), 1e-10);
-        Assertions.assertEquals( 7.0, p1.getReferenceValue(), 1e-10);
-        Assertions.assertEquals(-2.0, p1.getNormalizedValue(), 1e-10);
-        p1.setNormalizedValue(1.0);
-        Assertions.assertEquals( 1.0, p1.getNormalizedValue(), 1e-10);
-        Assertions.assertEquals( 9.0, p1.getValue(), 1e-10);
+    void testPDriverConstruction() {
+        doTestPDriverConstruction(Binary64Field.getInstance());
+    }
+    
+    private <T extends CalculusFieldElement<T>> void doTestPDriverConstruction(final Field<T> field) {
+        FieldParameterDriver<T> p1 =
+            new FieldParameterDriver<>("p1",
+                                       field.getZero().newInstance(7.0),
+                                       2.0, -10.0, +10.0,
+                                       TimeInterval.of(AbsoluteDate.ARBITRARY_EPOCH,
+                                                      AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(TimeOffset.DAY),
+                                                      false));
+        Assertions.assertEquals( 7.0, p1.getValue().getReal(), 1e-10);
+        p1.setValue(field.getZero().newInstance(3.0));
+        Assertions.assertEquals( 3.0, p1.getValue().getReal(), 1e-10);
+        Assertions.assertEquals( 7.0, p1.getReferenceValue().getReal(), 1e-10);
+        Assertions.assertEquals(-2.0, p1.getNormalizedValue().getReal(), 1e-10);
+        p1.setNormalizedValue(field.getOne());
+        Assertions.assertEquals( 1.0, p1.getNormalizedValue().getReal(), 1e-10);
+        Assertions.assertEquals( 9.0, p1.getValue().getReal(), 1e-10);
         Assertions.assertEquals("p1 = 9.0", p1.toString());
 
 	}
 
     @Test
     public void testGradient() {
+        doTestGradient(Binary64Field.getInstance());
+    }
+
+    private <T extends CalculusFieldElement<T>> void doTestGradient(final Field<T> field) {
 
         final Map<String, Integer> map = new HashMap<>();
         map.put("x", 0);
@@ -63,39 +77,48 @@ public class ParameterDriverTest {
         map.put("z", 2);
         map.put("t", 3);
 
-        ParameterDriver z =
-            new ParameterDriver("z", 7.0, 2.0, -10.0, +10.0,
-                                TimeInterval.of(AbsoluteDate.ARBITRARY_EPOCH,
-                                                AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(TimeOffset.DAY),
-                                                false));
-        Gradient gInMap = z.getValue(4, map);
+        FieldParameterDriver<T> z =
+            new FieldParameterDriver<>("z", field.getZero().newInstance(7.0),
+                                       2.0, -10.0, +10.0,
+                                       TimeInterval.of(AbsoluteDate.ARBITRARY_EPOCH,
+                                                       AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(TimeOffset.DAY),
+                                                       false));
+        FieldGradient<T> gInMap = z.getValue(4, map);
         Assertions.assertEquals(4,    gInMap.getFreeParameters());
-        Assertions.assertEquals( 7.0, gInMap.getValue(), 1e-10);
+        Assertions.assertEquals( 7.0, gInMap.getValue().getReal(), 1e-10);
         Assertions.assertEquals(4,    gInMap.getGradient().length);
-        Assertions.assertEquals( 0.0, gInMap.getGradient()[0], 1e-10);
-        Assertions.assertEquals( 0.0, gInMap.getGradient()[1], 1e-10);
-        Assertions.assertEquals( 1.0, gInMap.getGradient()[2], 1e-10);
-        Assertions.assertEquals( 0.0, gInMap.getGradient()[3], 1e-10);
+        Assertions.assertEquals( 0.0, gInMap.getGradient()[0].getReal(), 1e-10);
+        Assertions.assertEquals( 0.0, gInMap.getGradient()[1].getReal(), 1e-10);
+        Assertions.assertEquals( 1.0, gInMap.getGradient()[2].getReal(), 1e-10);
+        Assertions.assertEquals( 0.0, gInMap.getGradient()[3].getReal(), 1e-10);
 
-        ParameterDriver u =
-            new ParameterDriver("u", 7.0, 2.0, -10.0, +10.0,
-                                TimeInterval.of(AbsoluteDate.ARBITRARY_EPOCH,
-                                                AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(TimeOffset.DAY),
-                                                false));
-        Gradient gUnknown = u.getValue(4, map);
+        FieldParameterDriver<T> u =
+            new FieldParameterDriver<>("u",
+                                       field.getZero().newInstance(7.0),
+                                       2.0, -10.0, +10.0,
+                                       TimeInterval.of(AbsoluteDate.ARBITRARY_EPOCH,
+                                                       AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(TimeOffset.DAY),
+                                                       false));
+        FieldGradient<T> gUnknown = u.getValue(4, map);
         Assertions.assertEquals(4,    gUnknown.getFreeParameters());
-        Assertions.assertEquals( 7.0, gUnknown.getValue(), 1e-10);
+        Assertions.assertEquals( 7.0, gUnknown.getValue().getReal(), 1e-10);
         Assertions.assertEquals(4,    gUnknown.getGradient().length);
-        Assertions.assertEquals( 0.0, gUnknown.getGradient()[0], 1e-10);
-        Assertions.assertEquals( 0.0, gUnknown.getGradient()[1], 1e-10);
-        Assertions.assertEquals( 0.0, gUnknown.getGradient()[2], 1e-10);
-        Assertions.assertEquals( 0.0, gUnknown.getGradient()[3], 1e-10);
+        Assertions.assertEquals( 0.0, gUnknown.getGradient()[0].getReal(), 1e-10);
+        Assertions.assertEquals( 0.0, gUnknown.getGradient()[1].getReal(), 1e-10);
+        Assertions.assertEquals( 0.0, gUnknown.getGradient()[2].getReal(), 1e-10);
+        Assertions.assertEquals( 0.0, gUnknown.getGradient()[3].getReal(), 1e-10);
 
     }
 
     @Test
     public void testNonChronologicalInterval() {
-        ParameterDriver p = new ParameterDriver("p", 0.0, 1.0, -1.0, +1.0, TimeInterval.UNLIMITED);
+        doTestNonChronologicalInterval(Binary64Field.getInstance());
+    }
+    
+    private <T extends CalculusFieldElement<T>> void doTestNonChronologicalInterval(final Field<T> field) {
+        
+        FieldParameterDriver<T> p =
+            new FieldParameterDriver<>("p", field.getZero(), 1.0, -1.0, +1.0, TimeInterval.UNLIMITED);
 
         try {
             p.setValidity(TimeInterval.of(AbsoluteDate.ARBITRARY_EPOCH,
@@ -114,7 +137,15 @@ public class ParameterDriverTest {
 
     @Test
     public void testObserver() {
-        ParameterDriver p = new ParameterDriver("p", 7.0, FastMath.scalb(1.0, -4), -10.0, +10.0, TimeInterval.UNLIMITED);
+        doTestObserver(Binary64Field.getInstance());
+    }
+    
+    private <T extends CalculusFieldElement<T>> void doTestObserver(final Field<T> field) {
+        
+        FieldParameterDriver<T> p =
+            new FieldParameterDriver<>("p",
+                                       field.getZero().newInstance(7.0),
+                                       FastMath.scalb(1.0, -4), -10.0, +10.0, TimeInterval.UNLIMITED);
 
         final AtomicBoolean valueFlag          = new AtomicBoolean(Boolean.FALSE);
         final AtomicBoolean referenceDateFlag  = new AtomicBoolean(Boolean.FALSE);
@@ -126,39 +157,39 @@ public class ParameterDriverTest {
         final AtomicBoolean scaleFlag          = new AtomicBoolean(Boolean.FALSE);
         final AtomicBoolean validityFlag       = new AtomicBoolean(Boolean.FALSE);
 
-        p.addObserver(new ParameterObserver() {
+        p.addObserver(new FieldParameterObserver<>() {
 
             /** {@inheritDoc} */
             @Override
-            public void valueChanged(final double previousValue, final ParameterDriver driver) {
+            public void valueChanged(final T previousValue, final FieldParameterDriver<T> driver) {
                 // we just chek the first call
                 // because there will be additional ones with difference values
                 if (!valueFlag.get()) {
-                    Assertions.assertEquals( 7.0, previousValue, 1e-10);
-                    Assertions.assertEquals(-7.0, driver.getValue(), 1e-10);
+                    Assertions.assertEquals( 7.0, previousValue.getReal(), 1e-10);
+                    Assertions.assertEquals(-7.0, driver.getValue().getReal(), 1e-10);
                     valueFlag.set(true);
                 }
             }
 
             /** {@inheritDoc} */
             @Override
-            public void referenceDateChanged(final AbsoluteDate previousReferenceDate, final ParameterDriver driver) {
+            public void referenceDateChanged(final FieldAbsoluteDate<T> previousReferenceDate, final FieldParameterDriver<T> driver) {
                 Assertions.assertNull(previousReferenceDate);
-                Assertions.assertEquals(AbsoluteDate.CCSDS_EPOCH, driver.getReferenceDate());
+                Assertions.assertEquals(AbsoluteDate.CCSDS_EPOCH, driver.getReferenceDate().toAbsoluteDate());
                 referenceDateFlag.set(true);
             }
 
             /** {@inheritDoc} */
             @Override
-            public void referenceValueChanged(final double previousReferenceValue, final ParameterDriver driver) {
-                Assertions.assertEquals(7.0, previousReferenceValue, 1e-10);
-                Assertions.assertEquals(8.0, driver.getReferenceValue(), 1e-10);
+            public void referenceValueChanged(final T previousReferenceValue, final FieldParameterDriver<T> driver) {
+                Assertions.assertEquals(7.0, previousReferenceValue.getReal(), 1e-10);
+                Assertions.assertEquals(8.0, driver.getReferenceValue().getReal(), 1e-10);
                 referenceValueFlag.set(true);
             }
 
             /** {@inheritDoc} */
             @Override
-            public void nameChanged(final String previousName, final ParameterDriver driver) {
+            public void nameChanged(final String previousName, final FieldParameterDriver<T> driver) {
                 Assertions.assertEquals("p", previousName);
                 Assertions.assertEquals("q", driver.getName());
                 nameFlag.set(true);
@@ -166,7 +197,7 @@ public class ParameterDriverTest {
 
             /** {@inheritDoc} */
             @Override
-            public void selectionChanged(final boolean previousSelection, final ParameterDriver driver) {
+            public void selectionChanged(final boolean previousSelection, final FieldParameterDriver<T> driver) {
                 Assertions.assertFalse(previousSelection);
                 Assertions.assertTrue(driver.isSelected());
                 selectionFlag.set(true);
@@ -174,7 +205,7 @@ public class ParameterDriverTest {
 
             /** {@inheritDoc} */
             @Override
-            public void minValueChanged(final double previousMinValue, final ParameterDriver driver) {
+            public void minValueChanged(final double previousMinValue, final FieldParameterDriver<T> driver) {
                 Assertions.assertEquals(-10.0, previousMinValue, 1e-10);
                 Assertions.assertEquals(-2.0, driver.getMinValue(), 1e-10);
                 minFlag.set(true);
@@ -182,7 +213,7 @@ public class ParameterDriverTest {
 
             /** {@inheritDoc} */
             @Override
-            public void maxValueChanged(final double previousMaxValue, final ParameterDriver driver) {
+            public void maxValueChanged(final double previousMaxValue, final FieldParameterDriver<T> driver) {
                 Assertions.assertEquals(10.0, previousMaxValue, 1e-10);
                 Assertions.assertEquals(2.0, driver.getMaxValue(), 1e-10);
                 maxFlag.set(true);
@@ -190,7 +221,7 @@ public class ParameterDriverTest {
 
             /** {@inheritDoc} */
             @Override
-            public void scaleChanged(final double previousScale, final ParameterDriver driver) {
+            public void scaleChanged(final double previousScale, final FieldParameterDriver<T> driver) {
                 Assertions.assertEquals(FastMath.scalb(1.0, -4), previousScale, 1e-10);
                 Assertions.assertEquals(FastMath.scalb(1.0, -3), driver.getScale(), 1e-10);
                 scaleFlag.set(true);
@@ -198,7 +229,7 @@ public class ParameterDriverTest {
 
             /** {@inheritDoc} */
             @Override
-            public void validityChanged(final TimeInterval previousValidity, final ParameterDriver driver) {
+            public void validityChanged(final TimeInterval previousValidity, final FieldParameterDriver<T> driver) {
                 Assertions.assertEquals(AbsoluteDate.PAST_INFINITY,   previousValidity.getStartDate());
                 Assertions.assertEquals(AbsoluteDate.FUTURE_INFINITY, previousValidity.getEndDate());
                 Assertions.assertEquals(AbsoluteDate.ARBITRARY_EPOCH, driver.getValidity().getStartDate());
@@ -209,15 +240,15 @@ public class ParameterDriverTest {
         });
 
         Assertions.assertFalse(valueFlag.get());
-        p.setValue(-7.0);
+        p.setValue(field.getZero().newInstance(-7.0));
         Assertions.assertTrue(valueFlag.get());
 
         Assertions.assertFalse(referenceDateFlag.get());
-        p.setReferenceDate(AbsoluteDate.CCSDS_EPOCH);
+        p.setReferenceDate(FieldAbsoluteDate.getCCSDSEpoch(field));
         Assertions.assertTrue(referenceDateFlag.get());
 
         Assertions.assertFalse(referenceValueFlag.get());
-        p.setReferenceValue(8.0);
+        p.setReferenceValue(field.getZero().newInstance(8.0));
         Assertions.assertTrue(referenceValueFlag.get());
 
         Assertions.assertFalse(nameFlag.get());
@@ -237,9 +268,9 @@ public class ParameterDriverTest {
             Assertions.assertEquals(300.0, (Double) oe.getParts()[0], 1.0e-9);
             Assertions.assertEquals( 10.0, (Double) oe.getParts()[1], 1.0e-9);
         }
-        Assertions.assertEquals(-7.0, p.getValue(), 1.0e-9);
+        Assertions.assertEquals(-7.0, p.getValue().getReal(), 1.0e-9);
         p.setMinValue(-2.0);
-        Assertions.assertEquals(-2.0, p.getValue(), 1.0e-9);
+        Assertions.assertEquals(-2.0, p.getValue().getReal(), 1.0e-9);
         Assertions.assertTrue(minFlag.get());
         Assertions.assertFalse(maxFlag.get());
         try {
@@ -250,10 +281,10 @@ public class ParameterDriverTest {
             Assertions.assertEquals(-300.0, (Double) oe.getParts()[0], 1.0e-9);
             Assertions.assertEquals( -2.0, (Double) oe.getParts()[1], 1.0e-9);
         }
-        p.setValue(7.0);
-        Assertions.assertEquals(7.0, p.getValue(), 1.0e-9);
+        p.setValue(field.getZero().newInstance(7.0));
+        Assertions.assertEquals(7.0, p.getValue().getReal(), 1.0e-9);
         p.setMaxValue(2.0);
-        Assertions.assertEquals(2.0, p.getValue(), 1.0e-9);
+        Assertions.assertEquals(2.0, p.getValue().getReal(), 1.0e-9);
         Assertions.assertTrue(maxFlag.get());
 
         Assertions.assertFalse(scaleFlag.get());

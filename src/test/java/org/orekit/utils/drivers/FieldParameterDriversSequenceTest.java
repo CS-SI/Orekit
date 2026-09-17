@@ -16,6 +16,9 @@
  */
 package org.orekit.utils.drivers;
 
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,18 +31,22 @@ import org.orekit.time.TimeOffset;
 
 import java.util.List;
 
-class ParameterDriversSequenceTest {
+class FieldParameterDriversSequenceTest {
 
     @Test
     void testSingleCoefficient() {
-        final ParameterDriversSequence sequence =
-            new ParameterDriversSequenceBuilder("base", FastMath.scalb(1.0, -6), -12.0, 17.0, null).
-            addReferenceValue(3.5).
+        doTestSingleCoefficient(Binary64Field.getInstance());
+    }
+
+    private <T extends CalculusFieldElement<T>> void doTestSingleCoefficient(final Field<T> field) {
+        final FieldParameterDriversSequence<T> sequence =
+            new FieldParameterDriversSequenceBuilder<>("base", FastMath.scalb(1.0, -6), -12.0, 17.0, (T) null).
+            addReferenceValue(field.getZero().newInstance(3.5)).
             build();
 
-        final List<ParameterDriver> drivers = sequence.getParametersDrivers();
+        final List<FieldParameterDriver<T>> drivers = sequence.getParametersDrivers();
         Assertions.assertEquals(1,                       drivers.size());
-        checkDriver(drivers.getFirst(), 3.5, -12.0, 17.0, FastMath.scalb(1.0, -6), "base");
+        checkDriver(drivers.getFirst(), field.getZero().newInstance(3.5), -12.0, 17.0, FastMath.scalb(1.0, -6), "base");
 
         Assertions.assertSame(drivers.getFirst(), sequence.getActiveDriver(AbsoluteDate.PAST_INFINITY));
         Assertions.assertSame(drivers.getFirst(), sequence.getActiveDriver(AbsoluteDate.ARBITRARY_EPOCH));
@@ -53,24 +60,28 @@ class ParameterDriversSequenceTest {
 
     @Test
     void testMultipleCoefficient() {
+        doTestMultipleCoefficient(Binary64Field.getInstance());
+    }
+
+    private <T extends CalculusFieldElement<T>> void doTestMultipleCoefficient(final Field<T> field) {
 
         final AbsoluteDate t0 = AbsoluteDate.ARBITRARY_EPOCH;
         final AbsoluteDate t1 = t0.shiftedBy(TimeOffset.DAY);
         final AbsoluteDate t2 = t1.shiftedBy(TimeOffset.DAY);
         final AbsoluteDate t3 = t2.shiftedBy(TimeOffset.DAY);
         final AbsoluteDate t4 = t3.shiftedBy(TimeOffset.DAY);
-        final ParameterDriversSequence sequence =
-            new ParameterDriversSequenceBuilder("base", FastMath.scalb(1.0, -6), -1.0, 1.0, null).
-            addReferenceValue(2.5, t1, t2).
-            addReferenceValue(4.5, t3, t4). // intentionally added in non-chronological order for test
-            addReferenceValue(3.5, t2, t3).
+        final FieldParameterDriversSequence<T> sequence =
+            new FieldParameterDriversSequenceBuilder<>("base", FastMath.scalb(1.0, -6), -1.0, 1.0, (T) null).
+            addReferenceValue(field.getZero().newInstance(2.5), t1, t2).
+            addReferenceValue(field.getZero().newInstance(4.5), t3, t4). // intentionally added in non-chronological order for test
+            addReferenceValue(field.getZero().newInstance(3.5), t2, t3).
             build();
 
-        final List<ParameterDriver> drivers = sequence.getParametersDrivers();
+        final List<FieldParameterDriver<T>> drivers = sequence.getParametersDrivers();
         Assertions.assertEquals(3, drivers.size());
-        checkDriver(drivers.get(0), 2.5, -1.0, 1.0, FastMath.scalb(1.0, -6), "span-base-0");
-        checkDriver(drivers.get(1), 3.5, -1.0, 1.0, FastMath.scalb(1.0, -6), "span-base-1");
-        checkDriver(drivers.get(2), 4.5, -1.0, 1.0, FastMath.scalb(1.0, -6), "span-base-2");
+        checkDriver(drivers.get(0), field.getZero().newInstance(2.5), -1.0, 1.0, FastMath.scalb(1.0, -6), "span-base-0");
+        checkDriver(drivers.get(1), field.getZero().newInstance(3.5), -1.0, 1.0, FastMath.scalb(1.0, -6), "span-base-1");
+        checkDriver(drivers.get(2), field.getZero().newInstance(4.5), -1.0, 1.0, FastMath.scalb(1.0, -6), "span-base-2");
 
         Assertions.assertNull(sequence.getActiveDriver(AbsoluteDate.PAST_INFINITY));
         Assertions.assertNull(sequence.getActiveDriver(t0));
@@ -98,18 +109,18 @@ class ParameterDriversSequenceTest {
 
     }
 
-    private void checkDriver(final ParameterDriver driver,
-                             final double value, final double min, final double max,
-                             final double scale, final String name) {
-        Assertions.assertEquals(value, driver.getValue(),    1.0e-15);
-        Assertions.assertEquals(min,   driver.getMinValue(), 1.0e-15);
-        Assertions.assertEquals(max,   driver.getMaxValue(), 1.0e-15);
-        Assertions.assertEquals(scale, driver.getScale(),    1.0e-17);
-        Assertions.assertEquals(name,  driver.getName());
+    private <T extends CalculusFieldElement<T>> void checkDriver(final FieldParameterDriver<T> driver,
+                                                                 final T value, final double min, final double max,
+                                                                 final double scale, final String name) {
+        Assertions.assertEquals(value.getReal(), driver.getValue().getReal(), 1.0e-15);
+        Assertions.assertEquals(min,             driver.getMinValue(),        1.0e-15);
+        Assertions.assertEquals(max,             driver.getMaxValue(),        1.0e-15);
+        Assertions.assertEquals(scale,           driver.getScale(),           1.0e-17);
+        Assertions.assertEquals(name,            driver.getName());
     }
 
-    private void checkOutOfRange(final ParameterDriversSequence sequence,
-                                 final AbsoluteDate date) {
+    private <T extends CalculusFieldElement<T>> void checkOutOfRange(final FieldParameterDriversSequence<T> sequence,
+                                                                     final AbsoluteDate date) {
         try {
             sequence.getActiveDriverIndex(date);
             Assertions.fail("an exception should have been thrown");
@@ -122,8 +133,13 @@ class ParameterDriversSequenceTest {
 
     @Test
     void testNoCoefficients() {
+        doTestNoCoefficients(Binary64Field.getInstance());
+    }
+
+    private <T extends CalculusFieldElement<T>> void doTestNoCoefficients(final Field<T> field) {
         try {
-            new ParameterDriversSequenceBuilder("base", FastMath.scalb(1.0, -6), -12.0, 17.0, null).build();
+            new FieldParameterDriversSequenceBuilder<>("base", FastMath.scalb(1.0, -6), -12.0, 17.0, (T) null).
+            build();
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.NO_REFERENCE_VALUES_SET, oe.getSpecifier());
@@ -132,6 +148,10 @@ class ParameterDriversSequenceTest {
 
     @Test
     void testNonContinuous() {
+        doTestNonContinuous(Binary64Field.getInstance());
+    }
+
+    private <T extends CalculusFieldElement<T>> void doTestNonContinuous(final Field<T> field) {
 
         try {
 
@@ -140,9 +160,10 @@ class ParameterDriversSequenceTest {
             final AbsoluteDate date2 = date0.shiftedBy(new TimeOffset(6, TimeOffset.HOUR));
             final AbsoluteDate date3 = date0.shiftedBy(new TimeOffset(9, TimeOffset.HOUR));
 
-            new ParameterDriversSequenceBuilder("base", FastMath.scalb(1.0, -6), -12.0, 17.0, null).
-                addReferenceValue(1.0, date0, date1).
-                addReferenceValue(2.0, date2, date3).
+            new FieldParameterDriversSequenceBuilder<>("base", FastMath.scalb(1.0, -6), -12.0, 17.0,
+                                                       (T) null).
+                addReferenceValue(field.getZero().newInstance(1.0), date0, date1).
+                addReferenceValue(field.getZero().newInstance(2.0), date2, date3).
                 build();
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {

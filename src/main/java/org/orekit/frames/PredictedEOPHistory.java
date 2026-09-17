@@ -69,8 +69,8 @@ public class PredictedEOPHistory extends EOPHistory {
      * @return extended history
      */
     private static Collection<EOPEntry> extendHistory(final EOPHistory rawHistory,
-                                                                final double extensionDuration,
-                                                                final EOPFittedModel fittedModel) {
+                                                      final double extensionDuration,
+                                                      final EOPFittedModel fittedModel) {
 
 
         // create a converter for nutation corrections

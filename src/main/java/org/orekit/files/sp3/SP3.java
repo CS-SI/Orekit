@@ -348,6 +348,7 @@ public class SP3 implements EphemerisFile<SP3Coordinate, SP3Segment> {
         }
 
         // convert data to new frame
+        final boolean hasVelocity = header.getFilter().getMaxOrder() > 0;
         for (final Map.Entry<String, SP3Ephemeris> entry : original.satellites.entrySet()) {
             final SP3Ephemeris originalEphemeris = original.getEphemeris(entry.getKey());
             final SP3Ephemeris changedEphemeris  = changed.getEphemeris(entry.getKey());
@@ -359,10 +360,15 @@ public class SP3 implements EphemerisFile<SP3Coordinate, SP3Segment> {
                     final Vector3D      newPA = c.getPositionAccuracy() == null ?
                                                 null :
                                                 t.transformVector(c.getPositionAccuracy());
-                    final Vector3D      newV  = c.getVelocity() == null ? Vector3D.ZERO : newPV.getVelocity();
-                    final Vector3D      newVA = c.getVelocityAccuracy() == null ?
-                                                null :
-                                                t.transformVector(c.getVelocityAccuracy());
+                    final Vector3D      newV;
+                    final Vector3D      newVA;
+                    if (hasVelocity) {
+                        newV  = newPV.getVelocity();
+                        newVA = c.getVelocityAccuracy() == null ? null : t.transformVector(c.getVelocityAccuracy());
+                    } else {
+                        newV  = Vector3D.ZERO;
+                        newVA = null;
+                    }
                     final SP3Coordinate newC  = new SP3Coordinate(c.getDate(),
                                                                   newP, newPA, newV, newVA,
                                                                   c.getClockCorrection(),

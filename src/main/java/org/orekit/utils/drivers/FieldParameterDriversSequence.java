@@ -16,14 +16,17 @@
  */
 package org.orekit.utils.drivers;
 
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.utils.TimeSpanMap;
 
-/** Sequence of {@link ParameterDriver parameter drivers} along a timeline.
- * @see ParameterDriversSequenceBuilder
+/** Sequence of {@link FieldParameterDriver parameter drivers} along a timeline.
+ * @param <T> type of the field elements
+ * @see FieldParameterDriversSequenceBuilder
  * @author Luc Maisonobe
  * @since 14.0
  */
-public class ParameterDriversSequence extends BaseParameterDriversSequence<ParameterDriver, ParameterObserver> {
+public class FieldParameterDriversSequence<T extends CalculusFieldElement<T>>
+    extends BaseParameterDriversSequence<FieldParameterDriver<T>, FieldParameterObserver<T>> {
 
     /** Simple constructor.
      * <p>
@@ -31,9 +34,9 @@ public class ParameterDriversSequence extends BaseParameterDriversSequence<Param
      * Further modifications of the argument (adding or removing entries, resetting dates)
      * will therefore have no effect on the instance.
      * </p>
-     * @param timeSpanDrivers drivers valid on specified time spans
+     * @param timeSpanDrivers drivers for drag coefficients valid on specified time spans
      */
-    ParameterDriversSequence(final TimeSpanMap<ParameterDriver> timeSpanDrivers) {
+    FieldParameterDriversSequence(final TimeSpanMap<FieldParameterDriver<T>> timeSpanDrivers) {
         super(timeSpanDrivers);
     }
 
