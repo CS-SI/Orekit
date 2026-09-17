@@ -23,6 +23,9 @@
           <action dev="luc" type="add" issue="2020">
               Improved performance of Global Pressure Temperature models.
           </action>
+          <action dev="serrof" type="update" issue="2013">
+              Disable EI_EXPOSE_REP and EI_EXPOSE_REP2 code smells from SpotBugs analysis.
+          </action>
           <action dev="luc" type="add" issue="2012">
               Fixed spurious non-zero velocity appearing when transforming
               SP3 files between Earth and inertial frames.
@@ -44,7 +47,7 @@
               Use MEAN as default solar time mode.
           </action>
           <action dev="ltafur" type="fix" issue="2003">
-              Added in NRLMSISE00 withLocalSolarTimeMode to select apparrent time.
+              Added in NRLMSISE00 withLocalSolarTimeMode to select apparent time.
           </action>
           <action dev="ltafur" type="fix" issue="2003">
               Fixed NRLMSISE00 withSwitch overwriting the main switches with the cross-terms array, and made the helium and oxygen turbopause cutoffs inclusive.
