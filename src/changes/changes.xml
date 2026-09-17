@@ -23,6 +23,9 @@
           <action dev="luc" type="add" issue="2020">
               Improved performance of Global Pressure Temperature models.
           </action>
+          <action dev="maxime" type="fix" issue="2014">
+              Silence code smells in SpotBugs for SonarQube.
+          </action>
           <action dev="serrof" type="update" issue="2013">
               Disable EI_EXPOSE_REP and EI_EXPOSE_REP2 code smells from SpotBugs analysis.
           </action>
