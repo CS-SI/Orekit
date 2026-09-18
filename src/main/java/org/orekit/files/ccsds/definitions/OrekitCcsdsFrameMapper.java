@@ -109,8 +109,7 @@ public class OrekitCcsdsFrameMapper implements CcsdsFrameMapper {
 
     @Override
     public boolean equals(final Object obj) {
-        return this == obj || this.getClass() == OrekitCcsdsFrameMapper.class &&
-                obj.getClass() == OrekitCcsdsFrameMapper.class;
+        return obj != null && getClass() == obj.getClass();
     }
 
 }
