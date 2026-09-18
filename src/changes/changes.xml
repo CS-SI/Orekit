@@ -29,6 +29,9 @@
         <action dev="luc" type="fix" issue="2018">
           Avoid unnecessary recomputation in Vienna 3 tropospheric model.
         </action>
+        <action dev="nlowing" type="fix" issue="2016">
+          Fix implementation of OrekitCcsdsFrameMapper equals method.
+        </action>
         <action dev="luc" type="fix" issue="2012">
           Fixed spurious non-zero velocity appearing when transforming
           SP3 files between Earth and inertial frames.
