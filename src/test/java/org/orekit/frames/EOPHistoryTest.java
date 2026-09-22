@@ -148,14 +148,14 @@ public class EOPHistoryTest {
 
     @Test
     public void testCombineIncompatibleEntries() {
-        final DateComponents dateA         = new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56557);
-        final DateComponents publicationAT = new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56561);
-        final DateComponents publicationAN = new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56571);
-        final DateComponents publicationAC = new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56581);
-        final DateComponents dateB         = new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56562);
-        final DateComponents publicationBT = new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56568);
-        final DateComponents publicationBN = new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56578);
-        final DateComponents publicationBC = new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56588);
+        final DateComponents dateA    = new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56557);
+        final EOPOrigin      originAT = new EOPOrigin(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56561), "A");
+        final EOPOrigin      originAN = new EOPOrigin(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56571), "A");
+        final EOPOrigin      originAC = new EOPOrigin(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56581), "A");
+        final DateComponents dateB    = new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56562);
+        final EOPOrigin      originBT = new EOPOrigin(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56568), "B");
+        final EOPOrigin      originBN = new EOPOrigin(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56578), "B");
+        final EOPOrigin      originBC = new EOPOrigin(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56588), "B");
         try {
             final EOPEntry entryA =
                 new EOPEntry(dateA.getMJD(), 1.0e-3, 1.0e-3,
@@ -163,14 +163,14 @@ public class EOPHistoryTest {
                              1.0e-3, 1.0e-3, 1.0e-3, 1.0e-3,
                              ITRFVersion.ITRF_2020,
                              new AbsoluteDate(dateA, TimeScalesFactory.getUTC()), EopDataType.RAPID,
-                             publicationAT.getMJD(), publicationAN.getMJD(), publicationAC.getMJD());
+                             originAT, originAN, originAC);
             final EOPEntry entryB =
                 new EOPEntry(dateB.getMJD(), 2.0e-3, 2.0e-3,
                              2.0e-3, 2.0e-3, 2.0e-3, 2.0e-3,
                              2.0e-3, 2.0e-3, 2.0e-3, 2.0e-3,
                              ITRFVersion.ITRF_2014,
                              new AbsoluteDate(dateB, TimeScalesFactory.getUTC()), EopDataType.FINAL,
-                             publicationBT.getMJD(), publicationBN.getMJD(), publicationBC.getMJD());
+                             originBT, originBN, originBC);
             new EOPEntry(entryA, entryB);
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
@@ -182,27 +182,27 @@ public class EOPHistoryTest {
 
     @Test
     public void testCombineChronological() {
-        final DateComponents date          = new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56557);
-        final DateComponents publicationAT = new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56561);
-        final DateComponents publicationAN = new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56571);
-        final DateComponents publicationAC = new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56581);
-        final DateComponents publicationBT = new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56568);
-        final DateComponents publicationBN = new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56578);
-        final DateComponents publicationBC = new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56588);
+        final DateComponents date     = new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56557);
+        final EOPOrigin      originAT = new EOPOrigin(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56561), "A");
+        final EOPOrigin      originAN = new EOPOrigin(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56571), "A");
+        final EOPOrigin      originAC = new EOPOrigin(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56581), "A");
+        final EOPOrigin      originBT = new EOPOrigin(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56568), "B");
+        final EOPOrigin      originBN = new EOPOrigin(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56578), "B");
+        final EOPOrigin      originBC = new EOPOrigin(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56588), "B");
         final EOPEntry entryA =
             new EOPEntry(date.getMJD(), 1.0e-3, 1.0e-3,
                          Double.NaN, 1.0e-3, Double.NaN, 1.0e-3,
                          1.0e-3, 1.0e-3, 1.0e-3, 1.0e-3,
                          ITRFVersion.ITRF_2020,
                          new AbsoluteDate(date, TimeScalesFactory.getUTC()), EopDataType.RAPID,
-                         publicationAT.getMJD(), publicationAN.getMJD(), publicationAC.getMJD());
+                         originAT, originAN, originAC);
         final EOPEntry entryB =
             new EOPEntry(date.getMJD(), 2.0e-3, 2.0e-3,
                          2.0e-3, Double.NaN, Double.NaN, 2.0e-3,
                          2.0e-3, 2.0e-3, 2.0e-3, 2.0e-3,
                          ITRFVersion.ITRF_2014,
                          new AbsoluteDate(date, TimeScalesFactory.getUTC()), EopDataType.FINAL,
-                         publicationBT.getMJD(), publicationBN.getMJD(), publicationBC.getMJD());
+                         originBT, originBN, originBC);
         final EOPEntry combined = new EOPEntry(entryA, entryB);
         Assertions.assertEquals(date.getMJD(), combined.getMjd());
         Assertions.assertEquals(new AbsoluteDate(date, TimeScalesFactory.getUTC()), combined.getDate());
@@ -218,34 +218,34 @@ public class EOPHistoryTest {
         Assertions.assertEquals(entryB.getDy(),          combined.getDy(),          1.0e-15);
         Assertions.assertEquals(entryB.getITRFType(),    combined.getITRFType());
         Assertions.assertEquals(entryB.getEopDataType(), combined.getEopDataType());
-        Assertions.assertEquals(publicationBT.getMJD(),  combined.getDtPub());
-        Assertions.assertEquals(publicationBN.getMJD(),  combined.getNutPub());
-        Assertions.assertEquals(publicationBC.getMJD(),  combined.getCipPub());
+        Assertions.assertEquals(originBT,                combined.getDtOrigin());
+        Assertions.assertEquals(originBN,                combined.getNutOrigin());
+        Assertions.assertEquals(originBC,                combined.getCipOrigin());
     }
 
     @Test
     public void testCombineReverseChronological() {
-        final DateComponents date          = new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56557);
-        final DateComponents publicationAT = new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56561);
-        final DateComponents publicationAN = new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56571);
-        final DateComponents publicationAC = new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56581);
-        final DateComponents publicationBT = new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56568);
-        final DateComponents publicationBN = new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56578);
-        final DateComponents publicationBC = new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56588);
+        final DateComponents date     = new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56557);
+        final EOPOrigin      originAT = new EOPOrigin(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56561), "A");
+        final EOPOrigin      originAN = new EOPOrigin(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56571), "A");
+        final EOPOrigin      originAC = new EOPOrigin(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56581), "A");
+        final EOPOrigin      originBT = new EOPOrigin(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56568), "B");
+        final EOPOrigin      originBN = new EOPOrigin(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56578), "B");
+        final EOPOrigin      originBC = new EOPOrigin(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56588), "B");
         final EOPEntry entryA =
             new EOPEntry(date.getMJD(), 1.0e-3, 1.0e-3,
                          Double.NaN, 1.0e-3, Double.NaN, 1.0e-3,
                          1.0e-3, 1.0e-3, 1.0e-3, 1.0e-3,
                          ITRFVersion.ITRF_2020,
                          new AbsoluteDate(date, TimeScalesFactory.getUTC()), EopDataType.RAPID,
-                         publicationAT.getMJD(), publicationAN.getMJD(), publicationAC.getMJD());
+                         originAT, originAN, originAC);
         final EOPEntry entryB =
             new EOPEntry(date.getMJD(), 2.0e-3, 2.0e-3,
                          2.0e-3, Double.NaN, Double.NaN, 2.0e-3,
                          2.0e-3, 2.0e-3, 2.0e-3, 2.0e-3,
                          ITRFVersion.ITRF_2014,
                          new AbsoluteDate(date, TimeScalesFactory.getUTC()), EopDataType.FINAL,
-                         publicationBT.getMJD(), publicationBN.getMJD(), publicationBC.getMJD());
+                         originBT, originBN, originBC);
         final EOPEntry combined = new EOPEntry(entryB, entryA);
         Assertions.assertEquals(date.getMJD(), combined.getMjd());
         Assertions.assertEquals(new AbsoluteDate(date, TimeScalesFactory.getUTC()), combined.getDate());
@@ -261,9 +261,9 @@ public class EOPHistoryTest {
         Assertions.assertEquals(entryB.getDy(),          combined.getDy(),          1.0e-15);
         Assertions.assertEquals(entryB.getITRFType(),    combined.getITRFType());
         Assertions.assertEquals(entryB.getEopDataType(), combined.getEopDataType());
-        Assertions.assertEquals(publicationBT.getMJD(),  combined.getDtPub());
-        Assertions.assertEquals(publicationBN.getMJD(),  combined.getNutPub());
-        Assertions.assertEquals(publicationBC.getMJD(),  combined.getCipPub());
+        Assertions.assertEquals(originBT,                combined.getDtOrigin());
+        Assertions.assertEquals(originBN,                combined.getNutOrigin());
+        Assertions.assertEquals(originBC,                combined.getCipOrigin());
     }
 
     @BeforeEach

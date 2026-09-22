@@ -413,6 +413,12 @@ class BulletinAFilesLoader extends AbstractEopLoader implements EopHistoryLoader
     /** Internal class performing the parsing. */
     static class Parser extends AbstractEopParser {
 
+        /** Constant for dummy origin.
+         * @since 14.0
+         */
+        private static final EOPOrigin DUMMY_ORIGIN =
+            new EOPOrigin(DateComponents.MODIFIED_JULIAN_EPOCH, "dummy");
+
         /** File name. */
         private String fileName;
 
@@ -422,10 +428,10 @@ class BulletinAFilesLoader extends AbstractEopLoader implements EopHistoryLoader
         /** Current line. */
         private String line;
 
-        /** Publication date.
+        /** Origin.
          * @since 14.0
          */
-        private DateComponents publicationDate;
+        private EOPOrigin origin;
 
         /** Earliest parsed data. */
         private int mjdMin;
@@ -443,10 +449,10 @@ class BulletinAFilesLoader extends AbstractEopLoader implements EopHistoryLoader
                final ItrfVersionProvider itrfVersionProvider,
                final TimeScale utc) {
             super(converter, itrfVersionProvider, utc);
-            this.lineNumber      = 0;
-            this.publicationDate = DateComponents.MODIFIED_JULIAN_EPOCH;
-            this.mjdMin          = Integer.MAX_VALUE;
-            this.mjdMax          = Integer.MIN_VALUE;
+            this.lineNumber = 0;
+            this.origin     = DUMMY_ORIGIN;
+            this.mjdMin     = Integer.MAX_VALUE;
+            this.mjdMax     = Integer.MIN_VALUE;
         }
 
         /** {@inheritDoc} */
@@ -558,9 +564,10 @@ class BulletinAFilesLoader extends AbstractEopLoader implements EopHistoryLoader
                 if (fields != null) {
 
                     // parse the date
-                    publicationDate = new DateComponents(Integer.parseInt(fields[2]),
-                                                         Month.parseMonth(fields[1]),
-                                                         Integer.parseInt(fields[0]));
+                    final DateComponents publicationDate = new DateComponents(Integer.parseInt(fields[2]),
+                                                                              Month.parseMonth(fields[1]),
+                                                                              Integer.parseInt(fields[0]));
+                    origin = new EOPOrigin(publicationDate, fileName);
 
                     // check volume and week number
                     checkVolume(RomanNumeral.parse(fields[3].toUpperCase(Locale.ROOT)));
@@ -576,7 +583,7 @@ class BulletinAFilesLoader extends AbstractEopLoader implements EopHistoryLoader
          * @param parsed parsed volume
          */
         private void checkVolume(final int parsed) {
-            final int computed = publicationDate.getYear() - 1987;
+            final int computed = origin.publicationDate().getYear() - 1987;
             if (computed != parsed) {
                 throw new OrekitException(OrekitMessages.UNEXPECTED_DATA_AT_LINE_IN_FILE,
                                           lineNumber, fileName);
@@ -588,7 +595,7 @@ class BulletinAFilesLoader extends AbstractEopLoader implements EopHistoryLoader
          */
         private void checkWeek(final int parsed) {
 
-            final int computed = publicationDate.getCalendarWeek();
+            final int computed = origin.publicationDate().getCalendarWeek();
 
             if (computed != parsed) {
 
@@ -599,9 +606,9 @@ class BulletinAFilesLoader extends AbstractEopLoader implements EopHistoryLoader
                 // The previous file published on 2008-12-31 was also numbered as week 53 in
                 // 2008, despite its ISO number was really 1 in 2009.
                 // we allow these special cases here
-                final boolean januaryFirstIsThrusday =
-                    new DateComponents(publicationDate.getYear(), 1, 1).getDayOfWeek() == 4;
-                if (januaryFirstIsThrusday && parsed == computed - 1 ||
+                final boolean januaryFirstIsThursday =
+                    new DateComponents(origin.publicationDate().getYear(), 1, 1).getDayOfWeek() == 4;
+                if (januaryFirstIsThursday && parsed == computed - 1 ||
                     computed == 1 && parsed == 53) {
                     // we accept this sloppy week number
                     return;
@@ -663,7 +670,7 @@ class BulletinAFilesLoader extends AbstractEopLoader implements EopHistoryLoader
                                      0.0, 0.0, 0.0, 0.0,
                                      getItrfVersionProvider().getConfiguration(fileName, mjd).getVersion(),
                                      AbsoluteDate.createMJDDate(mjd, 0, getUtc()), eopDataType,
-                                     publicationDate.getMJD(), 0, 0));
+                                     origin, DUMMY_ORIGIN, DUMMY_ORIGIN));
 
             }
 
@@ -718,7 +725,7 @@ class BulletinAFilesLoader extends AbstractEopLoader implements EopHistoryLoader
                                          UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(Double.parseDouble(fields[2])),
                                          getItrfVersionProvider().getConfiguration(fileName, mjd).getVersion(),
                                          AbsoluteDate.createMJDDate(mjd, 0, getUtc()), eopDataType,
-                                         0, 0, publicationDate.getMJD()));
+                                         DUMMY_ORIGIN, DUMMY_ORIGIN, origin));
                 } else {
                     eop.add(new EOPEntry(mjd,
                                          Double.NaN, Double.NaN,
@@ -729,7 +736,7 @@ class BulletinAFilesLoader extends AbstractEopLoader implements EopHistoryLoader
                                          Double.NaN, Double.NaN,
                                          getItrfVersionProvider().getConfiguration(fileName, mjd).getVersion(),
                                          AbsoluteDate.createMJDDate(mjd, 0, getUtc()), eopDataType,
-                                         0, publicationDate.getMJD(), 0));
+                                         DUMMY_ORIGIN, origin, DUMMY_ORIGIN));
                 }
             }
 
