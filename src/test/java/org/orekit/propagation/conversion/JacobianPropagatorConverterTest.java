@@ -16,10 +16,8 @@
  */
 package org.orekit.propagation.conversion;
 
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,6 +35,8 @@ import org.hipparchus.util.Pair;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.orekit.Utils;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.forces.ForceModel;
@@ -46,6 +46,7 @@ import org.orekit.forces.drag.IsotropicDragBuilder;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
 import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
+import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.models.earth.atmosphere.Atmosphere;
 import org.orekit.models.earth.atmosphere.SimpleExponentialAtmosphere;
@@ -56,6 +57,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitParamsType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
@@ -63,19 +65,44 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.drivers.ParameterDriver;
 
-public class JacobianPropagatorConverterTest {
+class JacobianPropagatorConverterTest {
 
-    private double mu;
     private double dP;
 
     private Orbit orbit;
     private ForceModel gravity;
     private ForceModel drag;
-    private Atmosphere atmosphere;
-    private double crossSection;
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void testKeplerianToKeplerian(final boolean positionOnly) {
+        // GIVEN
+        final Frame frame = FramesFactory.getGCRF();
+        final CartesianOrbit expectedOrbit = new CartesianOrbit(orbit.inFrame(frame));
+        final CartesianOrbitFactory factory = new CartesianOrbitFactory(expectedOrbit, 1);
+        final KeplerianPropagatorBuilder keplerianPropagatorBuilder = new KeplerianPropagatorBuilder(factory);
+        // WHEN
+        final JacobianPropagatorConverter converter = new JacobianPropagatorConverter(keplerianPropagatorBuilder, 1., 10);
+        final List<SpacecraftState> states = new ArrayList<>();
+        final Frame otherFrame = FramesFactory.getTOD(true);
+        for (int i = 1; i < 10; i++) {
+            final Orbit shiftedOrbit = expectedOrbit.shiftedBy(10. * i);
+            states.add(new SpacecraftState(shiftedOrbit.inFrame(otherFrame)));
+        }
+        final Propagator propagator = converter.convert(states, positionOnly);
+        // THEN
+        Assertions.assertInstanceOf(KeplerianPropagator.class, propagator);
+        final SpacecraftState state = propagator.getInitialState();
+        final Orbit actualOrbit = state.getOrbit();
+        Assertions.assertEquals(expectedOrbit.getDate(), actualOrbit.getDate());
+        Assertions.assertArrayEquals(expectedOrbit.getPosition().toArray(),
+                actualOrbit.getPosition(expectedOrbit.getFrame()).toArray(), 1e-6);
+        Assertions.assertArrayEquals(expectedOrbit.getVelocity().toArray(),
+                actualOrbit.getVelocity(expectedOrbit.getFrame()).toArray(), 1e-9);
+    }
 
     @Test
-    public void testDerivativesNothing() {
+    void testDerivativesNothing() {
         try {
             doTestDerivatives(1.0, 1.0);
             Assertions.fail("an exception should have been thrown");
@@ -85,31 +112,31 @@ public class JacobianPropagatorConverterTest {
     }
 
     @Test
-    public void testDerivativesOrbitOnly() {
+    void testDerivativesOrbitOnly() {
         doTestDerivatives(4.8e-9, 3.5e-12,
                           "Px", "Py", "Pz", "Vx", "Vy", "Vz");
     }
 
     @Test
-    public void testDerivativesPositionAndDrag() {
+    void testDerivativesPositionAndDrag() {
         doTestDerivatives(5.1e-9, 4.8e-12,
                           "Px", "Py", "Pz", DragSensitive.DRAG_COEFFICIENT);
     }
 
     @Test
-    public void testDerivativesDrag() {
+    void testDerivativesDrag() {
         doTestDerivatives(3.2e-9, 3.2e-12,
                           DragSensitive.DRAG_COEFFICIENT);
     }
 
     @Test
-    public void testDerivativesCentralAttraction() {
+    void testDerivativesCentralAttraction() {
         doTestDerivatives(3.6e-9, 4.0e-12,
                           NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT);
     }
 
     @Test
-    public void testDerivativesAllParameters() {
+    void testDerivativesAllParameters() {
         doTestDerivatives(1.1e-8, 1.1e-11,
                           "Px", "Py", "Pz", "Vx", "Vy", "Vz",
                           DragSensitive.DRAG_COEFFICIENT,
@@ -204,12 +231,12 @@ public class JacobianPropagatorConverterTest {
     }
 
     @BeforeEach
-    public void setUp() throws IOException, ParseException {
+    void setUp() {
 
         Utils.setDataRoot("regular-data:potential/shm-format");
         gravity = new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true),
                                                         GravityFieldFactory.getNormalizedProvider(2, 0));
-        mu = gravity.getParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT).getValue();
+        final double mu = gravity.getParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT).getValue();
         dP = 1.0;
 
         //use a orbit that comes close to Earth so the drag coefficient has an effect
@@ -224,9 +251,9 @@ public class JacobianPropagatorConverterTest {
                                                             Constants.WGS84_EARTH_FLATTENING,
                                                             FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         earth.setAngularThreshold(1.e-7);
-        atmosphere = new SimpleExponentialAtmosphere(earth, 0.0004, 42000.0, 7500.0);
+        final Atmosphere atmosphere = new SimpleExponentialAtmosphere(earth, 0.0004, 42000.0, 7500.0);
         final double dragCoef = 2.0;
-        crossSection = 25.0;
+        final double crossSection = 25.0;
         drag = new DragForce(atmosphere,
                              new IsotropicDragBuilder(crossSection).addDragCoeff(dragCoef).build());
 
