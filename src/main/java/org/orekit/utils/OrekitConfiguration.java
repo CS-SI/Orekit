@@ -26,6 +26,21 @@ import java.util.Properties;
  */
 public class OrekitConfiguration {
 
+    /** Name for version property.
+     * @since 14.0
+     */
+    private static final String VERSION_PROPERTY = "orekit.version";
+
+    /** Value for unknown version.
+     * @since 14.0
+     */
+    private static final String UNKNOWN_VERSION = "unknown";
+
+    /** Value for no-filtered version.
+     * @since 14.0
+     */
+    private static final String NOT_FILTERED_VERSION = "${project.version}";
+
     /** Number of slots to use in caches. */
     private static int CACHE_SLOTS_NUMBER;
 
@@ -66,12 +81,15 @@ public class OrekitConfiguration {
      * @since 13.0
      */
     public static String getOrekitVersion() {
-        String version = "unknown";
+        String version = UNKNOWN_VERSION;
         final Properties properties = new Properties();
         try (InputStream stream = OrekitConfiguration.class.getResourceAsStream("/assets/org/orekit/orekit.properties")) {
             if (stream != null) {
                 properties.load(stream);
-                version = properties.getProperty("orekit.version", version);
+                version = properties.getProperty(VERSION_PROPERTY, version);
+                if (NOT_FILTERED_VERSION.equals(version)) {
+                    version = UNKNOWN_VERSION;
+                }
             }
         } catch (IOException ioe) {
             // ignored

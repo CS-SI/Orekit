@@ -23,6 +23,7 @@ import org.orekit.gnss.GnssSignal;
 import org.orekit.gnss.SatInSystem;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
+import org.orekit.time.TimeOffset;
 import org.orekit.time.TimeScales;
 
 import java.util.ArrayList;
@@ -95,12 +96,12 @@ public class Sinex extends AbstractSinex {
 
             // copy first and last entries according to files validity
             sorted.add(sorted.getFirst().toNewEpoch(getFileEpochStartTime()));
-            sorted.add(sorted.getLast().toNewEpoch(getFileEpochEndTime()));
+            sorted.add(sorted.getLast().toNewEpoch(getFileEpochEndTime().shiftedBy(TimeOffset.NANOSECOND.negate())));
 
             if (sorted.size() < 4) {
                 // insert extra entries after first and before last to allow interpolation
-                sorted.add(sorted.getFirst().toNewEpoch(getFileEpochStartTime().shiftedBy(1.0)));
-                sorted.add(sorted.getLast().toNewEpoch(getFileEpochEndTime().shiftedBy(-1.0)));
+                sorted.add(sorted.getFirst().toNewEpoch(getFileEpochStartTime().shiftedBy(TimeOffset.SECOND)));
+                sorted.add(sorted.getLast().toNewEpoch(getFileEpochEndTime().shiftedBy(TimeOffset.SECOND.negate())));
             }
 
             // convert to regular EOP history
