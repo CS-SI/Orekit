@@ -18,10 +18,9 @@ package org.orekit.frames;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.function.Function;
 import java.util.function.ToDoubleFunction;
-import java.util.function.ToIntFunction;
 
-import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
@@ -36,6 +35,11 @@ public class EOPEntry implements TimeStamped, Serializable {
     /** Serializable UID. */
     @Serial
     private static final long serialVersionUID = 20260729L;
+
+    /** Default name for unknown origin.
+     * @since 14.0
+     */
+    private static final String UNKNOWN = "unknown";
 
     /** Entry date (modified julian day, 00h00 UTC scale). */
     private final int mjd;
@@ -83,38 +87,38 @@ public class EOPEntry implements TimeStamped, Serializable {
     /** EOP data type. */
     private final EopDataType eopDataType;
 
-    /** Publication date for X, Y, UT1-UTC and LOD.
+    /** Origin for X, Y, UT1-UTC and LOD.
      * @since 14.0
      */
-    private final int dtPub;
+    private final EOPOrigin dtOrigin;
 
-    /** Publication date for nutation.
+    /** Origin for nutation.
      * @since 14.0
      */
-    private final int nutPub;
+    private final EOPOrigin nutOrigin;
 
-    /** Publication date for Celestial Intermediate Pole.
+    /** Origin for Celestial Intermediate Pole.
      * @since 14.0
      */
-    private final int cipPub;
+    private final EOPOrigin cipOrigin;
 
     /** Constructor from raw elements.
      * <p>
      * This constructor assumes publication date is the same as entry date
      * </p>
-     * @param mjd entry date (modified Julian day, 00h00 UTC scale)
-     * @param dt UT1-UTC in seconds
-     * @param lod length of day
-     * @param x X component of pole motion
-     * @param y Y component of pole motion
-     * @param xRate X component of pole motion rate (NaN if absent)
-     * @param yRate Y component of pole motion rate (NaN if absent)
-     * @param ddPsi correction for nutation in longitude δΔΨ
-     * @param ddEps correction for nutation in obliquity δΔε
-     * @param dx correction for Celestial Intermediate Pole (CIP) coordinates
-     * @param dy correction for Celestial Intermediate Pole (CIP) coordinates
-     * @param itrfType ITRF version this entry defines
-     * @param date corresponding to {@code mjd}
+     * @param mjd         entry date (modified Julian day, 00h00 UTC scale)
+     * @param dt          UT1-UTC in seconds
+     * @param lod         length of day
+     * @param x           X component of pole motion
+     * @param y           Y component of pole motion
+     * @param xRate       X component of pole motion rate (NaN if absent)
+     * @param yRate       Y component of pole motion rate (NaN if absent)
+     * @param ddPsi       correction for nutation in longitude δΔΨ
+     * @param ddEps       correction for nutation in obliquity δΔε
+     * @param dx          correction for Celestial Intermediate Pole (CIP) coordinates
+     * @param dy          correction for Celestial Intermediate Pole (CIP) coordinates
+     * @param itrfType    ITRF version this entry defines
+     * @param date        corresponding to {@code mjd}
      * @param eopDataType EOP data type
      * @since 13.1.1
      */
@@ -125,27 +129,27 @@ public class EOPEntry implements TimeStamped, Serializable {
                     final ITRFVersion itrfType, final AbsoluteDate date,
                     final EopDataType eopDataType) {
         this(mjd, dt, lod, x, y, xRate, yRate, ddPsi, ddEps, dx, dy, itrfType, date, eopDataType,
-             mjd, mjd, mjd);
+             new EOPOrigin(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjd), UNKNOWN), null, null);
     }
 
     /** Constructor from raw elements.
-     * @param mjd entry date (modified Julian day, 00h00 UTC scale)
-     * @param dt UT1-UTC in seconds
-     * @param lod length of day
-     * @param x X component of pole motion
-     * @param y Y component of pole motion
-     * @param xRate X component of pole motion rate (NaN if absent)
-     * @param yRate Y component of pole motion rate (NaN if absent)
-     * @param ddPsi correction for nutation in longitude δΔΨ
-     * @param ddEps correction for nutation in obliquity δΔε
-     * @param dx correction for Celestial Intermediate Pole (CIP) coordinates
-     * @param dy correction for Celestial Intermediate Pole (CIP) coordinates
-     * @param itrfType ITRF version this entry defines
-     * @param date corresponding to {@code mjd}
+     * @param mjd         entry date (modified Julian day, 00h00 UTC scale)
+     * @param dt          UT1-UTC in seconds
+     * @param lod         length of day
+     * @param x           X component of pole motion
+     * @param y           Y component of pole motion
+     * @param xRate       X component of pole motion rate (NaN if absent)
+     * @param yRate       Y component of pole motion rate (NaN if absent)
+     * @param ddPsi       correction for nutation in longitude δΔΨ
+     * @param ddEps       correction for nutation in obliquity δΔε
+     * @param dx          correction for Celestial Intermediate Pole (CIP) coordinates
+     * @param dy          correction for Celestial Intermediate Pole (CIP) coordinates
+     * @param itrfType    ITRF version this entry defines
+     * @param date        corresponding to {@code mjd}
      * @param eopDataType EOP data type
-     * @param dtPub publication date for X, Y, UT1-UTC and LOD
-     * @param nutPub publication date for nutation
-     * @param cipPub publication date for Celestial Intermediate Pole
+     * @param dtOrigin    publication date for X, Y, UT1-UTC and LOD
+     * @param nutOrigin   publication date for nutation (null means same as {@code dtOrigin})
+     * @param cipOrigin   publication date for Celestial Intermediate Pole (null means same as {@code dtOrigin})
      * @since 14.0
      */
     public EOPEntry(final int mjd, final double dt, final double lod,
@@ -153,7 +157,7 @@ public class EOPEntry implements TimeStamped, Serializable {
                     final double ddPsi, final double ddEps,
                     final double dx, final double dy,
                     final ITRFVersion itrfType, final AbsoluteDate date, final EopDataType eopDataType,
-                    final int dtPub, final int nutPub, final int cipPub) {
+                    final EOPOrigin dtOrigin, final EOPOrigin nutOrigin, final EOPOrigin cipOrigin) {
         this.mjd         = mjd;
         this.date        = date;
         this.dt          = dt;
@@ -168,9 +172,9 @@ public class EOPEntry implements TimeStamped, Serializable {
         this.dy          = dy;
         this.itrfType    = itrfType;
         this.eopDataType = eopDataType;
-        this.dtPub       = dtPub;
-        this.nutPub      = nutPub;
-        this.cipPub      = cipPub;
+        this.dtOrigin    = dtOrigin;
+        this.nutOrigin   = nutOrigin == null ? dtOrigin : nutOrigin;
+        this.cipOrigin   = cipOrigin == null ? dtOrigin : cipOrigin;
     }
 
     /** Combination constructor.
@@ -209,43 +213,43 @@ public class EOPEntry implements TimeStamped, Serializable {
         this.date  = entry1.date;
 
         // combine fields
-        this.dt    = select(entry1, entry2, entry -> entry.dt,    entry -> entry.dtPub);
-        this.lod   = select(entry1, entry2, entry -> entry.lod,   entry -> entry.dtPub);
-        this.x     = select(entry1, entry2, entry -> entry.x,     entry -> entry.dtPub);
-        this.y     = select(entry1, entry2, entry -> entry.y,     entry -> entry.dtPub);
-        this.xRate = select(entry1, entry2, entry -> entry.xRate, entry -> entry.dtPub);
-        this.yRate = select(entry1, entry2, entry -> entry.yRate, entry -> entry.dtPub);
-        this.ddPsi = select(entry1, entry2, entry -> entry.ddPsi, entry -> entry.nutPub);
-        this.ddEps = select(entry1, entry2, entry -> entry.ddEps, entry -> entry.nutPub);
-        this.dx    = select(entry1, entry2, entry -> entry.dx,    entry -> entry.cipPub);
-        this.dy    = select(entry1, entry2, entry -> entry.dy,    entry -> entry.cipPub);
+        this.dt    = select(entry1, entry2, entry -> entry.dt,    entry -> entry.dtOrigin);
+        this.lod   = select(entry1, entry2, entry -> entry.lod,   entry -> entry.dtOrigin);
+        this.x     = select(entry1, entry2, entry -> entry.x,     entry -> entry.dtOrigin);
+        this.y     = select(entry1, entry2, entry -> entry.y,     entry -> entry.dtOrigin);
+        this.xRate = select(entry1, entry2, entry -> entry.xRate, entry -> entry.dtOrigin);
+        this.yRate = select(entry1, entry2, entry -> entry.yRate, entry -> entry.dtOrigin);
+        this.ddPsi = select(entry1, entry2, entry -> entry.ddPsi, entry -> entry.nutOrigin);
+        this.ddEps = select(entry1, entry2, entry -> entry.ddEps, entry -> entry.nutOrigin);
+        this.dx    = select(entry1, entry2, entry -> entry.dx,    entry -> entry.cipOrigin);
+        this.dy    = select(entry1, entry2, entry -> entry.dy,    entry -> entry.cipOrigin);
 
-        if (entry1.dtPub >= entry2.dtPub) {
-            this.itrfType           = entry1.itrfType;
-            this.eopDataType        = entry1.eopDataType;
-            this.dtPub = entry1.dtPub;
+        if (entry1.dtOrigin.compareTo(entry2.dtOrigin) >= 0) {
+            this.itrfType    = entry1.itrfType;
+            this.eopDataType = entry1.eopDataType;
+            this.dtOrigin    = entry1.dtOrigin;
         } else {
-            this.itrfType           = entry2.itrfType;
-            this.eopDataType        = entry2.eopDataType;
-            this.dtPub = entry2.dtPub;
+            this.itrfType    = entry2.itrfType;
+            this.eopDataType = entry2.eopDataType;
+            this.dtOrigin    = entry2.dtOrigin;
         }
 
-        this.nutPub = FastMath.max(entry1.nutPub, entry2.nutPub);
-        this.cipPub = FastMath.max(entry1.cipPub, entry2.cipPub);
+        this.nutOrigin = entry1.nutOrigin.compareTo(entry2.nutOrigin) >= 0 ? entry1.nutOrigin : entry2.nutOrigin;
+        this.cipOrigin = entry1.cipOrigin.compareTo(entry2.cipOrigin) >= 0 ? entry1.cipOrigin : entry2.cipOrigin;
 
     }
 
     /** Select either initialized or published last EOP field.
-     * @param entry1      first entry
-     * @param entry2      second entry
-     * @param field       selector for field
-     * @param publication selector for publication date
+     * @param entry1 first entry
+     * @param entry2 second entry
+     * @param field  selector for field
+     * @param origin selector for origin
      * @return selected field
      * @since 14.0
      */
     private double select(final EOPEntry entry1, final EOPEntry entry2,
                           final ToDoubleFunction<EOPEntry> field,
-                          final ToIntFunction<EOPEntry> publication) {
+                          final Function<EOPEntry, EOPOrigin> origin) {
         final double field1 = field.applyAsDouble(entry1);
         final double field2 = field.applyAsDouble(entry2);
         if (Double.isNaN(field1)) {
@@ -256,8 +260,7 @@ public class EOPEntry implements TimeStamped, Serializable {
             return field1;
         } else {
             // the field is initialized in both entries, we select the one published later
-            return publication.applyAsInt(entry1) >= publication.applyAsInt(entry2) ?
-                   field1 : field2;
+            return origin.apply(entry1).compareTo(origin.apply(entry2)) >= 0 ? field1 : field2;
         }
     }
 
@@ -360,28 +363,28 @@ public class EOPEntry implements TimeStamped, Serializable {
      */
     public EopDataType getEopDataType() { return eopDataType; }
 
-    /** Get the publication date for X, Y, UT1-UTC and LOD (modified Julian day).
-     * @return publication date for X, Y, UT1-UTC and LOD
+    /** Get the origin for X, Y, UT1-UTC and LOD.
+     * @return origin for X, Y, UT1-UTC and LOD
      * @since 14.0
      */
-    public int getDtPub() {
-        return dtPub;
+    public EOPOrigin getDtOrigin() {
+        return dtOrigin;
     }
 
-    /** Get the publication date for nutation (modified Julian day).
-     * @return publication date for nutation
+    /** Get the origin for nutation.
+     * @return origin for nutation
      * @since 14.0
      */
-    public int getNutPub() {
-        return nutPub;
+    public EOPOrigin getNutOrigin() {
+        return nutOrigin;
     }
 
-    /** Get the publication date for Celestial Intermediate Pole (modified Julian day).
-     * @return publication date for Celestial Intermediate Pole
+    /** Get the origin for Celestial Intermediate Pole.
+     * @return origin for Celestial Intermediate Pole
      * @since 14.0
      */
-    public int getCipPub() {
-        return cipPub;
+    public EOPOrigin getCipOrigin() {
+        return cipOrigin;
     }
 
 }

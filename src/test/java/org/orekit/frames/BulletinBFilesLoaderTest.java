@@ -69,14 +69,14 @@ public class BulletinBFilesLoaderTest extends AbstractFilesLoaderTest {
         Assertions.assertEquals(new AbsoluteDate(2006, 3, 5, TimeScalesFactory.getUTC()),
                             new EOPHistory(IERSConventions.IERS_2010, EOPHistory.DEFAULT_INTERPOLATION_DEGREE,
                                            history, false).getEndDate());
-        Assertions.assertEquals(new DateComponents(2006, 1, 31).getMJD(),
-                                history.getFirst().getDtPub());
-        Assertions.assertEquals(new DateComponents(2006, 1, 31).getMJD(),
-                                history.getFirst().getNutPub());
-        Assertions.assertEquals(new DateComponents(2006, 4,  4).getMJD(),
-                                history.getLast().getDtPub());
-        Assertions.assertEquals(new DateComponents(2006, 4,  4).getMJD(),
-                                history.getLast().getNutPub());
+        Assertions.assertEquals(new DateComponents(2006, 1, 31), history.getFirst().getDtOrigin().publicationDate());
+        Assertions.assertTrue(history.getFirst().getDtOrigin().fileName().endsWith("bulletinb_IAU2000-216.txt"));
+        Assertions.assertEquals(new DateComponents(2006, 1, 31), history.getFirst().getNutOrigin().publicationDate());
+        Assertions.assertTrue(history.getFirst().getNutOrigin().fileName().endsWith("bulletinb_IAU2000-216.txt"));
+        Assertions.assertEquals(new DateComponents(2006, 4,  4), history.getLast().getDtOrigin().publicationDate());
+        Assertions.assertTrue(history.getLast().getDtOrigin().fileName().endsWith("bulletinb_IAU2000.218"));
+        Assertions.assertEquals(new DateComponents(2006, 4,  4), history.getLast().getNutOrigin().publicationDate());
+        Assertions.assertTrue(history.getLast().getNutOrigin().fileName().endsWith("bulletinb_IAU2000.218"));
     }
 
     @Test

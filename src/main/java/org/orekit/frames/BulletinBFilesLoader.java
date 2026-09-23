@@ -266,10 +266,10 @@ class BulletinBFilesLoader extends AbstractEopLoader implements EopHistoryLoader
         /** Map for fields read in different sections. */
         private final Map<Integer, double[]> fieldsMap;
 
-        /** Publication date.
+        /** Origin.
          * @since 14.0
          */
-        private DateComponents publicationDate;
+        private EOPOrigin origin;
 
         /** Current line number. */
         private int lineNumber;
@@ -324,9 +324,11 @@ class BulletinBFilesLoader extends AbstractEopLoader implements EopHistoryLoader
                 // in order to allow parsing the publication date from these erroneous files and
                 // identify the proper month despite the spelling error.
                 final Matcher section0Matcher = seekToLine(SECTION_0_DATE, reader, source.getName());
-                publicationDate = new DateComponents(Integer.parseInt(section0Matcher.group(3)),
-                                                     Month.parseMonth(section0Matcher.group(2).substring(0, 3)),
-                                                     Integer.parseInt(section0Matcher.group(1)));
+                final DateComponents publicationDate =
+                    new DateComponents(Integer.parseInt(section0Matcher.group(3)),
+                                       Month.parseMonth(section0Matcher.group(2).substring(0, 3)),
+                                       Integer.parseInt(section0Matcher.group(1)));
+                origin = new EOPOrigin(publicationDate, source.getName());
 
                 // skip header up to section 1 and check if we are parsing an old or new format file
                 final Matcher section1Matcher = seekToLine(SECTION_1_HEADER, reader, source.getName());
@@ -371,9 +373,7 @@ class BulletinBFilesLoader extends AbstractEopLoader implements EopHistoryLoader
                                                  Double.NaN, Double.NaN,
                                                  equinox[0], equinox[1], array[4], array[5],
                                                  configuration.getVersion(), mjdDate, EopDataType.FINAL,
-                                                 publicationDate.getMJD(),
-                                                 publicationDate.getMJD(),
-                                                 publicationDate.getMJD()));
+                                                 origin, origin, origin));
                     }
 
                 }
@@ -492,9 +492,7 @@ class BulletinBFilesLoader extends AbstractEopLoader implements EopHistoryLoader
                         history.add(new EOPEntry(mjd, dtu1, lod, x, y, Double.NaN, Double.NaN,
                                                  equinox[0], equinox[1], nro[0], nro[1],
                                                  configuration.getVersion(), mjdDate, EopDataType.FINAL,
-                                                 publicationDate.getMJD(),
-                                                 publicationDate.getMJD(),
-                                                 publicationDate.getMJD()));
+                                                 origin, origin, origin));
                         line = mjd < mjdMax ? reader.readLine() : null;
                     } else {
                         line = reader.readLine();
