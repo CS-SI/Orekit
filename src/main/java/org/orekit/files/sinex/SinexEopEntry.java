@@ -228,7 +228,7 @@ public class SinexEopEntry implements TimeStamped {
         // Create a new EOPEntry object storing the extracted data, then add it to the list of EOPEntries.
         final EOPOrigin origin = new EOPOrigin(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjd), name);
         return new EOPEntry(mjd, ut1MinusUtc, lod,
-                            xPo, yPo, Double.NaN, Double.NaN,
+                            xPo, yPo, 0.0, 0.0,
                             equinox[0], equinox[1],
                             nro[0], nro[1],
                             version, epoch, EopDataType.RAPID,
