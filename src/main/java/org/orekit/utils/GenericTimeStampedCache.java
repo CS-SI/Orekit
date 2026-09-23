@@ -89,13 +89,13 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
      * @param maxSlots maximum number of independent cached time slots
      * @param maxSpan maximum duration span in seconds of one slot
      * (can be set to {@code Double.POSITIVE_INFINITY} if desired)
-     * @param newSlotInterval time interval above which a new slot is created
+     * @param newSlotGap time delta above which a new slot is created
      * instead of extending an existing one ({@code Double.NaN} is interpreted as 0)
      * @param generator generator to use for yet non-existent data
      */
     public GenericTimeStampedCache(final int maxNeighborsSize, final int maxSlots, final double maxSpan,
-                                   final double newSlotInterval, final TimeStampedGenerator<T> generator) {
-        this(maxNeighborsSize, maxSlots, maxSpan, newSlotInterval, generator, Double.NaN);
+                                   final double newSlotGap, final TimeStampedGenerator<T> generator) {
+        this(maxNeighborsSize, maxSlots, maxSpan, newSlotGap, generator, Double.NaN);
 
     }
 
@@ -105,7 +105,7 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
      * @param maxSlots maximum number of independent cached time slots
      * @param maxSpan maximum duration span in seconds of one slot
      * (can be set to {@code Double.POSITIVE_INFINITY} if desired)
-     * @param newSlotInterval time interval above which a new slot is created
+     * @param newSlotGap time delta above which a new slot is created
      * instead of extending an existing one ({@code Double.NaN} is interpreted as 0)
      * @param generator generator to use for yet non-existent data
      * @param overridingMeanStep overriding mean step designed for non-homogeneous tabulated values. To be used for example
@@ -118,7 +118,7 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
      * </ul>
      */
     public GenericTimeStampedCache(final int maxNeighborsSize, final int maxSlots, final double maxSpan,
-                                   final double newSlotInterval, final TimeStampedGenerator<T> generator,
+                                   final double newSlotGap, final TimeStampedGenerator<T> generator,
                                    final double overridingMeanStep) {
 
         // safety check
@@ -137,7 +137,7 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
         this.maxSlots           = maxSlots;
         this.maxSpan            = maxSpan;
         // a NaN gap would make every comparison in selectSlot true, hence a new slot at each call
-        this.newSlotGap         = new TimeOffset(Double.isNaN(newSlotInterval) ? 0.0 : newSlotInterval);
+        this.newSlotGap         = new TimeOffset(Double.isNaN(newSlotGap) ? 0.0 : newSlotGap);
         this.generator          = generator;
         this.overridingMeanStep = overridingMeanStep;
         this.maxNeighborsSize   = maxNeighborsSize;
@@ -172,7 +172,7 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
 
     /** Get the time delta above which a new slot is created instead of extending an existing one.
      * <p>
-     * This gap is the {@code newSlotInterval} value provided at construction.
+     * This gap is the {@code newSlotGap} value provided at construction.
      * </p>
      * @return gap in seconds
      * @since 13.1.9
@@ -183,7 +183,7 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
 
     /** Get the time delta above which a new slot is created instead of extending an existing one.
      * <p>
-     * This gap is the {@code newSlotInterval} value provided at construction.
+     * This gap is the {@code newSlotGap} value provided at construction.
      * </p>
      * @return gap
      * @since 13.1.9
