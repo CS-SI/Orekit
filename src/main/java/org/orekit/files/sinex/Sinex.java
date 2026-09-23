@@ -96,12 +96,13 @@ public class Sinex extends AbstractSinex {
 
             // copy first and last entries according to files validity
             sorted.add(sorted.getFirst().toNewEpoch(getFileEpochStartTime()));
-            sorted.add(sorted.getLast().toNewEpoch(getFileEpochEndTime().shiftedBy(TimeOffset.NANOSECOND.negate())));
+            sorted.add(sorted.getLast().toNewEpoch(getFileEpochEndTime().shiftedBy(TimeOffset.ATTOSECOND.negate())));
 
-            if (sorted.size() < 4) {
+            for (int i = 1; i < 5; ++i) {
                 // insert extra entries after first and before last to allow interpolation
-                sorted.add(sorted.getFirst().toNewEpoch(getFileEpochStartTime().shiftedBy(TimeOffset.SECOND)));
-                sorted.add(sorted.getLast().toNewEpoch(getFileEpochEndTime().shiftedBy(TimeOffset.SECOND.negate())));
+                final TimeOffset dt = new TimeOffset(i, TimeOffset.SECOND);
+                sorted.add(sorted.getFirst().toNewEpoch(getFileEpochStartTime().shiftedBy(dt)));
+                sorted.add(sorted.getLast().toNewEpoch(getFileEpochEndTime().shiftedBy(dt.negate())));
             }
 
             // convert to regular EOP history
