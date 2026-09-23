@@ -20,10 +20,6 @@
   </properties>
   <body>
     <release version="13.1.9" date="TBD" description="TBD">
-        <action dev="vcucchie" type="fix" issue="1738">
-          Fixed date indexing in GenericTimeStampedCache, which used a 1 microsecond
-          quantization. Exact time offsets are now used instead (attosecond accuracy).
-        </action>
         <action dev="luc" type="fix" issue="2023">
           Fixed EOP fitting when leap seconds are present.
         </action>
@@ -42,6 +38,10 @@
         </action>
         <action dev="luc" type="fix" issue="1965" due-to="Julian Rengstorf">
           Align OpsStatus enum with the SANA Operational Status registry.
+        </action>
+        <action dev="vcucchie" type="fix" issue="1738">
+          Fixed date indexing in GenericTimeStampedCache, which used a 1 microsecond
+          quantization. Exact time offsets are now used instead (attosecond accuracy).
         </action>
     </release>
     <release version="13.1.8" date="2026-08-30" description="Orekit 13.1.8 is a patch release. It solves bugs related to NRLMSISE, numerical state transition matrix and rates in pseudo-inertial frames.">
