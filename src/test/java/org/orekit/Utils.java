@@ -26,6 +26,7 @@ import org.orekit.data.DirectoryCrawler;
 import org.orekit.data.LazyLoadedDataContext;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.frames.EOPEntry;
+import org.orekit.frames.EOPOrigin;
 import org.orekit.frames.EopDataType;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.ITRFVersion;
@@ -175,9 +176,8 @@ public class Utils {
         final TimeScale utc = DataContext.getDefault().getTimeScales().getUTC();
         final List<EOPEntry> list = new ArrayList<>();
         for (double[] row : data) {
-            final AbsoluteDate date =
-                    new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, (int) row[0]),
-                                     TimeScalesFactory.getUTC());
+            final DateComponents dc = new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, (int) row[0]);
+            final AbsoluteDate date = new AbsoluteDate(dc, TimeScalesFactory.getUTC());
             final double[] nro;
             final double[] equinox;
             if (Double.isNaN(row[7])) {
@@ -202,14 +202,15 @@ public class Utils {
                     Constants.ARC_SECONDS_TO_RADIANS * row[8]
                 };
             }
-            list.add(new EOPEntry((int) row[0], row[1], row[2],
+            list.add(new EOPEntry(dc.getMJD(), row[1], row[2],
                                   Constants.ARC_SECONDS_TO_RADIANS * row[3],
                                   Constants.ARC_SECONDS_TO_RADIANS * row[4],
                                   Double.NaN, Double.NaN,
                                   equinox[0], equinox[1],
                                   nro[0], nro[1], version,
                                   AbsoluteDate.createMJDDate((int) row[0], 0.0, utc),
-                                  EopDataType.PREDICTED));
+                                  EopDataType.PREDICTED,
+                                  new EOPOrigin(dc, "dummy"), null, null));
         }
         return list;
     }

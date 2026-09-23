@@ -226,11 +226,8 @@ public class EOPHistory {
             final EOPEntry current = deduplicated.get(i);
             final EOPEntry next    = deduplicated.get(i + 1);
 
-            // we compare entries dates with a 0.5 second tolerance because EOP data loaded from
-            // Sinex files include extra points one second after Sinex file start date and one second
-            // before Sinex file end date to prevent interpolation; these entries must be preserved
-            if (next.getDate().durationFrom(current) < 0.5) {
-                // the two entries are close enough, we combine them together
+            if (next.getDate().equals(current.getDate())) {
+                // the two entries are at the same date, we combine them together
                 deduplicated.set(i, new EOPEntry(current, next));
                 deduplicated.remove(i + 1);
             } else {
@@ -995,7 +992,8 @@ public class EOPHistory {
                                 entry.getX(), entry.getY(), xRate, yRate,
                                 entry.getDdPsi(), entry.getDdEps(),
                                 entry.getDx(), entry.getDy(),
-                                entry.getITRFType(), entry.getDate(), entry.getEopDataType());
+                                entry.getITRFType(), entry.getDate(), entry.getEopDataType(),
+                                entry.getDtOrigin(), entry.getNutOrigin(), entry.getCipOrigin());
         } else {
             // the entry already has all derivatives
             return entry;

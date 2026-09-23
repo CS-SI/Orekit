@@ -232,16 +232,16 @@ class RapidDataAndPredictionColumnsLoader extends AbstractEopLoader
 
                     // parse the date part
                     final Matcher dateMatcher = DATE_PATTERN.matcher(datePart);
-                    final int mjd;
+                    final DateComponents dc;
                     if (dateMatcher.matches()) {
                         final int yy = Integer.parseInt(dateMatcher.group(1).trim());
                         final int mm = Integer.parseInt(dateMatcher.group(2).trim());
                         final int dd = Integer.parseInt(dateMatcher.group(3).trim());
-                        mjd = Integer.parseInt(dateMatcher.group(4).trim());
-                        final DateComponents reconstructedDate = new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjd);
-                        if ((reconstructedDate.getYear() % 100) != yy ||
-                             reconstructedDate.getMonth()       != mm ||
-                             reconstructedDate.getDay()         != dd) {
+                        dc = new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH,
+                                                Integer.parseInt(dateMatcher.group(4).trim()));
+                        if ((dc.getYear() % 100) != yy ||
+                             dc.getMonth()       != mm ||
+                             dc.getDay()         != dd) {
                             throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                                       lineNumber, source.getName(), line);
                         }
@@ -331,9 +331,7 @@ class RapidDataAndPredictionColumnsLoader extends AbstractEopLoader
                     // parse the nutation part
                     final double[] nro;
                     final double[] equinox;
-                    final AbsoluteDate mjdDate =
-                            new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjd),
-                                    getUtc());
+                    final AbsoluteDate date = new AbsoluteDate(dc, getUtc());
                     if (nutationPartB.trim().isEmpty()) {
                         // nutation part from bulletin B is blank
                         if (nutationPartA.trim().isEmpty()) {
@@ -348,13 +346,13 @@ class RapidDataAndPredictionColumnsLoader extends AbstractEopLoader
                                         UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(Double.parseDouble(nutationAMatcher.group(2))),
                                         UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(Double.parseDouble(nutationAMatcher.group(4)))
                                     };
-                                    equinox = getConverter().toEquinox(mjdDate, nro[0], nro[1]);
+                                    equinox = getConverter().toEquinox(date, nro[0], nro[1]);
                                 } else {
                                     equinox = new double[] {
                                         UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(Double.parseDouble(nutationAMatcher.group(2))),
                                         UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(Double.parseDouble(nutationAMatcher.group(4)))
                                     };
-                                    nro = getConverter().toNonRotating(mjdDate, equinox[0], equinox[1]);
+                                    nro = getConverter().toNonRotating(date, equinox[0], equinox[1]);
                                 }
                                 eopDataType = updateEopDataTypeIfUnknown(eopDataType, () -> getEopDataType(nutationAMatcher));
                             } else {
@@ -370,13 +368,13 @@ class RapidDataAndPredictionColumnsLoader extends AbstractEopLoader
                                     UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(Double.parseDouble(nutationBMatcher.group(1))),
                                     UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(Double.parseDouble(nutationBMatcher.group(2)))
                                 };
-                                equinox = getConverter().toEquinox(mjdDate, nro[0], nro[1]);
+                                equinox = getConverter().toEquinox(date, nro[0], nro[1]);
                             } else {
                                 equinox = new double[] {
                                     UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(Double.parseDouble(nutationBMatcher.group(1))),
                                     UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(Double.parseDouble(nutationBMatcher.group(2)))
                                 };
-                                nro = getConverter().toNonRotating(mjdDate, equinox[0], equinox[1]);
+                                nro = getConverter().toNonRotating(date, equinox[0], equinox[1]);
                             }
                             eopDataType = updateEopDataTypeIfUnknown(eopDataType, () -> EopDataType.FINAL);
                         } else {
@@ -385,13 +383,14 @@ class RapidDataAndPredictionColumnsLoader extends AbstractEopLoader
                         }
                     }
 
-                    if (configuration == null || !configuration.isValid(mjd)) {
+                    if (configuration == null || !configuration.isValid(dc.getMJD())) {
                         // get a configuration for current name and date range
-                        configuration = getItrfVersionProvider().getConfiguration(source.getName(), mjd);
+                        configuration = getItrfVersionProvider().getConfiguration(source.getName(), dc.getMJD());
                     }
-                    history.add(new EOPEntry(mjd, dtu1, lod, x, y, Double.NaN, Double.NaN,
+                    history.add(new EOPEntry(dc.getMJD(), dtu1, lod, x, y, Double.NaN, Double.NaN,
                                              equinox[0], equinox[1], nro[0], nro[1],
-                                             configuration.getVersion(), mjdDate, eopDataType));
+                                             configuration.getVersion(), date, eopDataType,
+                                             new EOPOrigin(dc, source.getName()), null, null));
 
                 }
 

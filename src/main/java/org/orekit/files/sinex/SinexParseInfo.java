@@ -315,7 +315,7 @@ public class SinexParseInfo extends ParseInfo<Sinex> {
      * @return EOP entry at date, creating it if needed
      */
     SinexEopEntry createEOPEntry(final AbsoluteDate date) {
-        return eop.computeIfAbsent(date, SinexEopEntry::new);
+        return eop.computeIfAbsent(date, d -> new SinexEopEntry(getName(), d));
     }
 
     /** {@inheritDoc} */

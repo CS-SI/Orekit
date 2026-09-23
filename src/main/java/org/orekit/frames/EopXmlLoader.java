@@ -174,22 +174,20 @@ class EopXmlLoader extends AbstractEopLoader implements EopHistoryLoader {
             private static final String BULLETIN_A_ELT    = "bulletinA";
             private static final String UT1_M_UTC_ELT     = "UT1-UTC";
 
-            private boolean inBulletinA;
-            private int     year;
-            private int     month;
-            private int     day;
-            private int     mjd;
-            private AbsoluteDate mjdDate;
-            private double  dtu1;
-            private double  lod;
-            private double  x;
-            private double  y;
-            private double  xRate;
-            private double  yRate;
-            private double  dpsi;
-            private double  deps;
-            private double  dx;
-            private double  dy;
+            private boolean        inBulletinA;
+            private int            mjd;
+            private DateComponents dc;
+            private AbsoluteDate   date;
+            private double         dtu1;
+            private double         lod;
+            private double         x;
+            private double         y;
+            private double         xRate;
+            private double         yRate;
+            private double         dpsi;
+            private double         deps;
+            private double         dx;
+            private double         dy;
 
             // CHECKSTYLE: resume JavadocVariable check
 
@@ -306,11 +304,9 @@ class EopXmlLoader extends AbstractEopLoader implements EopHistoryLoader {
              */
             private void resetEOPData() {
                 inBulletinA = false;
-                year        = -1;
-                month       = -1;
-                day         = -1;
+                dc          = null;
                 mjd         = -1;
-                mjdDate     = null;
+                date        = null;
                 dtu1        = Double.NaN;
                 lod         = Double.NaN;
                 x           = Double.NaN;
@@ -339,15 +335,14 @@ class EopXmlLoader extends AbstractEopLoader implements EopHistoryLoader {
              */
             private void endDailyElement(final String qName) {
                 if (qName.equals(DATE_YEAR_ELT) && !buffer.isEmpty()) {
-                    year = Integer.parseInt(buffer.toString());
+                    dc = new DateComponents(Integer.parseInt(buffer.toString()), 1, 1);
                 } else if (qName.equals(DATE_MONTH_ELT) && !buffer.isEmpty()) {
-                    month = Integer.parseInt(buffer.toString());
+                    dc = new DateComponents(dc.getYear(), Integer.parseInt(buffer.toString()), 1);
                 } else if (qName.equals(DATE_DAY_ELT) && !buffer.isEmpty()) {
-                    day = Integer.parseInt(buffer.toString());
+                    dc = new DateComponents(dc.getYear(), dc.getMonth(), Integer.parseInt(buffer.toString()));
                 } else if (qName.equals(MJD_ELT) && !buffer.isEmpty()) {
-                    mjd     = Integer.parseInt(buffer.toString());
-                    mjdDate = new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjd),
-                                               getUtc());
+                    mjd  = Integer.parseInt(buffer.toString());
+                    date = new AbsoluteDate(dc, getUtc());
                 } else if (qName.equals(UT1_M_UTC_ELT)) {
                     dtu1 = overwrite(dtu1, Unit.SECOND);
                 } else if (qName.equals(LOD_ELT)) {
@@ -379,12 +374,12 @@ class EopXmlLoader extends AbstractEopLoader implements EopHistoryLoader {
                             nro = new double[] {
                                 dx, dy
                             };
-                            equinox = getConverter().toEquinox(mjdDate, nro[0], nro[1]);
+                            equinox = getConverter().toEquinox(date, nro[0], nro[1]);
                         } else {
                             equinox = new double[] {
                                 dpsi, deps
                             };
-                            nro = getConverter().toNonRotating(mjdDate, equinox[0], equinox[1]);
+                            nro = getConverter().toNonRotating(date, equinox[0], equinox[1]);
                         }
                         if (configuration == null || !configuration.isValid(mjd)) {
                             // get a configuration for current name and date range
@@ -392,7 +387,8 @@ class EopXmlLoader extends AbstractEopLoader implements EopHistoryLoader {
                         }
                         history.add(new EOPEntry(mjd, dtu1, lod, x, y, Double.NaN, Double.NaN,
                                                  equinox[0], equinox[1], nro[0], nro[1],
-                                                 configuration.getVersion(), mjdDate, EopDataType.UNKNOWN));
+                                                 configuration.getVersion(), date, EopDataType.UNKNOWN,
+                                                 new EOPOrigin(dc, name), null, null));
                     }
                 }
             }
@@ -404,14 +400,13 @@ class EopXmlLoader extends AbstractEopLoader implements EopHistoryLoader {
                 if (qName.equals(DATE_ELT) && !buffer.isEmpty()) {
                     final String[] fields = buffer.toString().split("-");
                     if (fields.length == 3) {
-                        year  = Integer.parseInt(fields[0]);
-                        month = Integer.parseInt(fields[1]);
-                        day   = Integer.parseInt(fields[2]);
+                        dc    = new DateComponents(Integer.parseInt(fields[0]),
+                                                   Integer.parseInt(fields[1]),
+                                                   Integer.parseInt(fields[2]));
                     }
                 } else if (qName.equals(MJD_ELT) && !buffer.isEmpty()) {
-                    mjd     = Integer.parseInt(buffer.toString());
-                    mjdDate = new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjd),
-                                               getUtc());
+                    mjd  = Integer.parseInt(buffer.toString());
+                    date = new AbsoluteDate(dc, getUtc());
                 } else if (qName.equals(UT1_U_UTC_ELT)) {
                     dtu1 = overwrite(dtu1, Unit.SECOND);
                 } else if (qName.equals(LOD_ELT)) {
@@ -443,12 +438,12 @@ class EopXmlLoader extends AbstractEopLoader implements EopHistoryLoader {
                             nro = new double[] {
                                 dx, dy
                             };
-                            equinox = getConverter().toEquinox(mjdDate, nro[0], nro[1]);
+                            equinox = getConverter().toEquinox(date, nro[0], nro[1]);
                         } else {
                             equinox = new double[] {
                                 dpsi, deps
                             };
-                            nro = getConverter().toNonRotating(mjdDate, equinox[0], equinox[1]);
+                            nro = getConverter().toNonRotating(date, equinox[0], equinox[1]);
                         }
                         if (configuration == null || !configuration.isValid(mjd)) {
                             // get a configuration for current name and date range
@@ -456,8 +451,8 @@ class EopXmlLoader extends AbstractEopLoader implements EopHistoryLoader {
                         }
                         history.add(new EOPEntry(mjd, dtu1, lod, x, y, xRate, yRate,
                                                  equinox[0], equinox[1], nro[0], nro[1],
-                                                 configuration.getVersion(), mjdDate,
-                                                 EopDataType.UNKNOWN));
+                                                 configuration.getVersion(), date, EopDataType.UNKNOWN,
+                                                 new EOPOrigin(dc, name), null, null));
                     }
                 }
             }
@@ -483,9 +478,9 @@ class EopXmlLoader extends AbstractEopLoader implements EopHistoryLoader {
             /** Check if the year, month, day date and MJD date are consistent.
              */
             private void checkDates() {
-                if (new DateComponents(year, month, day).getMJD() != mjd) {
+                if (dc.getMJD() != mjd) {
                     throw new OrekitException(OrekitMessages.INCONSISTENT_DATES_IN_IERS_FILE,
-                                              name, year, month, day, mjd);
+                                              name, dc.getYear(), dc.getMonth(), dc.getDay(), mjd);
                 }
             }
 

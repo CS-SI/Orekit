@@ -29,6 +29,7 @@ import org.orekit.frames.ITRFVersion;
 import org.orekit.frames.LazyLoadedFrames;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
+import org.orekit.time.TimeOffset;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
@@ -73,7 +74,7 @@ public class SinexParserEopTest {
         AbsoluteDate date2 = new AbsoluteDate(new DateComponents(2019, 1, 1), utc).shiftedBy(Constants.JULIAN_DAY * (352));
 
         // Check size of set
-        Assertions.assertEquals(4, eopHistory.getEntries().size());
+        Assertions.assertEquals(5, eopHistory.getEntries().size());
 
         // Test if the values are correctly extracted
         EOPEntry firstEntry = history.getFirst();
@@ -240,13 +241,16 @@ public class SinexParserEopTest {
         final EOPHistory eopHistory =
             new EOPHistory(IERSConventions.IERS_2010, EOPHistory.DEFAULT_INTERPOLATION_DEGREE, history,
                            true, DataContext.getDefault().getTimeScales());
-        AbsoluteDate dateStart = new AbsoluteDate(new DateComponents(2019, 1, 1), utc).shiftedBy(Constants.JULIAN_DAY * 350);
-        AbsoluteDate dateStartPlusOne = dateStart.shiftedBy(+1.0);
-        AbsoluteDate dateInFile = new AbsoluteDate(new DateComponents(2019, 1, 1), utc).shiftedBy(Constants.JULIAN_DAY * 350 + 45000.0);
-        AbsoluteDate dateEnd = new AbsoluteDate(new DateComponents(2019, 1, 1), utc).shiftedBy(Constants.JULIAN_DAY * 351);
-        AbsoluteDate dateEndMinusOne = dateEnd.shiftedBy(-1.0);
+        AbsoluteDate dateStart        = new AbsoluteDate(new DateComponents(2019, 1, 1), utc).shiftedBy(Constants.JULIAN_DAY * 350);
+        AbsoluteDate dateStartPlusOne = dateStart.shiftedBy(TimeOffset.SECOND);
+        AbsoluteDate dateInFile       = new AbsoluteDate(new DateComponents(2019, 1, 1), utc).shiftedBy(Constants.JULIAN_DAY * 350 + 45000.0);
+        AbsoluteDate dateEnd          = new AbsoluteDate(new DateComponents(2019, 1, 1), utc).shiftedBy(Constants.JULIAN_DAY * 351);
+        AbsoluteDate dateEndMinusNano = dateEnd.shiftedBy(TimeOffset.NANOSECOND.negate());
+        AbsoluteDate dateEndMinusOne  = dateEnd.shiftedBy(TimeOffset.SECOND.negate());
 
-        List<AbsoluteDate> listDates = Arrays.asList(dateStart, dateStartPlusOne, dateInFile, dateEndMinusOne, dateEnd);
+        List<AbsoluteDate> listDates = Arrays.asList(dateStart, dateStartPlusOne,
+                                                     dateInFile,
+                                                     dateEndMinusOne, dateEndMinusNano);
 
         for (int i = 0; i < listDates.size(); i++) {
             Assertions.assertEquals(listDates.get(i), eopHistory.getEntries().get(i).getDate());
@@ -298,26 +302,29 @@ public class SinexParserEopTest {
 
         // Setting up dates for further checks
         AbsoluteDate startDate = new AbsoluteDate(new DateComponents(2019, 1, 1), utc).shiftedBy(Constants.JULIAN_DAY * (350));
-        AbsoluteDate startDatePlusOne = startDate.shiftedBy(+1.0);
+        AbsoluteDate startDatePlusOne = startDate.shiftedBy(TimeOffset.SECOND);
         AbsoluteDate endDate = new AbsoluteDate(new DateComponents(2019, 1, 1), utc).shiftedBy(Constants.JULIAN_DAY * (353));
-        AbsoluteDate endDateMinusOne = endDate.shiftedBy(-1.0);
+        AbsoluteDate endDateMinusOne = endDate.shiftedBy(TimeOffset.SECOND.negate());
+        AbsoluteDate endDateMinusNano = endDate.shiftedBy(TimeOffset.NANOSECOND.negate());
 
         AbsoluteDate date  = new AbsoluteDate(new DateComponents(2019, 1, 1), utc).shiftedBy(Constants.JULIAN_DAY * 350 + 43185.0);
         AbsoluteDate date2 = new AbsoluteDate(new DateComponents(2019, 1, 1), utc).shiftedBy(Constants.JULIAN_DAY * 351 + 43185.0);
         AbsoluteDate date3 = new AbsoluteDate(new DateComponents(2019, 1, 1), utc).shiftedBy(Constants.JULIAN_DAY * 352 + 43185.0);
 
         // Intermediate shared date between two files
-        AbsoluteDate dateI12 = new AbsoluteDate(new DateComponents(2019, 1, 1), utc).shiftedBy(Constants.JULIAN_DAY * (352 - 1)).shiftedBy(0);
-        AbsoluteDate dateI12MinusOne = dateI12.shiftedBy(-1.0);
-        AbsoluteDate dateI12PlusOne = dateI12.shiftedBy(+1.0);
-        AbsoluteDate dateI23 = new AbsoluteDate(new DateComponents(2019, 1, 1), utc).shiftedBy(Constants.JULIAN_DAY * (353 - 1)).shiftedBy(0);
-        AbsoluteDate dateI23MinusOne = dateI23.shiftedBy(-1.0);
-        AbsoluteDate dateI23PlusOne = dateI23.shiftedBy(+1.0);
+        AbsoluteDate dateI12          = new AbsoluteDate(new DateComponents(2019, 1, 1), utc).shiftedBy(Constants.JULIAN_DAY * (352 - 1));
+        AbsoluteDate dateI12MinusOne  = dateI12.shiftedBy(TimeOffset.SECOND.negate());
+        AbsoluteDate dateI12MinusNano = dateI12.shiftedBy(TimeOffset.NANOSECOND.negate());
+        AbsoluteDate dateI12PlusOne   = dateI12.shiftedBy(TimeOffset.SECOND);
+        AbsoluteDate dateI23          = new AbsoluteDate(new DateComponents(2019, 1, 1), utc).shiftedBy(Constants.JULIAN_DAY * (353 - 1));
+        AbsoluteDate dateI23MinusOne  = dateI23.shiftedBy(TimeOffset.SECOND.negate());
+        AbsoluteDate dateI23MinusNano = dateI23.shiftedBy(TimeOffset.NANOSECOND.negate());
+        AbsoluteDate dateI23PlusOne   = dateI23.shiftedBy(TimeOffset.SECOND);
 
         List<AbsoluteDate> listDates = Arrays.asList(startDate, startDatePlusOne, date,
-                                                     dateI12MinusOne, dateI12, dateI12PlusOne, date2,
-                                                     dateI23MinusOne, dateI23, dateI23PlusOne, date3,
-                                                     endDateMinusOne, endDate);
+                                                     dateI12MinusOne, dateI12MinusNano, dateI12, dateI12PlusOne, date2,
+                                                     dateI23MinusOne, dateI23MinusNano, dateI23, dateI23PlusOne, date3,
+                                                     endDateMinusOne, endDateMinusNano);
         // Simplify checks to stay in the units of Orekit
         final UnitsConverter unitConvRad = new UnitsConverter(Unit.parse("mas"), Unit.RADIAN);
 
@@ -325,7 +332,7 @@ public class SinexParserEopTest {
         int cpt = 0;
         for (EOPEntry entry : eopHistory.getEntries()) {
             Assertions.assertEquals(listDates.get(cpt), entry.getDate());
-            cpt = cpt+1;
+            cpt = cpt + 1;
         }
 
         // First Entry
@@ -345,12 +352,12 @@ public class SinexParserEopTest {
         Assertions.assertEquals(unitConvRad.convert(-4.00387630903350E+03), eopHistory.getNonRotatingOriginNutationCorrection(date.shiftedBy(shift))[1], 1e-15);
 
         // Last entry for 1st file
-        Assertions.assertEquals(unitConvRad.convert(7.68783442726072E+01), eopHistory.getPoleCorrection(dateI12).getXp(), 1e-15);
-        Assertions.assertEquals(unitConvRad.convert(3.47286203337827E+02), eopHistory.getPoleCorrection(dateI12).getYp(), 1e-15);
-        Assertions.assertEquals(-3.17284190690589E+04, eopHistory.getUT1MinusUTC(dateI12) * 1000, 1e-15);
-        Assertions.assertEquals( 1.32354538674901E+00, eopHistory.getLOD(dateI12)* 1000, 1e-15);
-        Assertions.assertEquals(unitConvRad.convert(-1.10122731910265E+03), eopHistory.getNonRotatingOriginNutationCorrection(dateI12)[0], 1e-15);
-        Assertions.assertEquals(unitConvRad.convert(-4.00387630903350E+03), eopHistory.getNonRotatingOriginNutationCorrection(dateI12)[1], 1e-15);
+        Assertions.assertEquals(unitConvRad.convert(7.68783442726072E+01), eopHistory.getPoleCorrection(dateI12MinusNano).getXp(), 1e-15);
+        Assertions.assertEquals(unitConvRad.convert(3.47286203337827E+02), eopHistory.getPoleCorrection(dateI12MinusNano).getYp(), 1e-15);
+        Assertions.assertEquals(-3.17284190690589E+04, eopHistory.getUT1MinusUTC(dateI12MinusNano) * 1000, 1e-15);
+        Assertions.assertEquals( 1.32354538674901E+00, eopHistory.getLOD(dateI12MinusNano)* 1000, 1e-15);
+        Assertions.assertEquals(unitConvRad.convert(-1.10122731910265E+03), eopHistory.getNonRotatingOriginNutationCorrection(dateI12MinusNano)[0], 1e-15);
+        Assertions.assertEquals(unitConvRad.convert(-4.00387630903350E+03), eopHistory.getNonRotatingOriginNutationCorrection(dateI12MinusNano)[1], 1e-15);
 
         // Second Entry
         Assertions.assertEquals(unitConvRad.convert(6.68783442726072E+01), eopHistory.getPoleCorrection(date2).getXp(), 1e-15);
@@ -361,12 +368,12 @@ public class SinexParserEopTest {
         Assertions.assertEquals(unitConvRad.convert(-5.00387630903350E+03), eopHistory.getNonRotatingOriginNutationCorrection(date2)[1], 1e-15);
 
         // Between second and third file
-        Assertions.assertEquals(unitConvRad.convert(6.68783442726072E+01), eopHistory.getPoleCorrection(dateI23).getXp(), 1e-15);
-        Assertions.assertEquals(unitConvRad.convert(2.47286203337827E+02), eopHistory.getPoleCorrection(dateI23).getYp(), 1e-15);
-        Assertions.assertEquals(-4.17284190690589E+04, eopHistory.getUT1MinusUTC(dateI23) * 1000, 1e-15);
-        Assertions.assertEquals( 2.32354538674901E+00, eopHistory.getLOD(dateI23)* 1000, 1e-15);
-        Assertions.assertEquals(unitConvRad.convert(-2.10122731910265E+03), eopHistory.getNonRotatingOriginNutationCorrection(dateI23)[0], 1e-15);
-        Assertions.assertEquals(unitConvRad.convert(-5.00387630903350E+03), eopHistory.getNonRotatingOriginNutationCorrection(dateI23)[1], 1e-15);
+        Assertions.assertEquals(unitConvRad.convert(6.68783442726072E+01), eopHistory.getPoleCorrection(dateI23MinusNano).getXp(), 1e-15);
+        Assertions.assertEquals(unitConvRad.convert(2.47286203337827E+02), eopHistory.getPoleCorrection(dateI23MinusNano).getYp(), 1e-15);
+        Assertions.assertEquals(-4.17284190690589E+04, eopHistory.getUT1MinusUTC(dateI23MinusNano) * 1000, 1e-15);
+        Assertions.assertEquals( 2.32354538674901E+00, eopHistory.getLOD(dateI23MinusNano)* 1000, 1e-15);
+        Assertions.assertEquals(unitConvRad.convert(-2.10122731910265E+03), eopHistory.getNonRotatingOriginNutationCorrection(dateI23MinusNano)[0], 1e-15);
+        Assertions.assertEquals(unitConvRad.convert(-5.00387630903350E+03), eopHistory.getNonRotatingOriginNutationCorrection(dateI23MinusNano)[1], 1e-15);
 
         // Third file main entry
         Assertions.assertEquals(unitConvRad.convert(5.68783442726072E+01), eopHistory.getPoleCorrection(date3).getXp(), 1e-15);
@@ -377,12 +384,12 @@ public class SinexParserEopTest {
         Assertions.assertEquals(unitConvRad.convert(-6.00387630903350E+03), eopHistory.getNonRotatingOriginNutationCorrection(date3)[1], 1e-15);
 
         // Last entry
-        Assertions.assertEquals(unitConvRad.convert(5.68783442726072E+01), eopHistory.getPoleCorrection(endDate).getXp(), 1e-15);
-        Assertions.assertEquals(unitConvRad.convert(1.47286203337827E+02), eopHistory.getPoleCorrection(endDate).getYp(), 1e-15);
-        Assertions.assertEquals(-5.17284190690589E+01, eopHistory.getUT1MinusUTC(endDate), 1e-14);
-        Assertions.assertEquals( 3.32354538674901E+00, eopHistory.getLOD(endDate)* 1000, 1e-15);
-        Assertions.assertEquals(unitConvRad.convert(-3.10122731910265E+03), eopHistory.getNonRotatingOriginNutationCorrection(endDate)[0], 1e-15);
-        Assertions.assertEquals(unitConvRad.convert(-6.00387630903350E+03), eopHistory.getNonRotatingOriginNutationCorrection(endDate)[1], 1e-15);
+        Assertions.assertEquals(unitConvRad.convert(5.68783442726072E+01), eopHistory.getPoleCorrection(endDateMinusNano).getXp(), 1e-15);
+        Assertions.assertEquals(unitConvRad.convert(1.47286203337827E+02), eopHistory.getPoleCorrection(endDateMinusNano).getYp(), 1e-15);
+        Assertions.assertEquals(-5.17284190690589E+01, eopHistory.getUT1MinusUTC(endDateMinusNano), 1e-14);
+        Assertions.assertEquals( 3.32354538674901E+00, eopHistory.getLOD(endDateMinusNano)* 1000, 1e-15);
+        Assertions.assertEquals(unitConvRad.convert(-3.10122731910265E+03), eopHistory.getNonRotatingOriginNutationCorrection(endDateMinusNano)[0], 1e-15);
+        Assertions.assertEquals(unitConvRad.convert(-6.00387630903350E+03), eopHistory.getNonRotatingOriginNutationCorrection(endDateMinusNano)[1], 1e-15);
 
     }
 

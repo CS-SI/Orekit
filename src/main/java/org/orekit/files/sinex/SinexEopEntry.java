@@ -17,9 +17,11 @@
 package org.orekit.files.sinex;
 
 import org.orekit.frames.EOPEntry;
+import org.orekit.frames.EOPOrigin;
 import org.orekit.frames.EopDataType;
 import org.orekit.frames.ITRFVersion;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.DateComponents;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.IERSConventions;
@@ -31,6 +33,9 @@ import org.orekit.utils.IERSConventions;
  * @since 11.2
  */
 public class SinexEopEntry implements TimeStamped {
+
+    /** Name of the file containing this entry. */
+    private final String name;
 
     /** Length of day (seconds). */
     private double lod;
@@ -61,9 +66,11 @@ public class SinexEopEntry implements TimeStamped {
 
     /**
      * Constructor.
+     * @param name name of the file containing this entry
      * @param epoch epoch of the data
      */
-    public SinexEopEntry(final AbsoluteDate epoch) {
+    public SinexEopEntry(final String name, final AbsoluteDate epoch) {
+        this.name  = name;
         this.epoch = epoch;
     }
 
@@ -219,11 +226,13 @@ public class SinexEopEntry implements TimeStamped {
         final double[] equinox = (nutLn != 0 && nutOb != 0) ? new double[] {nutLn, nutOb} : converter.toEquinox(epoch, nutX, nutY);
 
         // Create a new EOPEntry object storing the extracted data, then add it to the list of EOPEntries.
+        final EOPOrigin origin = new EOPOrigin(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjd), name);
         return new EOPEntry(mjd, ut1MinusUtc, lod,
                             xPo, yPo, Double.NaN, Double.NaN,
                             equinox[0], equinox[1],
                             nro[0], nro[1],
-                            version, epoch, EopDataType.RAPID);
+                            version, epoch, EopDataType.RAPID,
+                            origin, null, null);
 
     }
 
@@ -237,7 +246,7 @@ public class SinexEopEntry implements TimeStamped {
     SinexEopEntry toNewEpoch(final AbsoluteDate date) {
 
         // Initialize
-        final SinexEopEntry newEntry = new SinexEopEntry(date);
+        final SinexEopEntry newEntry = new SinexEopEntry(name, date);
 
         // Fill
         newEntry.setLod(getLod());
