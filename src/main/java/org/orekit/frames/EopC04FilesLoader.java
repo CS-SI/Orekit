@@ -137,7 +137,7 @@ class EopC04FilesLoader extends AbstractEopLoader implements EopHistoryLoader {
 
                     if (selectedParser != null) {
                         // maybe it's a data line
-                        final EOPEntry entry = selectedParser.parseDataLine(line);
+                        final EOPEntry entry = selectedParser.parseDataLine(line, source.getName());
                         if (entry != null) {
 
                             // this is a data line, build an entry from the extracted fields
@@ -264,9 +264,10 @@ class EopC04FilesLoader extends AbstractEopLoader implements EopHistoryLoader {
 
             /** Parse a data line.
              * @param line line to parse
+             * @param fileName file name
              * @return EOP entry for the line, or null if line does not match expected regular expression
              */
-            public EOPEntry parseDataLine(final String line) {
+            public EOPEntry parseDataLine(final String line, final String fileName) {
 
                 final Matcher matcher = dataPattern.matcher(line);
                 if (!matcher.matches()) {
@@ -284,7 +285,7 @@ class EopC04FilesLoader extends AbstractEopLoader implements EopHistoryLoader {
                                               name, dc.getYear(), dc.getMonth(), dc.getDay(), mjd);
                 }
 
-                return parseDataLine(matcher, dc);
+                return parseDataLine(matcher, dc, fileName);
 
             }
 
@@ -296,9 +297,10 @@ class EopC04FilesLoader extends AbstractEopLoader implements EopHistoryLoader {
             /** Parse a data line.
              * @param matcher matcher for line
              * @param dc date components already extracted from the line
+             * @param fileName file name
              * @return EOP entry for the line
              */
-            protected abstract EOPEntry parseDataLine(Matcher matcher, DateComponents dc);
+            protected abstract EOPEntry parseDataLine(Matcher matcher, DateComponents dc, String fileName);
 
         }
 
@@ -399,7 +401,7 @@ class EopC04FilesLoader extends AbstractEopLoader implements EopHistoryLoader {
 
             /** {@inheritDoc} */
             @Override
-            protected EOPEntry parseDataLine(final Matcher matcher, final DateComponents dc) {
+            protected EOPEntry parseDataLine(final Matcher matcher, final DateComponents dc, final String fileName) {
 
                 final AbsoluteDate date = new AbsoluteDate(dc, getUtc());
 
@@ -423,9 +425,11 @@ class EopC04FilesLoader extends AbstractEopLoader implements EopHistoryLoader {
                     nro = getConverter().toNonRotating(date, equinox[0], equinox[1]);
                 }
 
+                final EOPOrigin origin = new EOPOrigin(new DateComponents(dc.getYear(), 12, 31), fileName);
                 return new EOPEntry(dc.getMJD(), dtu1, lod, x, y, Double.NaN, Double.NaN,
                                     equinox[0], equinox[1], nro[0], nro[1],
-                                    getItrfVersion(), date, EopDataType.FINAL);
+                                    getItrfVersion(), date, EopDataType.FINAL,
+                                    origin, null, null);
 
             }
         }
@@ -518,7 +522,7 @@ class EopC04FilesLoader extends AbstractEopLoader implements EopHistoryLoader {
 
             /** {@inheritDoc} */
             @Override
-            protected EOPEntry parseDataLine(final Matcher matcher, final DateComponents dc) {
+            protected EOPEntry parseDataLine(final Matcher matcher, final DateComponents dc, final String fileName) {
 
                 final TimeComponents tc = new TimeComponents(Integer.parseInt(matcher.group(HOUR_GROUP)), 0, 0.0);
                 final AbsoluteDate date = new AbsoluteDate(dc, tc, getUtc());
@@ -537,9 +541,11 @@ class EopC04FilesLoader extends AbstractEopLoader implements EopHistoryLoader {
                 };
                 final double[] equinox = getConverter().toEquinox(date, nro[0], nro[1]);
 
+                final EOPOrigin origin = new EOPOrigin(new DateComponents(dc.getYear(), 12, 31), fileName);
                 return new EOPEntry(dc.getMJD(), dtu1, lod, x, y, xRate, yRate,
                                     equinox[0], equinox[1], nro[0], nro[1],
-                                    getItrfVersion(), date, EopDataType.FINAL);
+                                    getItrfVersion(), date, EopDataType.FINAL,
+                                    origin, null, null);
 
             }
         }

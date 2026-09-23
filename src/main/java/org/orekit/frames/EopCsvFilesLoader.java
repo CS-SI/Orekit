@@ -332,6 +332,7 @@ class EopCsvFilesLoader extends AbstractEopLoader implements EopHistoryLoader {
             final double dtu1  = parseField(fields, ut1Column,       S);
             final double lod   = parseField(fields, lodColumn,       S);
 
+            final EOPOrigin origin = new EOPOrigin(dc, name);
             if (dxColumn >= 0) {
                 // non-rotatin origin paradigm
                 final double dx = parseField(fields, dxColumn, AS);
@@ -339,7 +340,8 @@ class EopCsvFilesLoader extends AbstractEopLoader implements EopHistoryLoader {
                 final double[] equinox = getConverter().toEquinox(date, dx, dy);
                 return new EOPEntry(dc.getMJD(), dtu1, lod, x, y, xRate, yRate,
                                     equinox[0], equinox[1], dx, dy,
-                                    configuration.getVersion(), date, EopDataType.UNKNOWN);
+                                    configuration.getVersion(), date, EopDataType.UNKNOWN,
+                                    origin, null, null);
             } else {
                 // equinox paradigm
                 final double ddPsi      = parseField(fields, dPsiColumn,     AS);
@@ -347,7 +349,8 @@ class EopCsvFilesLoader extends AbstractEopLoader implements EopHistoryLoader {
                 final double[] nro = getConverter().toNonRotating(date, ddPsi, dddEpsilon);
                 return new EOPEntry(dc.getMJD(), dtu1, lod, x, y, xRate, yRate,
                                     ddPsi, dddEpsilon, nro[0], nro[1],
-                                    configuration.getVersion(), date, EopDataType.UNKNOWN);
+                                    configuration.getVersion(), date, EopDataType.UNKNOWN,
+                                    origin, null, null);
             }
 
 

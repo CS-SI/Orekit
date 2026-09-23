@@ -995,7 +995,8 @@ public class EOPHistory {
                                 entry.getX(), entry.getY(), xRate, yRate,
                                 entry.getDdPsi(), entry.getDdEps(),
                                 entry.getDx(), entry.getDy(),
-                                entry.getITRFType(), entry.getDate(), entry.getEopDataType());
+                                entry.getITRFType(), entry.getDate(), entry.getEopDataType(),
+                                entry.getDtOrigin(), entry.getNutOrigin(), entry.getCipOrigin());
         } else {
             // the entry already has all derivatives
             return entry;

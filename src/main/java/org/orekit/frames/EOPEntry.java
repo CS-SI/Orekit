@@ -34,12 +34,7 @@ public class EOPEntry implements TimeStamped, Serializable {
 
     /** Serializable UID. */
     @Serial
-    private static final long serialVersionUID = 20260729L;
-
-    /** Default name for unknown origin.
-     * @since 14.0
-     */
-    private static final String UNKNOWN = "unknown";
+    private static final long serialVersionUID = 20260923L;
 
     /** Entry date (modified julian day, 00h00 UTC scale). */
     private final int mjd;
@@ -101,36 +96,6 @@ public class EOPEntry implements TimeStamped, Serializable {
      * @since 14.0
      */
     private final EOPOrigin cipOrigin;
-
-    /** Constructor from raw elements.
-     * <p>
-     * This constructor assumes publication date is the same as entry date
-     * </p>
-     * @param mjd         entry date (modified Julian day, 00h00 UTC scale)
-     * @param dt          UT1-UTC in seconds
-     * @param lod         length of day
-     * @param x           X component of pole motion
-     * @param y           Y component of pole motion
-     * @param xRate       X component of pole motion rate (NaN if absent)
-     * @param yRate       Y component of pole motion rate (NaN if absent)
-     * @param ddPsi       correction for nutation in longitude δΔΨ
-     * @param ddEps       correction for nutation in obliquity δΔε
-     * @param dx          correction for Celestial Intermediate Pole (CIP) coordinates
-     * @param dy          correction for Celestial Intermediate Pole (CIP) coordinates
-     * @param itrfType    ITRF version this entry defines
-     * @param date        corresponding to {@code mjd}
-     * @param eopDataType EOP data type
-     * @since 13.1.1
-     */
-    public EOPEntry(final int mjd, final double dt, final double lod,
-                    final double x, final double y, final double xRate, final double yRate,
-                    final double ddPsi, final double ddEps,
-                    final double dx, final double dy,
-                    final ITRFVersion itrfType, final AbsoluteDate date,
-                    final EopDataType eopDataType) {
-        this(mjd, dt, lod, x, y, xRate, yRate, ddPsi, ddEps, dx, dy, itrfType, date, eopDataType,
-             new EOPOrigin(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjd), UNKNOWN), null, null);
-    }
 
     /** Constructor from raw elements.
      * @param mjd         entry date (modified Julian day, 00h00 UTC scale)
