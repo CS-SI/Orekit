@@ -25,7 +25,7 @@ import org.hipparchus.linear.MatrixUtils;
 import org.orekit.frames.Frame;
 import org.orekit.frames.LocalOrbitalFrame;
 import org.orekit.orbits.FieldOrbit;
-import org.orekit.propagation.analytical.KeplerianPropagator;
+import org.orekit.orbits.KeplerianExtendedPositionProvider;
 import org.orekit.propagation.relative.FieldTwoImpulseTransfer;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
@@ -67,7 +67,7 @@ public class FieldClohessyWiltshireRendezVous<T extends CalculusFieldElement<T>>
         final LocalOrbitalFrame targetLof =
                         new LocalOrbitalFrame(targetOrbit.getFrame(),
                                               ClohessyWiltshireProvider.LOF_TYPE,
-                                              new KeplerianPropagator(targetOrbit.toOrbit()),
+                                              new KeplerianExtendedPositionProvider(targetOrbit.toOrbit()),
                                               "QSW LOF target");
 
         // Transform input PVTs from the input frame to the target's LOF

@@ -13,11 +13,11 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
 import org.orekit.frames.LocalOrbitalFrame;
 import org.orekit.orbits.FieldKeplerianOrbit;
+import org.orekit.orbits.KeplerianExtendedPositionProvider;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.analytical.FieldKeplerianPropagator;
-import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.events.FieldDateDetector;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.relative.FieldTwoImpulseTransfer;
@@ -59,12 +59,12 @@ class FieldYamanakaAnkersenManeuverTest {
 
         // Target's LVLH CCSDS LOF
         final LocalOrbitalFrame targetLof = new LocalOrbitalFrame(targetOrbit.getFrame(), LOFType.LVLH_CCSDS,
-                                                                  new KeplerianPropagator(targetOrbit),
+                                                                  new KeplerianExtendedPositionProvider(targetOrbit),
                                                                   "LVLH CCSDS LOF target");
         // Target's LVLH QSW LOF
         final LocalOrbitalFrame targetLofQSW =
-                        new LocalOrbitalFrame(targetOrbit.getFrame(), LOFType.QSW, new KeplerianPropagator(targetOrbit),
-                                              "QSW LOF target");
+                        new LocalOrbitalFrame(targetOrbit.getFrame(), LOFType.QSW,
+                                              new KeplerianExtendedPositionProvider(targetOrbit), "QSW LOF target");
 
         // Start and end conditions of the transfer, expressed in the target's  QSW LOF (data from Curtis book, example 7.2)
         TimeStampedPVCoordinates pvtChaserInitialQSW =
@@ -130,7 +130,7 @@ class FieldYamanakaAnkersenManeuverTest {
         Assertions.assertEquals(0., maneuver2.getRelativeProvider().getAdditionalData(finalTarget)[3].getReal(),
                                 6.977e-12);
         Assertions.assertEquals(0., maneuver2.getRelativeProvider().getAdditionalData(finalTarget)[4].getReal(),
-                                9.882e-14);
+                                5.016e-13);
         Assertions.assertEquals(0., maneuver2.getRelativeProvider().getAdditionalData(finalTarget)[5].getReal(),
                                 1.216e-12);
     }

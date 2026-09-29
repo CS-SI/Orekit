@@ -13,11 +13,11 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
 import org.orekit.frames.LocalOrbitalFrame;
 import org.orekit.orbits.FieldKeplerianOrbit;
+import org.orekit.orbits.KeplerianExtendedPositionProvider;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.analytical.FieldKeplerianPropagator;
-import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.events.FieldDateDetector;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.relative.FieldTwoImpulseTransfer;
@@ -60,7 +60,7 @@ class FieldClohessyWiltshireManeuverTest {
 
         // Target's QSW LOF
         final LocalOrbitalFrame targetLOF = new LocalOrbitalFrame(targetOrbit.getFrame(), LOFType.QSW,
-                                                                  new KeplerianPropagator(fieldTargetOrbit.toOrbit()),
+                                                                  new KeplerianExtendedPositionProvider(fieldTargetOrbit.toOrbit()),
                                                                   "QSW LOF");
 
         // Start and end conditions of the transfer, expressed in the target's QSW LOF (data from Curtis book, example 7.2)
@@ -115,7 +115,7 @@ class FieldClohessyWiltshireManeuverTest {
         Assertions.assertEquals(0, finalChaser[1].getReal(), 1.254e-12);
         Assertions.assertEquals(0, finalChaser[2].getReal(), 9.095e-13);
         Assertions.assertEquals(0., maneuver2.getRelativeProvider().getAdditionalData(finalTarget)[3].getReal(),
-                                5.149e-13);
+                                5.251e-13);
         Assertions.assertEquals(0., maneuver2.getRelativeProvider().getAdditionalData(finalTarget)[4].getReal(),
                                 1.254e-12);
         Assertions.assertEquals(0., maneuver2.getRelativeProvider().getAdditionalData(finalTarget)[5].getReal(),

@@ -26,6 +26,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
 import org.orekit.frames.LocalOrbitalFrame;
+import org.orekit.orbits.KeplerianExtendedPositionProvider;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
@@ -89,8 +90,8 @@ class YamanakaAnkersenProviderTest {
         final double[] localVelYA = {chaserFinalYA[3], chaserFinalYA[4], chaserFinalYA[5]};
         // Transform chaser coordinates propagated in LOF to inertial frame.
         final LocalOrbitalFrame targetLofYA =
-                        new LocalOrbitalFrame(targetOrbit.getFrame(), LOFType.LVLH_CCSDS, targetOrbit,
-                                              "LVLH LOF target");
+                        new LocalOrbitalFrame(targetOrbit.getFrame(), LOFType.LVLH_CCSDS,
+                                              new KeplerianExtendedPositionProvider(targetOrbit), "LVLH LOF target");
         final PVCoordinates inertialPVYA = targetLofYA.getTransformTo(eme2000, finalTargetState.getDate())
                                                       .transformPVCoordinates(
                                                                       new PVCoordinates(new Vector3D(localPosYA),
@@ -147,10 +148,10 @@ class YamanakaAnkersenProviderTest {
         final double[] localVelYA = {chaserFinalYA[3], chaserFinalYA[4], chaserFinalYA[5]};
 
         final LocalOrbitalFrame targetLofCW =
-                        new LocalOrbitalFrame(targetOrbit.getFrame(), LOFType.QSW, new KeplerianPropagator(targetOrbit),
-                                              "QSW LOF target");
+                        new LocalOrbitalFrame(targetOrbit.getFrame(), LOFType.QSW,
+                                              new KeplerianExtendedPositionProvider(targetOrbit), "QSW LOF target");
         final LocalOrbitalFrame targetLofYA = new LocalOrbitalFrame(targetOrbit.getFrame(), LOFType.LVLH_CCSDS,
-                                                                    new KeplerianPropagator(targetOrbit),
+                                                                    new KeplerianExtendedPositionProvider(targetOrbit),
                                                                     "LVLH CCSDS LOF target");
 
         final PVCoordinates inertialPVcw = targetLofCW.getTransformTo(eme2000, date.shiftedBy(5572.8))
@@ -163,7 +164,7 @@ class YamanakaAnkersenProviderTest {
                                                                                         new Vector3D(localVelYA)));
 
         TestUtils.validateVector3D(inertialPVcw.getPosition(), inertialPVya.getPosition(), 2e-9);
-        TestUtils.validateVector3D(inertialPVcw.getVelocity(), inertialPVya.getVelocity(), 1e-12);
+        TestUtils.validateVector3D(inertialPVcw.getVelocity(), inertialPVya.getVelocity(), 3e-12);
     }
 
     @Test

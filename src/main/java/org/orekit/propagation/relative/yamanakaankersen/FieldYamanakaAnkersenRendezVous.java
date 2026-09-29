@@ -30,10 +30,10 @@ import org.orekit.frames.LOFType;
 import org.orekit.frames.LocalOrbitalFrame;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
+import org.orekit.orbits.KeplerianExtendedPositionProvider;
 import org.orekit.orbits.OrbitParamsType;
 import org.orekit.propagation.FieldPropagator;
 import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.relative.FieldTwoImpulseTransfer;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
@@ -73,7 +73,7 @@ public class FieldYamanakaAnkersenRendezVous<T extends CalculusFieldElement<T>> 
                                                         final FieldPropagator<T> propagator) {
         // create LVLH CCSDS local orbital frame of the target
         final LocalOrbitalFrame targetLof = new LocalOrbitalFrame(targetOrbit.getFrame(), LOFType.LVLH_CCSDS,
-                                                                  new KeplerianPropagator(targetOrbit.toOrbit()),
+                                                                  new KeplerianExtendedPositionProvider(targetOrbit.toOrbit()),
                                                                   "LVLH CCSDS LOF");
 
         // Transform input PVTs from the input frame to the target's LOF

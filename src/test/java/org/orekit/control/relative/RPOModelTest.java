@@ -744,8 +744,8 @@ class RPOModelTest {
         // Assert that the final chaser position PVT is the same as the final waypoint of the linear path.
         final Binary64[] finalChaser = yaProvider.getAdditionalData(finalState);
         Assertions.assertEquals(finalChaser[0].getReal(), pvtChaserFinal.getPosition().getX().getReal(), 1e-11);
-        Assertions.assertEquals(finalChaser[1].getReal(), pvtChaserFinal.getPosition().getY().getReal(), 5.69e-14);
-        Assertions.assertEquals(finalChaser[2].getReal(), pvtChaserFinal.getPosition().getZ().getReal(), 2.15e-12);
+        Assertions.assertEquals(finalChaser[1].getReal(), pvtChaserFinal.getPosition().getY().getReal(), 8.53e-14);
+        Assertions.assertEquals(finalChaser[2].getReal(), pvtChaserFinal.getPosition().getZ().getReal(), 2.19e-12);
     }
 
     /**
@@ -865,7 +865,7 @@ class RPOModelTest {
         final Binary64[] finalChaser = yaProvider.getAdditionalData(finalState);
         Assertions.assertEquals(finalChaser[0].getReal(), waypoints.getFirst().getPosition().getX().getReal(), 1e-11);
         Assertions.assertEquals(finalChaser[1].getReal(), waypoints.getFirst().getPosition().getY().getReal(), 4.73e-14);
-        Assertions.assertEquals(finalChaser[2].getReal(), waypoints.getFirst().getPosition().getZ().getReal(), 5.48e-13);
+        Assertions.assertEquals(finalChaser[2].getReal(), waypoints.getFirst().getPosition().getZ().getReal(), 6.68e-13);
     }
 
     /**
@@ -1040,7 +1040,7 @@ class RPOModelTest {
         // Assert that the final chaser PVT is located at the injection Point. P(-2 * semiMinorAxis, 0, 0)
         Assertions.assertEquals(-relativeSemiMajorAxis.getReal(), chaserFinal[0].getReal(), 1e-10);
         Assertions.assertEquals(0, chaserFinal[1].getReal(), 1e-10);
-        Assertions.assertEquals(0, chaserFinal[2].getReal(), 1.98e-12);
+        Assertions.assertEquals(0, chaserFinal[2].getReal(), 2.02e-12);
     }
 
     /**

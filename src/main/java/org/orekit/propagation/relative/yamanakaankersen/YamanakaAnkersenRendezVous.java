@@ -25,6 +25,7 @@ import org.hipparchus.util.SinCos;
 import org.orekit.frames.Frame;
 import org.orekit.frames.LOFType;
 import org.orekit.frames.LocalOrbitalFrame;
+import org.orekit.orbits.KeplerianExtendedPositionProvider;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitParamsType;
@@ -69,7 +70,8 @@ public class YamanakaAnkersenRendezVous {
                                                        final Propagator propagator) {
         // create LVLH CCSDS local orbital frame of the target
         final LocalOrbitalFrame targetLof =
-                        new LocalOrbitalFrame(targetOrbit.getFrame(), LOFType.LVLH_CCSDS, propagator,
+                        new LocalOrbitalFrame(targetOrbit.getFrame(), LOFType.LVLH_CCSDS,
+                                              new KeplerianExtendedPositionProvider(targetOrbit),
                                               "LVLH CCSDS LOF target");
 
         // Transform input PVTs from the input frame to the target's LOF

@@ -26,6 +26,7 @@ import org.orekit.Utils;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
 import org.orekit.frames.LocalOrbitalFrame;
+import org.orekit.orbits.KeplerianExtendedPositionProvider;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.analytical.KeplerianPropagator;
@@ -63,12 +64,12 @@ class YamanakaAnkersenRendezVousTest {
 
         // Target's LVLH CCSDS LOF
         final LocalOrbitalFrame targetLof = new LocalOrbitalFrame(targetOrbit.getFrame(), LOFType.LVLH_CCSDS,
-                                                                  new KeplerianPropagator(targetOrbit),
+                                                                  new KeplerianExtendedPositionProvider(targetOrbit),
                                                                   "LVLH CCSDS LOF target");
         // Target's LVLH QSW LOF
         final LocalOrbitalFrame targetLofQSW =
-                        new LocalOrbitalFrame(targetOrbit.getFrame(), LOFType.QSW, new KeplerianPropagator(targetOrbit),
-                                              "QSW LOF target");
+                        new LocalOrbitalFrame(targetOrbit.getFrame(), LOFType.QSW,
+                                              new KeplerianExtendedPositionProvider(targetOrbit), "QSW LOF target");
 
         // Start and end conditions of the transfer, expressed in the target's QSW LOF (Curtis book)
         TimeStampedPVCoordinates pvtChaserInitialQSW =

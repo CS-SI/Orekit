@@ -30,9 +30,9 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
 import org.orekit.frames.LocalOrbitalFrame;
 import org.orekit.orbits.FieldKeplerianOrbit;
+import org.orekit.orbits.KeplerianExtendedPositionProvider;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.PositionAngleType;
-import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.relative.FieldTwoImpulseTransfer;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -71,7 +71,7 @@ class FieldClohessyWiltshireRendezVousTest {
 
         // Target's QSW LOF
         final LocalOrbitalFrame targetLof = new LocalOrbitalFrame(targetOrbit.getFrame(), LOFType.QSW,
-                                                                  new KeplerianPropagator(targetOrbit.toOrbit()),
+                                                                  new KeplerianExtendedPositionProvider(targetOrbit.toOrbit()),
                                                                   "QSW LOF target");
 
         // Start and end conditions of the transfer, expressed in the target's LOF

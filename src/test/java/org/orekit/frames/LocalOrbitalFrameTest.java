@@ -18,11 +18,14 @@ package org.orekit.frames;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
+import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
+import org.hipparchus.analysis.differentiation.UnivariateDerivative1Field;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.BlockFieldMatrix;
 import org.hipparchus.linear.BlockRealMatrix;
 import org.hipparchus.linear.FieldMatrix;
@@ -38,17 +41,55 @@ import org.orekit.TestUtils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.OrbitRelativeFrame;
+import org.orekit.orbits.KeplerianExtendedPositionProvider;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngleType;
-import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.ExtendedPositionProvider;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
+import org.orekit.utils.TimeStampedPVCoordinates;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class LocalOrbitalFrameTest {
+
+    @Test
+    void testIssue2021() {
+        // GIVEN
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+
+        final KeplerianOrbit orbit = new KeplerianOrbit(
+                new TimeStampedPVCoordinates(date, Vector3D.PLUS_J, Vector3D.PLUS_K), inertialFrame, 1.0);
+        final ExtendedPositionProvider extendedPositionProvider = new KeplerianExtendedPositionProvider(orbit);
+
+        final LocalOrbitalFrame lof = new LocalOrbitalFrame(inertialFrame, LOFType.QSW, orbit, "lof");
+        final LocalOrbitalFrame extendedLof = new LocalOrbitalFrame(inertialFrame, LOFType.QSW, extendedPositionProvider, "extended");
+
+        // WHEN
+        final FieldAbsoluteDate<UnivariateDerivative1> ud1Date =
+                new FieldAbsoluteDate<>(UnivariateDerivative1Field.getInstance(), date)
+                        .shiftedBy(new UnivariateDerivative1(0.0, 1.0));
+
+        final FieldTransform<UnivariateDerivative1> ud1Transform = lof
+                .getTransformTo(inertialFrame, new FieldAbsoluteDate<>(UnivariateDerivative1Field.getInstance(), date));
+        final FieldTransform<UnivariateDerivative1> ud1Transform2 = extendedLof
+                .getTransformTo(inertialFrame, ud1Date);
+
+        // THEN
+        final RealMatrix expected = new Array2DRowRealMatrix(new double[][] {
+                {0.0, 0.0, 1.0},
+                {1.0, 0.0, 0.0},
+                {0.0, 1.0, 0.0},
+        });
+        assertEquals(0.0, expected.subtract(new Array2DRowRealMatrix(ud1Transform.getRotation().toRotation().getMatrix())).getFrobeniusNorm(), 1e-15);
+        assertEquals(0.0, expected.subtract(new Array2DRowRealMatrix(ud1Transform2.getRotation().toRotation().getMatrix())).getFrobeniusNorm(), 1e-15);
+        assertThrows(OrekitException.class, () -> lof.getTransformTo(inertialFrame, ud1Date));
+    }
 
     @Test
     public void testIssue1282() {
@@ -63,14 +104,6 @@ public class LocalOrbitalFrameTest {
         // THEN
         final Rotation expectedRotation = new Rotation(Vector3D.MINUS_J,Vector3D.MINUS_I, Vector3D.PLUS_I, Vector3D.PLUS_K);
         Assertions.assertArrayEquals(expectedRotation.getMatrix(), actualRotation.getMatrix());
-    }
-
-    @Test
-    public void testIssue977() {
-        LOFType type = LOFType.TNW;
-        LocalOrbitalFrame lof = new LocalOrbitalFrame(FramesFactory.getGCRF(), type, provider, type.name());
-        Assertions.assertThrows(UnsupportedOperationException.class,
-                                () -> lof.getTransformProvider().getTransform(FieldAbsoluteDate.getJ2000Epoch(Binary64Field.getInstance())));
     }
 
     @Test
@@ -1048,6 +1081,31 @@ public class LocalOrbitalFrameTest {
 
         Assertions.assertEquals(initialOrbit.getKeplerianMeanMotion(), t.getRotationRate().getNorm(), 1.0e-7);
 
+        UnivariateDerivative1Field                field     = UnivariateDerivative1Field.getInstance();
+        UnivariateDerivative1                     delta     = new UnivariateDerivative1(0.0, 1.0);
+        FieldAbsoluteDate<UnivariateDerivative1>  fieldDate = new FieldAbsoluteDate<>(field, date).shiftedBy(delta);
+        Assertions.assertFalse(fieldDate.hasZeroField());
+
+        FieldTransform<UnivariateDerivative1>     fieldT    = lof.getTransformTo(FramesFactory.getGCRF(), fieldDate);
+        FieldPVCoordinates<UnivariateDerivative1> fieldPV1  = fieldT.transformPVCoordinates(PVCoordinates.ZERO);
+        FieldVector3D<UnivariateDerivative1>      fieldP1   = fieldPV1.getPosition();
+        FieldVector3D<UnivariateDerivative1>      fieldV1   = fieldPV1.getVelocity();
+        FieldPVCoordinates<UnivariateDerivative1> fieldPV2  = provider.getPVCoordinates(fieldDate, FramesFactory.getGCRF());
+        FieldVector3D<UnivariateDerivative1>      fieldP2   = fieldPV2.getPosition();
+        FieldVector3D<UnivariateDerivative1>      fieldV2   = fieldPV2.getVelocity();
+
+        Assertions.assertEquals(0, fieldP1.subtract(fieldP2).getNorm().getReal(), 1.0e-14 * p1.getNorm());
+        Assertions.assertEquals(0, fieldV1.subtract(fieldV2).getNorm().getReal(), 1.0e-14 * v1.getNorm());
+
+        FieldVector3D<UnivariateDerivative1> fieldXDirection = t.transformVector(FieldVector3D.getPlusI(field));
+        FieldVector3D<UnivariateDerivative1> fieldYDirection = t.transformVector(FieldVector3D.getPlusJ(field));
+        FieldVector3D<UnivariateDerivative1> fieldZDirection = t.transformVector(FieldVector3D.getPlusK(field));
+        Assertions.assertEquals(0, Vector3D.angle(expectedXDirection, fieldXDirection.toVector3D()), 2.0e-15);
+        Assertions.assertEquals(0, Vector3D.angle(expectedYDirection, fieldYDirection.toVector3D()), 1.0e-15);
+        Assertions.assertEquals(0, Vector3D.angle(expectedZDirection, fieldZDirection.toVector3D()), 1.0e-15);
+        Assertions.assertEquals(0, Vector3D.angle(expectedRotationDirection, fieldT.getRotationRate().toVector3D()), 1.0e-15);
+
+        Assertions.assertEquals(initialOrbit.getKeplerianMeanMotion(), fieldT.getRotationRate().getNorm().getReal(), 1.0e-7);
     }
 
     @BeforeEach
@@ -1057,13 +1115,13 @@ public class LocalOrbitalFrameTest {
         initialOrbit =
                 new KeplerianOrbit(7209668.0, 0.5e-4, 1.7, 2.1, 2.9, 6.2, PositionAngleType.TRUE,
                                    inertialFrame, initDate, 3.986004415e14);
-        provider = new KeplerianPropagator(initialOrbit);
+        provider = new KeplerianExtendedPositionProvider(initialOrbit);
 
     }
 
-    private Frame                 inertialFrame;
-    private AbsoluteDate          initDate;
-    private Orbit                 initialOrbit;
-    private PVCoordinatesProvider provider;
+    private Frame                    inertialFrame;
+    private AbsoluteDate             initDate;
+    private Orbit                    initialOrbit;
+    private ExtendedPositionProvider provider;
 
 }

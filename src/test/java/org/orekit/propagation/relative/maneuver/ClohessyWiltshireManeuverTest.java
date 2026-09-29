@@ -9,6 +9,7 @@ import org.orekit.Utils;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
 import org.orekit.frames.LocalOrbitalFrame;
+import org.orekit.orbits.KeplerianExtendedPositionProvider;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
@@ -52,8 +53,8 @@ class ClohessyWiltshireManeuverTest {
 
         // Target's QSW LOF
         final LocalOrbitalFrame targetLof =
-                        new LocalOrbitalFrame(targetOrbit.getFrame(), LOFType.QSW, new KeplerianPropagator(targetOrbit),
-                                              "QSW LOF target");
+                        new LocalOrbitalFrame(targetOrbit.getFrame(), LOFType.QSW,
+                                              new KeplerianExtendedPositionProvider(targetOrbit), "QSW LOF target");
 
         // Start and end conditions of the transfer, expressed in the target's LOF (data from Curtis book, example 7.2)
         TimeStampedPVCoordinates pvtChaserInitial =
@@ -97,8 +98,8 @@ class ClohessyWiltshireManeuverTest {
         Assertions.assertEquals(0, finalChaser[0], 1.607e-8);
         Assertions.assertEquals(0, finalChaser[1], 6.357e-7);
         Assertions.assertEquals(0, finalChaser[2], 3.649e-12);
-        Assertions.assertEquals(0., maneuver2.getRelativeProvider().getAdditionalData(finalTarget)[3], 1.285e-11);
-        Assertions.assertEquals(0., maneuver2.getRelativeProvider().getAdditionalData(finalTarget)[4], 3.013e-11);
+        Assertions.assertEquals(0., maneuver2.getRelativeProvider().getAdditionalData(finalTarget)[3], 1.286e-11);
+        Assertions.assertEquals(0., maneuver2.getRelativeProvider().getAdditionalData(finalTarget)[4], 3.185e-11);
         Assertions.assertEquals(0., maneuver2.getRelativeProvider().getAdditionalData(finalTarget)[5], 1.066e-14);
     }
 }
