@@ -479,12 +479,12 @@ public class FieldShortTermEncounter2DDefinition<T extends CalculusFieldElement<
 
         // Recurrent term in Coppola's paper : bᵀb
         final FieldMatrix<T> b = offPlaneCrossTermMatrix.transposeMultiply(probabilityDensityInverse).transpose();
-        final T recurrentTerm = b.multiplyTransposed(b).getEntry(0, 0);
+        final T recurrentTerm = b.transposeMultiply(b).getEntry(0, 0);
 
         // Position uncertainty normal to collision plane
         final T sigmaSqNormalToPlan = axisNormalToCollisionPlane.transposeMultiply(
                 combinedPositionalCovarianceMatrix.multiply(axisNormalToCollisionPlane)).getEntry(0, 0);
-        final T sigmaV = sigmaSqNormalToPlan.subtract(b.multiplyTransposed(offPlaneCrossTermMatrix).getEntry(0, 0))
+        final T sigmaV = sigmaSqNormalToPlan.subtract(b.transposeMultiply(offPlaneCrossTermMatrix).getEntry(0, 0))
                                             .sqrt();
 
         final T relativeVelocity = computeOtherRelativeToReferencePVInReferenceInertial().getVelocity().getNorm();
