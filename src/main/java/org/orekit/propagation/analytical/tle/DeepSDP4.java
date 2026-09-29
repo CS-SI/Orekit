@@ -420,7 +420,7 @@ public class DeepSDP4 extends SDP4 {
             d5421 = temp * f542 * g521;
             d5433 = temp * f543 * g533;
             xlamo = tle.getMeanAnomaly() + tle.getRaan() + tle.getRaan() - thgr - thgr;
-            bfact = xmdot + xnodot + xnodot - TLEConstants.THDT - TLEConstants.THDT;
+            bfact = xmdot + xnodot + xnodot - TLEConstants.VAL_THDT - TLEConstants.VAL_THDT;
             bfact += ssl + ssh + ssh;
         } else if (xnq < 0.0052359877 && xnq > 0.0034906585) {
             // if mean motion is .8 to 1.2 revs/day : (geosynch)
@@ -442,7 +442,7 @@ public class DeepSDP4 extends SDP4 {
             del3 = 3 * del1 * f330 * g300 * TLEConstants.Q33 * aqnv;
             del1 = del1 * f311 * g310 * TLEConstants.Q31 * aqnv;
             xlamo = tle.getMeanAnomaly() + tle.getRaan() + tle.getPerigeeArgument() - thgr;
-            bfact = xmdot + omgdot + xnodot - TLEConstants.THDT;
+            bfact = xmdot + omgdot + xnodot - TLEConstants.VAL_THDT;
             bfact = bfact + ssl + ssg + ssh;
         } else {
             // it's neither a high-e 12-hours orbit nor a geosynchronous:
@@ -515,7 +515,7 @@ public class DeepSDP4 extends SDP4 {
                 atime += delt;
             }
             xn = xni;
-            final double temp = -xnode + thgr + t * TLEConstants.THDT;
+            final double temp = -xnode + thgr + t * TLEConstants.VAL_THDT;
             xll = xli + temp + (synchronous ? -omgadf : temp);
         }
     }

@@ -107,7 +107,7 @@ public class SGP4 extends TLEPropagator {
             t4cof = 0.25 * (3 * d3 + c1 * (12 * d2 + 10 * c1sq));
             t5cof = 0.2 * (3 * d4 + 12 * c1 * d3 + 6 * d2 * d2 + 15 * c1sq * (2 * d2 + c1sq));
             sinM0 = scM0.sin();
-            if (tle.getE() < 1e-4) {
+            if (tle.getE() <= 1e-4) {
                 omgcof = 0.;
                 xmcof = 0.;
             } else  {

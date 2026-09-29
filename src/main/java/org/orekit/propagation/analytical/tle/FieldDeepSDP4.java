@@ -437,7 +437,7 @@ public class FieldDeepSDP4<T extends CalculusFieldElement<T>> extends FieldSDP4<
             d5421   = temp.multiply(f542).multiply(g521);
             d5433   = temp.multiply(f543).multiply(g533);
             xlamo   = tle.getMeanAnomaly().add(tle.getRaan()).add(tle.getRaan()).subtract(thgr + thgr);
-            bfact   = xmdot.add(xnodot).add(xnodot).subtract(TLEConstants.THDT + TLEConstants.THDT);
+            bfact   = xmdot.add(xnodot).add(xnodot).subtract(TLEConstants.VAL_THDT + TLEConstants.VAL_THDT);
             bfact   = bfact.add(ssl).add(ssh).add(ssh);
         } else if (xnq.getReal() < 0.0052359877 && xnq.getReal() > 0.0034906585) {
             // if mean motion is .8 to 1.2 revs/day : (geosynch)
@@ -459,7 +459,7 @@ public class FieldDeepSDP4<T extends CalculusFieldElement<T>> extends FieldSDP4<
             del3 = del1.multiply(f330).multiply(g300).multiply(aqnv).multiply(3 * TLEConstants.Q33);
             del1 = del1.multiply(f311).multiply(g310).multiply(TLEConstants.Q31).multiply(aqnv);
             xlamo = tle.getMeanAnomaly().add(tle.getRaan()).add(tle.getPerigeeArgument()).subtract(thgr);
-            bfact = xmdot.add(omgdot).add(xnodot).subtract(TLEConstants.THDT);
+            bfact = xmdot.add(omgdot).add(xnodot).subtract(TLEConstants.VAL_THDT);
             bfact = bfact.add(ssl).add(ssg).add(ssh);
         } else {
             // it's neither a high-e 12-hours orbit nor a geosynchronous:
@@ -532,7 +532,7 @@ public class FieldDeepSDP4<T extends CalculusFieldElement<T>> extends FieldSDP4<
                 atime = atime.add(delt);
             }
             xn = xni;
-            final T temp = xnode.negate().add(thgr).add(t.multiply(TLEConstants.THDT));
+            final T temp = xnode.negate().add(thgr).add(t.multiply(TLEConstants.VAL_THDT));
             xll = xli.add(temp).add(synchronous ? omgadf.negate() : temp);
         }
     }
