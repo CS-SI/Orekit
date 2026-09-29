@@ -22,8 +22,8 @@ import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.orekit.frames.Frame;
 import org.orekit.frames.LocalOrbitalFrame;
+import org.orekit.orbits.KeplerianExtendedPositionProvider;
 import org.orekit.orbits.Orbit;
-import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.relative.TwoImpulseTransfer;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -63,7 +63,7 @@ public class ClohessyWiltshireRendezVous {
         // Here a LocalOrbitalFrame of the target orbit is used since the transform has to be shifted
         final LocalOrbitalFrame targetLof =
                         new LocalOrbitalFrame(targetOrbit.getFrame(), ClohessyWiltshireProvider.LOF_TYPE,
-                                              new KeplerianPropagator(targetOrbit),
+                                              new KeplerianExtendedPositionProvider(targetOrbit),
                                               "QSW LOF target");
 
         // Transform input PVTs from the input frame to the target's LOF

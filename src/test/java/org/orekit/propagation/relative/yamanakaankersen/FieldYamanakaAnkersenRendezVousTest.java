@@ -30,10 +30,10 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
 import org.orekit.frames.LocalOrbitalFrame;
 import org.orekit.orbits.FieldKeplerianOrbit;
+import org.orekit.orbits.KeplerianExtendedPositionProvider;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.analytical.FieldKeplerianPropagator;
-import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.relative.FieldTwoImpulseTransfer;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -75,11 +75,11 @@ class FieldYamanakaAnkersenRendezVousTest {
 
         // Target's LVLH CCSDS LOF
         final LocalOrbitalFrame targetLof = new LocalOrbitalFrame(targetOrbit.getFrame(), LOFType.LVLH_CCSDS,
-                                                                  new KeplerianPropagator(targetOrbit.toOrbit()),
+                                                                  new KeplerianExtendedPositionProvider(targetOrbit.toOrbit()),
                                                                   "LVLH CCSDS LOF target");
         // Target's LVLH QSW LOF
         final LocalOrbitalFrame targetLofQSW = new LocalOrbitalFrame(targetOrbit.getFrame(), LOFType.QSW,
-                                                                     new KeplerianPropagator(targetOrbit.toOrbit()),
+                                                                     new KeplerianExtendedPositionProvider(targetOrbit.toOrbit()),
                                                                      "QSW LOF target");
 
         // Start and end conditions of the transfer, expressed in the target's QSW LOF (Curtis book)

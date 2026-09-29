@@ -31,6 +31,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
 import org.orekit.frames.LocalOrbitalFrame;
 import org.orekit.orbits.FieldKeplerianOrbit;
+import org.orekit.orbits.KeplerianExtendedPositionProvider;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -198,8 +199,8 @@ class FieldYamanakaAnkersenProviderTest {
                                                             chaserFinalYAField[5])));
 
         final LocalOrbitalFrame targetLofCW =
-                        new LocalOrbitalFrame(targetOrbitField.getFrame(), LOFType.LVLH_CCSDS, targetOrbit,
-                                              "LVLH CCSDS LOF target");
+                        new LocalOrbitalFrame(targetOrbitField.getFrame(), LOFType.LVLH_CCSDS,
+                                              new KeplerianExtendedPositionProvider(targetOrbit), "LVLH CCSDS LOF target");
         final FieldPVCoordinates<Binary64> inertialPVCW =
                         targetLofCW.getTransformTo(eme2000, finalTargetStateField.getDate())
                                    .transformPVCoordinates(chaserPVTLof);

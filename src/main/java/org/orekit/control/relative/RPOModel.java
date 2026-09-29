@@ -31,6 +31,7 @@ import org.orekit.frames.LOFType;
 import org.orekit.frames.LocalOrbitalFrame;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
+import org.orekit.orbits.KeplerianExtendedPositionProvider;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitParamsType;
@@ -170,7 +171,9 @@ public enum RPOModel implements RPO {
                                                              final RelativeProvider cwProvider) {
             final List<ClohessyWiltshireManeuver> maneuvers = new ArrayList<>();
             Vector3D velocityBeforeManeuver = initialVelocity;
-            final LocalOrbitalFrame targetLof = new LocalOrbitalFrame(targetOrbit.getFrame(), LOFType.QSW, targetOrbit,
+            final LocalOrbitalFrame targetLof = new LocalOrbitalFrame(targetOrbit.getFrame(),
+                                                                      LOFType.QSW,
+                                                                      new KeplerianExtendedPositionProvider(targetOrbit),
                                                                       LOFType.QSW.getName());
             for (int i = 0; i < waypoints.size() - 1; i++) {
 
@@ -225,7 +228,9 @@ public enum RPOModel implements RPO {
             FieldVector3D<T> velocityBeforeManeuver = initialVelocity;
 
             final LocalOrbitalFrame targetLof =
-                            new LocalOrbitalFrame(targetOrbit.getFrame(), LOFType.QSW, targetOrbit.toOrbit(),
+                            new LocalOrbitalFrame(targetOrbit.getFrame(),
+                                                  LOFType.QSW,
+                                                  new KeplerianExtendedPositionProvider(targetOrbit.toOrbit()),
                                                   LOFType.QSW.getName());
 
             for (int i = 0; i < waypoints.size() - 1; i++) {
@@ -476,8 +481,11 @@ public enum RPOModel implements RPO {
             final KeplerianPropagator targetPropagator = new KeplerianPropagator(targetOrbit);
             for (int i = 0; i < waypoints.size() - 1; i++) {
                 final LocalOrbitalFrame lofUpdated =
-                                new LocalOrbitalFrame(targetOrbit.getFrame(), LOFType.LVLH_CCSDS, orbit,
-                                                      LOFType.LVLH_CCSDS.getName());
+                                new LocalOrbitalFrame(
+                                        targetOrbit.getFrame(),
+                                        LOFType.LVLH_CCSDS,
+                                        new KeplerianExtendedPositionProvider(orbit),
+                                        LOFType.LVLH_CCSDS.getName());
 
                 // Define Current waypoint and next waypoint in QSW
                 final TimeStampedPVCoordinates currentWaypoint = waypoints.get(i);
@@ -549,8 +557,11 @@ public enum RPOModel implements RPO {
 
             for (int i = 0; i < waypoints.size() - 1; i++) {
                 final LocalOrbitalFrame lofUpdated =
-                                new LocalOrbitalFrame(targetOrbit.getFrame(), LOFType.LVLH_CCSDS, orbit.toOrbit(),
-                                                      LOFType.LVLH_CCSDS.getName());
+                                new LocalOrbitalFrame(
+                                        targetOrbit.getFrame(),
+                                        LOFType.LVLH_CCSDS,
+                                        new KeplerianExtendedPositionProvider(orbit.toOrbit()),
+                                        LOFType.LVLH_CCSDS.getName());
 
                 // Define Current waypoint and next waypoint in QSW
                 final TimeStampedFieldPVCoordinates<T> currentWaypoint = waypoints.get(i);

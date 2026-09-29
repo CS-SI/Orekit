@@ -26,6 +26,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
 import org.orekit.frames.LocalOrbitalFrame;
+import org.orekit.orbits.KeplerianExtendedPositionProvider;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
@@ -96,7 +97,8 @@ class ClohessyWiltshireProviderTest {
 
         // Transform chaser coordinates propagated in LOF to inertial frame.
         final LocalOrbitalFrame targetLofCW  =
-                        new LocalOrbitalFrame(targetOrbit.getFrame(), LOFType.QSW, targetOrbit, "QSW LOF target");
+                        new LocalOrbitalFrame(targetOrbit.getFrame(), LOFType.QSW,
+                                              new KeplerianExtendedPositionProvider(targetOrbit), "QSW LOF target");
         final PVCoordinates     inertialPVCW = targetLofCW.getTransformTo(eme2000, date.shiftedBy(100.0))
                                                           .transformPVCoordinates(new PVCoordinates(new Vector3D(
                                                                           localPosCW), new Vector3D(localVelCW)));

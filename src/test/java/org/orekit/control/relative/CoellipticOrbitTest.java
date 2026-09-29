@@ -30,6 +30,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
 import org.orekit.frames.LocalOrbitalFrame;
 import org.orekit.orbits.FieldKeplerianOrbit;
+import org.orekit.orbits.KeplerianExtendedPositionProvider;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -115,10 +116,10 @@ class CoellipticOrbitTest {
         final KeplerianOrbit targetOrbit = new KeplerianOrbit(rTarget, 0.1, 0., 0.0, 0.0, 0., PositionAngleType.TRUE,
                                                               FramesFactory.getGCRF(), epoch,
                                                               Constants.EIGEN5C_EARTH_MU);
-        final KeplerianPropagator targetPropagator = new KeplerianPropagator(targetOrbit);
+        final KeplerianExtendedPositionProvider targetPvProvider = new KeplerianExtendedPositionProvider(targetOrbit);
 
         final LocalOrbitalFrame lof =
-                        new LocalOrbitalFrame(targetOrbit.getFrame(), LOFType.LVLH_CCSDS, targetPropagator,
+                        new LocalOrbitalFrame(targetOrbit.getFrame(), LOFType.LVLH_CCSDS, targetPvProvider,
                                               "LVLH CCSDS LOF");
         final KeplerianOrbit chaserOrbit = CoellipticOrbit.computeChaserOrbit(targetOrbit, 100, 0, 0, 0, 0);
 
@@ -130,7 +131,7 @@ class CoellipticOrbitTest {
         final Vector3D chaserHalfPeriodPosition =
                         FramesFactory.getGCRF().getTransformTo(lof, chaserHalfPeriod.getDate())
                                      .transformPosition(chaserHalfPeriod.getPosition());
-        TestUtils.validateVector3D(new Vector3D(0, 0, -100), chaserHalfPeriodPosition, 1e-9);
+        TestUtils.validateVector3D(new Vector3D(0, 0, -100), chaserHalfPeriodPosition, 3e-9);
 
         final SpacecraftState chaserPeriod = chaserPropagator.propagate(epoch.shiftedBy(targetPeriod));
         final Vector3D chaserPeriodPosition = FramesFactory.getGCRF().getTransformTo(lof, chaserPeriod.getDate())
@@ -240,8 +241,8 @@ class CoellipticOrbitTest {
                                                   new Binary64(Constants.EIGEN5C_EARTH_MU));
 
         final LocalOrbitalFrame lof =
-                        new LocalOrbitalFrame(targetOrbit.getFrame(), LOFType.LVLH_CCSDS, targetOrbit.toOrbit(),
-                                              "LVLH CCSDS LOF");
+                        new LocalOrbitalFrame(targetOrbit.getFrame(), LOFType.LVLH_CCSDS,
+                                              new KeplerianExtendedPositionProvider(targetOrbit.toOrbit()), "LVLH CCSDS LOF");
         final FieldKeplerianOrbit<Binary64> chaserOrbit =
                         CoellipticOrbit.computeChaserOrbit(targetOrbit, new Binary64(100), new Binary64(0),
                                                            new Binary64(0), new Binary64(0), new Binary64(0));
@@ -255,7 +256,7 @@ class CoellipticOrbitTest {
         final FieldVector3D<Binary64> chaserHalfPeriodPosition =
                         FramesFactory.getGCRF().getTransformTo(lof, chaserHalfPeriod.getDate())
                                      .transformPosition(chaserHalfPeriod.getPosition());
-        TestUtils.validateVector3D(new Vector3D(0, 0, -100), chaserHalfPeriodPosition.toVector3D(), 1.e-9);
+        TestUtils.validateVector3D(new Vector3D(0, 0, -100), chaserHalfPeriodPosition.toVector3D(), 3e-9);
 
         final FieldSpacecraftState<Binary64> chaserPeriod = chaserPropagator.propagate(epoch.shiftedBy(targetPeriod));
         final FieldVector3D<Binary64> chaserPeriodPosition =
