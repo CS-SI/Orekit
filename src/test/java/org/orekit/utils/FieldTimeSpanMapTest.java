@@ -32,6 +32,10 @@ import org.orekit.utils.FieldTimeSpanMap.Span;
 import org.orekit.utils.FieldTimeSpanMap.Transition;
 
 import java.util.SortedSet;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
 
 public class FieldTimeSpanMapTest {
@@ -718,6 +722,60 @@ public class FieldTimeSpanMapTest {
         map.addValidBefore(22, map.getLastTransition().getDate().shiftedBy(-60.0), false);
         map.addValidBefore(17, map.getLastTransition().getDate().shiftedBy( 20.0), false);
         Assertions.assertEquals(17, map.getLastNonNullSpan().getData());
+    }
+
+    @Test
+    public void testMoveTowardsPastSynchronization()
+        throws InterruptedException, ExecutionException, TimeoutException {
+        checkMoveSynchronization(false);
+    }
+
+    @Test
+    public void testMoveTowardsFutureSynchronization()
+        throws InterruptedException, ExecutionException, TimeoutException {
+        checkMoveSynchronization(true);
+    }
+
+    /**
+     * Helper for testing thread safety of {@link FieldTimeSpanMap.Transition#resetDate(FieldAbsoluteDate, boolean)}.
+     * The method under test moves a transition past another transition, removing a span. This verifies
+     * that the map lock is respected and that the operation succeeds once the lock is released. For #2015.
+     */
+    private void checkMoveSynchronization(boolean towardsFuture)
+        throws InterruptedException, ExecutionException, TimeoutException {
+        FieldTimeSpanMap<Integer, Binary64> map = new FieldTimeSpanMap<>(0, Binary64Field.getInstance());
+        map.addValidAfter(1, arbitraryEpoch.shiftedBy(10), false);
+        map.addValidAfter(2, arbitraryEpoch.shiftedBy(20), false);
+        Transition<Integer, Binary64> transition = towardsFuture ?
+                map.getFirstTransition() : map.getLastTransition();
+        FieldAbsoluteDate<Binary64> originalDate = transition.getDate();
+        FieldAbsoluteDate<Binary64> newDate = arbitraryEpoch.shiftedBy(towardsFuture ? 30 : 0);
+        FutureTask<Void> move = new FutureTask<>(() -> transition.resetDate(newDate, true), null);
+        Thread mover = new Thread(move, "field-time-span-map-reset-date");
+        try {
+            synchronized (map) {
+                mover.start();
+                // Wait for actual monitor contention, rather than assuming the worker has run
+                long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(5);
+                while (mover.getState() != Thread.State.BLOCKED && !move.isDone() &&
+                       System.nanoTime() < deadline) {
+                    Thread.sleep(1); // Control CPU polling
+                }
+                Assertions.assertEquals(Thread.State.BLOCKED, mover.getState());
+                // Neither the count nor the spans may change while another thread owns the map lock
+                Assertions.assertEquals(3, map.getSpansNumber());
+                Assertions.assertEquals(originalDate, transition.getDate());
+                checkCountConsistency(map);
+            }
+        } finally {
+            // Release the monitor before waiting, including when an assertion fails
+            mover.join(TimeUnit.SECONDS.toMillis(5));
+        }
+        Assertions.assertFalse(mover.isAlive());
+        move.get(5, TimeUnit.SECONDS);
+        Assertions.assertEquals(newDate, transition.getDate());
+        Assertions.assertEquals(2, map.getSpansNumber());
+        checkCountConsistency(map);
     }
 
     @Test
