@@ -392,7 +392,7 @@ public class KnockeRediffusedForceModel implements ForceModel {
         // Get latitude sinus
         final double sinPhi = FastMath.sin(phi);
 
-        // Compute albedo
+        // Compute the emissivity
         return E0 +
                E1 * firstLegendrePolynomial.value(sinPhi) +
                E2 * secondLegendrePolynomial.value(sinPhi);
@@ -425,7 +425,7 @@ public class KnockeRediffusedForceModel implements ForceModel {
         // Get latitude sinus
         final T sinPhi = FastMath.sin(phi);
 
-        // Compute albedo
+        // Compute the emissivity
         return firstLegendrePolynomial.value(sinPhi).multiply(E1).add(
                secondLegendrePolynomial.value(sinPhi).multiply(E2)).add(E0);
 
@@ -481,10 +481,14 @@ public class KnockeRediffusedForceModel implements ForceModel {
         // Get solar flux impacting Earth
         final double solarFlux = computeSolarFlux(sunPosition);
 
+        // Compute elementary area - satellite vector and distance
+        final Vector3D r = satellitePosition.subtract(elementCenter);
+        final double rNorm = r.getNorm();
+
         // Get satellite viewing angle as seen from current elementary area
         final double centerNorm = elementCenter.getNorm();
-        final double cosAlpha   = Vector3D.dotProduct(elementCenter, satellitePosition) /
-                                  (centerNorm * satellitePosition.getNorm());
+        final double cosAlpha   = Vector3D.dotProduct(elementCenter, r) /
+                                  (centerNorm * rNorm);
 
         // Check that satellite sees the current area
         if (cosAlpha > 0) {
@@ -509,10 +513,6 @@ public class KnockeRediffusedForceModel implements ForceModel {
 
             // Compute elementary area contribution to rediffused flux
             final double albedoAndIR = a * solarFlux * cosSunAngle + e * solarFlux * 0.25;
-
-            // Compute elementary area - satellite vector and distance
-            final Vector3D r = satellitePosition.subtract(elementCenter);
-            final double rNorm = r.getNorm();
 
             // Compute attenuated projected elementary area vector
             final Vector3D projectedAreaVector = r.scalarMultiply(elementArea * cosAlpha /
@@ -555,10 +555,14 @@ public class KnockeRediffusedForceModel implements ForceModel {
         // Get solar flux impacting Earth
         final T solarFlux = computeSolarFlux(sunPosition);
 
+        // Compute elementary area - satellite vector and distance
+        final FieldVector3D<T> r = satellitePosition.subtract(elementCenter);
+        final T rNorm = r.getNorm();
+
         // Get satellite viewing angle as seen from current elementary area
         final T centerNorm = elementCenter.getNorm();
-        final T cosAlpha   = FieldVector3D.dotProduct(elementCenter, satellitePosition).
-                             divide(centerNorm.multiply(satellitePosition.getNorm()));
+        final T cosAlpha   = FieldVector3D.dotProduct(elementCenter, r).
+                             divide(centerNorm.multiply(rNorm));
 
         // Check that satellite sees the current area
         if (cosAlpha.getReal() > 0) {
@@ -584,10 +588,6 @@ public class KnockeRediffusedForceModel implements ForceModel {
             // Compute elementary area contribution to rediffused flux
             final T albedoAndIR = a.multiply(solarFlux).multiply(cosSunAngle).
                                   add(e.multiply(solarFlux).multiply(0.25));
-
-            // Compute elementary area - satellite vector and distance
-            final FieldVector3D<T> r = satellitePosition.subtract(elementCenter);
-            final T rNorm = r.getNorm();
 
             // Compute attenuated projected elementary area vector
             final FieldVector3D<T> projectedAreaVector = r.scalarMultiply(elementArea.multiply(cosAlpha).

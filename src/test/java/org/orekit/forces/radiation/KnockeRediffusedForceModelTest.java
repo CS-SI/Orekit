@@ -33,6 +33,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.forces.AbstractForceModelTest;
 import org.orekit.frames.Frame;
@@ -440,6 +441,61 @@ class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
         // ES_COEFF = 4.5606E-6, c = 299792458 m/s
         final double expectedFlux = KnockeRediffusedForceModel.ES_COEFF * Constants.SPEED_OF_LIGHT;
         Assertions.assertEquals(expectedFlux, forceModel.computeSolarFlux(new Vector3D(Constants.JPL_SSD_ASTRONOMICAL_UNIT, 0, 0)), 1e-10);
+    }
+
+    @Test 
+    void testIssue2008() {
+        // Dummy SpacecraftState for testing selected to have no albedo
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        final Vector3D pos = new Vector3D(-7e6, 0.0, 0.0);
+        final Vector3D vel = new Vector3D(0.0, -7.5e3, 0.0);
+        final PVCoordinates pv = new PVCoordinates(pos, vel);
+        final Frame frame = FramesFactory.getGCRF();
+        final Orbit orbit = new CartesianOrbit(pv, frame, date, Constants.IERS2010_EARTH_MU);
+        final SpacecraftState state = new SpacecraftState(orbit);
+
+        // Sun position vector
+        final CelestialBody sun = CelestialBodyFactory.getSun();
+
+        // Define the Earth radius
+        final double equatorialRadius = Constants.IERS2010_EARTH_EQUATORIAL_RADIUS;
+        
+        // Cross section of the spacecraft (assumed to be a sphere)
+        final double area = 1.0;
+
+        // Define the reflection coefficient to be used
+        final double cr = 1.0;
+
+        // Define the parameters array for the force model (values are selected to have
+        // the radiationPressureAcceleration method returnin exactly the flux)
+        final double[] parameters = new double[]{state.getMass(), cr};
+        
+        // Define the RadiasionSensitive object
+        final RadiationSensitive radiationProperties = new IsotropicRadiationSingleCoefficient(area, cr);
+
+        // Set the angular resolution
+        final double angularResolution = FastMath.toRadians(1.0);
+
+        // Define the KnockeRediffusedForceModel
+        final KnockeRediffusedForceModel radiationModel = new KnockeRediffusedForceModel(sun, radiationProperties, equatorialRadius, angularResolution);
+
+        // Compute the emissivity value (it should be the same value used in the numerical quadrature process)
+        final double emissivity = radiationModel.computeEmissivity(date, 0.0); // Assuming latitude = 0 for simplicity
+
+        // Compute the exitance M = e * SolarFlux / 4, which is the expected value of the integrated flux over the Earth surface
+        final double exitance = emissivity * radiationModel.computeSolarFlux(sun.getPosition(date, frame)) * 0.25;
+
+        // Define the attenutation factor (R_earth / r)
+        final double attenuation = equatorialRadius / pos.getNorm();
+
+        // Compute the expected acceleration vector norm
+        final double expected = exitance / Constants.SPEED_OF_LIGHT * attenuation * attenuation;
+
+        // Compute the actual acceleration norm obtained by the numerical quadrature
+        final double actual = radiationModel.acceleration(state, parameters).getNorm();
+
+        // Assert if the ratio between the two is close to 1
+        Assertions.assertEquals(1.0, actual/expected, 1e-2);
     }
 
     @Test

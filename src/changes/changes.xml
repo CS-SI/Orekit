@@ -36,6 +36,9 @@
           Fixed spurious non-zero velocity appearing when transforming
           SP3 files between Earth and inertial frames.
         </action>
+        <action dev="marconugnes" type="fix" issue="2008">
+          Replaced geocentric position vector with relative position vector in KnockeRediffusedForceModel.
+        </action>
         <action dev="luc" type="fix" issue="1965" due-to="Julian Rengstorf">
           Align OpsStatus enum with the SANA Operational Status registry.
         </action>
