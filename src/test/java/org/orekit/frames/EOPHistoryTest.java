@@ -16,6 +16,9 @@
  */
 package org.orekit.frames;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.Assertions;
@@ -264,6 +267,39 @@ public class EOPHistoryTest {
         Assertions.assertEquals(originBT,                combined.getDtOrigin());
         Assertions.assertEquals(originBN,                combined.getNutOrigin());
         Assertions.assertEquals(originBC,                combined.getCipOrigin());
+    }
+
+    /**
+     * Tests that missing LOD when constructing {@link EOPHistory} produces
+     * correct LOD scaled by JULIAN_DAY, for #2026
+     */
+    @Test
+    public void testMissingLOD() {
+        DateComponents start = new DateComponents(2004, 1, 4);
+        EOPOrigin origin = new EOPOrigin(start, "test");
+
+        // Construct a history where the LOD is obviously known (in this case, 0.001s)
+        List<EOPEntry> entries = new ArrayList<>();
+        for (int i = 0; i < 4; ++i) {
+            DateComponents day = new DateComponents(start, i);
+            entries.add(new EOPEntry(day.getMJD(), -i * 0.001, Double.NaN,
+                                     0.0, 0.0, 0.0, 0.0,
+                                     0.0, 0.0, 0.0, 0.0,
+                                     ITRFVersion.ITRF_2020,
+                                     new AbsoluteDate(day, TimeScalesFactory.getUTC()), EopDataType.FINAL,
+                                     origin, origin, origin));
+        }
+        EOPHistory history = new EOPHistory(IERSConventions.IERS_2010,
+                                                  EOPHistory.DEFAULT_INTERPOLATION_DEGREE,
+                                                  entries, true);
+
+        // Check both sample dates and interpolated dates, with tidal corrections disabled
+        // We use a tolerance of 1.0e-12 since the input is linearly exact, so only
+        // floating point rounding would affect outcome
+        for (double days = 0; days <= 3; days += 0.5) {
+            AbsoluteDate date = entries.get(0).getDate().shiftedBy(days * Constants.JULIAN_DAY);
+            Assertions.assertEquals(0.001, history.getLOD(date), 1.0e-15);
+        }
     }
 
     @BeforeEach

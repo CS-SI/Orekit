@@ -20,6 +20,9 @@
   </properties>
   <body>
       <release version="14.0" date="TBD" description="TBD">
+          <action dev="nlowing" type="fix" issue="2026">
+              Fix calculation of inferred LOD in EOPHistory to be scaled by JULIAN_DAY.
+          </action>
           <action dev="serrof" type="update" issue="2024">
               Generalized JacobianPropagatorConverter to non fully numerical.
           </action>
@@ -28,6 +31,9 @@
           </action>
           <action dev="luc" type="add" issue="2020">
               Improved performance of Global Pressure Temperature models.
+          </action>
+          <action dev="nlowing" type="fix" issue="2015">
+              Fix issue with locking in FieldTimeSpanMap resetDate method.
           </action>
           <action dev="maxime" type="fix" issue="2014">
               Silence code smells in SpotBugs for SonarQube.
