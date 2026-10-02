@@ -326,5 +326,11 @@
     <Method name="uncompressSection" />
     <Bug pattern="NP_IMMEDIATE_DEREFERENCE_OF_READLINE" />
   </Match>
-</FindBugsFilter>
 
+  <!-- disables CT_CONSTRUCTOR_THROW globally: Java 21+ flags constructors that throw
+     exceptions to prevent finalizer exploits. This requires executing untrusted
+     bytecode, which does not apply to Orekit's execution environment. -->
+  <Match>
+    <Bug pattern="CT_CONSTRUCTOR_THROW" />
+  </Match>
+</FindBugsFilter>
