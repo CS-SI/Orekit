@@ -20,6 +20,9 @@
   </properties>
   <body>
     <release version="13.1.9" date="TBD" description="TBD">
+        <action dev="luc" type="fix" issue="2028" due-to="LordRaptor">
+          Fixed power computation of units containing a current part.
+        </action>
         <action dev="nlowing" type="fix" issue="2026">
           Fix calculation of inferred LOD in EOPHistory to be scaled by JULIAN_DAY.
         </action>

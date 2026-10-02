@@ -132,7 +132,7 @@ public class UnitTest {
     public void testOneUnit() {
         checkReference("1",
                        1.0,
-                       Fraction.ZERO, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO);
+                       Fraction.ZERO, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO);
     }
 
     @Test
@@ -140,89 +140,97 @@ public class UnitTest {
         // nd does not mean "not defined", but nano-day…
         checkReference("nd",
                        Prefix.NANO.getFactor() * Constants.JULIAN_DAY,
-                       Fraction.ZERO, Fraction.ZERO, Fraction.ONE, Fraction.ZERO);
+                       Fraction.ZERO, Fraction.ZERO, Fraction.ONE, Fraction.ZERO, Fraction.ZERO);
     }
 
     @Test
     public void testPredefinedUnit() {
         checkReference("MHz",
                        1.0e6,
-                       Fraction.ZERO, Fraction.ZERO, Fraction.MINUS_ONE, Fraction.ZERO);
+                       Fraction.ZERO, Fraction.ZERO, Fraction.MINUS_ONE, Fraction.ZERO, Fraction.ZERO);
     }
 
     @Test
     public void testSquareRoot() {
         checkReference("km/√d",
                        1000.0 / FastMath.sqrt(Constants.JULIAN_DAY),
-                       Fraction.ZERO, Fraction.ONE, new Fraction(-1, 2), Fraction.ZERO);
+                       Fraction.ZERO, Fraction.ONE, new Fraction(-1, 2), Fraction.ZERO, Fraction.ZERO);
+    }
+
+    @Test
+    public void testPower() {
+        checkReference("(kg^2.m^3.s^4.A^5.rad^6)³",
+                       1.0,
+                       new Fraction(6), new Fraction(9), new Fraction(12),
+                       new Fraction(15), new Fraction(18));
     }
 
     @Test
     public void testChain() {
         checkReference("kg.m^(3/4).s⁻¹",
                        1.0,
-                       Fraction.ONE, new Fraction(3, 4), Fraction.MINUS_ONE, Fraction.ZERO);
+                       Fraction.ONE, new Fraction(3, 4), Fraction.MINUS_ONE, Fraction.ZERO, Fraction.ZERO);
     }
 
     @Test
     public void testExponents() {
         checkReference("µas^⅖/(h**(2)×m)³",
                        FastMath.pow(FastMath.toRadians(1.0 / 3.6e9), 0.4) / FastMath.pow(3600, 6),
-                       Fraction.ZERO, new Fraction(-3, 1), new Fraction(-6, 1), new Fraction(2, 5));
+                       Fraction.ZERO, new Fraction(-3, 1), new Fraction(-6, 1), Fraction.ZERO, new Fraction(2, 5));
     }
 
     @Test
     public void testCompoundInSquareRoot() {
         checkReference("km/√(kg.s)",
                        1000.0,
-                       new Fraction(-1, 2), Fraction.ONE, new Fraction(-1, 2), Fraction.ZERO);
+                       new Fraction(-1, 2), Fraction.ONE, new Fraction(-1, 2), Fraction.ZERO, Fraction.ZERO);
     }
 
     @Test
     public void testLeftAssociativity() {
         checkReference("(kg/m)/s²",
                        1.0,
-                       Fraction.ONE, Fraction.MINUS_ONE, new Fraction(-2), Fraction.ZERO);
+                       Fraction.ONE, Fraction.MINUS_ONE, new Fraction(-2), Fraction.ZERO, Fraction.ZERO);
         checkReference("kg/(m/s²)",
                        1.0,
-                       Fraction.ONE, Fraction.MINUS_ONE, Fraction.TWO, Fraction.ZERO);
+                       Fraction.ONE, Fraction.MINUS_ONE, Fraction.TWO, Fraction.ZERO, Fraction.ZERO);
         checkReference("kg/m/s²",
                        1.0,
-                       Fraction.ONE, Fraction.MINUS_ONE, new Fraction(-2), Fraction.ZERO);
+                       Fraction.ONE, Fraction.MINUS_ONE, new Fraction(-2), Fraction.ZERO, Fraction.ZERO);
     }
 
     @Test
     public void testCcsdsRoot() {
         checkReference("km**0.5/s",
                        FastMath.sqrt(1000.0),
-                       Fraction.ZERO, Fraction.ONE_HALF, Fraction.MINUS_ONE, Fraction.ZERO);
+                       Fraction.ZERO, Fraction.ONE_HALF, Fraction.MINUS_ONE, Fraction.ZERO, Fraction.ZERO);
         checkReference("km/s**0.5",
                        1000.0,
-                       Fraction.ZERO, Fraction.ONE, new Fraction(-1, 2), Fraction.ZERO);
+                       Fraction.ZERO, Fraction.ONE, new Fraction(-1, 2), Fraction.ZERO, Fraction.ZERO);
     }
 
     @Test
     public void testNumber() {
         checkReference("#/yr",
                        1.0 / Constants.JULIAN_YEAR,
-                       Fraction.ZERO, Fraction.ZERO, Fraction.MINUS_ONE, Fraction.ZERO);
+                       Fraction.ZERO, Fraction.ZERO, Fraction.MINUS_ONE, Fraction.ZERO, Fraction.ZERO);
     }
 
     @Test
     public void testReciprocal() {
         checkReference("1/s",
                        1.0,
-                       Fraction.ZERO, Fraction.ZERO, Fraction.MINUS_ONE, Fraction.ZERO);
+                       Fraction.ZERO, Fraction.ZERO, Fraction.MINUS_ONE, Fraction.ZERO, Fraction.ZERO);
     }
 
     @Test
     public void testSeveralMicro() {
         checkReference("µs", // here we use U+00B5, MICRO SIGN
                        1.0e-6,
-                       Fraction.ZERO, Fraction.ZERO, Fraction.ONE, Fraction.ZERO);
+                       Fraction.ZERO, Fraction.ZERO, Fraction.ONE, Fraction.ZERO, Fraction.ZERO);
         checkReference("μs", // here we use U+03BC, GREEK SMALL LETTER MU
                        1.0e-6,
-                       Fraction.ZERO, Fraction.ZERO, Fraction.ONE, Fraction.ZERO);
+                       Fraction.ZERO, Fraction.ZERO, Fraction.ONE, Fraction.ZERO, Fraction.ZERO);
     }
 
     @Test
@@ -254,7 +262,7 @@ public class UnitTest {
     public void testFactor() {
         checkReference("kg/3s",
                        1.0 / 3.0,
-                       Fraction.ONE, Fraction.ZERO, Fraction.MINUS_ONE, Fraction.ZERO);
+                       Fraction.ONE, Fraction.ZERO, Fraction.MINUS_ONE, Fraction.ZERO, Fraction.ZERO);
     }
 
     @Test
@@ -271,7 +279,7 @@ public class UnitTest {
     public void testRootAndParenthesisedPower() {
         checkReference("km/√(d³)",
                        1000.0 / (Constants.JULIAN_DAY * FastMath.sqrt(Constants.JULIAN_DAY)),
-                       Fraction.ZERO, Fraction.ONE, new Fraction(-3, 2), Fraction.ZERO);
+                       Fraction.ZERO, Fraction.ONE, new Fraction(-3, 2), Fraction.ZERO, Fraction.ZERO);
     }
 
     @Test
@@ -330,14 +338,15 @@ public class UnitTest {
 
     private void checkReference(final String unitSpecification, final double scale,
                                 final Fraction mass, final Fraction length,
-                                final Fraction time, final Fraction angle) {
+                                final Fraction time, final Fraction current, final Fraction angle) {
         final Unit unit = Unit.parse(unitSpecification);
         Assertions.assertEquals(unitSpecification, unit.toString());
-        Assertions.assertEquals(scale,  unit.getScale(), 1.0e-10 * scale);
-        Assertions.assertEquals(mass,   unit.getMass());
-        Assertions.assertEquals(length, unit.getLength());
-        Assertions.assertEquals(time,   unit.getTime());
-        Assertions.assertEquals(angle,  unit.getAngle());
+        Assertions.assertEquals(scale,   unit.getScale(), 1.0e-10 * scale);
+        Assertions.assertEquals(mass,    unit.getMass());
+        Assertions.assertEquals(length,  unit.getLength());
+        Assertions.assertEquals(time,    unit.getTime());
+        Assertions.assertEquals(current, unit.getCurrent());
+        Assertions.assertEquals(angle,   unit.getAngle());
     }
 
     private void expectFailure(final String unitSpecification) {
