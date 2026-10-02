@@ -259,7 +259,7 @@ public class Unit implements Serializable {
         append(builder, SECOND.name,   time);
         append(builder, AMPERE.name,   current);
         append(builder, RADIAN.name,   angle);
-        if (builder.length() == 0) {
+        if (builder.isEmpty()) {
             builder.append('1');
         }
         return new Unit(builder.toString(), 1.0, mass, length, time, current, angle);
@@ -301,7 +301,7 @@ public class Unit implements Serializable {
      */
     private void append(final StringBuilder builder, final String dim, final Fraction exp) {
         if (!exp.isZero()) {
-            if (builder.length() > 0) {
+            if (!builder.isEmpty()) {
                 builder.append('.');
             }
             builder.append(dim);
@@ -370,7 +370,7 @@ public class Unit implements Serializable {
 
         return new Unit(newName, s,
                         mass.multiply(exponent), length.multiply(exponent),
-                        time.multiply(exponent), current.multiply(current),
+                        time.multiply(exponent), current.multiply(exponent),
                         angle.multiply(exponent));
     }
 
