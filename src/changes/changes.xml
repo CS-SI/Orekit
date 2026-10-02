@@ -32,6 +32,9 @@
           <action dev="luc" type="add" issue="2020">
               Improved performance of Global Pressure Temperature models.
           </action>
+          <action dev="nlowing" type="update" issue="2017">
+              Disable CT_CONSTRUCTOR_THROW code smells from SpotBugs analysis.
+          </action>
           <action dev="nlowing" type="fix" issue="2015">
               Fix issue with locking in FieldTimeSpanMap resetDate method.
           </action>
