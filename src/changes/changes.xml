@@ -29,6 +29,9 @@
         <action dev="luc" type="fix" issue="2023">
           Fixed EOP fitting when leap seconds are present.
         </action>
+        <action dev="scottshambaugh" type="fix" issue="2022">
+          Fixed area calculations leading to too-high albedo flux in KnockeRediffusedForceModel.
+        </action>
         <action dev="luc" type="fix" issue="2019">
           Improved tidal displacement performance.
         </action>
