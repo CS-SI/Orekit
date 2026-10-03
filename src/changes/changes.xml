@@ -19,9 +19,12 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
-    <release version="13.1.9" date="TBD" description="TBD">
+    <release version="13.1.9" date="2026-10-03" description="Orekit 13.1.9 is a patch release. It solves a range of bugs including some related to Albedo and EOPs.">
         <action dev="luc" type="fix" issue="2028" due-to="LordRaptor">
           Fixed power computation of units containing a current part.
+        </action>
+        <action dev="rodrigomarcelino" type="fix" issue="2025">
+          Fix wrong term in Coppola's encounter duration.
         </action>
         <action dev="nlowing" type="fix" issue="2026">
           Fix calculation of inferred LOD in EOPHistory to be scaled by JULIAN_DAY.
