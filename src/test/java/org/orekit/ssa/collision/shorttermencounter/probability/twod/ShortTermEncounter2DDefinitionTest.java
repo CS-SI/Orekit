@@ -1017,7 +1017,7 @@ class ShortTermEncounter2DDefinitionTest {
         final double encounterTimeDuration = collisionDefinition.computeCoppolaEncounterDuration();
 
         // THEN
-        Assertions.assertEquals(254.56056997152353, encounterTimeDuration, 1e-14);
+        Assertions.assertEquals(253.82581367832879, encounterTimeDuration, 1e-14);
 
     }
 

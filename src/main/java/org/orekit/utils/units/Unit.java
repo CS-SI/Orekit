@@ -368,7 +368,7 @@ public class Unit implements Serializable {
 
         return new Unit(newName, s,
                         mass.multiply(exponent), length.multiply(exponent),
-                        time.multiply(exponent), current.multiply(current),
+                        time.multiply(exponent), current.multiply(exponent),
                         angle.multiply(exponent));
     }
 

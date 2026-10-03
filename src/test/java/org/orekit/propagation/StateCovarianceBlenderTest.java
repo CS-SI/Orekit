@@ -154,22 +154,22 @@ class StateCovarianceBlenderTest {
         // When & Then
         doTestBlending(DEFAULT_SERGEI_PROPAGATION_TIME, DEFAUTL_SERGEI_TABULATED_TIMESTEP, blendingFunction,
                        new KeplerianPropagator(sergeiOrbit),
-                       0.1099143140690687,
-                       0.2475172568185193,
-                       0.1066507188187194,
-                       0.2715316659832114,
-                       0.2824159770060304,
-                       0.4889039330593095,
+                       0.12445594093083763,
+                       0.21464830068759833,
+                       0.12747845799839358,
+                       0.23379680643303122,
+                       0.2556303193095102,
+                       0.3985848518882327,
                        tolerance,
                        showResults);
 
-        // Results obtained when using Sergei reference date
-        /*        Assertions.assertEquals(0.12086964077199346, relativeRMSSigmaError[0].getMean(), 1e-17);
-        Assertions.assertEquals(0.21871712884727984, relativeRMSSigmaError[1].getMean(), 1e-17);
-        Assertions.assertEquals(0.12172900928265865, relativeRMSSigmaError[0].getPercentile(50), 1e-17);
-        Assertions.assertEquals(0.24456923477457276, relativeRMSSigmaError[1].getPercentile(50), 1e-17);
-        Assertions.assertEquals(0.24004509397020612, relativeRMSSigmaError[0].getMax(), 1e-17);
-        Assertions.assertEquals(0.3375639988469634, relativeRMSSigmaError[1].getMax(), 1e-16);*/
+        // Results obtained when using Sergei reference date with DE440 ephemerides and angular resolution equal to 1 degree
+        /*        Assertions.assertEquals(0.11273219234397028, relativeRMSSigmaError[0].getMean(), 1e-17);
+        Assertions.assertEquals(0.23257157627406302, relativeRMSSigmaError[1].getMean(), 1e-17);
+        Assertions.assertEquals(0.11089054797071804, relativeRMSSigmaError[0].getPercentile(50), 1e-17);
+        Assertions.assertEquals(0.25917202666982236, relativeRMSSigmaError[1].getPercentile(50), 1e-17);
+        Assertions.assertEquals(0.2465499716441984, relativeRMSSigmaError[0].getMax(), 1e-17);
+        Assertions.assertEquals(0.38025112258567445, relativeRMSSigmaError[1].getMax(), 1e-16);*/
     }
 
     /**
@@ -204,22 +204,22 @@ class StateCovarianceBlenderTest {
         // When & Then
         doTestBlending(DEFAULT_SERGEI_PROPAGATION_TIME, DEFAUTL_SERGEI_TABULATED_TIMESTEP, blendingFunction,
                        propagator,
-                       0.1362348687122117,
-                       0.1437257833527177,
-                       0.1475264684178809,
-                       0.1471899909867023,
-                       0.2198284346161605,
-                       0.3658958600466765,
+                       0.12859488990445875,
+                       0.13218914844218507,           
+                       0.13091542237841397,
+                       0.120710454038991,
+                       0.22642880544201613,
+                       0.287711538695553,
                        tolerance,
                        showResults);
 
-        // Results obtained when using Sergei reference date
-        /*        Assertions.assertEquals(0.07645785479359624, relativeRMSSigmaError[0].getMean(), 1e-17);
-        Assertions.assertEquals(0.17941792898602038, relativeRMSSigmaError[1].getMean(), 1e-17);
-        Assertions.assertEquals(0.08259069655149026, relativeRMSSigmaError[0].getPercentile(50), 1e-17);
-        Assertions.assertEquals(0.18352413417267063, relativeRMSSigmaError[1].getPercentile(50), 1e-17);
-        Assertions.assertEquals(0.13164670404592496, relativeRMSSigmaError[0].getMax(), 1e-17);
-        Assertions.assertEquals(0.32564919981018114, relativeRMSSigmaError[1].getMax(), 1e-16);*/
+        // Results obtained when using Sergei reference date with DE440 ephemerides and angular resolution equal to 1 degree
+        /*        Assertions.assertEquals(0.13296826110912835, relativeRMSSigmaError[0].getMean(), 1e-17);
+        Assertions.assertEquals(0.1303221582084365, relativeRMSSigmaError[1].getMean(), 1e-17);
+        Assertions.assertEquals(0.13938297863534596, relativeRMSSigmaError[0].getPercentile(50), 1e-17);
+        Assertions.assertEquals(0.13890222320144568, relativeRMSSigmaError[1].getPercentile(50), 1e-17);
+        Assertions.assertEquals(0.22289584557541856, relativeRMSSigmaError[0].getMax(), 1e-17);
+        Assertions.assertEquals(0.21705496955060605, relativeRMSSigmaError[1].getMax(), 1e-16);*/
     }
 
     /**
@@ -255,22 +255,22 @@ class StateCovarianceBlenderTest {
         // When & Then
         doTestBlending(DEFAULT_SERGEI_PROPAGATION_TIME, DEFAUTL_SERGEI_TABULATED_TIMESTEP, blendingFunction,
                        propagator,
-                       0.1362348687122117,
-                       0.1437257833527177,
-                       0.1475264684178809,
-                       0.1471899909867023,
-                       0.2198284346161605,
-                       0.3658958600466765,
+                       0.12859488990445875,
+                       0.13218914844218507,
+                       0.13091542237841397,
+                       0.120710454038991,
+                       0.22642880544201613,
+                       0.287711538695553,
                        tolerance,
                        showResults);
 
-        // Results obtained when using Sergei reference date
-        /*        Assertions.assertEquals(0.07645785479359624, relativeRMSSigmaError[0].getMean(), 1e-17);
-        Assertions.assertEquals(0.17941792898602038, relativeRMSSigmaError[1].getMean(), 1e-17);
-        Assertions.assertEquals(0.08259069655149026, relativeRMSSigmaError[0].getPercentile(50), 1e-17);
-        Assertions.assertEquals(0.18352413417267063, relativeRMSSigmaError[1].getPercentile(50), 1e-17);
-        Assertions.assertEquals(0.13164670404592496, relativeRMSSigmaError[0].getMax(), 1e-17);
-        Assertions.assertEquals(0.32564919981018114, relativeRMSSigmaError[1].getMax(), 1e-16);*/
+        // Results obtained when using Sergei reference date with DE440 ephemerides and angular resolution equal to 1 degree
+        /*        Assertions.assertEquals(0.13296826110912835, relativeRMSSigmaError[0].getMean(), 1e-17);
+        Assertions.assertEquals(0.1303221582084365, relativeRMSSigmaError[1].getMean(), 1e-17);
+        Assertions.assertEquals(0.13938297863534596, relativeRMSSigmaError[0].getPercentile(50), 1e-17);
+        Assertions.assertEquals(0.13890222320144568, relativeRMSSigmaError[1].getPercentile(50), 1e-17);
+        Assertions.assertEquals(0.22289584557541856, relativeRMSSigmaError[0].getMax(), 1e-17);
+        Assertions.assertEquals(0.21705496955060605, relativeRMSSigmaError[1].getMax(), 1e-16);*/
     }
 
     /**
@@ -305,22 +305,22 @@ class StateCovarianceBlenderTest {
         // When & Then
         doTestBlending(DEFAULT_SERGEI_PROPAGATION_TIME, DEFAUTL_SERGEI_TABULATED_TIMESTEP, blendingFunction,
                        propagator,
-                       0.0959594232398039,
-                       0.1895334259560260,
-                       0.0925337152716893,
-                       0.2050706605700434,
-                       0.1753879757375789,
-                       0.4495393910625118,
+                       0.08538612860935786,
+                       0.153208432180714,
+                       0.07519194156364496,
+                       0.15852374877385514,
+                       0.170492025503307,
+                       0.3204901437947951,
                        tolerance,
                        showResults);
 
-        // Results obtained when using Sergei reference date
-        /*        Assertions.assertEquals(0.08688580997030507, relativeRMSSigmaError[0].getMean(), 1e-17);
-        Assertions.assertEquals(0.15630296926592135, relativeRMSSigmaError[1].getMean(), 1e-17);
-        Assertions.assertEquals(0.07771211628338093, relativeRMSSigmaError[0].getPercentile(50), 1e-17);
-        Assertions.assertEquals(0.17056867629454775, relativeRMSSigmaError[1].getPercentile(50), 1e-17);
-        Assertions.assertEquals(0.16747846953637413, relativeRMSSigmaError[0].getMax(), 1e-17);
-        Assertions.assertEquals(0.26557409638784585, relativeRMSSigmaError[1].getMax(), 1e-16);*/
+        // Results obtained when using Sergei reference date with DE440 ephemerides and angular resolution equal to 1 degree
+        /*        Assertions.assertEquals(0.09130423012989153, relativeRMSSigmaError[0].getMean(), 1e-17);
+        Assertions.assertEquals(0.1719793814632445, relativeRMSSigmaError[1].getMean(), 1e-17);
+        Assertions.assertEquals(0.0811831551222447, relativeRMSSigmaError[0].getPercentile(50), 1e-17);
+        Assertions.assertEquals(0.19030798158027082, relativeRMSSigmaError[1].getPercentile(50), 1e-17);
+        Assertions.assertEquals(0.16968094565511846, relativeRMSSigmaError[0].getMax(), 1e-17);
+        Assertions.assertEquals(0.3120239018267532, relativeRMSSigmaError[1].getMax(), 1e-16);*/
     }
 
     /**
@@ -375,12 +375,12 @@ class StateCovarianceBlenderTest {
         }
 
         // Results obtained when using modified orbit date to use truncated JPL test resource file
-        Assertions.assertEquals(  0.1184164255367214, relativeRMSSigmaError[0].getMean(), tolerance);
-        Assertions.assertEquals( 19.2254633637633248, relativeRMSSigmaError[1].getMean(), tolerance);
-        Assertions.assertEquals(  0.1221277684544951, relativeRMSSigmaError[0].getPercentile(50), tolerance);
-        Assertions.assertEquals( 14.2883635138984033, relativeRMSSigmaError[1].getPercentile(50), tolerance);
-        Assertions.assertEquals(  0.2314451107316701, relativeRMSSigmaError[0].getMax(), tolerance);
-        Assertions.assertEquals( 82.05546681996823, relativeRMSSigmaError[1].getMax(), 3 * tolerance);
+        Assertions.assertEquals(0.11694592584284914, relativeRMSSigmaError[0].getMean(), tolerance);
+        Assertions.assertEquals(21.651495676984577, relativeRMSSigmaError[1].getMean(), tolerance);
+        Assertions.assertEquals(0.11774505216956115, relativeRMSSigmaError[0].getPercentile(50), tolerance);
+        Assertions.assertEquals(8.523353943448681, relativeRMSSigmaError[1].getPercentile(50), tolerance);
+        Assertions.assertEquals(0.2274088009511128, relativeRMSSigmaError[0].getMax(), tolerance);
+        Assertions.assertEquals(141.22748337997172, relativeRMSSigmaError[1].getMax(), 3 * tolerance);
 
         // Assert getters as well
         Assertions.assertNull(covarianceInterpolator.getOutFrame());
