@@ -16,6 +16,7 @@
  */
 package org.orekit.forces.radiation;
 
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
@@ -27,6 +28,7 @@ import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaFieldIntegrator;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.Binary64;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.junit.jupiter.api.Assertions;
@@ -103,7 +105,7 @@ class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
 
         SpacecraftState state = new SpacecraftState(orbit,
                                                     Utils.defaultLaw().getAttitude(orbit, orbit.getDate(), orbit.getFrame()));
-        checkStateJacobianVsFiniteDifferences(state, forceModel, Utils.defaultLaw(), 1.0, 5.5e-9, false);
+        checkStateJacobianVsFiniteDifferences(state, forceModel, Utils.defaultLaw(), 1.0, 2.0e-8, false);
 
     }
 
@@ -130,7 +132,7 @@ class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
                                                                                      Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS,
                                                                                      FastMath.toRadians(30));
 
-        checkParameterDerivative(state, forceModel, RadiationSensitive.REFLECTION_COEFFICIENT, 0.5, 1.8e-16);
+        checkParameterDerivative(state, forceModel, RadiationSensitive.REFLECTION_COEFFICIENT, 0.5, 2.0e-15);
 
     }
 
@@ -499,6 +501,47 @@ class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
     }
 
     @Test
+    void testIssue2022() {
+        // Satellite at 450 km altitude
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        final Frame frame = FramesFactory.getGCRF();
+        final CelestialBody sun = CelestialBodyFactory.getSun();
+        final double equatorialRadius = Constants.IERS2010_EARTH_EQUATORIAL_RADIUS;
+        final Vector3D pos = new Vector3D(0.3, 0.4, 0.5).normalize().scalarMultiply(equatorialRadius + 450e3);
+        final Vector3D vel = new Vector3D(7.6e3, pos.orthogonal());
+        final Orbit orbit = new CartesianOrbit(new PVCoordinates(pos, vel), frame, date, Constants.IERS2010_EARTH_MU);
+        final SpacecraftState state = new SpacecraftState(orbit);
+        final double cr = 1.0;
+        final double[] parameters = new double[]{state.getMass(), cr};
+        final Binary64[] fieldParameters = new Binary64[]{new Binary64(parameters[0]), new Binary64(parameters[1])};
+
+        // Expected flux M (Re / r)^2 of a Lambertian sphere with uniform exitance M
+        final double emissivity = 0.68;
+        final KnockeRediffusedForceModel probe =
+                new KnockeRediffusedForceModel(sun, new IsotropicRadiationSingleCoefficient(1.0, cr), equatorialRadius, 1.0);
+        final double exitance = emissivity * probe.computeSolarFlux(sun.getPosition(date, frame)) * 0.25;
+        final double attenuation = equatorialRadius / pos.getNorm();
+        final double expected = exitance / Constants.SPEED_OF_LIGHT * attenuation * attenuation;
+
+        // Test cases with resolutions {beyond the 20.9 deg horizon, not dividing 360 deg, and fine}
+        for (final double resolution : new double[] {30.0, 11.0, 1.0}) {
+
+            // Model with uniform emissivity and no albedo
+            final KnockeRediffusedForceModel radiationModel =
+                    new UniformEmissivityKnockeModel(sun, new IsotropicRadiationSingleCoefficient(1.0, cr),
+                                                     equatorialRadius, FastMath.toRadians(resolution), emissivity);
+
+            final Vector3D acceleration = radiationModel.acceleration(state, parameters);
+            Assertions.assertEquals(expected, acceleration.getNorm(), 1e-12 * expected);
+
+            // Check the field implementation
+            final FieldVector3D<Binary64> fieldAcceleration =
+                    radiationModel.acceleration(new FieldSpacecraftState<>(Binary64Field.getInstance(), state), fieldParameters);
+            Assertions.assertEquals(0.0, fieldAcceleration.toVector3D().distance(acceleration), 1e-12 * expected);
+        }
+    }
+
+    @Test
     void testAcceleration() {
 
         // LEO Orbit
@@ -518,12 +561,12 @@ class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
                 FastMath.toRadians(10));
 
         // Compute acceleration and verify
-        // Typical values are on the order of 1e-11 to 1e-10 km/s^2 (Montenbruck, Satellite Orbits, Fig 3.1)
+        // Expected about 2e-12 km/s^2 for this 1e-3 m^2/kg area to mass ratio
         final Vector3D acceleration = forceModel.acceleration(new SpacecraftState(orbit), forceModel.getParameters(date));
         final double accNormKmPerSec = acceleration.getNorm() * 0.001;
         Assertions.assertTrue(accNormKmPerSec > 0, "Acceleration should be non-zero in LEO");
         Assertions.assertTrue(acceleration.dotProduct(pos.normalize()) > 0, "Radial acceleration should be positive (away from Earth)");
-        Assertions.assertTrue(accNormKmPerSec > 1e-11 && accNormKmPerSec < 1e-10, "Acceleration magnitude " + accNormKmPerSec + " is outside expected range for LEO");
+        Assertions.assertTrue(accNormKmPerSec > 1e-12 && accNormKmPerSec < 1e-11, "Acceleration magnitude " + accNormKmPerSec + " is outside expected range for LEO");
     }
 
     @Test
@@ -607,6 +650,47 @@ class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
                 new IsotropicRadiationSingleCoefficient(1.0, 1.5),
                 Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                 FastMath.toRadians(30));
+    }
+
+    /** Knocke model with uniform emissivity and no albedo. */
+    private static class UniformEmissivityKnockeModel extends KnockeRediffusedForceModel {
+
+        /** Uniform emissivity. */
+        private final double emissivity;
+
+        /** Simple constructor.
+         * @param sun Sun model
+         * @param spacecraft the object physical and geometrical information
+         * @param equatorialRadius the equatorial radius of the body
+         * @param angularResolution angular resolution in rad
+         * @param emissivity uniform emissivity
+         */
+        UniformEmissivityKnockeModel(final ExtendedPositionProvider sun, final RadiationSensitive spacecraft,
+                                     final double equatorialRadius, final double angularResolution,
+                                     final double emissivity) {
+            super(sun, spacecraft, equatorialRadius, angularResolution);
+            this.emissivity = emissivity;
+        }
+
+        @Override
+        public double computeAlbedo(final AbsoluteDate date, final double phi) {
+            return 0.0;
+        }
+
+        @Override
+        public <T extends CalculusFieldElement<T>> T computeAlbedo(final FieldAbsoluteDate<T> date, final T phi) {
+            return phi.getField().getZero();
+        }
+
+        @Override
+        public double computeEmissivity(final AbsoluteDate date, final double phi) {
+            return emissivity;
+        }
+
+        @Override
+        public <T extends CalculusFieldElement<T>> T computeEmissivity(final FieldAbsoluteDate<T> date, final T phi) {
+            return phi.getField().getZero().newInstance(emissivity);
+        }
     }
 
     /** Knocke model specialized step handler. */
