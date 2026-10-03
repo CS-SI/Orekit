@@ -21,6 +21,7 @@ import org.hipparchus.util.FastMath;
 import org.orekit.data.BodiesElements;
 import org.orekit.data.PoissonSeries.CompiledSeries;
 import org.orekit.frames.Frame;
+import org.orekit.frames.StaticTransform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinatesProvider;
@@ -195,11 +196,16 @@ public class TidalDisplacement implements StationDisplacement {
 
         final AbsoluteDate date = elements.getDate();
 
+        // use GCRF (i.e. frames tree root) as an intermediate frame
+        // in order to avoid computing transform to Earth frame twice
+        final Frame           gcrfRoot = earthFrame.getAncestor(earthFrame.getDepth());
+        final StaticTransform g2e      = gcrfRoot.getStaticTransformTo(earthFrame, date);
+
         // preliminary computation (we hold everything in local variables so method is thread-safe)
         final PointData      pointData    = new PointData(referencePoint);
-        final Vector3D       sunPosition  = sun.getPosition(date, earthFrame);
+        final Vector3D       sunPosition  = g2e.transformPosition(sun.getPosition(date, gcrfRoot));
         final BodyData       sunData      = new BodyData(sunPosition, ratio2S, ratio3S, pointData);
-        final Vector3D       moonPosition = moon.getPosition(date, earthFrame);
+        final Vector3D       moonPosition = g2e.transformPosition(moon.getPosition(date, gcrfRoot));
         final BodyData       moonData     = new BodyData(moonPosition, ratio2M, ratio3M, pointData);
 
         // step 1 in IERS procedure: corrections in the time domain
@@ -342,7 +348,7 @@ public class TidalDisplacement implements StationDisplacement {
     /** Holder for various intermediate data related to reference point. */
     private static class PointData {
 
-        /** Reference point position in {@link #getEarthFrame() Earth frame}. */
+        /** Reference point position in Earth frame. */
         private final Vector3D position;
 
         /** Distance to geocenter. */
@@ -385,7 +391,7 @@ public class TidalDisplacement implements StationDisplacement {
         private final double f;
 
         /** Simple constructor.
-         * @param position reference point position in {@link #getEarthFrame() Earth frame}
+         * @param position reference point position in Earth frame
          */
         PointData(final Vector3D position) {
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -30,8 +30,6 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
-import java.io.IOException;
-
 public class EOPHistoryTest {
 
     @Test
@@ -39,7 +37,7 @@ public class EOPHistoryTest {
         AbsoluteDate date = new AbsoluteDate(2004, 1, 4, TimeScalesFactory.getUTC());
         EOPHistory eopHistory = FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true);
         double dt = eopHistory.getUT1MinusUTC(date);
-        Assertions.assertTrue(EopDataType.UNKNOWN.equals(eopHistory.getEopDataType(date)));
+        Assertions.assertEquals(EopDataType.UNKNOWN, eopHistory.getEopDataType(date));
         Assertions.assertEquals(-0.3906070, dt, 1.0e-10);
     }
 
@@ -51,12 +49,12 @@ public class EOPHistoryTest {
             AbsoluteDate date = endDate.shiftedBy(t);
             double dt = history.getUT1MinusUTC(date);
             if (t <= 0) {
-                Assertions.assertTrue(EopDataType.UNKNOWN.equals(history.getEopDataType(date)));
+                Assertions.assertEquals(EopDataType.UNKNOWN, history.getEopDataType(date));
                 Assertions.assertTrue(dt < 0.29236);
                 Assertions.assertTrue(dt > 0.29233);
             } else {
                 // no more data after end date
-                Assertions.assertTrue(EopDataType.UNKNOWN.equals(history.getEopDataType(date)));
+                Assertions.assertEquals(EopDataType.UNKNOWN, history.getEopDataType(date));
                 Assertions.assertEquals(0.0, dt, 1.0e-10);
             }
         }
@@ -125,7 +123,7 @@ public class EOPHistoryTest {
     }
 
     @Test
-    public void testTidalInterpolationEffects() throws IOException, OrekitException {
+    public void testTidalInterpolationEffects() throws OrekitException {
 
         final EOPHistory h1 = FramesFactory.getEOPHistory(IERSConventions.IERS_2010, false);
         final EOPHistory h2 = h1.getEOPHistoryWithoutCachedTidalCorrection();

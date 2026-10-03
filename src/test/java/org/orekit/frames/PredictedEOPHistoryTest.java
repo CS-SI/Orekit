@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -37,8 +37,8 @@ public class PredictedEOPHistoryTest {
     @Test
     public void testExtensionDates() {
 
-        // truncate EOP between 2018 and 2020
-        final int mjdLimit = new DateComponents(2021, 1, 1).getMJD();
+        // truncate EOP between 2016 and 2018
+        final int mjdLimit = new DateComponents(2019, 1, 1).getMJD();
         final EOPHistory truncatedEOP = new EOPHistory(trueEOP.getConventions(),
                                                        EOPHistory.DEFAULT_INTERPOLATION_DEGREE,
                                                        trueEOP.getEntries().
@@ -57,18 +57,18 @@ public class PredictedEOPHistoryTest {
                                                                      SingleParameterFitter.createDefaultNutationFitterShortTermPrediction(),
                                                                      SingleParameterFitter.createDefaultNutationFitterShortTermPrediction()));
         Assertions.assertEquals(0.0,
-                                new AbsoluteDate(2018, 1, 1, 0, 0, 0.0, utc).durationFrom(predicted.getStartDate()),
+                                new AbsoluteDate(2016, 1, 1, 0, 0, 0.0, utc).durationFrom(predicted.getStartDate()),
                                 1.0e-10);
         Assertions.assertEquals(0.0,
-                                new AbsoluteDate(2021, 1, 30, 0, 0, 0.0, utc).durationFrom(predicted.getEndDate()),
+                                new AbsoluteDate(2019, 1, 30, 0, 0, 0.0, utc).durationFrom(predicted.getEndDate()),
                                 1.0e-10);
     }
 
     @Test
     public void testCommonCoverage() {
 
-        // truncate EOP between 2018 and 2021
-        final int mjdLimit = new DateComponents(2022, 1, 1).getMJD();
+        // truncate EOP between 2016 and 2019
+        final int mjdLimit = new DateComponents(2020, 1, 1).getMJD();
         final EOPHistory truncatedEOP = new EOPHistory(trueEOP.getConventions(),
                                                        EOPHistory.DEFAULT_INTERPOLATION_DEGREE,
                                                        trueEOP.getEntries().
@@ -160,18 +160,18 @@ public class PredictedEOPHistoryTest {
             final AbsoluteDate   date      = truncatedEOP.getEndDate().shiftedBy(dt);
             maxErrorUT1  = FastMath.max(maxErrorUT1,  FastMath.abs(trueEOP.getUT1MinusUTC(date) - predicted.getUT1MinusUTC(date)));
         }
-        Assertions.assertEquals(4.563, maxErrorUT1, 0.001);
+        Assertions.assertEquals(6.117, maxErrorUT1, 0.001);
 
     }
 
     @Test
     public void testAccuracyShortTerm() {
-        doTestAccuracy(true, 0.148, 0.580, 1.528, 7.842, 316.165, 6077.182, 40759.430);
+        doTestAccuracy(true, 0.200, 1.023, 2.918, 14.517, 470.519, 8671.292, 58844.239);
     }
 
     @Test
     public void testAccuracyLongTerm() {
-        doTestAccuracy(false, 1.518, 1.993, 2.298, 3.013, 7.398, 17.582, 27.296);
+        doTestAccuracy(false, 0.915, 1.352, 1.718, 2.666, 7.457, 16.804, 26.843);
     }
 
     private void doTestAccuracy(final boolean shortTerm,
@@ -189,7 +189,7 @@ public class PredictedEOPHistoryTest {
         double maxError090Days = 0;
         for (int d = 0; d < 365; d += 30) {
             // set up a prediction
-            final DateComponents dc = new DateComponents(new DateComponents(2021, 1, 1), d);
+            final DateComponents dc = new DateComponents(new DateComponents(2019, 1, 1), d);
             final int mjdLimit = dc.getMJD();
             final EOPHistory truncatedEOP = new EOPHistory(trueEOP.getConventions(),
                                                            EOPHistory.DEFAULT_INTERPOLATION_DEGREE,
@@ -268,12 +268,12 @@ public class PredictedEOPHistoryTest {
         utc     = TimeScalesFactory.getUTC();
         trueEOP = FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true);
 
-        // raw history between 2018 and 2022
+        // raw history between 2016 and 2020
         Assertions.assertEquals(0.0,
-                                new AbsoluteDate(2018, 1, 1, 0, 0, 0.0, utc).durationFrom(trueEOP.getStartDate()),
+                                new AbsoluteDate(2016, 1, 1, 0, 0, 0.0, utc).durationFrom(trueEOP.getStartDate()),
                                 1.0e-10);
         Assertions.assertEquals(0.0,
-                                new AbsoluteDate(2022, 12, 31, 0, 0, 0.0, utc).durationFrom(trueEOP.getEndDate()),
+                                new AbsoluteDate(2020, 12, 31, 0, 0, 0.0, utc).durationFrom(trueEOP.getEndDate()),
                                 1.0e-10);
 
     }

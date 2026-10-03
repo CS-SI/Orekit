@@ -3,7 +3,7 @@
   <groupId>org.orekit</groupId>
   <artifactId>orekit</artifactId>
   <packaging>jar</packaging>
-  <version>13.1.8</version>
+  <version>13.1.9</version>
   <name>OREKIT</name>
   <url>https://www.orekit.org/</url>
 
@@ -336,6 +336,9 @@
       <name>Julien Leblond</name>
     </contributor>
     <contributor>
+      <name>Nicholas Lowing</name>
+    </contributor>
+    <contributor>
       <name>Anne-Laure Lugan</name>
     </contributor>
     <contributor>
@@ -357,6 +360,9 @@
       <name>Lars Næsbye Christensen</name>
     </contributor>
     <contributor>
+      <name>Marco Nugnes</name>
+    </contributor>
+    <contributor>
       <name>Emmanuel Papanagiotou</name>
     </contributor>
     <contributor>
@@ -370,6 +376,9 @@
     </contributor>
     <contributor>
       <name>Joseph Reed</name>
+    </contributor>
+    <contributor>
+      <name>Julian Rengstorf</name>
     </contributor>
     <contributor>
       <name>Silvia Ríos Bergantiños</name>
@@ -397,6 +406,9 @@
     </contributor>
     <contributor>
       <name>Gabriele Serafini</name>
+    </contributor>
+    <contributor>
+      <name>Scott Shambaugh</name>
     </contributor>
     <contributor>
       <name>David Soulard</name>

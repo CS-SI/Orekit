@@ -144,7 +144,7 @@ public class EOPHistory {
         this.interpolationDegree = interpolationDegree;
         this.tidalCorrection     = tidalCorrection;
         this.timeScales          = timeScales;
-        if (data.size() >= 1) {
+        if (!data.isEmpty()) {
             // enough data to interpolate
             if (missSomeDerivatives(data)) {
                 // we need to estimate the missing derivatives
@@ -306,7 +306,7 @@ public class EOPHistory {
         private final HermiteInterpolator interpolator;
 
         /** Interpolation date. */
-        private AbsoluteDate date;
+        private final AbsoluteDate date;
 
         /** Simple constructor.
          * @param date interpolation date
@@ -367,10 +367,10 @@ public class EOPHistory {
         private final FieldHermiteInterpolator<T> interpolator;
 
         /** Interpolation date. */
-        private FieldAbsoluteDate<T> date;
+        private final FieldAbsoluteDate<T> date;
 
         /** Interpolation date. */
-        private AbsoluteDate absDate;
+        private final AbsoluteDate absDate;
 
         /** Simple constructor.
          * @param date interpolation date
@@ -904,7 +904,7 @@ public class EOPHistory {
 
         if (Double.isNaN(entry.getLOD() + entry.getXRate() + entry.getYRate())) {
             final double lod   = Double.isNaN(entry.getLOD()) ?
-                                 -differentiator.apply(entry, EOPEntry::getUT1MinusUTC) :
+                                 -Constants.JULIAN_DAY * differentiator.apply(entry, EOPEntry::getUT1MinusUTC) :
                                  entry.getLOD();
             final double xRate = Double.isNaN(entry.getXRate()) ?
                                  differentiator.apply(entry, EOPEntry::getX) :

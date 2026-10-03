@@ -22,32 +22,47 @@ package org.orekit.files.ccsds.ndm.odm.ocm;
  */
 public enum OpsStatus {
 
-    /** Operational object. */
-    OPERATIONAL("Operational"),
+    /** An operational spacecraft that has the capability to maneuver. */
+    OPERATIONAL_MANEUVERABLE("Operational and maneuverable"),
 
-    /** Non-operational object. */
+    /** An operational spacecraft that has no capability to maneuver, either due to equipment malfunction or by design. */
+    OPERATIONAL_NONMANEUVERABLE("Operational and non-maneuverable"),
+
+    /** Spacecraft that can no longer perform any operational mission role(s) but which may retain the ability to either transmit/receive, maneuver, or reorient. */
     NONOPERATIONAL("Non-operational"),
 
-    /** partially operational object. */
-    PARTIALLY_OPERATIONAL("Partially operational"),
+    /** A spacecraft for which operations are substantively degraded. */
+    DEGRADED_OPERATIONS("Degrated operations"),
 
-    /** Backup object. */
-    BACKUP("Backup"),
+    /** A spacecraft that is in backup, storage, or standby mode. */
+    BACKUP_STORAGE_STANDBY("Backup, storage, or standby"),
 
-    /** Object in stand-by. */
-    STANBY("Stand-by"),
-
-    /** Object in extended mission. */
+    /** An operational spacecraft in a mission phase that has been continued past the planned end-of-mission schedule. */
     EXTENDED_MISSION("Extended mission"),
 
-    /** Object in reentry mode. */
+    /** A space object that is below 150 km or will reenter within several orbital revolutions. */
     REENTRY_MODE("Reentry mode"),
 
-    /** Decayed object. */
+    /** A space object for which the orbit has now decayed. */
     DECAYED("Decayed"),
 
-    /** Unknown status. */
-    UNKNOWN("Unknown");
+    /** A space object for which the status is unknown. */
+    UNKNOWN("Unknown"),
+
+    /** Fully non-functional and nonmaneuverable space objects, including space debris fragments and passivated or derelict spacecraft. */
+    DEAD("Dead"),
+
+    /** DEPRECATED: Operational object. */
+    OPERATIONAL("Operational"),
+
+    /** DEPRECATED: partially operational object. */
+    PARTIALLY_OPERATIONAL("Partially operational"),
+
+    /** DEPRECATED: Backup object. */
+    BACKUP("Backup"),
+
+    /** DEPRECATED: Object in stand-by. */
+    STANBY("Stand-by");
 
     /** Description. */
     private final String description;
