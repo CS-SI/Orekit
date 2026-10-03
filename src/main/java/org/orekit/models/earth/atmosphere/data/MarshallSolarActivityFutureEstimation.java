@@ -359,12 +359,10 @@ public class MarshallSolarActivityFutureEstimation
         final UnivariateFunction interpolatingFunction = interpolator.interpolate(x, y);
 
         // Interpolate
-        final AbsoluteDate previousDate = neighbors.getFirst().getDate();
-        final AbsoluteDate nextDate     = neighbors.get(1).getDate();
-
-        // TODO Temporary fix for issue 1719 until GenericTimeStampedCache is fixed
-        final double normInterpDate = date.durationFrom(previousDate) / nextDate.durationFrom(previousDate);
-        return interpolatingFunction.value(FastMath.max(0, FastMath.min(normInterpDate, 1.0)));
+        final AbsoluteDate previousDate   = neighbors.getFirst().getDate();
+        final AbsoluteDate nextDate       = neighbors.get(1).getDate();
+        final double       normInterpDate = date.durationFrom(previousDate) / nextDate.durationFrom(previousDate);
+        return interpolatingFunction.value(normInterpDate);
     }
 
     /** {@inheritDoc} */

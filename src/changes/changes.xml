@@ -512,6 +512,46 @@
           quantization. Exact time offsets are now used instead (attosecond accuracy).
         </action>
     </release>
+    <release version="13.1.9" date="2026-10-03" description="Orekit 13.1.9 is a patch release. It solves a range of bugs including some related to Albedo and EOPs.">
+        <action dev="luc" type="fix" issue="2028" due-to="LordRaptor">
+            Fixed power computation of units containing a current part.
+        </action>
+        <action dev="rodrigomarcelino" type="fix" issue="2025">
+            Fix wrong term in Coppola's encounter duration.
+        </action>
+        <action dev="nlowing" type="fix" issue="2026">
+            Fix calculation of inferred LOD in EOPHistory to be scaled by JULIAN_DAY.
+        </action>
+        <action dev="luc" type="fix" issue="2023">
+            Fixed EOP fitting when leap seconds are present.
+        </action>
+        <action dev="scottshambaugh" type="fix" issue="2022">
+            Fixed area calculations leading to too-high albedo flux in KnockeRediffusedForceModel.
+        </action>
+        <action dev="luc" type="fix" issue="2019">
+            Improved tidal displacement performance.
+        </action>
+        <action dev="luc" type="fix" issue="2018">
+            Avoid unnecessary recomputation in Vienna 3 tropospheric model.
+        </action>
+        <action dev="nlowing" type="fix" issue="2016">
+            Fix implementation of OrekitCcsdsFrameMapper equals method.
+        </action>
+        <action dev="luc" type="fix" issue="2012">
+            Fixed spurious non-zero velocity appearing when transforming
+            SP3 files between Earth and inertial frames.
+        </action>
+        <action dev="marconugnes" type="fix" issue="2008">
+            Replaced geocentric position vector with relative position vector in KnockeRediffusedForceModel.
+        </action>
+        <action dev="luc" type="fix" issue="1965" due-to="Julian Rengstorf">
+            Align OpsStatus enum with the SANA Operational Status registry.
+        </action>
+        <action dev="vcucchie" type="fix" issue="1738">
+            Fixed date indexing in GenericTimeStampedCache, which used a 1 microsecond
+            quantization. Exact time offsets are now used instead (attosecond accuracy).
+        </action>
+    </release>
     <release version="13.1.8" date="2026-08-30" description="Orekit 13.1.8 is a patch release. It solves bugs related to NRLMSISE, numerical state transition matrix and rates in pseudo-inertial frames.">
         <action dev="serrof" type="fix" issue="2006">
             Keep additional data in NumericalGradientConverter if force does not just depend on position.

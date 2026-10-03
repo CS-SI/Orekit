@@ -81,4 +81,97 @@ public class OrekitCcsdsFrameMapperTest {
         }
     }
 
+    /** Exception (not NPE) for a null center. */
+    @Test
+    public void testBuildNullCenter() {
+        // setup
+        CcsdsFrameMapper mapper = new OrekitCcsdsFrameMapper();
+
+        // action
+        try {
+            mapper.buildCcsdsFrame(null, null, null);
+            Assertions.fail("Expected exception");
+        } catch (OrekitException e) {
+            // expected
+        }
+    }
+
+    /**
+     * Check stateless equals implementation, for #2016
+     * {@link OrekitCcsdsFrameMapper#equals(Object)}
+     */
+    @Test
+    public void testEquals() {
+        OrekitCcsdsFrameMapper first = new OrekitCcsdsFrameMapper();
+        OrekitCcsdsFrameMapper second = new OrekitCcsdsFrameMapper();
+        OrekitCcsdsFrameMapperSubClass subclass = new OrekitCcsdsFrameMapperSubClass();
+
+        // Invoke equals directly so an assertion's identity shortcut cannot bypass it
+        Assertions.assertTrue(first.equals(first));
+
+        Assertions.assertEquals(first, second);
+        Assertions.assertEquals(second, first);
+        Assertions.assertEquals(first.hashCode(), second.hashCode());
+
+        // Call the mapper's equals directly: assertNotEquals(new Object(), first)
+        // would call Object.equals instead and would not test the mapper's implementation
+        Assertions.assertFalse(first.equals(new Object()));
+
+        Assertions.assertNotEquals(first, subclass);
+        Assertions.assertNotEquals(subclass, first);
+    }
+
+    /**
+     * Check null case not equal, for #2016
+     * {@link OrekitCcsdsFrameMapper#equals(Object)}
+     */
+    @Test
+    public void testEqualsNull() {
+        OrekitCcsdsFrameMapper mapper = new OrekitCcsdsFrameMapper();
+
+        // Call equals directly: assertNotEquals(null, mapper) only checks that mapper
+        // is non-null and would pass even if mapper.equals(null) threw an exception
+        Assertions.assertFalse(mapper.equals(null));
+    }
+
+    /**
+     * Check same subclass equal, for #2016
+     * {@link OrekitCcsdsFrameMapper#equals(Object)}
+     */
+    @Test
+    public void testEqualsSameSubclass() {
+        OrekitCcsdsFrameMapperSubClass first = new OrekitCcsdsFrameMapperSubClass();
+        OrekitCcsdsFrameMapperSubClass second = new OrekitCcsdsFrameMapperSubClass();
+
+        // Invoke equals directly so an assertion's identity shortcut cannot bypass it
+        Assertions.assertTrue(first.equals(first));
+
+        Assertions.assertEquals(first, second);
+        Assertions.assertEquals(second, first);
+        Assertions.assertEquals(first.hashCode(), second.hashCode());
+    }
+
+    /**
+     * Check that instances of different subclasses are unequal in both directions, for #2016
+     * {@link OrekitCcsdsFrameMapper#equals(Object)}
+     */
+    @Test
+    public void testEqualsDifferentSubclasses() {
+        OrekitCcsdsFrameMapperSubClass first = new OrekitCcsdsFrameMapperSubClass();
+        OtherOrekitCcsdsFrameMapperSubClass second = new OtherOrekitCcsdsFrameMapperSubClass();
+
+        Assertions.assertNotEquals(first, second);
+        Assertions.assertNotEquals(second, first);
+    }
+
+    /** Example stateless subclass used to test inherited equality */
+    private static class OrekitCcsdsFrameMapperSubClass extends OrekitCcsdsFrameMapper {
+        // No definition
+    }
+
+    /** A distinct stateless subclass used to test equality across runtime types */
+    private static class OtherOrekitCcsdsFrameMapperSubClass extends OrekitCcsdsFrameMapper {
+        // No definition
+    }
+
 }

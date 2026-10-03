@@ -626,22 +626,22 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
         // When & Then
         doTestInterpolation(stateInterpolator, covarianceInterpolator,
                             DEFAULT_SERGEI_PROPAGATION_TIME, DEFAULT_SERGEI_TABULATED_TIMESTEP,
-                            0.064982508,
-                            0.196526221,
-                            0.061064178,
-                            0.208212441,
-                            0.175644970,
-                            0.496292046,
+                            0.10128419417347795,
+                            0.1952502098813022,
+                            0.10307735204201159,
+                            0.21688428699874962,
+                            0.2148387809514304,
+                            0.35021506111281975,
                             TOLERANCE,
                             showResults);
 
-/*      Results obtained when using the reference sergei date
-        Assertions.assertEquals(0.08333354122902344, relativeRMSSigmaError[0].getMean(), 1e-17);
-        Assertions.assertEquals(0.18339504723198177, relativeRMSSigmaError[1].getMean(), 1e-17);
-        Assertions.assertEquals(0.08379904791529535, relativeRMSSigmaError[0].getPercentile(50), 1e-17);
-        Assertions.assertEquals(0.21301699586775608, relativeRMSSigmaError[1].getPercentile(50), 1e-17);
-        Assertions.assertEquals(0.18097897860458778, relativeRMSSigmaError[0].getMax(), 1e-17);
-        Assertions.assertEquals(0.25871013837895007, relativeRMSSigmaError[1].getMax(), 1e-17);
+/*      Results obtained when using the reference sergei date with DE440 ephemerides and angular resolution equal to 1 degree
+        Assertions.assertEquals(0.0663845083363963, relativeRMSSigmaError[0].getMean(), 1e-17);
+        Assertions.assertEquals(0.18430211954967776, relativeRMSSigmaError[1].getMean(), 1e-17);
+        Assertions.assertEquals(0.06229866676910804, relativeRMSSigmaError[0].getPercentile(50), 1e-17);
+        Assertions.assertEquals(0.2108477692814008, relativeRMSSigmaError[1].getPercentile(50), 1e-17);
+        Assertions.assertEquals(0.16864999784074766, relativeRMSSigmaError[0].getMax(), 1e-17);
+        Assertions.assertEquals(0.33378531521343446, relativeRMSSigmaError[1].getMax(), 1e-17);
 */
 
         assertEquals(CartesianDerivativesFilter.USE_PVA, covarianceInterpolator.getFilter());
@@ -685,22 +685,23 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
         // When & then
         doTestInterpolation(stateInterpolator, covarianceInterpolator,
                             DEFAULT_SERGEI_PROPAGATION_TIME, DEFAULT_SERGEI_TABULATED_TIMESTEP,
-                            0.083410188,
-                            0.186089212,
-                            0.087831467,
-                            0.175368529,
-                            0.188839892,
-                            0.517004559,
+							0.10269978693222183,
+							0.18557826875797798,
+							0.10978625708697207,
+							0.20420653448875567,
+							0.19953641346579165,
+							0.3340165881885856,
                             TOLERANCE,
                             showResults);
 
-        // Results obtained when using Sergei reference date
-/*        Assertions.assertEquals(0.07740033278409426, relativeRMSSigmaError[0].getMean(), 1e-17);
-        Assertions.assertEquals(0.16752174969304912, relativeRMSSigmaError[1].getMean(), 1e-17);
-        Assertions.assertEquals(0.08063527083126852, relativeRMSSigmaError[0].getPercentile(50), 1e-17);
-        Assertions.assertEquals(0.1926905326066871 , relativeRMSSigmaError[1].getPercentile(50), 1e-17);
-        Assertions.assertEquals(0.16289839792811542, relativeRMSSigmaError[0].getMax(), 1e-17);
-        Assertions.assertEquals(0.23616924578204512, relativeRMSSigmaError[1].getMax(), 1e-17);*/
+
+        // Results obtained when using Sergei reference date with DE440 ephemerides and angular resolution equal to 1 degree
+/*        Assertions.assertEquals(0.06881228154395476, relativeRMSSigmaError[0].getMean(), 1e-17);
+        Assertions.assertEquals(0.168445146470626, relativeRMSSigmaError[1].getMean(), 1e-17);
+        Assertions.assertEquals(0.06935532637296121, relativeRMSSigmaError[0].getPercentile(50), 1e-17);
+        Assertions.assertEquals(0.18357123219142218, relativeRMSSigmaError[1].getPercentile(50), 1e-17);
+        Assertions.assertEquals(0.16513748281665291, relativeRMSSigmaError[0].getMax(), 1e-17);
+        Assertions.assertEquals(0.3370545268121682, relativeRMSSigmaError[1].getMax(), 1e-17);*/
 
         assertEquals(CartesianDerivativesFilter.USE_PV, covarianceInterpolator.getFilter());
 
@@ -743,22 +744,22 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
         // When & Then
         doTestInterpolation(stateInterpolator, covarianceInterpolator,
                             DEFAULT_SERGEI_PROPAGATION_TIME, DEFAULT_SERGEI_TABULATED_TIMESTEP,
-                            0.261051149,
-                            0.226007910,
-                            0.295463152,
-                            0.192293136,
-                            0.409612591,
-                            0.671114344,
+							0.0952747064391891,
+							0.14868745998224311,
+							0.10137887680900724,
+							0.16049689322938376,
+							0.1726094203438294,
+							0.2735761321232177,
                             TOLERANCE,
                             showResults);
 
-        // Results obtained when using Sergei reference date
-/*        Assertions.assertEquals(0.09148580146577297, relativeRMSSigmaError[0].getMean(), 1e-17);
-        Assertions.assertEquals(0.11704748448308232, relativeRMSSigmaError[1].getMean(), 1e-17);
-        Assertions.assertEquals(0.09727415341226611, relativeRMSSigmaError[0].getPercentile(50), 1e-17);
-        Assertions.assertEquals(0.12457112100482712, relativeRMSSigmaError[1].getPercentile(50), 1e-17);
-        Assertions.assertEquals(0.16611131341788263, relativeRMSSigmaError[0].getMax(), 1e-17);
-        Assertions.assertEquals(0.1922012892962485, relativeRMSSigmaError[1].getMax(), 1e-17);*/
+        // Results obtained when using Sergei reference date with DE440 ephemerides and angular resolution equal to 1 degree
+/*        Assertions.assertEquals(0.18466802307044883, relativeRMSSigmaError[0].getMean(), 1e-17);
+        Assertions.assertEquals(0.15784978619224507, relativeRMSSigmaError[1].getMean(), 1e-17);
+        Assertions.assertEquals(0.20576334480685632, relativeRMSSigmaError[0].getPercentile(50), 1e-17);
+        Assertions.assertEquals(0.13775868396063512, relativeRMSSigmaError[1].getPercentile(50), 1e-17);
+        Assertions.assertEquals(0.28945491775727533, relativeRMSSigmaError[0].getMax(), 1e-17);
+        Assertions.assertEquals(0.4272697916506538, relativeRMSSigmaError[1].getMax(), 1e-17);*/
 
         assertEquals(CartesianDerivativesFilter.USE_P, covarianceInterpolator.getFilter());
 
@@ -819,12 +820,12 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
             System.out.format(Locale.US, "%35s = %20.12f%n", "relativeRMSSigmaError[1].getMax", relativeRMSSigmaError[1].getMax());
 
         }
-        Assertions.assertEquals(  0.071763476751, relativeRMSSigmaError[0].getMean(), TOLERANCE);
-        Assertions.assertEquals( 19.568025195906, relativeRMSSigmaError[1].getMean(), TOLERANCE);
-        Assertions.assertEquals(  0.069672633640, relativeRMSSigmaError[0].getPercentile(50), TOLERANCE);
-        Assertions.assertEquals( 14.222177093792, relativeRMSSigmaError[1].getPercentile(50), TOLERANCE);
-        Assertions.assertEquals(  0.143305248540, relativeRMSSigmaError[0].getMax(), TOLERANCE);
-        Assertions.assertEquals( 82.363117378396, relativeRMSSigmaError[1].getMax(), 3 * TOLERANCE);
+        Assertions.assertEquals(0.09272639459529007, relativeRMSSigmaError[0].getMean(), TOLERANCE);
+        Assertions.assertEquals(21.46149336645442, relativeRMSSigmaError[1].getMean(), TOLERANCE);
+        Assertions.assertEquals(0.09231047839482223, relativeRMSSigmaError[0].getPercentile(50), TOLERANCE);
+        Assertions.assertEquals(8.668084832547411, relativeRMSSigmaError[1].getPercentile(50), TOLERANCE);
+        Assertions.assertEquals(0.1840860111269474, relativeRMSSigmaError[0].getMax(), TOLERANCE);
+        Assertions.assertEquals(137.3100859206473, relativeRMSSigmaError[1].getMax(), 3 * TOLERANCE);
     }
 
     @Test

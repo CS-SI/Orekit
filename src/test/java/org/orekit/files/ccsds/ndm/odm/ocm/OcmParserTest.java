@@ -920,7 +920,7 @@ public class OcmParserTest {
         Assertions.assertEquals("FRANCE",                                              file.getMetadata().getCountry().orElseThrow());
         Assertions.assertEquals("SPIRE",                                               file.getMetadata().getConstellation().orElseThrow());
         Assertions.assertEquals("PAYLOAD",                                             file.getMetadata().getObjectType().orElseThrow().toString());
-        Assertions.assertEquals("Operational",                                         file.getMetadata().getOpsStatus().orElseThrow().toString());
+        Assertions.assertEquals("Operational and maneuverable",                        file.getMetadata().getOpsStatus().orElseThrow().toString());
         Assertions.assertEquals("Extended Geostationary Orbit",                        file.getMetadata().getOrbitCategory().orElseThrow().toString());
         Assertions.assertEquals(7,                                                     file.getMetadata().getOcmDataElements().size());
         Assertions.assertEquals(OcmElements.ORB,                                       file.getMetadata().getOcmDataElements().getFirst());

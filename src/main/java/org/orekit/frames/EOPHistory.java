@@ -170,7 +170,7 @@ public class EOPHistory {
         this.interpolationDegree = interpolationDegree;
         this.tidalCorrection     = tidalCorrection;
         this.timeScales          = timeScales;
-        if (!deduplicated.isEmpty()) {
+        if (!data.isEmpty()) {
             // enough data to interpolate
             if (missSomeDerivatives(deduplicated)) {
                 // we need to estimate the missing derivatives

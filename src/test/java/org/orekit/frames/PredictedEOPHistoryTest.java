@@ -127,6 +127,46 @@ public class PredictedEOPHistoryTest {
     }
 
     @Test
+    @Deprecated
+    public void testDeprecated() {
+
+        // truncate EOP between 2018 and 2021
+        final int mjdLimit = new DateComponents(2022, 1, 1).getMJD();
+        final EOPHistory truncatedEOP = new EOPHistory(trueEOP.getConventions(),
+                                                       EOPHistory.DEFAULT_INTERPOLATION_DEGREE,
+                                                       trueEOP.getEntries().
+                                                               stream().
+                                                               filter(e -> e.getMjd() < mjdLimit).
+                                                               collect(Collectors.toList()),
+                                                       trueEOP.isSimpleEop(),
+                                                       trueEOP.getTimeScales());
+
+        EOPHistory predicted = new PredictedEOPHistory(truncatedEOP,
+                                                       30 * Constants.JULIAN_DAY,
+                                                       new EOPFitter(new SingleParameterFitter(Constants.JULIAN_DAY,
+                                                                                               1.0e-12, 3,
+                                                                                               SingleParameterFitter.SUN_PULSATION,
+                                                                                               2 * SingleParameterFitter.SUN_PULSATION,
+                                                                                               3 * SingleParameterFitter.SUN_PULSATION,
+                                                                                               SingleParameterFitter.MOON_DRACONIC_PULSATION,
+                                                                                               2 * SingleParameterFitter.MOON_DRACONIC_PULSATION,
+                                                                                               3 * SingleParameterFitter.MOON_DRACONIC_PULSATION),
+                                                                     SingleParameterFitter.createDefaultPoleFitterLongTermPrediction(),
+                                                                     SingleParameterFitter.createDefaultPoleFitterLongTermPrediction(),
+                                                                     SingleParameterFitter.createDefaultNutationFitterLongTermPrediction(),
+                                                                     SingleParameterFitter.createDefaultNutationFitterLongTermPrediction()));
+
+        // check we get the same value as raw EOP (dropping the last interpolated day)
+        double maxErrorUT1  = 0;
+        for (double dt = Constants.JULIAN_DAY; dt < 10 * Constants.JULIAN_DAY; dt += 20000.0) {
+            final AbsoluteDate   date      = truncatedEOP.getEndDate().shiftedBy(dt);
+            maxErrorUT1  = FastMath.max(maxErrorUT1,  FastMath.abs(trueEOP.getUT1MinusUTC(date) - predicted.getUT1MinusUTC(date)));
+        }
+        Assertions.assertEquals(6.117, maxErrorUT1, 0.001);
+
+    }
+
+    @Test
     public void testAccuracyShortTerm() {
         doTestAccuracy(true, 0.200, 1.023, 2.918, 14.517, 470.519, 8671.292, 58844.239);
     }

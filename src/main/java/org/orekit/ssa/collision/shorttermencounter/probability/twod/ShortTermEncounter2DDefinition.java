@@ -429,13 +429,13 @@ public class ShortTermEncounter2DDefinition {
 
         // Recurrent term in Coppola's paper : bᵀb
         final RealMatrix b             = offPlaneCrossTermMatrix.transposeMultiply(probabilityDensityInverse).transpose();
-        final double     recurrentTerm = b.multiplyTransposed(b).getEntry(0, 0);
+        final double     recurrentTerm = b.transposeMultiply(b).getEntry(0, 0);
 
         // Position uncertainty normal to collision plane
         final double sigmaSqNormalToPlan = axisNormalToCollisionPlane.transposeMultiply(
                 combinedPositionalCovarianceMatrix.multiply(axisNormalToCollisionPlane)).getEntry(0, 0);
         final double sigmaV = FastMath.sqrt(
-                sigmaSqNormalToPlan - b.multiplyTransposed(offPlaneCrossTermMatrix).getEntry(0, 0));
+                sigmaSqNormalToPlan - b.transposeMultiply(offPlaneCrossTermMatrix).getEntry(0, 0));
 
         final double relativeVelocity = computeOtherRelativeToReferencePVInReferenceInertial().getVelocity().getNorm();
 
