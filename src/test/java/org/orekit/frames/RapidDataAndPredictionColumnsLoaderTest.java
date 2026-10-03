@@ -17,8 +17,8 @@
 package org.orekit.frames;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
@@ -30,6 +30,7 @@ import org.orekit.data.LazyLoadedDataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
