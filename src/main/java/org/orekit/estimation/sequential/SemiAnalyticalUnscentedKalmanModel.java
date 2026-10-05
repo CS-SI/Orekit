@@ -32,9 +32,10 @@ import org.hipparchus.util.FastMath;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.orbits.EquinoctialOrbitFactory;
+import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitParamsType;
+import org.orekit.orbits.OrbitalStateFactory;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
@@ -133,10 +134,10 @@ public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, Uns
                                                  final ParameterDriversList estimatedMeasurementParameters,
                                                  final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
 
-        final EquinoctialOrbitFactory factory = propagatorBuilder.getOrbitalStateFactory();
+        final OrbitalStateFactory<? extends EquinoctialOrbit> factory = propagatorBuilder.getOrbitalStateFactory();
         this.builder                         = propagatorBuilder;
         this.angleType                       = factory.getPositionAngleType();
-        this.orbitParamsType = factory.getOrbitParamsType();
+        this.orbitParamsType                 = factory.getOrbitParamsType();
         this.estimatedMeasurementsParameters = estimatedMeasurementParameters;
         this.currentMeasurementNumber        = 0;
         this.currentDate                     = factory.getDate();
@@ -292,7 +293,7 @@ public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, Uns
      */
     public DSSTPropagator getEstimatedPropagator() {
         // Return propagator built with current instantiation of the propagator builder
-        return (DSSTPropagator) builder.buildPropagator();
+        return builder.buildPropagator();
     }
 
     /** {@inheritDoc} */
@@ -370,7 +371,7 @@ public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, Uns
         final RealVector[] predictedMeasurements = new RealVector[predictedSigmaPoints.length];
 
         // Loop on sigma points
-        final EquinoctialOrbitFactory factory = builder.getOrbitalStateFactory();
+        final OrbitalStateFactory<? extends EquinoctialOrbit> factory = builder.getOrbitalStateFactory();
         for (int k = 0; k < predictedSigmaPoints.length; ++k) {
 
             // Calculate the predicted osculating elements for the current mean state
@@ -402,7 +403,7 @@ public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, Uns
 
         // Predicted measurement
         final RealVector osculating = computeOsculatingElements(predictedFilterCorrection, nominalMeanSpacecraftState, shortPeriodicTerms);
-        final EquinoctialOrbitFactory factory = builder.getOrbitalStateFactory();
+        final OrbitalStateFactory<? extends EquinoctialOrbit> factory = builder.getOrbitalStateFactory();
         final Orbit osculatingOrbit = orbitParamsType.mapArrayToOrbit(osculating.toArray(), null, angleType,
                                                                 currentDate, factory.getMu(), factory.getFrame());
         predictedSpacecraftState = new SpacecraftState(osculatingOrbit);
@@ -434,7 +435,7 @@ public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, Uns
         // Update the previous nominal mean spacecraft state
         // Calculate the corrected osculating elements
         final RealVector osculating = computeOsculatingElements(correctedFilterCorrection, nominalMeanSpacecraftState, shortPeriodicTerms);
-        final EquinoctialOrbitFactory factory = builder.getOrbitalStateFactory();
+        final OrbitalStateFactory<? extends EquinoctialOrbit> factory = builder.getOrbitalStateFactory();
         final Orbit osculatingOrbit = orbitParamsType.mapArrayToOrbit(osculating.toArray(), null,
                                                                 factory.getPositionAngleType(),
                                                                 currentDate, factory.getMu(), factory.getFrame());
