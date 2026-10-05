@@ -114,7 +114,7 @@ public class SGP4 extends TLEPropagator {
                                   TLEConstants.NORMALIZED_EQUATORIAL_RADIUS * sini0 / tle.getE();
                 xmcof = -TLEConstants.TWO_THIRD * coef * bStar *
                         TLEConstants.NORMALIZED_EQUATORIAL_RADIUS / eeta;
-                omgcof = bStar * c3 * FastMath.cos(tle.getPeriapsisArgument());
+                omgcof = bStar * c3 * FastMath.cos(tle.getPerigeeArgument());
             }
         }
 
@@ -128,7 +128,7 @@ public class SGP4 extends TLEPropagator {
 
         // Update for secular gravity and atmospheric drag.
         final double xmdf = tle.getMeanAnomaly() + xmdot * tSince;
-        final double omgadf = tle.getPeriapsisArgument() + omgdot * tSince;
+        final double omgadf = tle.getPerigeeArgument() + omgdot * tSince;
         final double xn0ddf = tle.getRaan() + xnodot * tSince;
         omega = omgadf;
         double xmp = xmdf;

@@ -152,7 +152,7 @@ public abstract class TleGenerationAlgorithm extends AbstractOrbitalStateFactory
         drivers.add(new ParameterDriver(INCLINATION, tle.getI(),
                                         FastMath.scalb(1.0, -22),
                                         0, FastMath.PI, TimeInterval.UNLIMITED));
-        drivers.add(new ParameterDriver(PERIAPSIS_ARGUMENT, tle.getPeriapsisArgument(),
+        drivers.add(new ParameterDriver(PERIAPSIS_ARGUMENT, tle.getPerigeeArgument(),
                                         FastMath.scalb(1.0, -22),
                                         Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, TimeInterval.UNLIMITED));
         drivers.add(new ParameterDriver(RAAN, tle.getRaan(),
@@ -278,7 +278,7 @@ public abstract class TleGenerationAlgorithm extends AbstractOrbitalStateFactory
                               Gradient.constant(DEFAULT_STATE_DIMENSION, tle.getMeanMotionSecondDerivative()),
                               Gradient.variable(DEFAULT_STATE_DIMENSION, 1, tle.getE()),
                               Gradient.variable(DEFAULT_STATE_DIMENSION, 2, tle.getI()),
-                              Gradient.variable(DEFAULT_STATE_DIMENSION, 3, tle.getPeriapsisArgument()),
+                              Gradient.variable(DEFAULT_STATE_DIMENSION, 3, tle.getPerigeeArgument()),
                               Gradient.variable(DEFAULT_STATE_DIMENSION, 4, tle.getRaan()),
                               Gradient.variable(DEFAULT_STATE_DIMENSION, 5, tle.getMeanAnomaly()),
                               tle.getRevolutionNumberAtEpoch(),
