@@ -43,7 +43,7 @@ import org.orekit.utils.drivers.ParameterDriversList;
  */
 public abstract class AbstractAnalyticalPropagatorBuilder<T extends AbstractAnalyticalPropagator,
                                                           O extends OrbitalState,
-                                                          F extends OrbitalStateFactory<O>>
+                                                          F extends OrbitalStateFactory<? extends O>>
     extends AbstractPropagatorBuilder<T, O, F> {
 
     /** Impulse maneuvers. */

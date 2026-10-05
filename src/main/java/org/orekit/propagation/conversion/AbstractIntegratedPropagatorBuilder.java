@@ -32,7 +32,7 @@ import org.orekit.propagation.integration.AbstractIntegratedPropagator;
  */
 public abstract class AbstractIntegratedPropagatorBuilder<T extends AbstractIntegratedPropagator,
                                                           O extends OrbitalState,
-                                                          F extends OrbitalStateFactory<O>>
+                                                          F extends OrbitalStateFactory<? extends O>>
     extends AbstractPropagatorBuilder<T, O, F> {
 
     /** First order integrator builder for propagation. */
