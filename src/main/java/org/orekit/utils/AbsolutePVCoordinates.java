@@ -23,12 +23,17 @@ import org.orekit.annotation.DefaultDataContext;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
+import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeOffset;
+import org.orekit.time.TimeScale;
+import org.orekit.time.TimeScalesFactory;
+import org.orekit.time.TimeStamped;
 
 /** Position - Velocity - Acceleration linked to a date and a frame.
  */
-public class AbsolutePVCoordinates implements ShiftablePVCoordinatesHolder<AbsolutePVCoordinates>, PVCoordinatesProvider {
+public class AbsolutePVCoordinates
+        implements ShiftablePVCoordinatesHolder<AbsolutePVCoordinates>, TimeStamped, PVCoordinatesProvider {
 
     /** Frame in which are defined the coordinates. */
     private final Frame frame;
@@ -267,30 +272,74 @@ public class AbsolutePVCoordinates implements ShiftablePVCoordinatesHolder<Absol
     }
 
     /**
-     * Getter for the acceleration vector.
-     * @return acceleration
+     * Method returning the position vector in a specific frame.
+     * @param outputFrame target frame
+     * @return position vector
      */
-    public Vector3D getAcceleration() {
-        return timeStampedPVCoordinates.getAcceleration();
+    public Vector3D getPosition(final Frame outputFrame) {
+        return getPosition(getDate(), outputFrame);
     }
 
     /** {@inheritDoc} */
     @Override
     public Vector3D getPosition(final AbsoluteDate otherDate, final Frame outputFrame) {
         final double duration = otherDate.durationFrom(getDate());
-        final Vector3D position = getPosition().add((getVelocity().add(getAcceleration().scalarMultiply(duration / 2))).scalarMultiply(duration));
-
+        final Vector3D position = duration == 0. ? getPosition() :
+                getPosition().add((getVelocity().add(getAcceleration().scalarMultiply(duration / 2))).scalarMultiply(duration));
         if (outputFrame == frame) {
             return position;
         }
         return frame.getStaticTransformTo(outputFrame, otherDate).transformPosition(position);
     }
 
+    /**
+     * Method returning the velocity vector in a specific frame.
+     * @param outputFrame target frame
+     * @return velocity vector
+     */
+    public Vector3D getVelocity(final Frame outputFrame) {
+        return getVelocity(getDate(), outputFrame);
+    }
+
+    /**
+     * Method returning the position-velocity vector in a specific frame.
+     * @param outputFrame target frame
+     * @return position velocity vector
+     */
+    public TimeStampedPVCoordinates getPVCoordinates(final Frame outputFrame) {
+        if (outputFrame == getFrame()) {
+            return getPVCoordinates();
+        }
+        final Transform transform = getFrame().getTransformTo(outputFrame, getDate());
+        return transform.transformPVCoordinates(getPVCoordinates());
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate otherDate, final Frame outputFrame) {
+        final TimeStampedPVCoordinates pv = shiftedBy(otherDate.accurateDurationFrom(getDate())).getPVCoordinates();
+        if (outputFrame == getFrame()) {
+            return pv;
+        }
+        final Transform transform = getFrame().getTransformTo(outputFrame, otherDate);
+        return transform.transformPVCoordinates(pv);
+    }
+
     /** {@inheritDoc} */
     @Override
     @DefaultDataContext
     public String toString() {
-        return timeStampedPVCoordinates.toString();
+        return toString(TimeScalesFactory.getUTC());
+    }
+
+    /**
+     * Return a string representation of this date, position, velocity, and acceleration.
+     *
+     * @param utc time scale used to print the date.
+     * @return string representation of this.
+     */
+    public String toString(final TimeScale utc) {
+        return timeStampedPVCoordinates.toString(utc);
     }
 }
 

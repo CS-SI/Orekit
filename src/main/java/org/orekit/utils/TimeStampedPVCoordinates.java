@@ -185,8 +185,7 @@ public class TimeStampedPVCoordinates extends PVCoordinates implements TimeStamp
     @Override
     public TimeStampedPVCoordinates shiftedBy(final double dt) {
         final PVCoordinates spv = super.shiftedBy(dt);
-        return new TimeStampedPVCoordinates(date.shiftedBy(dt),
-                                            spv.getPosition(), spv.getVelocity(), spv.getAcceleration());
+        return new TimeStampedPVCoordinates(date.shiftedBy(dt), spv);
     }
 
     /** Get a time-shifted state.
@@ -202,9 +201,8 @@ public class TimeStampedPVCoordinates extends PVCoordinates implements TimeStamp
      */
     @Override
     public TimeStampedPVCoordinates shiftedBy(final TimeOffset dt) {
-        final PVCoordinates spv = super.shiftedBy(dt);
-        return new TimeStampedPVCoordinates(date.shiftedBy(dt),
-                                            spv.getPosition(), spv.getVelocity(), spv.getAcceleration());
+        final ShiftablePVCoordinatesHolder<PVCoordinates> spv = super.shiftedBy(dt);
+        return new TimeStampedPVCoordinates(date.shiftedBy(dt), spv.getPVCoordinates());
     }
 
     /** Create a local provider using simply Taylor expansion through {@link #shiftedBy(double)}.

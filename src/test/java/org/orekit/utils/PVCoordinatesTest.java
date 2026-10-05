@@ -522,6 +522,12 @@ class PVCoordinatesTest {
     }
 
     @Test
+    void testGetPVCoordinates() {
+        final PVCoordinates pvCoordinates = new PVCoordinates(Vector3D.ZERO);
+        Assertions.assertEquals(pvCoordinates.getPVCoordinates(), pvCoordinates);
+    }
+
+    @Test
     void testShift() {
         Vector3D p1 = new Vector3D( 1,  0.1,  10);
         Vector3D p2 = new Vector3D( 2,  0.2,  20);

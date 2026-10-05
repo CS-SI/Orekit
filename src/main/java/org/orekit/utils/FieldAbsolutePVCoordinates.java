@@ -25,17 +25,21 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.FieldTimeStamped;
 import org.orekit.time.TimeOffset;
+import org.orekit.time.TimeScale;
+import org.orekit.time.TimeScalesFactory;
 
 /** Field implementation of AbsolutePVCoordinates.
  * @see AbsolutePVCoordinates
  * @author Vincent Mouraux
  * @param <T> type of the field elements
  */
-public class FieldAbsolutePVCoordinates<T extends CalculusFieldElement<T>>
-    implements ShiftableFieldPVCoordinatesHolder<FieldAbsolutePVCoordinates<T>, T> {
+public class FieldAbsolutePVCoordinates<T extends CalculusFieldElement<T>> implements FieldTimeStamped<T>,
+        ShiftableFieldPVCoordinatesHolder<T>, FieldPVCoordinatesProvider<T> {
 
     /** Frame in which are defined the coordinates. */
     private final Frame frame;
@@ -234,6 +238,7 @@ public class FieldAbsolutePVCoordinates<T extends CalculusFieldElement<T>>
         return new FieldAbsolutePVCoordinates<>(frame, spv);
     }
 
+    /** {@inheritDoc} */
     @Override
     public FieldAbsolutePVCoordinates<T> shiftedBy(final TimeOffset dt) {
         final TimeStampedFieldPVCoordinates<T> spv = timeStampedFieldPVCoordinates.shiftedBy(dt);
@@ -288,24 +293,61 @@ public class FieldAbsolutePVCoordinates<T extends CalculusFieldElement<T>>
         return timeStampedFieldPVCoordinates;
     }
 
-    /**
-     * Getter for the acceleration vector.
-     * @return acceleration
+    /** {@inheritDoc} */
+    @Override
+    public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> otherDate,
+                                                             final Frame otherFrame) {
+        final T pureFieldDateShit = otherDate.durationFrom(getDate()).getAddendum();
+        final TimeOffset nonFieldDateShift = otherDate.toAbsoluteDate().accurateDurationFrom(getDate().toAbsoluteDate());
+        return shiftedBy(pureFieldDateShit).shiftedBy(nonFieldDateShift).getPVCoordinates(otherFrame);
+    }
+
+    /** Get the {@link TimeStampedPVCoordinates} in a specified frame.
+     * @param outputFrame frame in which the position/velocity coordinates shall be computed
+     * @return FieldPVCoordinates in the specified output frame
+     * @see #getPVCoordinates()
      */
-    public FieldVector3D<T> getAcceleration() {
-        return timeStampedFieldPVCoordinates.getAcceleration();
+    public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final Frame outputFrame) {
+        // If output frame requested is the same as definition frame,
+        // PV coordinates are returned directly
+        if (outputFrame == frame) {
+            return getPVCoordinates();
+        }
+
+        // Else, PV coordinates are transformed to output frame
+        final FieldTransform<T> t = frame.getTransformTo(outputFrame, getDate());
+        return t.transformPVCoordinates(getPVCoordinates());
+    }
+
+    /** Get the velocity in a specified frame.
+     * @param outputFrame frame in which the velocity coordinates shall be computed
+     * @return velocity in the specified output frame
+     * @see #getVelocity()
+     */
+    public FieldVector3D<T> getVelocity(final Frame outputFrame) {
+        return getVelocity(getDate(), outputFrame);
     }
 
     /** {@inheritDoc} */
     @Override
     public FieldVector3D<T> getPosition(final FieldAbsoluteDate<T> otherDate, final Frame outputFrame) {
         final T duration = otherDate.durationFrom(getDate());
-        final FieldVector3D<T> position = getPosition().add((getVelocity().add(getAcceleration().scalarMultiply(duration.divide(2)))).scalarMultiply(duration));
+        final FieldVector3D<T> position = duration.isZero() ? getPosition() :
+                getPosition().add((getVelocity().add(getAcceleration().scalarMultiply(duration.divide(2)))).scalarMultiply(duration));
 
         if (outputFrame == frame) {
             return position;
         }
         return frame.getStaticTransformTo(frame, otherDate).transformPosition(position);
+    }
+
+    /** Get the position in a specified frame.
+     * @param outputFrame frame in which the position coordinates shall be computed
+     * @return position in the specified output frame
+     * @see #getPosition()
+     */
+    public FieldVector3D<T> getPosition(final Frame outputFrame) {
+        return getPosition(getDate(), outputFrame);
     }
 
     /**
@@ -320,6 +362,16 @@ public class FieldAbsolutePVCoordinates<T extends CalculusFieldElement<T>>
     @Override
     @DefaultDataContext
     public String toString() {
-        return timeStampedFieldPVCoordinates.toString();
+        return timeStampedFieldPVCoordinates.toString(TimeScalesFactory.getUTC());
+    }
+
+    /**
+     * Return a string representation of this date, position, velocity, and acceleration.
+     *
+     * @param utc time scale used to print the date.
+     * @return string representation of this.
+     */
+    public String toString(final TimeScale utc) {
+        return timeStampedFieldPVCoordinates.toString(utc);
     }
 }

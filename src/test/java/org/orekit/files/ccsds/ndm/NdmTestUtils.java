@@ -195,6 +195,7 @@ public class NdmTestUtils {
                     !m.getName().equals("getLaunchNumber")     &&
                     !m.getName().equals("getLaunchPiece")      &&
                     !m.getName().equals("getAttitudeProvider") &&
+                    !m.getName().equals("getPVCoordinates") &&
                     m.getParameterCount() == 0).
         forEach(getter -> {
             try {
