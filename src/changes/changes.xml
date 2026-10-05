@@ -20,6 +20,9 @@
   </properties>
   <body>
       <release version="14.0" date="TBD" description="TBD">
+          <action dev="serrof" type="add" issue="2038">
+              Introduced common interface for PVCoordinates and AbsolutePVCoordinates.
+          </action>
           <action dev="jtabeaud" type="fix" issue="2033">
               Fix precision problem with KeplerianExtendedPositionProvider.
           </action>

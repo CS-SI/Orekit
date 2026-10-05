@@ -112,6 +112,28 @@ class KeplerianOrbitTest {
     }
 
     @Test
+    void testGetPositionVelocity() {
+        final Orbit orbit =
+                new KeplerianOrbit(new PVCoordinates(new Vector3D(1, 0.1, 10),
+                        new Vector3D(-1, -0.1, 10), new Vector3D(10, 1.0, 100)),
+                        FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, 1.);
+        Assertions.assertArrayEquals(orbit.getPosition().toArray(), orbit.getPosition(orbit.getFrame()).toArray());
+        Assertions.assertArrayEquals(orbit.getVelocity().toArray(), orbit.getVelocity(orbit.getFrame()).toArray());
+    }
+
+    @Test
+    void testGetPVCoordinates() {
+        final Orbit orbit =
+                new KeplerianOrbit(new PVCoordinates(new Vector3D(1, 0.1, 10),
+                        new Vector3D(-1, -0.1, 10), new Vector3D(10, 1.0, 100)),
+                        FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, 1.);
+        final Frame frame = FramesFactory.getGCRF();
+        final PVCoordinates pv = orbit.getPVCoordinates(frame);
+        Assertions.assertArrayEquals(pv.getPosition().toArray(), orbit.getPosition(frame).toArray(), 1e-10);
+        Assertions.assertArrayEquals(pv.getVelocity().toArray(), orbit.getVelocity(frame).toArray());
+    }
+
+    @Test
     void testKeplerianToKeplerian() {
 
         // elliptic orbit

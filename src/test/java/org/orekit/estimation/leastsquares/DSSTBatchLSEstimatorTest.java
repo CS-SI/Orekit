@@ -216,7 +216,7 @@ class DSSTBatchLSEstimatorTest {
 
         EstimationTestUtils.checkFit(false, context, estimator, 2, 3,
                                      0.0, 2.1e-6,
-                                     0.0, 3.6e-6,
+                                     0.0, 3.7e-6,
                                      0.0, 1.1e-6,
                                      0.0, 4.6e-10);
 

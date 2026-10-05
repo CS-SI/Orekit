@@ -916,16 +916,15 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased<Kepleria
         final double dtS = dt.toDouble();
 
         // use Keplerian-only motion
-        final KeplerianParameters shiftedElements = new KeplerianParameters(a, e, i, pa, raan, getMeanAnomaly() + getKeplerianMeanMotion() * dtS,
-                PositionAngleType.MEAN).withPositionAngleType(cachedPositionAngleType);
-        final KeplerianOrbit keplerianShifted = new KeplerianOrbit(shiftedElements, getFrame(),
-                getDate().shiftedBy(dt), getMu());
+        final KeplerianParameters shiftedElements = new KeplerianParameters(a, e, i, pa, raan,
+                getMeanAnomaly() + getKeplerianMeanMotion() * dtS, PositionAngleType.MEAN);
+        final KeplerianOrbit keplerianShifted = new KeplerianOrbit(shiftedElements,
+                getFrame(), getDate().shiftedBy(dt), getMu());
 
         if (dtS != 0. && hasNonKeplerianAcceleration()) {
             // build a new orbit, taking non-Keplerian acceleration into account
             return new KeplerianOrbit(new TimeStampedPVCoordinates(keplerianShifted.getDate(),
-                    shiftPVNonKeplerian(keplerianShifted.getPVCoordinates(), dt.toDouble())),
-                    keplerianShifted.getFrame(), keplerianShifted.getMu());
+                    shiftPVNonKeplerian(keplerianShifted.getPVCoordinates(), dtS)), getFrame(), getMu());
 
         } else {
             // Keplerian-only motion is all we can do
