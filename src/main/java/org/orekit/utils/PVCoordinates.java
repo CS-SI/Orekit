@@ -28,7 +28,7 @@ import org.hipparchus.util.Blendable;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.time.TimeShiftable;
+import org.orekit.time.TimeOffset;
 
 /** Simple container for Position/Velocity/Acceleration triplets.
  * <p>
@@ -44,7 +44,7 @@ import org.orekit.time.TimeShiftable;
  * @author Fabien Maussion
  * @author Luc Maisonobe
  */
-public class PVCoordinates implements TimeShiftable<PVCoordinates>, Blendable<PVCoordinates> {
+public class PVCoordinates implements ShiftablePVCoordinatesHolder<PVCoordinates>, Blendable<PVCoordinates> {
 
     /** Fixed position/velocity at origin (both p, v and a are zero vectors). */
     public static final PVCoordinates ZERO = new PVCoordinates(Vector3D.ZERO, Vector3D.ZERO, Vector3D.ZERO);
@@ -507,6 +507,21 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Blendable<PV
                                  acceleration);
     }
 
+    /** Get a time-shifted state.
+     * <p>
+     * The state can be slightly shifted to close dates. This shift is based on
+     * a simple Taylor expansion. It is <em>not</em> intended as a replacement for
+     * proper orbit propagation (it is not even Keplerian!) but should be sufficient
+     * for either small time shifts or coarse accuracy.
+     * </p>
+     * @param dt time shift
+     * @return a new state, shifted with respect to the instance (which is immutable)
+     */
+    @Override
+    public PVCoordinates shiftedBy(final TimeOffset dt) {
+        return shiftedBy(dt.toDouble());
+    }
+
     /**
      * Get a time-shifted position. Same as {@link #shiftedBy(double)} except
      * that only the sifted position is returned.
@@ -525,9 +540,15 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Blendable<PV
         return new Vector3D(1, position, dt, velocity, 0.5 * dt * dt, acceleration);
     }
 
+    @Override
+    public PVCoordinates getPVCoordinates() {
+        return this;
+    }
+
     /** Gets the position.
      * @return the position vector (m).
      */
+    @Override
     public Vector3D getPosition() {
         return position;
     }
@@ -535,6 +556,7 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Blendable<PV
     /** Gets the velocity.
      * @return the velocity vector (m/s).
      */
+    @Override
     public Vector3D getVelocity() {
         return velocity;
     }
@@ -542,6 +564,7 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Blendable<PV
     /** Gets the acceleration.
      * @return the acceleration vector (m/s²).
      */
+    @Override
     public Vector3D getAcceleration() {
         return acceleration;
     }
@@ -629,16 +652,16 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Blendable<PV
      */
     public String toString() {
         final String comma = ", ";
-        return new StringBuilder().append('{').append("P(").
-                append(position.getX()).append(comma).
-                append(position.getY()).append(comma).
-                append(position.getZ()).append("), V(").
-                append(velocity.getX()).append(comma).
-                append(velocity.getY()).append(comma).
-                append(velocity.getZ()).append("), A(").
-                append(acceleration.getX()).append(comma).
-                append(acceleration.getY()).append(comma).
-                append(acceleration.getZ()).append(")}").toString();
+        return '{' + "P(" +
+                position.getX() + comma +
+                position.getY() + comma +
+                position.getZ() + "), V(" +
+                velocity.getX() + comma +
+                velocity.getY() + comma +
+                velocity.getZ() + "), A(" +
+                acceleration.getX() + comma +
+                acceleration.getY() + comma +
+                acceleration.getZ() + ")}";
     }
 
     /** {@inheritDoc} */

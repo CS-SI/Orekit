@@ -2162,4 +2162,27 @@ class FieldKeplerianOrbitTest {
 
     }
 
+    @Test
+    void testGetPositionVelocity() {
+        final Orbit orbit =
+                new KeplerianOrbit(new PVCoordinates(new Vector3D(1, 0.1, 10),
+                        new Vector3D(-1, -0.1, 10), new Vector3D(10, 1.0, 100)),
+                        FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, 1.);
+        final FieldOrbit<Binary64> fieldOrbit = new FieldKeplerianOrbit<>(Binary64Field.getInstance(), orbit);
+        Assertions.assertArrayEquals(fieldOrbit.getPosition().toArray(), fieldOrbit.getPosition(orbit.getFrame()).toArray());
+        Assertions.assertArrayEquals(fieldOrbit.getVelocity().toArray(), fieldOrbit.getVelocity(orbit.getFrame()).toArray());
+    }
+
+    @Test
+    void testGetPVCoordinates() {
+        final Orbit orbit =
+                new KeplerianOrbit(new PVCoordinates(new Vector3D(1, 0.1, 10),
+                        new Vector3D(-1, -0.1, 10), new Vector3D(10, 1.0, 100)),
+                        FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, 1.);
+        final Frame frame = FramesFactory.getGCRF();
+        final FieldOrbit<Binary64> fieldOrbit = new FieldKeplerianOrbit<>(Binary64Field.getInstance(), orbit);
+        final PVCoordinates pv = fieldOrbit.getPVCoordinates(frame).toPVCoordinates();
+        Assertions.assertArrayEquals(pv.getPosition().toArray(), fieldOrbit.getPosition(frame).toVector3D().toArray(), 1e-10);
+        Assertions.assertArrayEquals(pv.getVelocity().toArray(), fieldOrbit.getVelocity(frame).toVector3D().toArray());
+    }
 }

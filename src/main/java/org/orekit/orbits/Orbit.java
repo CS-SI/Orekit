@@ -27,10 +27,13 @@ import org.hipparchus.util.MathArrays;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
+import org.orekit.frames.KinematicTransform;
+import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeOffset;
+import org.orekit.time.TimeShiftable;
 import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.ShiftablePVCoordinatesHolder;
+import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 /**
@@ -57,7 +60,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author V&eacute;ronique Pommier-Maurussane
  */
 public abstract class Orbit
-    implements ShiftablePVCoordinatesHolder<Orbit>, OrbitalState {
+    implements TimeShiftable<Orbit>, OrbitalState, PVCoordinatesProvider {
 
     /** Absolute tolerance when checking if the rate of the position angle is Keplerian or not. */
     protected static final double TOLERANCE_POSITION_ANGLE_RATE = 1e-15;
@@ -477,28 +480,27 @@ public abstract class Orbit
         return date;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Vector3D getPosition(final AbsoluteDate otherDate, final Frame outputFrame) {
         // use Keplerian-only motion
         final double dt = otherDate.durationFrom(date);
-        final Orbit keplerianShifted = keplerianShiftedBy(dt);
-
+        final Orbit keplerianShifted = dt == 0. ? this : keplerianShiftedBy(dt);
+        final Vector3D positionInFrame;
         // Non-Keplerian acceleration shall be considered
-        if (hasNonKeplerianAcceleration()) {
+        if (dt != 0. && hasNonKeplerianAcceleration()) {
             // extract non-Keplerian acceleration from first time derivatives
             final Vector3D nonKeplerianAcceleration = nonKeplerianAcceleration();
             // add second order effect of non-Keplerian acceleration to Keplerian-only shift
-            final Vector3D shiftedPosition = nonKeplerianAcceleration.scalarMultiply(dt * dt / 2.)
-                    .add(keplerianShifted.getPosition());
-            if (outputFrame == getFrame()) {
-                return shiftedPosition;
-            } else {
-                return getFrame().getStaticTransformTo(outputFrame, otherDate).transformPosition(shiftedPosition);
-            }
+            positionInFrame = nonKeplerianAcceleration.scalarMultiply(dt * dt / 2.).add(keplerianShifted.getPosition());
         }
-        // Keplerian-only motion is all we can do
-        else {
-            return keplerianShifted.getPosition(outputFrame);
+        else {  // Keplerian-only motion is all we can do
+            positionInFrame = keplerianShifted.getPosition();
+        }
+        if (outputFrame == getFrame()) {
+            return positionInFrame;
+        } else {
+            return getFrame().getStaticTransformTo(outputFrame, otherDate).transformPosition(positionInFrame);
         }
     }
 
@@ -507,12 +509,52 @@ public abstract class Orbit
      * @see #getPVCoordinates()
      * @since 12.0
      */
-    @Override
     public Vector3D getPosition() {
         if (position == null) {
             position = initPosition();
         }
         return position;
+    }
+
+    /**
+     * Method returning the position vector in the specified frame.
+     * @param outputFrame target frame
+     * @return position vector
+     */
+    public Vector3D getPosition(final Frame outputFrame) {
+        return getPosition(getDate(), outputFrame);
+    }
+
+    /**
+     * Getter for the velocity vector.
+     * @return velocity
+     */
+    public Vector3D getVelocity() {
+        return getPVCoordinates().getVelocity();
+    }
+
+    /**
+     * Method returning the velocity vector in the specified frame.
+     * @param outputFrame target frame
+     * @return velocity vector
+     */
+    public Vector3D getVelocity(final Frame outputFrame) {
+        if (outputFrame == getFrame()) {
+            return getVelocity();
+        }
+        final KinematicTransform kinematicTransform = getFrame().getKinematicTransformTo(outputFrame, getDate());
+        final PVCoordinates transformedPV = kinematicTransform.transformOnlyPV(getPVCoordinates());
+        return transformedPV.getVelocity();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Vector3D getVelocity(final AbsoluteDate otherDate, final Frame outputFrame) {
+        final TimeStampedPVCoordinates timeStampedPVCoordinates = otherDate.equals(getDate()) ? getPVCoordinates() :
+                getPVCoordinates(otherDate, getFrame());
+        final KinematicTransform kinematicTransform = getFrame().getKinematicTransformTo(outputFrame, getDate());
+        final PVCoordinates transformedPV = kinematicTransform.transformOnlyPV(timeStampedPVCoordinates);
+        return transformedPV.getVelocity();
     }
 
     /** Get the {@link TimeStampedPVCoordinates} in definition frame.
@@ -525,6 +567,35 @@ public abstract class Orbit
             position      = pvCoordinates.getPosition();
         }
         return pvCoordinates;
+    }
+
+    /** Get the {@link TimeStampedPVCoordinates} in a specified frame.
+     * @param outputFrame frame for conversion
+     * @return pvCoordinates in the given frame
+     * @see #getPVCoordinates(AbsoluteDate, Frame)
+     */
+    public TimeStampedPVCoordinates getPVCoordinates(final Frame outputFrame) {
+        if (outputFrame == getFrame()) {
+            return getPVCoordinates();
+        } else {
+            final Transform transform = getFrame().getTransformTo(outputFrame, getDate());
+            return transform.transformPVCoordinates(getPVCoordinates());
+        }
+    }
+
+    /** Shift the orbit and provides the {@link TimeStampedPVCoordinates} in a specified frame.
+     * @param otherDate target date
+     * @param outputFrame frame for conversion
+     * @return pvCoordinates in the given frame
+     */
+    public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate otherDate, final Frame outputFrame) {
+        final Orbit shifted = shiftedBy(otherDate.accurateDurationFrom(getDate()));
+        final TimeStampedPVCoordinates pv = shifted.getPVCoordinates();
+        if (outputFrame == getFrame()) {
+            return pv;
+        }
+        final Transform transform = getFrame().getTransformTo(outputFrame, otherDate);
+        return transform.transformPVCoordinates(pv);
     }
 
     /** Compute the position coordinates from the canonical parameters.

@@ -31,13 +31,13 @@ import org.hipparchus.util.MathArrays;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.FieldKinematicTransform;
-import org.orekit.frames.FieldStaticTransform;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.FieldTimeShiftable;
 import org.orekit.time.TimeOffset;
 import org.orekit.utils.FieldPVCoordinates;
-import org.orekit.utils.ShiftableFieldPVCoordinatesHolder;
+import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -68,7 +68,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @param <T> type of the field elements
  */
 public abstract class FieldOrbit<T extends CalculusFieldElement<T>>
-    implements FieldOrbitalState<T>, ShiftableFieldPVCoordinatesHolder<FieldOrbit<T>, T> {
+    implements FieldOrbitalState<T>, FieldTimeShiftable<FieldOrbit<T>, T>, FieldPVCoordinatesProvider<T> {
 
     /** Absolute tolerance when checking if the rate of the position angle is Keplerian or not. */
     protected static final double TOLERANCE_POSITION_ANGLE_RATE = 1e-15;
@@ -501,26 +501,65 @@ public abstract class FieldOrbit<T extends CalculusFieldElement<T>>
         return date;
     }
 
+    /** Get the {@link TimeStampedPVCoordinates} in definition frame.
+     * @return FieldPVCoordinates in the definition frame
+     * @see #getPVCoordinates(Frame)
+     */
+    public TimeStampedFieldPVCoordinates<T> getPVCoordinates() {
+        if (pvCoordinates == null) {
+            pvCoordinates = initPVCoordinates();
+            position      = pvCoordinates.getPosition();
+        }
+        return pvCoordinates;
+    }
+
     /** Get the {@link TimeStampedPVCoordinates} in a specified frame.
      * @param outputFrame frame in which the position/velocity coordinates shall be computed
      * @return FieldPVCoordinates in the specified output frame
           * @see #getPVCoordinates()
      */
-    @Override
     public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final Frame outputFrame) {
-        if (pvCoordinates == null) {
-            pvCoordinates = initPVCoordinates();
-        }
-
         // If output frame requested is the same as definition frame,
         // PV coordinates are returned directly
         if (outputFrame == frame) {
-            return pvCoordinates;
+            return getPVCoordinates();
         }
 
         // Else, PV coordinates are transformed to output frame
         final FieldTransform<T> t = frame.getTransformTo(outputFrame, date);
-        return t.transformPVCoordinates(pvCoordinates);
+        return t.transformPVCoordinates(getPVCoordinates());
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> otherDate,
+                                                             final Frame outputFrame) {
+        final TimeOffset timeOffset = otherDate.toAbsoluteDate().accurateDurationFrom(getDate().toAbsoluteDate());
+        final T          fieldShift = otherDate.durationFrom(getDate()).subtract(timeOffset.toDouble());
+        return shiftedBy(timeOffset).shiftedBy(fieldShift).getPVCoordinates(outputFrame);
+    }
+
+    /** Getter for the velocity vector.
+     * @return velocity
+     */
+    public FieldVector3D<T> getVelocity() {
+        return getPVCoordinates().getVelocity();
+    }
+
+    /** Get the velocity in a specified frame.
+     * @param outputFrame frame in which the velocity coordinates shall be computed
+     * @return velocity
+     */
+    public FieldVector3D<T> getVelocity(final Frame outputFrame) {
+        // If output frame requested is the same as definition frame,
+        // velocity is returned directly
+        if (outputFrame == getFrame()) {
+            return getVelocity();
+        }
+
+        // Else, velocity is transformed to output frame
+        final FieldKinematicTransform<T> t = getFrame().getKinematicTransformTo(outputFrame, getDate());
+        return t.transformOnlyPV(getPVCoordinates()).getVelocity();
     }
 
     /** {@inheritDoc} */
@@ -541,26 +580,22 @@ public abstract class FieldOrbit<T extends CalculusFieldElement<T>>
         final T dt = otherDate.durationFrom(date);
 
         // use Keplerian-only motion
-        final FieldOrbit<T> keplerianShifted = keplerianShiftedBy(dt);
+        final boolean isZeroDt = dt.isZero();
+        final FieldOrbit<T> keplerianShifted = isZeroDt ? this : keplerianShiftedBy(dt);
+        final FieldVector3D<T> positionInFrame;
 
         // Non-Keplerian acceleration shall be considered
-        if (!dt.isZero() && hasNonKeplerianAcceleration()) {
+        if (!isZeroDt && hasNonKeplerianAcceleration()) {
             // extract non-Keplerian acceleration from first time derivatives
             final FieldVector3D<T> nonKeplerianAcceleration = nonKeplerianAcceleration();
             // add second order effect of non-Keplerian acceleration to Keplerian-only shift
-            final FieldVector3D<T> shiftedPosition = nonKeplerianAcceleration.scalarMultiply(dt.square().divide(2.))
+            positionInFrame = nonKeplerianAcceleration.scalarMultiply(dt.square().divide(2.))
                     .add(keplerianShifted.getPosition());
-            if (otherFrame == getFrame()) {
-                return shiftedPosition;
-            } else {
-                return getFrame().getStaticTransformTo(otherFrame, otherDate).transformPosition(shiftedPosition);
-            }
         }
-        // Keplerian-only motion is all we can do
-        else {
-            return keplerianShifted.getPosition(otherFrame);
+        else {  // Keplerian-only motion is all we can do
+            positionInFrame = keplerianShifted.getPosition();
         }
-
+        return getFrame().getStaticTransformTo(otherFrame, otherDate).transformPosition(positionInFrame);
     }
 
     /** Get the position in a specified frame.
@@ -569,22 +604,8 @@ public abstract class FieldOrbit<T extends CalculusFieldElement<T>>
      * @see #getPosition()
      * @since 12.0
      */
-    @Override
     public FieldVector3D<T> getPosition(final Frame outputFrame) {
-        if (position == null) {
-            position = initPosition();
-        }
-
-        // If output frame requested is the same as definition frame,
-        // Position vector is returned directly
-        if (outputFrame == frame) {
-            return position;
-        }
-
-        // Else, position vector is transformed to output frame
-        final FieldStaticTransform<T> t = frame.getStaticTransformTo(outputFrame, date);
-        return t.transformPosition(position);
-
+        return getPosition(getDate(), outputFrame);
     }
 
     /** Get the position in definition frame.
@@ -592,24 +613,11 @@ public abstract class FieldOrbit<T extends CalculusFieldElement<T>>
      * @see #getPVCoordinates()
      * @since 12.0
      */
-    @Override
     public FieldVector3D<T> getPosition() {
         if (position == null) {
             position = initPosition();
         }
         return position;
-    }
-
-    /** Get the {@link TimeStampedPVCoordinates} in definition frame.
-     * @return FieldPVCoordinates in the definition frame
-     * @see #getPVCoordinates(Frame)
-     */
-    public TimeStampedFieldPVCoordinates<T> getPVCoordinates() {
-        if (pvCoordinates == null) {
-            pvCoordinates = initPVCoordinates();
-            position      = pvCoordinates.getPosition();
-        }
-        return pvCoordinates;
     }
 
     /** Getter for Field-valued one.

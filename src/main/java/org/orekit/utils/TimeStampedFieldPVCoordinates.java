@@ -597,7 +597,7 @@ public class TimeStampedFieldPVCoordinates<T extends CalculusFieldElement<T>>
      */
     @Override
     public TimeStampedFieldPVCoordinates<T> shiftedBy(final TimeOffset dt) {
-        final FieldPVCoordinates<T> spv = super.shiftedBy(dt);
+        final FieldPVCoordinates<T> spv = super.shiftedBy(dt).getPVCoordinates();
         return new TimeStampedFieldPVCoordinates<>(date.shiftedBy(dt), spv);
     }
 

@@ -296,6 +296,32 @@ class FieldAbsolutePVCoordinatesTest {
         Assertions.assertEquals(expectedVelocity, velocityAtOtherDate);
     }
 
+    @Test
+    void testGetPositionVelocity() {
+        final AbsolutePVCoordinates apv =
+                new AbsolutePVCoordinates(FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
+                        new Vector3D(1, 0.1, 10), new Vector3D(-1, -0.1, -10),
+                        new Vector3D(10, 1.0, 100));
+        final FieldAbsolutePVCoordinates<Binary64> fapv = new FieldAbsolutePVCoordinates<>(Binary64Field.getInstance(),
+                apv);
+        Assertions.assertArrayEquals(fapv.getPosition().toArray(), fapv.getPosition(apv.getFrame()).toArray());
+        Assertions.assertArrayEquals(fapv.getVelocity().toArray(), fapv.getVelocity(apv.getFrame()).toArray());
+    }
+
+    @Test
+    void testGetPVCoordinates() {
+        final AbsolutePVCoordinates apv =
+                new AbsolutePVCoordinates(FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
+                        new Vector3D(1, 0.1, 10), new Vector3D(-1, -0.1, -10),
+                        new Vector3D(10, 1.0, 100));
+        final FieldAbsolutePVCoordinates<Binary64> fapv = new FieldAbsolutePVCoordinates<>(Binary64Field.getInstance(),
+                apv);
+        final Frame frame = FramesFactory.getGCRF();
+        final PVCoordinates pv = fapv.getPVCoordinates(frame).toPVCoordinates();
+        Assertions.assertArrayEquals(pv.getPosition().toArray(), fapv.getPosition(frame).toVector3D().toArray(), 1e-6);
+        Assertions.assertArrayEquals(pv.getVelocity().toArray(), fapv.getVelocity(frame).toVector3D().toArray());
+    }
+
     private <T extends CalculusFieldElement<T>> void doTestToString(Field<T> field) {
         final T one = field.getOne();
         FieldAbsolutePVCoordinates<T> pv =
