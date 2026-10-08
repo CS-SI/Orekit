@@ -23,6 +23,9 @@
           <action dev="nlowing" type="fix" issue="2026">
               Fix calculation of inferred LOD in EOPHistory to be scaled by JULIAN_DAY.
           </action>
+          <action dev="evan" type="update">
+            Update PropagatorBuilder and OrbitStateFactory to not need type casts.
+          </action>
           <action dev="serrof" type="update" issue="2024">
               Generalized JacobianPropagatorConverter to non fully numerical.
           </action>
