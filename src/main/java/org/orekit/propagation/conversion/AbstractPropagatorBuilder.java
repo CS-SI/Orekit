@@ -47,7 +47,7 @@ import org.orekit.utils.drivers.ParameterObserver;
  */
 public abstract class AbstractPropagatorBuilder<T extends AbstractPropagator,
                                                 O extends OrbitalState,
-                                                F extends OrbitalStateFactory<O>>
+                                                F extends OrbitalStateFactory<? extends O>>
     implements PropagatorBuilder {
 
     /** Central attraction scaling factor.

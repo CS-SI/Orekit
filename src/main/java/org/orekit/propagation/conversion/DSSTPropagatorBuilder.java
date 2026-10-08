@@ -27,9 +27,9 @@ import org.orekit.estimation.leastsquares.DSSTBatchLSModel;
 import org.orekit.estimation.leastsquares.ModelObserver;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.orbits.EquinoctialOrbit;
-import org.orekit.orbits.EquinoctialOrbitFactory;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitParamsType;
+import org.orekit.orbits.OrbitalStateFactory;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
@@ -45,7 +45,7 @@ import org.orekit.utils.drivers.ParameterDriversList;
  * @since 10.0
  */
 public class DSSTPropagatorBuilder
-    extends AbstractIntegratedPropagatorBuilder<DSSTPropagator, EquinoctialOrbit, EquinoctialOrbitFactory> {
+    extends AbstractIntegratedPropagatorBuilder<DSSTPropagator, EquinoctialOrbit, OrbitalStateFactory<? extends EquinoctialOrbit>> {
 
     /** Force models used during the extrapolation of the orbit. */
     private final List<DSSTForceModel> forceModels;
@@ -58,11 +58,11 @@ public class DSSTPropagatorBuilder
      * @param builder first order integrator builder
      * @param propagationType type of the orbit used for the propagation (mean or osculating)
      * @param stateType type of the elements used to define the orbital state (mean or osculating)
-     * @see #DSSTPropagatorBuilder(EquinoctialOrbitFactory, ODEIntegratorBuilder,
+     * @see #DSSTPropagatorBuilder(OrbitalStateFactory, ODEIntegratorBuilder,
      * PropagationType, PropagationType, AttitudeProvider)
      * @since 14.0
      */
-    public DSSTPropagatorBuilder(final EquinoctialOrbitFactory factory,
+    public DSSTPropagatorBuilder(final OrbitalStateFactory<? extends EquinoctialOrbit> factory,
                                  final ODEIntegratorBuilder builder,
                                  final PropagationType propagationType,
                                  final PropagationType stateType) {
@@ -78,7 +78,7 @@ public class DSSTPropagatorBuilder
      * @param attitudeProvider attitude law.
      * @since 14.0
      */
-    public DSSTPropagatorBuilder(final EquinoctialOrbitFactory factory,
+    public DSSTPropagatorBuilder(final OrbitalStateFactory<? extends EquinoctialOrbit> factory,
                                  final ODEIntegratorBuilder builder,
                                  final PropagationType propagationType,
                                  final PropagationType stateType,
@@ -96,7 +96,7 @@ public class DSSTPropagatorBuilder
 
         // Use cloned builder to unlink orbital drivers
         final DSSTPropagatorBuilder copyBuilder =
-            new DSSTPropagatorBuilder((EquinoctialOrbitFactory) clonedBuilder.getOrbitalStateFactory().clone(),
+            new DSSTPropagatorBuilder(clonedBuilder.getOrbitalStateFactory().clone(),
                                       clonedBuilder.getIntegratorBuilder(),
                                       clonedBuilder.getPropagationType(),
                                       clonedBuilder.getStateType(),
