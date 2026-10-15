@@ -229,6 +229,7 @@ class Mesh {
         // create intermediate (disabled) nodes, up to specified indices
         Node node = getExistingAncestor(alongIndex, acrossIndex);
         while (node.getAlongIndex() != alongIndex || node.getAcrossIndex() != acrossIndex) {
+            EllipsoidTessellator.checkInterrupted();
             final Direction direction;
             if (node.getAlongIndex() < alongIndex) {
                 direction = Direction.PLUS_ALONG;
@@ -399,6 +400,7 @@ class Mesh {
         // joining outliers points to the main mesh
         boolean changed = true;
         while (changed && boundary.size() > 1) {
+            EllipsoidTessellator.checkInterrupted();
             changed = false;
             final int n = boundary.size();
             for (int i = 0; i < n; ++i) {
