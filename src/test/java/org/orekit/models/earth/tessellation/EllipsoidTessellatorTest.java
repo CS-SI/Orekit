@@ -29,6 +29,7 @@ import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -375,6 +376,34 @@ public class EllipsoidTessellatorTest {
     @Test
     public void testIssue1388B() {
         doTestIssue1388(false);
+    }
+
+    @Test
+    public void testTessellateInterrupted() {
+        final EllipsoidTessellator tessellator =
+                new EllipsoidTessellator(ellipsoid, new AlongTrackAiming(ellipsoid, orbit, false), 16);
+        doTestInterrupted(() -> tessellator.tessellate(buildFrance(),
+                                                       50000.0, 150000.0, 5000.0, 5000.0,
+                                                       false, false));
+    }
+
+    @Test
+    public void testSampleInterrupted() {
+        final EllipsoidTessellator tessellator =
+                new EllipsoidTessellator(ellipsoid, new AlongTrackAiming(ellipsoid, orbit, false), 4);
+        doTestInterrupted(() -> tessellator.sample(buildFrance(), 20000.0, 20000.0));
+    }
+
+    private void doTestInterrupted(final Executable computation) {
+        Thread.currentThread().interrupt();
+        try {
+            final OrekitException oe = Assertions.assertThrows(OrekitException.class, computation);
+            Assertions.assertInstanceOf(InterruptedException.class, oe.getCause());
+            Assertions.assertTrue(Thread.currentThread().isInterrupted());
+        } finally {
+            // clear the interrupted status so it does not leak into other tests
+            Thread.interrupted();
+        }
     }
 
     private void doTestIssue1388(final boolean order) {
