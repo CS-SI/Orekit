@@ -20,14 +20,17 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
+import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.TestUtils;
 import org.orekit.Utils;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.Constants;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -80,6 +83,32 @@ class KeplerianExtendedPositionProviderTest {
         assertEquals(expectedPV.getDate(), actualPV.getDate());
         assertEquals(expectedPV.getPosition(), actualPV.getPosition());
         assertEquals(expectedPV.getVelocity(), actualPV.getVelocity());
+    }
+
+    /**
+     * Issue 2033 fixed a precision problem when using KeplerianExtendedPositionProvider with anything other than a CartesianOrbit.
+     * Basically, a new CartesianOrbit was created from the input orbit's getPosition() and getVelocity(), thus going through the roundtrip
+     * keplerian -> cartesian -> keplerian, and loosing some accuracy.
+     * The proposed fix in issue 2033 ensures that the exact orbital elements are being used (without the non-keplerian part),
+     * thus avoiding the loss of accuracy.
+     */
+    @Test
+    void testGeostationaryTransferOrbitConsistencyWithKeplerianPropagator() {
+        // GIVEN
+        final Frame frame = FramesFactory.getEME2000();
+        final AbsoluteDate initialDate = AbsoluteDate.ARBITRARY_EPOCH;
+        final KeplerianOrbit orbit = new KeplerianOrbit(24396159., 0.7306, FastMath.toRadians(7.),
+                FastMath.toRadians(180.), FastMath.toRadians(261.), FastMath.toRadians(0.),
+                PositionAngleType.MEAN, frame, initialDate, Constants.WGS84_EARTH_MU);
+        final KeplerianPropagator propagator = new KeplerianPropagator(orbit);
+        final KeplerianExtendedPositionProvider positionProvider = new KeplerianExtendedPositionProvider(orbit);
+        final AbsoluteDate finalDate = initialDate.shiftedBy(10. * orbit.getKeplerianPeriod());
+        // WHEN
+        final TimeStampedPVCoordinates propagatedPV = propagator.getPVCoordinates(finalDate, frame);
+        final TimeStampedPVCoordinates providedPV = positionProvider.getPVCoordinates(finalDate, frame);
+        // THEN (expected: exact equality since the exact same propagator is being used)
+        assertEquals(0., Vector3D.distance(propagatedPV.getPosition(), providedPV.getPosition()));
+        assertEquals(0., Vector3D.distance(propagatedPV.getVelocity(), providedPV.getVelocity()));
     }
 
     @Test

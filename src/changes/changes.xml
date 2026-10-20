@@ -20,6 +20,9 @@
   </properties>
   <body>
       <release version="14.0" date="TBD" description="TBD">
+          <action dev="jtabeaud" type="fix" issue="2033">
+              Fix precision problem with KeplerianExtendedPositionProvider.
+          </action>
           <action dev="nlowing" type="fix" issue="2026">
               Fix calculation of inferred LOD in EOPHistory to be scaled by JULIAN_DAY.
           </action>
