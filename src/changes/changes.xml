@@ -23,6 +23,9 @@
           <action dev="jtabeaud" type="fix" issue="2033">
               Fix precision problem with KeplerianExtendedPositionProvider.
           </action>
+          <action dev="serrof" type="update" issue="2031">
+              Append Measurement to Position and PV classes.
+          </action>
           <action dev="nlowing" type="fix" issue="2026">
               Fix calculation of inferred LOD in EOPHistory to be scaled by JULIAN_DAY.
           </action>

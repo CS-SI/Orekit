@@ -25,8 +25,8 @@ import org.orekit.control.heuristics.lambert.LambertSolution;
 import org.orekit.control.heuristics.lambert.LambertSolver;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.estimation.measurements.PV;
-import org.orekit.estimation.measurements.Position;
+import org.orekit.estimation.measurements.PVMeasurement;
+import org.orekit.estimation.measurements.PositionMeasurement;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
@@ -98,7 +98,7 @@ public class IodLambert {
      * @since 11.0
      */
     public Orbit estimate(final Frame frame, final boolean posigrade,
-                          final int nRev, final Position p1,  final Position p2) {
+                          final int nRev, final PositionMeasurement p1, final PositionMeasurement p2) {
         return estimate(frame, posigrade, nRev,
                         p1.getPosition(), p1.getDate(), p2.getPosition(), p2.getDate());
     }
@@ -135,7 +135,7 @@ public class IodLambert {
      * @since 12.0
      */
     public Orbit estimate(final Frame frame, final boolean posigrade,
-                          final int nRev, final PV pv1,  final PV pv2) {
+                          final int nRev, final PVMeasurement pv1, final PVMeasurement pv2) {
         return estimate(frame, posigrade, nRev,
                         pv1.getPosition(), pv1.getDate(), pv2.getPosition(), pv2.getDate());
     }
