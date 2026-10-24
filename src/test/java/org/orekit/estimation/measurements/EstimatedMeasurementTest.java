@@ -13,18 +13,18 @@ class EstimatedMeasurementTest {
     @EnumSource(EstimatedMeasurementBase.Status.class)
     void testConstructor(final EstimatedMeasurementBase.Status expectedtStatus) {
         // GIVEN
-        final Position mockedPosition = Mockito.mock(Position.class);
+        final PositionMeasurement mockedPosition = Mockito.mock(PositionMeasurement.class);
         final int expectedIteration = 2;
         final int expectedCount = 3;
         final SpacecraftState[] states = new SpacecraftState[0];
         final double[] expectedEstimatedValue = new double[] {1., 2., 3.};
         final TimeStampedPVCoordinates[] timeStampedPVCoordinates = new TimeStampedPVCoordinates[0];
-        final EstimatedMeasurementBase<Position> estimatedMeasurementBase = new EstimatedMeasurementBase<>(mockedPosition,
+        final EstimatedMeasurementBase<PositionMeasurement> estimatedMeasurementBase = new EstimatedMeasurementBase<>(mockedPosition,
                 expectedIteration, expectedCount, states, timeStampedPVCoordinates);
         estimatedMeasurementBase.setEstimatedValue(expectedEstimatedValue);
         estimatedMeasurementBase.setStatus(expectedtStatus);
         // WHEN
-        final EstimatedMeasurement<Position> estimatedMeasurement = new EstimatedMeasurement<>(estimatedMeasurementBase);
+        final EstimatedMeasurement<PositionMeasurement> estimatedMeasurement = new EstimatedMeasurement<>(estimatedMeasurementBase);
         // THEN
         Assertions.assertEquals(mockedPosition, estimatedMeasurement.getObservedMeasurement());
         Assertions.assertEquals(expectedCount, estimatedMeasurement.getCount());

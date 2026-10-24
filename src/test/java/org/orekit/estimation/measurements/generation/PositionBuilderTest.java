@@ -33,7 +33,7 @@ import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.Force;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.ObservableSatellite;
-import org.orekit.estimation.measurements.Position;
+import org.orekit.estimation.measurements.PositionMeasurement;
 import org.orekit.estimation.measurements.modifiers.Bias;
 import org.orekit.estimation.measurements.modifiers.MeasurementNoise;
 import org.orekit.orbits.OrbitParamsType;
@@ -50,11 +50,11 @@ class PositionBuilderTest {
     private static final double SIGMA = 10.0;
     private static final double BIAS  =  5.0;
 
-    private MeasurementBuilder<Position> getBuilder(final RandomGenerator random, final ObservableSatellite satellite) {
+    private MeasurementBuilder<PositionMeasurement> getBuilder(final RandomGenerator random, final ObservableSatellite satellite) {
         final RealMatrix covariance = MatrixUtils.createRealDiagonalMatrix(new double[] {
             SIGMA * SIGMA, SIGMA * SIGMA, SIGMA * SIGMA
         });
-        MeasurementBuilder<Position> pb =
+        MeasurementBuilder<PositionMeasurement> pb =
                         new PositionBuilder(SIGMA, 1.0, satellite);
         if (random != null) {
             pb.addModifier(new MeasurementNoise<>(new CorrelatedRandomVectorGenerator(covariance,

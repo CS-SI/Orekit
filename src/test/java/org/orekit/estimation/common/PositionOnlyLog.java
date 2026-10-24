@@ -19,16 +19,16 @@ package org.orekit.estimation.common;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
-import org.orekit.estimation.measurements.Position;
+import org.orekit.estimation.measurements.PositionMeasurement;
 
 /** Logger for position only measurements.
  * @author Luc Maisonobe
  */
-class PositionOnlyLog extends MeasurementLog<Position> {
+class PositionOnlyLog extends MeasurementLog<PositionMeasurement> {
 
     /** {@inheritDoc} */
     @Override
-    double residual(final EstimatedMeasurement<Position> evaluation) {
+    double residual(final EstimatedMeasurement<PositionMeasurement> evaluation) {
         final double[] theoretical = evaluation.getEstimatedValue();
         final double[] observed    = evaluation.getObservedMeasurement().getObservedValue();
         return Vector3D.distance(new Vector3D(theoretical[0], theoretical[1], theoretical[2]),

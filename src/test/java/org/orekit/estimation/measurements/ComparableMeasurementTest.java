@@ -55,9 +55,9 @@ public class ComparableMeasurementTest {
         ObservableSatellite satellite = new ObservableSatellite(0);
         Range range = new Range(station, false, date, 400e3, 1.0, 1.0, satellite);
         AngularAzEl azel = new AngularAzEl(station, date, new double[] {1.0, 0.5}, new double[] {1.0e-2, 1.0e-2}, new double[] {1.0, 1.0}, satellite);
-        PV pv = new PV(date.shiftedBy(-1.), new Vector3D(7e3,7e3,7e3), new Vector3D(7,7,7), 1., 1e-3, 1., satellite);
-        PV pv2 = new PV(date.shiftedBy(-1.), new Vector3D(7e3,7e3,7e3), new Vector3D(7,7,7), 1., 1e-3, 1., satellite);
-        PV pv3 = new PV(date.shiftedBy(-1.), new Vector3D(7e3,7e3,7e3), new Vector3D(7,8,7), 1., 1e-3, 1., satellite);
+        PVMeasurement pv = new PVMeasurement(date.shiftedBy(-1.), new Vector3D(7e3,7e3,7e3), new Vector3D(7,7,7), 1., 1e-3, 1., satellite);
+        PVMeasurement pv2 = new PVMeasurement(date.shiftedBy(-1.), new Vector3D(7e3,7e3,7e3), new Vector3D(7,7,7), 1., 1e-3, 1., satellite);
+        PVMeasurement pv3 = new PVMeasurement(date.shiftedBy(-1.), new Vector3D(7e3,7e3,7e3), new Vector3D(7,8,7), 1., 1e-3, 1., satellite);
 
         // Print out results
         if (print) {

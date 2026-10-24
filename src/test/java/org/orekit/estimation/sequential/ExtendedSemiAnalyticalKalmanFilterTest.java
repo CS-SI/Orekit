@@ -42,12 +42,12 @@ import org.orekit.data.UnixCompressFilter;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.estimation.measurements.Position;
+import org.orekit.estimation.measurements.PositionMeasurement;
 import org.orekit.files.ilrs.CPF;
 import org.orekit.files.ilrs.CPF.CPFCoordinate;
 import org.orekit.files.ilrs.CPF.CPFEphemeris;
-import org.orekit.files.rinex.HatanakaCompressFilter;
 import org.orekit.files.ilrs.CPFParser;
+import org.orekit.files.rinex.HatanakaCompressFilter;
 import org.orekit.forces.drag.DragForce;
 import org.orekit.forces.drag.DragSensitive;
 import org.orekit.forces.drag.IsotropicDragBuilder;
@@ -84,8 +84,8 @@ import org.orekit.propagation.semianalytical.dsst.forces.DSSTZonal;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
-import org.orekit.utils.drivers.ParameterDriver;
 import org.orekit.utils.TimeStampedPVCoordinates;
+import org.orekit.utils.drivers.ParameterDriver;
 
 /**
  * Validation against real data of the ESKF. This test is a short version of the one presented in:
@@ -441,7 +441,7 @@ public class ExtendedSemiAnalyticalKalmanFilterTest {
                             transformPosition(coordinate.getPosition());
 
             // Initialize measurement
-            final Position measurement = new Position(coordinate.getDate(), posInertial, sigma, 1.0, satellite);
+            final PositionMeasurement measurement = new PositionMeasurement(coordinate.getDate(), posInertial, sigma, 1.0, satellite);
 
             // Add the measurement to the list
             measurements.add(measurement);
@@ -528,7 +528,7 @@ public class ExtendedSemiAnalyticalKalmanFilterTest {
             final EstimatedMeasurement<?> estimatedMeasurement = estimation.getCorrectedMeasurement();
 
             // Check
-            if (estimatedMeasurement.getObservedMeasurement().getMeasurementType().equals(Position.MEASUREMENT_TYPE)) {
+            if (estimatedMeasurement.getObservedMeasurement().getMeasurementType().equals(PositionMeasurement.MEASUREMENT_TYPE)) {
 
                 if (estimatedMeasurement.getStatus() == EstimatedMeasurement.Status.REJECTED) {
                     if (print) {

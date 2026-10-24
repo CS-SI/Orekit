@@ -89,7 +89,7 @@ public class PositionTest {
         }
 
         // Test measurement type
-        Assertions.assertEquals(Position.MEASUREMENT_TYPE, measurements.getFirst().getMeasurementType());
+        Assertions.assertEquals(PositionMeasurement.MEASUREMENT_TYPE, measurements.getFirst().getMeasurementType());
     }
 
     /** Test the values of the state derivatives using a numerical.
@@ -178,16 +178,16 @@ public class PositionTest {
         };
 
         // Create PV measurements
-        final Position[] ps = new Position[2];
-        ps[0] = new Position(date, position, sigmaP, baseWeight, sats[0]);
-        ps[1] = new Position(date, position, sigmaP, baseWeight, sats[1]);
+        final PositionMeasurement[] ps = new PositionMeasurement[2];
+        ps[0] = new PositionMeasurement(date, position, sigmaP, baseWeight, sats[0]);
+        ps[1] = new PositionMeasurement(date, position, sigmaP, baseWeight, sats[1]);
 
         // Tolerance
         final double eps = 1e-20; // tolerance
 
         // Check data
         for (int k = 0; k < ps.length; k++) {
-            final Position p = ps[k];
+            final PositionMeasurement p = ps[k];
 
             // Propagator numbers
             Assertions.assertEquals(sats[k].getPropagatorIndex(), p.getSatellites().getFirst().getPropagatorIndex());
@@ -244,16 +244,16 @@ public class PositionTest {
         };
 
         // Create PV measurements
-        final Position[] ps = new Position[2];
-        ps[0] = new Position(date, position, sigmaP, baseWeight, sats[0]);
-        ps[1] = new Position(date, position, sigmaP, baseWeight, sats[1]);
+        final PositionMeasurement[] ps = new PositionMeasurement[2];
+        ps[0] = new PositionMeasurement(date, position, sigmaP, baseWeight, sats[0]);
+        ps[1] = new PositionMeasurement(date, position, sigmaP, baseWeight, sats[1]);
 
         // Tolerance
         final double eps = 1e-20; // tolerance
 
         // Check data
         for (int k = 0; k < ps.length; k++) {
-            final Position p = ps[k];
+            final PositionMeasurement p = ps[k];
 
             // Propagator numbers
             Assertions.assertEquals(sats[k].getPropagatorIndex(), p.getSatellites().getFirst().getPropagatorIndex());
@@ -322,16 +322,16 @@ public class PositionTest {
         final double[] sigmaP = {10., 20., 30.};
 
         // Create Position measurements
-        final Position[] ps = new Position[2];
-        ps[0] = new Position(date, position, positionP, baseWeight, sats[0]);
-        ps[1] = new Position(date, position, positionP, baseWeight, sats[1]);
+        final PositionMeasurement[] ps = new PositionMeasurement[2];
+        ps[0] = new PositionMeasurement(date, position, positionP, baseWeight, sats[0]);
+        ps[1] = new PositionMeasurement(date, position, positionP, baseWeight, sats[1]);
 
         // Tolerance
         final double eps = 6.7e-16; // tolerance
 
         // Check data
         for (int k = 0; k < ps.length; k++) {
-            final Position p = ps[k];
+            final PositionMeasurement p = ps[k];
 
             // Propagator numbers
             Assertions.assertEquals(sats[k].getPropagatorIndex(), p.getSatellites().getFirst().getPropagatorIndex());
@@ -372,7 +372,7 @@ public class PositionTest {
 
         // Build with one 3-sized vectors
         try {
-            new Position(date, position, new double[] {1.}, weight, new ObservableSatellite(0));
+            new PositionMeasurement(date, position, new double[] {1.}, weight, new ObservableSatellite(0));
             Assertions.fail("An OrekitException should have been thrown");
         } catch (OrekitException e) {
             // An exception should indeed be raised here
@@ -380,7 +380,7 @@ public class PositionTest {
 
         // Build with one 3x3 matrix
         try {
-            new Position(date, position, new double[][] {{0., 0.}, {0., 0.}}, weight, new ObservableSatellite(0));
+            new PositionMeasurement(date, position, new double[][] {{0., 0.}, {0., 0.}}, weight, new ObservableSatellite(0));
             Assertions.fail("An OrekitException should have been thrown");
         } catch (OrekitException e) {
             // An exception should indeed be raised here

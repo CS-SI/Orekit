@@ -68,8 +68,8 @@ import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.MultiplexedMeasurement;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.estimation.measurements.PV;
-import org.orekit.estimation.measurements.Position;
+import org.orekit.estimation.measurements.PVMeasurement;
+import org.orekit.estimation.measurements.PositionMeasurement;
 import org.orekit.estimation.measurements.Range;
 import org.orekit.estimation.measurements.RangeRate;
 import org.orekit.estimation.measurements.modifiers.AngularRadioRefractionModifier;
@@ -391,7 +391,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
         final OutlierFilter<Range>        rangeOutliersManager     = createRangeOutliersManager(parser, false);
         final OutlierFilter<RangeRate>    rangeRateOutliersManager = createRangeRateOutliersManager(parser, false);
         final OutlierFilter<AngularAzEl>  azElOutliersManager      = createAzElOutliersManager(parser, false);
-        final OutlierFilter<PV>           pvOutliersManager        = createPVOutliersManager(parser, false);
+        final OutlierFilter<PVMeasurement>           pvOutliersManager        = createPVOutliersManager(parser, false);
 
         // measurements
         final List<ObservedMeasurement<?>> independentMeasurements = new ArrayList<>();
@@ -677,7 +677,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
         final OutlierFilter<Range>        rangeOutliersManager     = createRangeOutliersManager(parser, true);
         final OutlierFilter<RangeRate>    rangeRateOutliersManager = createRangeRateOutliersManager(parser, true);
         final OutlierFilter<AngularAzEl>  azElOutliersManager      = createAzElOutliersManager(parser, true);
-        final OutlierFilter<PV>           pvOutliersManager        = createPVOutliersManager(parser, true);
+        final OutlierFilter<PVMeasurement>           pvOutliersManager        = createPVOutliersManager(parser, true);
 
         // measurements
         final List<ObservedMeasurement<?>> independentMeasurements = new ArrayList<>();
@@ -1757,7 +1757,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
      * @param isDynamic if true, the filter should have adjustable standard deviation
      * @return outliers manager (null if none configured)
      */
-    private OutlierFilter<PV> createPVOutliersManager(final KeyValueFileParser<ParameterKey> parser, boolean isDynamic) {
+    private OutlierFilter<PVMeasurement> createPVOutliersManager(final KeyValueFileParser<ParameterKey> parser, boolean isDynamic) {
         needsBothOrNeither(parser,
                            ParameterKey.PV_OUTLIER_REJECTION_MULTIPLIER,
                            ParameterKey.PV_OUTLIER_REJECTION_STARTING_ITERATION);
@@ -1969,7 +1969,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                                                           final OutlierFilter<Range> rangeOutliersManager,
                                                           final OutlierFilter<RangeRate> rangeRateOutliersManager,
                                                           final OutlierFilter<AngularAzEl> azElOutliersManager,
-                                                          final OutlierFilter<PV> pvOutliersManager)
+                                                          final OutlierFilter<PVMeasurement> pvOutliersManager)
         throws IOException {
 
         final List<ObservedMeasurement<?>> measurements = new ArrayList<>();
@@ -2021,7 +2021,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                             addIfNonZeroWeight(angular, measurements);
                             break;
                         case "PV" :
-                            final PV pv = new PVParser().parseFields(fields, stations, pvData, satellite,
+                            final PVMeasurement pv = new PVParser().parseFields(fields, stations, pvData, satellite,
                                                                      satRangeBias, weights,
                                                                      line, lineNumber, source.getName());
                             if (pvOutliersManager != null) {
@@ -2176,7 +2176,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
          for (final CPFCoordinate coordinates : ephemeris.getCoordinates()) {
              AbsoluteDate date = coordinates.getDate();
              final Vector3D posInertial = ephFrame.getStaticTransformTo(initialGuess.getFrame(), date).transformPosition(coordinates.getPosition());
-             measurements.add(new Position(date, posInertial, 1, 1, satellite));
+             measurements.add(new PositionMeasurement(date, posInertial, 1, 1, satellite));
          }
 
          // Return
@@ -2548,9 +2548,9 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                                EvaluationLogger<RangeRate> rangeRateLog,
                                EvaluationLogger<AngularAzEl> azimuthLog,
                                EvaluationLogger<AngularAzEl> elevationLog,
-                               EvaluationLogger<Position> positionOnlyLog,
-                               EvaluationLogger<PV> positionLog,
-                               EvaluationLogger<PV> velocityLog) {
+                               EvaluationLogger<PositionMeasurement> positionOnlyLog,
+                               EvaluationLogger<PVMeasurement> positionLog,
+                               EvaluationLogger<PVMeasurement> velocityLog) {
         
         // Get measurement type and send measurement to proper logger.
         final String measurementType = evaluation.getObservedMeasurement().getMeasurementType();
@@ -2582,17 +2582,17 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                 }
                 break;
             }
-            case Position.MEASUREMENT_TYPE: {
+            case PositionMeasurement.MEASUREMENT_TYPE: {
                 @SuppressWarnings("unchecked")
-                final EstimatedMeasurement<Position> ev = (EstimatedMeasurement<Position>) evaluation;
+                final EstimatedMeasurement<PositionMeasurement> ev = (EstimatedMeasurement<PositionMeasurement>) evaluation;
                 if (positionOnlyLog != null) {
                     positionOnlyLog.log(ev);
                 }
                 break;
             }
-            case PV.MEASUREMENT_TYPE: {
+            case PVMeasurement.MEASUREMENT_TYPE: {
                 @SuppressWarnings("unchecked")
-                final EstimatedMeasurement<PV> ev = (EstimatedMeasurement<PV>) evaluation;
+                final EstimatedMeasurement<PVMeasurement> ev = (EstimatedMeasurement<PVMeasurement>) evaluation;
                 if (positionLog != null) {
                     positionLog.log(ev);
                 }
@@ -2696,10 +2696,10 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                     stationName = ((EstimatedMeasurement<AngularAzEl>) estimatedMeasurement).
                             getObservedMeasurement().getStation().getBaseFrame().getName();
                     break;
-                case PV.MEASUREMENT_TYPE:
+                case PVMeasurement.MEASUREMENT_TYPE:
                     measType = "PV";
                     break;
-                case Position.MEASUREMENT_TYPE:
+                case PositionMeasurement.MEASUREMENT_TYPE:
                     measType = "POSITION";
                     break;
             }
