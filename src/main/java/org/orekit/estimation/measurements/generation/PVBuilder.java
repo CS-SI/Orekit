@@ -21,15 +21,15 @@ import java.util.Map;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.estimation.measurements.MeasurementQuality;
 import org.orekit.estimation.measurements.ObservableSatellite;
-import org.orekit.estimation.measurements.PV;
+import org.orekit.estimation.measurements.PVMeasurement;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 
-/** Builder for {@link PV} measurements.
+/** Builder for {@link PVMeasurement} measurements.
  * @author Luc Maisonobe
  * @since 9.3
  */
-public class PVBuilder extends AbstractMeasurementBuilder<PV> {
+public class PVBuilder extends AbstractMeasurementBuilder<PVMeasurement> {
 
     /** Simple constructor.
      * @param sigmaPosition theoretical standard deviation on position components
@@ -56,9 +56,9 @@ public class PVBuilder extends AbstractMeasurementBuilder<PV> {
 
     /** {@inheritDoc} */
     @Override
-    protected PV buildObserved(final AbsoluteDate date,
-                               final Map<ObservableSatellite, OrekitStepInterpolator> interpolators) {
-        return new PV(date, Vector3D.NaN, Vector3D.NaN, getMeasurementQuality(), getSatellites()[0]);
+    protected PVMeasurement buildObserved(final AbsoluteDate date,
+                                          final Map<ObservableSatellite, OrekitStepInterpolator> interpolators) {
+        return new PVMeasurement(date, Vector3D.NaN, Vector3D.NaN, getMeasurementQuality(), getSatellites()[0]);
     }
 
 }

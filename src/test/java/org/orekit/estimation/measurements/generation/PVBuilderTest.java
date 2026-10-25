@@ -33,7 +33,7 @@ import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.Force;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.ObservableSatellite;
-import org.orekit.estimation.measurements.PV;
+import org.orekit.estimation.measurements.PVMeasurement;
 import org.orekit.estimation.measurements.modifiers.Bias;
 import org.orekit.estimation.measurements.modifiers.MeasurementNoise;
 import org.orekit.orbits.OrbitParamsType;
@@ -52,12 +52,12 @@ class PVBuilderTest {
     private static final double BIAS_P  =  5.0;
     private static final double BIAS_V  = -0.003;
 
-    private MeasurementBuilder<PV> getBuilder(final RandomGenerator random, final ObservableSatellite satellite) {
+    private MeasurementBuilder<PVMeasurement> getBuilder(final RandomGenerator random, final ObservableSatellite satellite) {
         final RealMatrix covariance = MatrixUtils.createRealDiagonalMatrix(new double[] {
             SIGMA_P * SIGMA_P, SIGMA_P * SIGMA_P, SIGMA_P * SIGMA_P,
             SIGMA_V * SIGMA_V, SIGMA_V * SIGMA_V, SIGMA_V * SIGMA_V,
         });
-        MeasurementBuilder<PV> pvb =
+        MeasurementBuilder<PVMeasurement> pvb =
                         new PVBuilder(SIGMA_P, SIGMA_V, 1.0, satellite);
         if (random != null) {
             pvb.addModifier(new MeasurementNoise<>(new CorrelatedRandomVectorGenerator(covariance,

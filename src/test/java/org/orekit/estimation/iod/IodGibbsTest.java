@@ -17,6 +17,8 @@
 
 package org.orekit.estimation.iod;
 
+import java.util.List;
+
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -27,9 +29,9 @@ import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.estimation.measurements.PV;
+import org.orekit.estimation.measurements.PVMeasurement;
 import org.orekit.estimation.measurements.PVMeasurementCreator;
-import org.orekit.estimation.measurements.Position;
+import org.orekit.estimation.measurements.PositionMeasurement;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.Orbit;
@@ -40,8 +42,6 @@ import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
-
-import java.util.List;
 
 /**
  *
@@ -76,17 +76,17 @@ public class IodGibbsTest {
         final Vector3D position1 = new Vector3D(measurements.getFirst().getObservedValue()[0],
                                                 measurements.getFirst().getObservedValue()[1],
                                                 measurements.getFirst().getObservedValue()[2]);
-        final PV pv1 = new PV(measurements.getFirst().getDate(), position1, Vector3D.ZERO, 0., 0., 1., satellite);
+        final PVMeasurement pv1 = new PVMeasurement(measurements.getFirst().getDate(), position1, Vector3D.ZERO, 0., 0., 1., satellite);
 
         final Vector3D position2 = new Vector3D(measurements.get(1).getObservedValue()[0],
                                                 measurements.get(1).getObservedValue()[1],
                                                 measurements.get(1).getObservedValue()[2]);
-        final PV pv2 = new PV(measurements.get(1).getDate(), position2, Vector3D.ZERO, 0., 0., 1., satellite);
+        final PVMeasurement pv2 = new PVMeasurement(measurements.get(1).getDate(), position2, Vector3D.ZERO, 0., 0., 1., satellite);
 
         final Vector3D position3 = new Vector3D(measurements.get(2).getObservedValue()[0],
                                                 measurements.get(2).getObservedValue()[1],
                                                 measurements.get(2).getObservedValue()[2]);
-        final PV pv3 = new PV(measurements.get(2).getDate(), position3, Vector3D.ZERO, 0., 0., 1., satellite);
+        final PVMeasurement pv3 = new PVMeasurement(measurements.get(2).getDate(), position3, Vector3D.ZERO, 0., 0., 1., satellite);
 
         // instantiate the IOD method
         final IodGibbs gibbs = new IodGibbs(mu);
@@ -194,9 +194,9 @@ public class IodGibbsTest {
 
         // Gibbs IOD
         final Orbit orbit = gibbs.estimate(FramesFactory.getEME2000(),
-                                           new Position(dateRef, posR1, 1.0, 1.0, satellite),
-                                           new Position(date2, posR2, 1.0, 1.0, satellite),
-                                           new Position(date3, posR3, 1.0, 1.0, satellite));
+                                           new PositionMeasurement(dateRef, posR1, 1.0, 1.0, satellite),
+                                           new PositionMeasurement(date2, posR2, 1.0, 1.0, satellite),
+                                           new PositionMeasurement(date3, posR3, 1.0, 1.0, satellite));
 
         // Test for the norm of the velocity
         Assertions.assertEquals(0.0, orbit.getVelocity().getNorm() - velR2.getNorm(),  1e-3);
@@ -212,9 +212,9 @@ public class IodGibbsTest {
         final Frame frame = FramesFactory.getEME2000();
         final AbsoluteDate date = new AbsoluteDate(2000, 2, 24, 11, 35, 47.0, TimeScalesFactory.getUTC());
         final ObservableSatellite satellite = new ObservableSatellite(0);
-        final PV pv1 = new PV(date, Vector3D.PLUS_I, Vector3D.ZERO, 1.0, 1.0, 1.0, satellite);
-        final PV pv2 = new PV(date, Vector3D.PLUS_J, Vector3D.ZERO, 1.0, 1.0, 1.0, satellite);
-        final PV pv3 = new PV(date, Vector3D.PLUS_K, Vector3D.ZERO, 1.0, 1.0, 1.0, satellite);
+        final PVMeasurement pv1 = new PVMeasurement(date, Vector3D.PLUS_I, Vector3D.ZERO, 1.0, 1.0, 1.0, satellite);
+        final PVMeasurement pv2 = new PVMeasurement(date, Vector3D.PLUS_J, Vector3D.ZERO, 1.0, 1.0, 1.0, satellite);
+        final PVMeasurement pv3 = new PVMeasurement(date, Vector3D.PLUS_K, Vector3D.ZERO, 1.0, 1.0, 1.0, satellite);
 
         // Create the IOD method
         final IodGibbs gibbs = new IodGibbs(mu);
@@ -235,9 +235,9 @@ public class IodGibbsTest {
         final Frame frame = FramesFactory.getEME2000();
         final AbsoluteDate date = new AbsoluteDate(2000, 2, 24, 11, 35, 47.0, TimeScalesFactory.getUTC());
         final ObservableSatellite satellite = new ObservableSatellite(0);
-        final PV pv1 = new PV(date, Vector3D.PLUS_I, Vector3D.ZERO, 1.0, 1.0, 1.0, satellite);
-        final PV pv2 = new PV(date.shiftedBy(1.0), Vector3D.PLUS_J, Vector3D.ZERO, 1.0, 1.0, 1.0, satellite);
-        final PV pv3 = new PV(date.shiftedBy(2.0), Vector3D.PLUS_K, Vector3D.ZERO, 1.0, 1.0, 1.0, satellite);
+        final PVMeasurement pv1 = new PVMeasurement(date, Vector3D.PLUS_I, Vector3D.ZERO, 1.0, 1.0, 1.0, satellite);
+        final PVMeasurement pv2 = new PVMeasurement(date.shiftedBy(1.0), Vector3D.PLUS_J, Vector3D.ZERO, 1.0, 1.0, 1.0, satellite);
+        final PVMeasurement pv3 = new PVMeasurement(date.shiftedBy(2.0), Vector3D.PLUS_K, Vector3D.ZERO, 1.0, 1.0, 1.0, satellite);
 
         // Create the IOD method
         final IodGibbs gibbs = new IodGibbs(mu);

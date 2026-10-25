@@ -46,7 +46,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.estimation.leastsquares.BatchLSEstimator;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.estimation.measurements.PV;
+import org.orekit.estimation.measurements.PVMeasurement;
 import org.orekit.forces.AbstractForceModelTest;
 import org.orekit.forces.maneuvers.ConstantThrustManeuver;
 import org.orekit.frames.Frame;
@@ -407,7 +407,7 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
         final List<ObservedMeasurement<?>> measurements = new ArrayList<>();
         propagator0.setStepHandler(10.0,
                                    state ->
-                                   measurements.add(new PV(state.getDate(),
+                                   measurements.add(new PVMeasurement(state.getDate(),
                                                            state.getPosition(), state.getVelocity(),
                                                            1.0e-3, 1.0e-6, 1.0, sat0)));
         propagator0.propagate(orbit.getDate().shiftedBy(900));
