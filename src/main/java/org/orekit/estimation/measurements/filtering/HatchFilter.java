@@ -17,9 +17,9 @@
 
 package org.orekit.estimation.measurements.filtering;
 
-import java.util.ArrayList;
-
 import org.hipparchus.util.FastMath;
+import org.orekit.utils.DoubleArrayList;
+import org.orekit.utils.DoubleList;
 
 /** Base class for Hatch filters
  * <p>
@@ -53,10 +53,10 @@ abstract class HatchFilter {
     private double previousSmoothingValue;
 
     /** History of the pseudo-range value, appended at each filter iteration. */
-    private final ArrayList<Double> codeHistory;
+    private final DoubleList codeHistory;
 
     /** History of the smoothed pseudo-range value, appended at each filter iteration. */
-    private final ArrayList<Double> smoothedCodeHistory;
+    private final DoubleList smoothedCodeHistory;
 
     /** Threshold for the difference between smoothed and measured values. */
     private final double threshold;
@@ -76,8 +76,8 @@ abstract class HatchFilter {
      */
     HatchFilter(final double threshold, final int N) {
         // Initialize fields
-        this.codeHistory         = new ArrayList<>();
-        this.smoothedCodeHistory = new ArrayList<>();
+        this.codeHistory         = new DoubleArrayList();
+        this.smoothedCodeHistory = new DoubleArrayList();
         this.threshold           = threshold;
         this.resetNextBoolean    = false;
         this.k                   = 1;
@@ -88,7 +88,7 @@ abstract class HatchFilter {
      * Get the history of the pseudo-range values used by the filter.
      * @return the history of the pseudo-range values used by the filter
      */
-    public ArrayList<Double> getCodeHistory() {
+    public DoubleList getCodeHistory() {
         return codeHistory;
     }
 
@@ -96,7 +96,7 @@ abstract class HatchFilter {
      * Get the history of the smoothed pseudo-range values used by the filter.
      * @return the smoothedCodeHistory
      */
-    public ArrayList<Double> getSmoothedCodeHistory() {
+    public DoubleList getSmoothedCodeHistory() {
         return smoothedCodeHistory;
     }
 

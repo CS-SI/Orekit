@@ -17,11 +17,11 @@
 
 package org.orekit.estimation.measurements.filtering;
 
-import java.util.ArrayList;
-
 import org.hipparchus.util.FastMath;
 import org.orekit.files.rinex.observation.ObservationData;
 import org.orekit.utils.Constants;
+import org.orekit.utils.DoubleArrayList;
+import org.orekit.utils.DoubleList;
 
 /**
  * Hatch Filter using Carrier-Phase measurements taken at two different frequencies,
@@ -47,10 +47,10 @@ public class DualFrequencyHatchFilter extends HatchFilter {
     private final double wavelengthFreq2;
 
     /** List used to store the phase value of the first frequency. */
-    private final ArrayList<Double> phase1History;
+    private final DoubleList phase1History;
 
     /** List used to store the phase value of the second frequency.*/
-    private final ArrayList<Double> phase2History;
+    private final DoubleList phase2History;
 
     /**
      * Constructor for the Dual Frequency Hatch Filter.
@@ -79,8 +79,8 @@ public class DualFrequencyHatchFilter extends HatchFilter {
         this.wavelengthFreq2 = wavelengthFreq2;
 
         // Initialize array of phase values used during smoothing
-        this.phase1History = new ArrayList<>();
-        this.phase2History = new ArrayList<>();
+        this.phase1History = new DoubleArrayList();
+        this.phase2History = new DoubleArrayList();
         phase1History.add(initPhaseFreq1.getValue() * wavelengthFreq1);
         phase2History.add(initPhaseFreq2.getValue() * wavelengthFreq2);
         updatePreviousSmoothedCode(initCode.getValue());
@@ -132,7 +132,7 @@ public class DualFrequencyHatchFilter extends HatchFilter {
      * Get the history of phase values of the first frequency.
      * @return the history of phase values of the first frequency
      */
-    public ArrayList<Double> getFirstFrequencyPhaseHistory() {
+    public DoubleList getFirstFrequencyPhaseHistory() {
         return phase1History;
     }
 
@@ -140,7 +140,7 @@ public class DualFrequencyHatchFilter extends HatchFilter {
      * Get the history of phase values of the second frequency.
      * @return the history of phase values of the second frequency
      */
-    public ArrayList<Double> getSecondFrequencyPhaseHistory() {
+    public DoubleList getSecondFrequencyPhaseHistory() {
         return phase2History;
     }
 

@@ -42,6 +42,7 @@ import org.orekit.gnss.ObservationType;
 import org.orekit.gnss.PredefinedObservationType;
 import org.orekit.gnss.SatInSystem;
 import org.orekit.gnss.SatelliteSystem;
+import org.orekit.utils.DoubleList;
 
 public class PseudoRangeFilteringTest {
 
@@ -177,13 +178,13 @@ public class PseudoRangeFilteringTest {
         DualFrequencyHatchFilter filter = prs.getMapFilters().get(rangeType.getName());
         SingleFrequencyHatchFilter filterSF = prsSF.getMapFilters().get(rangeType.getName());
 
-        ArrayList<Double> filteredSF = filterSF.getSmoothedCodeHistory();
-        ArrayList<Double> filteredDF = filter.getSmoothedCodeHistory();
+        DoubleList filteredSF = filterSF.getSmoothedCodeHistory();
+        DoubleList filteredDF = filter.getSmoothedCodeHistory();
         ArrayList<Double> gLAB_SF = readFile(baseName + fileName_gLAB_SF);
         ArrayList<Double> gLAB_DF = readFile(baseName + fileName_gLAB_DF);
 
-        ArrayList<Double> phaseArrayF1 = filter.getFirstFrequencyPhaseHistory();
-        ArrayList<Double> phaseArrayF2 = filter.getSecondFrequencyPhaseHistory();
+        DoubleList phaseArrayF1 = filter.getFirstFrequencyPhaseHistory();
+        DoubleList phaseArrayF2 = filter.getSecondFrequencyPhaseHistory();
 
         DescriptiveStatistics dSF = new DescriptiveStatistics();
         DescriptiveStatistics dDF = new DescriptiveStatistics();
@@ -224,8 +225,8 @@ public class PseudoRangeFilteringTest {
         prs.filterDataSet(parser.parse(nd).getObservationDataSets(), system, prnNumber, phaseTypeF1, phaseTypeF2);
 
         DualFrequencyHatchFilter filterDF = prs.getMapFilters().get(rangeType);
-        ArrayList<Double> codeDFArray = filterDF.getCodeHistory();
-        ArrayList<Double> smoothedDFArray = filterDF.getSmoothedCodeHistory();
+        DoubleList codeDFArray = filterDF.getCodeHistory();
+        DoubleList smoothedDFArray = filterDF.getSmoothedCodeHistory();
 
         double lastValueSmoothed = smoothedDFArray.getLast();
         double lastValueCode = codeDFArray.getLast();
@@ -241,8 +242,8 @@ public class PseudoRangeFilteringTest {
 
         SingleFrequencyHatchFilter filterSF = prsSF.getMapFilters().get(rangeType);
 
-        ArrayList<Double> codeSFArray = filterSF.getCodeHistory();
-        ArrayList<Double> smoothedSFArray = filterSF.getSmoothedCodeHistory();
+        DoubleList codeSFArray = filterSF.getCodeHistory();
+        DoubleList smoothedSFArray = filterSF.getSmoothedCodeHistory();
 
         lastValueSmoothed = smoothedSFArray.getLast();
         lastValueCode = codeSFArray.getLast();
