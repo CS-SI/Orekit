@@ -24,7 +24,6 @@ import java.io.StreamTokenizer;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.LinkedList;
-import java.util.List;
 
 import org.orekit.data.DataLoader;
 
@@ -100,9 +99,9 @@ public class InterpolationTableLoader implements DataLoader {
     public void loadData(final InputStream input, final String name)
         throws IOException, ParseException {
 
-        final List<Double> xValues = new LinkedList<>();
-        final List<Double> yValues = new LinkedList<>();
-        final LinkedList<List<Double>> cellValues = new LinkedList<>();
+        final DoubleList xValues = new DoubleArrayList();
+        final DoubleList yValues = new DoubleArrayList();
+        final LinkedList<DoubleList> cellValues = new LinkedList<>();
 
         final StreamTokenizer tokenizer =
             new StreamTokenizer(new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8)));
@@ -124,7 +123,7 @@ public class InterpolationTableLoader implements DataLoader {
 
                 case StreamTokenizer.TT_EOL:
                     // end of header row
-                    if (yValues.size() > 0) {
+                    if (!yValues.isEmpty()) {
                         headerRow = false;
                     }
                     tokenCount = 0;
@@ -136,7 +135,7 @@ public class InterpolationTableLoader implements DataLoader {
                     } else {
                         if (tokenCount == 0) {
                             xValues.add(tokenizer.nval);
-                            cellValues.add(new LinkedList<>());
+                            cellValues.add(new DoubleArrayList());
                         } else {
                             cellValues.getLast().add(tokenizer.nval);
                         }
@@ -157,27 +156,15 @@ public class InterpolationTableLoader implements DataLoader {
 
         } while (!done);
 
-        xArr = toPrimitiveArray(xValues);
-        yArr = toPrimitiveArray(yValues);
+        xArr = xValues.toArray();
+        yArr = yValues.toArray();
         fArr = new double[cellValues.size()][];
         int idx = 0;
 
-        for (List<Double> row : cellValues) {
-            fArr[idx++] = toPrimitiveArray(row);
+        for (final DoubleList row : cellValues) {
+            fArr[idx++] = row.toArray();
         }
 
     }
 
-    /** Converts a list of {@link Double} objects into an array of double primitives.
-     * @param list the list of {@link Double} objects
-     * @return the double array containing the list elements
-     */
-    private double[] toPrimitiveArray(final List<Double> list) {
-        final double[] result = new double[list.size()];
-        int idx = 0;
-        for (Double element : list) {
-            result[idx++] = element;
-        }
-        return result;
-    }
 }
