@@ -95,6 +95,8 @@ import org.orekit.propagation.analytical.gnss.data.QZSSLegacyNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.QZSSLegacyNavigationMessageFactory;
 import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
+import org.orekit.utils.DoubleArrayList;
+import org.orekit.utils.DoubleList;
 import org.orekit.utils.drivers.ParameterDriversList;
 
 /** Enum containing the supported RTCM messages types.
@@ -1293,22 +1295,19 @@ public enum RtcmMessageType implements MessageType {
 
         // Parse satellite data
         final List<SatInSystem> satellites = header.convertSatellitesMask();
-        final List<Double> intRoughRanges = IntStream.range(0, nSats).
-                                            mapToDouble(i -> RtcmDataField.DF397.doubleValue(encodedMessage)).
-                                                boxed().
-                                                toList();
+        final DoubleList intRoughRanges = IntStream.range(0, nSats).
+                mapToDouble(i -> RtcmDataField.DF397.doubleValue(encodedMessage)).
+                collect(DoubleArrayList::new, DoubleList::add, DoubleList::addAll);
         final List<Long> extendedSatelliteData = IntStream.range(0, nSats).
                                                  mapToLong(extendedSatFunction).
                                                  boxed().
                                                  toList();
-        final List<Double> fracRoughRanges = IntStream.range(0, nSats).
-                                             mapToDouble(i -> RtcmDataField.DF398.doubleValue(encodedMessage)).
-                                             boxed().
-                                             toList();
-        final List<Double> roughPhaseRangeRates = IntStream.range(0, nSats).
-                                                  mapToDouble(i -> RtcmDataField.DF399.doubleValue(encodedMessage)).
-                                                  boxed().
-                                                  toList();
+        final DoubleList fracRoughRanges = IntStream.range(0, nSats).
+                mapToDouble(i -> RtcmDataField.DF398.doubleValue(encodedMessage)).
+                collect(DoubleArrayList::new, DoubleList::add, DoubleList::addAll);
+        final DoubleList roughPhaseRangeRates = IntStream.range(0, nSats).
+                mapToDouble(i -> RtcmDataField.DF399.doubleValue(encodedMessage)).
+                collect(DoubleArrayList::new, DoubleList::add, DoubleList::addAll);
         final Map<SatInSystem, RtcmMsmSatelliteData> satellitesData = IntStream.range(0, nSats).mapToObj(i -> {
             final RtcmMsmSatelliteData d = new RtcmMsmSatelliteData();
             d.setSatellite(satellites.get(i));
@@ -1320,14 +1319,12 @@ public enum RtcmMessageType implements MessageType {
         }).collect(Collectors.toMap(RtcmMsmSatelliteData::getSatellite, d -> d, (d1, d2) -> d2));
 
         // Parse signal data
-        final List<Double> finePseudoranges = IntStream.range(0, nCells).
-                                              mapToDouble(i -> RtcmDataField.DF405.doubleValue(encodedMessage)).
-                                              boxed().
-                                              toList();
-        final List<Double> finePhaseranges = IntStream.range(0, nCells).
-                                             mapToDouble(i -> RtcmDataField.DF406.doubleValue(encodedMessage)).
-                                             boxed().
-                                             toList();
+        final DoubleList finePseudoranges = IntStream.range(0, nCells).
+                mapToDouble(i -> RtcmDataField.DF405.doubleValue(encodedMessage)).
+                collect(DoubleArrayList::new, DoubleList::add, DoubleList::addAll);
+        final DoubleList finePhaseranges = IntStream.range(0, nCells).
+                mapToDouble(i -> RtcmDataField.DF406.doubleValue(encodedMessage)).
+                collect(DoubleArrayList::new, DoubleList::add, DoubleList::addAll);
         final List<Integer> lockTimeIndicators = IntStream.range(0, nCells).
                                                  map(i -> RtcmDataField.DF407.intValue(encodedMessage)).
                                                  boxed().
@@ -1335,14 +1332,12 @@ public enum RtcmMessageType implements MessageType {
         final List<Boolean> halfCycleAmbiguities = IntStream.range(0, nCells).
                                                    mapToObj(i -> RtcmDataField.DF420.booleanValue(encodedMessage)).
                                                    toList();
-        final List<Double> cnrs = IntStream.range(0, nCells).
-                                  mapToDouble(i -> RtcmDataField.DF408.doubleValue(encodedMessage)).
-                                  boxed().
-                                  toList();
-        final List<Double> finePhaserangeRates = IntStream.range(0, nCells).
-                                                 mapToDouble(i -> RtcmDataField.DF404.doubleValue(encodedMessage)).
-                                                 boxed().
-                                                 toList();
+        final DoubleList cnrs = IntStream.range(0, nCells).
+                mapToDouble(i -> RtcmDataField.DF408.doubleValue(encodedMessage)).
+                collect(DoubleArrayList::new, DoubleList::add, DoubleList::addAll);
+        final DoubleList finePhaserangeRates = IntStream.range(0, nCells).
+                mapToDouble(i -> RtcmDataField.DF404.doubleValue(encodedMessage)).
+                collect(DoubleArrayList::new, DoubleList::add, DoubleList::addAll);
 
         final List<Pair<SatInSystem, RtcmMsmSignalId>> cellIds = header.convertCellsMask();
 
