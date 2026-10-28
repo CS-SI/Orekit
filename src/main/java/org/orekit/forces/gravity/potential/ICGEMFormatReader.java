@@ -28,6 +28,8 @@ import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
 import org.orekit.utils.Constants;
+import org.orekit.utils.DoubleArrayList;
+import org.orekit.utils.DoubleList;
 import org.orekit.utils.TimeSpanMap;
 
 import java.io.BufferedReader;
@@ -169,7 +171,7 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
     private List<AbsoluteDate> referenceDates;
 
     /** Pulsations. */
-    private List<Double>       pulsations;
+    private DoubleList pulsations;
 
     /** Time map of the harmonics. */
     private TimeSpanMap<Container> containers;
@@ -211,7 +213,7 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
         setReadComplete(false);
         containers     = null;
         referenceDates = new ArrayList<>();
-        pulsations     = new ArrayList<>();
+        pulsations     = new DoubleArrayList();
 
         // by default, the field is normalized with unknown tide system
         // (will be overridden later if non-default)
@@ -580,7 +582,7 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
      * @return index of the pulsation in the {@code known} list
      * @since 11.1
      */
-    private int pulsationIndex(final List<Double> known, final double pulsation) {
+    private int pulsationIndex(final DoubleList known, final double pulsation) {
         for (int i = 0; i < known.size(); ++i) {
             if (Precision.equals(known.get(i), pulsation, 1)) {
                 return i;
@@ -602,14 +604,8 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
         }
 
         // create the shared parts of the model
-        final AbsoluteDate[] dates = new AbsoluteDate[referenceDates.size()];
-        for (int i = 0; i < dates.length; ++i) {
-            dates[i] = referenceDates.get(i);
-        }
-        final double[] puls = new double[pulsations.size()];
-        for (int i = 0; i < puls.length; ++i) {
-            puls[i] = pulsations.get(i);
-        }
+        final AbsoluteDate[] dates = referenceDates.toArray(new AbsoluteDate[0]);
+        final double[] puls = pulsations.toArray();
 
         // convert the mutable containers to piecewise parts with desired normalization
         final TimeSpanMap<PiecewisePart> pieces = new TimeSpanMap<>(null);
