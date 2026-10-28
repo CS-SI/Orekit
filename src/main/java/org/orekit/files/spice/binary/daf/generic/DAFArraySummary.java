@@ -16,7 +16,8 @@
  */
 package org.orekit.files.spice.binary.daf.generic;
 
-import java.util.List;
+import java.nio.DoubleBuffer;
+import java.nio.IntBuffer;
 
 /**
  * Represents the summary of a single {@link DAFArray} in a {@link DAF} file.
@@ -29,12 +30,12 @@ public class DAFArraySummary {
     /**
      * A list with the doubles in the array summary.
      */
-    private final List<Double> summaryDoubles;
+    private final DoubleBuffer summaryDoubles;
 
     /**
      * A list with the integers in the array summary.
      */
-    private final List<Integer> summaryInts;
+    private final IntBuffer summaryInts;
 
     /**
      * The initial byte address of the array elements.
@@ -54,10 +55,12 @@ public class DAFArraySummary {
      * @param initialArrayAddress initial byte address of array elements
      * @param finalArrayAddress final byte address of array elements
      */
-    public DAFArraySummary(final List<Double> summaryDoubles, final List<Integer> summaryInts,
-            final int initialArrayAddress, final int finalArrayAddress) {
-        this.summaryDoubles = summaryDoubles;
-        this.summaryInts = summaryInts;
+    public DAFArraySummary(final DoubleBuffer summaryDoubles,
+                           final IntBuffer summaryInts,
+                           final int initialArrayAddress,
+                           final int finalArrayAddress) {
+        this.summaryDoubles = summaryDoubles.duplicate();
+        this.summaryInts = summaryInts.duplicate();
         this.initialArrayAddress = initialArrayAddress;
         this.finalArrayAddress = finalArrayAddress;
     }
@@ -67,8 +70,8 @@ public class DAFArraySummary {
      *
      * @return list of summary doubles
      */
-    public List<Double> getSummaryDoubles() {
-        return summaryDoubles;
+    public DoubleBuffer getSummaryDoubles() {
+        return summaryDoubles.asReadOnlyBuffer();
     }
 
     /**
@@ -76,8 +79,8 @@ public class DAFArraySummary {
      *
      * @return list of summary integers
      */
-    public List<Integer> getSummaryInts() {
-        return summaryInts;
+    public IntBuffer getSummaryInts() {
+        return summaryInts.asReadOnlyBuffer();
     }
 
     /**

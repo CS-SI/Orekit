@@ -24,23 +24,17 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.nio.DoubleBuffer;
+import java.nio.IntBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
-import java.util.List;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.spice.binary.daf.generic.DAF;
-import org.orekit.files.spice.binary.daf.generic.DAFArray;
-import org.orekit.files.spice.binary.daf.generic.DAFArraySummary;
-import org.orekit.files.spice.binary.daf.generic.DAFConstants;
-import org.orekit.files.spice.binary.daf.generic.DAFFileRecord;
-import org.orekit.files.spice.binary.daf.generic.DAFParser;
-import org.orekit.files.spice.binary.daf.generic.DAFWriter;
 
 class DAFWriterTest {
 
@@ -103,9 +97,9 @@ class DAFWriterTest {
         for (int i = 0; i < original.getArrays().size(); i++) {
             Assertions.assertEquals(original.getArrays().get(i).getArrayName(),
                                   reread.getArrays().get(i).getArrayName());
-            Assertions.assertEquals(original.getArrays().get(i).getArrayElements().size(),
-                                  reread.getArrays().get(i).getArrayElements().size());
-            for (int j = 0; j < original.getArrays().get(i).getArrayElements().size(); j++) {
+            Assertions.assertEquals(original.getArrays().get(i).getArrayElements().remaining(),
+                                  reread.getArrays().get(i).getArrayElements().remaining());
+            for (int j = 0; j < original.getArrays().get(i).getArrayElements().remaining(); j++) {
                 final double originalElement = original.getArrays().get(i).getArrayElements().get(j);
                 final double rereadElement = reread.getArrays().get(i).getArrayElements().get(j);
                 Assertions.assertEquals(originalElement, rereadElement, 1e-6);
@@ -167,9 +161,9 @@ class DAFWriterTest {
         for (int i = 0; i < original.getArrays().size(); i++) {
             Assertions.assertEquals(original.getArrays().get(i).getArrayName(),
                                   reread.getArrays().get(i).getArrayName());
-            Assertions.assertEquals(original.getArrays().get(i).getArrayElements().size(),
-                                  reread.getArrays().get(i).getArrayElements().size());
-            for (int j = 0; j < original.getArrays().get(i).getArrayElements().size(); j++) {
+            Assertions.assertEquals(original.getArrays().get(i).getArrayElements().remaining(),
+                                  reread.getArrays().get(i).getArrayElements().remaining());
+            for (int j = 0; j < original.getArrays().get(i).getArrayElements().remaining(); j++) {
                 final double originalElement = original.getArrays().get(i).getArrayElements().get(j);
                 final double rereadElement = reread.getArrays().get(i).getArrayElements().get(j);
                 Assertions.assertEquals(originalElement, rereadElement, 1e-6);
@@ -192,10 +186,12 @@ class DAFWriterTest {
             final DAFFileRecord fileRecord = new DAFFileRecord(
                     "DAF/SPK", 2, 6, 40, 4, "test",
                     3, 3, 1, "BIG-IEEE", DAFConstants.FTPSTR);
-            final List<Double> summaryDoubles = Arrays.asList(0.0, 100.0);
-            final List<Integer> summaryInts = Arrays.asList(1, 2, 3, 2, 1, 10);
+            final DoubleBuffer summaryDoubles =
+                    DoubleBuffer.wrap(new double[] {0.0, 100.0});
+            final IntBuffer summaryInts = IntBuffer.wrap(new int[] {1, 2, 3, 2, 1, 10});
             final DAFArraySummary summary = new DAFArraySummary(summaryDoubles, summaryInts, 1, 80);
-            final DAFArray array = new DAFArray("TEST", summary, Arrays.asList(1.0, 2.0, 3.0));
+            final DAFArray array = new DAFArray("TEST", summary,
+                    DoubleBuffer.wrap(new double[] {1.0, 2.0, 3.0}));
             final DAF daf = new DAF(fileRecord, null, Arrays.asList(array));
             writer.write(dos, daf);
 
@@ -218,10 +214,11 @@ class DAFWriterTest {
             final DAFFileRecord nullTypeRecord = new DAFFileRecord(
                     null, 2, 6, 40, 4, "test",
                     3, 3, 1, "LTL-IEEE", DAFConstants.FTPSTR);
-            final List<Double> summaryDoubles = Arrays.asList(0.0, 100.0);
-            final List<Integer> summaryInts = Arrays.asList(1, 2, 3, 2, 1, 10);
+            final DoubleBuffer summaryDoubles = DoubleBuffer.wrap(new double[] {0.0, 100.0});
+            final IntBuffer summaryInts = IntBuffer.wrap(new int[] {1, 2, 3, 2, 1, 10});
             final DAFArraySummary summary = new DAFArraySummary(summaryDoubles, summaryInts, 1, 80);
-            final DAFArray array = new DAFArray("TEST", summary, Arrays.asList(1.0, 2.0, 3.0));
+            final DAFArray array = new DAFArray("TEST", summary,
+                    DoubleBuffer.wrap(new double[] {1.0, 2.0, 3.0}));
             final DAF daf = new DAF(nullTypeRecord, null, Arrays.asList(array));
             final OrekitException ex = Assertions.assertThrows(OrekitException.class, () -> {
                 writer.write(dos, daf);
@@ -239,10 +236,11 @@ class DAFWriterTest {
             final DAFFileRecord badTypeRecord = new DAFFileRecord(
                     "INVALID", 2, 6, 40, 4, "test",
                     3, 3, 1, "LTL-IEEE", DAFConstants.FTPSTR);
-            final List<Double> summaryDoubles = Arrays.asList(0.0, 100.0);
-            final List<Integer> summaryInts = Arrays.asList(1, 2, 3, 2, 1, 10);
+            final DoubleBuffer summaryDoubles = DoubleBuffer.wrap(new double[] {0.0, 100.0});
+            final IntBuffer summaryInts = IntBuffer.wrap(new int[] {1, 2, 3, 2, 1, 10});
             final DAFArraySummary summary = new DAFArraySummary(summaryDoubles, summaryInts, 1, 80);
-            final DAFArray array = new DAFArray("TEST", summary, Arrays.asList(1.0, 2.0, 3.0));
+            final DAFArray array = new DAFArray("TEST", summary,
+                    DoubleBuffer.wrap(new double[] {1.0, 2.0, 3.0}));
             final DAF daf = new DAF(badTypeRecord, null, Arrays.asList(array));
             final OrekitException ex = Assertions.assertThrows(OrekitException.class, () -> {
                 writer.write(dos, daf);
@@ -264,10 +262,11 @@ class DAFWriterTest {
             final DAFFileRecord record = new DAFFileRecord(
                     "DAF/SPK", 2, 6, 40, 4, sb.toString(),
                     3, 3, 1, "LTL-IEEE", DAFConstants.FTPSTR);
-            final List<Double> summaryDoubles = Arrays.asList(0.0, 100.0);
-            final List<Integer> summaryInts = Arrays.asList(1, 2, 3, 2, 1, 10);
+            final DoubleBuffer summaryDoubles = DoubleBuffer.wrap(new double[] {0.0, 100.0});
+            final IntBuffer summaryInts = IntBuffer.wrap(new int[] {1, 2, 3, 2, 1, 10});
             final DAFArraySummary summary = new DAFArraySummary(summaryDoubles, summaryInts, 1, 80);
-            final DAFArray array = new DAFArray("TEST", summary, Arrays.asList(1.0, 2.0, 3.0));
+            final DAFArray array = new DAFArray("TEST", summary,
+                    DoubleBuffer.wrap(new double[]{1.0, 2.0, 3.0}));
             final DAF daf = new DAF(record, null, Arrays.asList(array));
             final OrekitException ex = Assertions.assertThrows(OrekitException.class, () -> {
                 writer.write(dos, daf);
@@ -281,10 +280,11 @@ class DAFWriterTest {
         // Null comments with 1 reserved record (firstSummaryRecNum=3)
         final DAFFileRecord fileRecord = new DAFFileRecord("DAF/SPK", 2, 6, 40, 5, "test",
                 3, 3, 1, "LTL-IEEE", DAFConstants.FTPSTR);
-        final List<Double> summaryDoubles = Arrays.asList(0.0, 100.0);
-        final List<Integer> summaryInts = Arrays.asList(1, 2, 3, 2, 1, 10);
+        final DoubleBuffer summaryDoubles = DoubleBuffer.wrap(new double[] {0.0, 100.0});
+        final IntBuffer summaryInts = IntBuffer.wrap(new int[] {1, 2, 3, 2, 1, 10});
         final DAFArraySummary summary = new DAFArraySummary(summaryDoubles, summaryInts, 1, 80);
-        final DAFArray array = new DAFArray("TEST", summary, Arrays.asList(1.0, 2.0, 3.0));
+        final DAFArray array = new DAFArray("TEST", summary,
+                DoubleBuffer.wrap(new double[] {1.0, 2.0, 3.0}));
         final DAF daf = new DAF(fileRecord, null, Arrays.asList(array));
 
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -316,10 +316,11 @@ class DAFWriterTest {
         // Empty string comments with 1 reserved record (firstSummaryRecNum=3)
         final DAFFileRecord fileRecord = new DAFFileRecord("DAF/SPK", 2, 6, 40, 5, "test",
                 3, 3, 1, "LTL-IEEE", DAFConstants.FTPSTR);
-        final List<Double> summaryDoubles = Arrays.asList(0.0, 100.0);
-        final List<Integer> summaryInts = Arrays.asList(1, 2, 3, 2, 1, 10);
+        final DoubleBuffer summaryDoubles = DoubleBuffer.wrap(new double[] {0.0, 100.0});
+        final IntBuffer summaryInts = IntBuffer.wrap(new int[] {1, 2, 3, 2, 1, 10});
         final DAFArraySummary summary = new DAFArraySummary(summaryDoubles, summaryInts, 1, 80);
-        final DAFArray array = new DAFArray("TEST", summary, Arrays.asList(1.0, 2.0, 3.0));
+        final DAFArray array = new DAFArray("TEST", summary,
+                DoubleBuffer.wrap(new double[] {1.0, 2.0, 3.0}));
         final DAF daf = new DAF(fileRecord, "", Arrays.asList(array));
 
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -355,10 +356,11 @@ class DAFWriterTest {
         final DAFFileRecord record = new DAFFileRecord(
                 "DAF/SPK", 2, 6, 40, 4, "test",
                 2, 2, 1, "LTL-IEEE", DAFConstants.FTPSTR);
-        final List<Double> summaryDoubles = Arrays.asList(0.0, 100.0);
-        final List<Integer> summaryInts = Arrays.asList(1, 2, 3, 2, 1, 10);
+        final DoubleBuffer summaryDoubles = DoubleBuffer.wrap(new double[] {0.0, 100.0});
+        final IntBuffer summaryInts = IntBuffer.wrap(new int[] {1, 2, 3, 2, 1, 10});
         final DAFArraySummary summary = new DAFArraySummary(summaryDoubles, summaryInts, 1, 80);
-        final DAFArray array = new DAFArray("TEST", summary, Arrays.asList(1.0, 2.0, 3.0));
+        final DAFArray array = new DAFArray("TEST", summary,
+                DoubleBuffer.wrap(new double[] {1.0, 2.0, 3.0}));
         final DAF daf = new DAF(record, longComment, Arrays.asList(array));
 
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -376,10 +378,10 @@ class DAFWriterTest {
         // Short comment "test" (1 record needed) with 3 reserved records (firstSummaryRecNum=5)
         final DAFFileRecord fileRecord = new DAFFileRecord("DAF/SPK", 2, 6, 40, 5, "test",
                 5, 5, 1, "LTL-IEEE", DAFConstants.FTPSTR);
-        final List<Double> summaryDoubles = Arrays.asList(0.0, 100.0);
-        final List<Integer> summaryInts = Arrays.asList(1, 2, 3, 2, 1, 10);
+        final DoubleBuffer summaryDoubles = DoubleBuffer.wrap(new double[] {0.0, 100.0});
+        final IntBuffer summaryInts = IntBuffer.wrap(new int[] {1, 2, 3, 2, 1, 10});
         final DAFArraySummary summary = new DAFArraySummary(summaryDoubles, summaryInts, 1, 80);
-        final DAFArray array = new DAFArray("TEST", summary, Arrays.asList(1.0, 2.0, 3.0));
+        final DAFArray array = new DAFArray("TEST", summary, DoubleBuffer.wrap(new double[] {1.0, 2.0, 3.0}));
         final DAF daf = new DAF(fileRecord, "test", Arrays.asList(array));
 
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -420,10 +422,10 @@ class DAFWriterTest {
             sb.append('A');
         }
 
-        final List<Double> summaryDoubles = Arrays.asList(0.0, 100.0);
-        final List<Integer> summaryInts = Arrays.asList(1, 2, 3, 2, 1, 10);
+        final DoubleBuffer summaryDoubles = DoubleBuffer.wrap(new double[] {0.0, 100.0});
+        final IntBuffer summaryInts = IntBuffer.wrap(new int[] {1, 2, 3, 2, 1, 10});
         final DAFArraySummary summary = new DAFArraySummary(summaryDoubles, summaryInts, 1, 80);
-        final DAFArray array = new DAFArray("TEST", summary, Arrays.asList(1.0, 2.0, 3.0));
+        final DAFArray array = new DAFArray("TEST", summary, DoubleBuffer.wrap(new double[] {1.0, 2.0, 3.0}));
         final DAF daf = new DAF(fileRecord, sb.toString(), Arrays.asList(array));
 
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -464,10 +466,10 @@ class DAFWriterTest {
             sb.append('A');
         }
 
-        final List<Double> summaryDoubles = Arrays.asList(0.0, 100.0);
-        final List<Integer> summaryInts = Arrays.asList(1, 2, 3, 2, 1, 10);
+        final DoubleBuffer summaryDoubles = DoubleBuffer.wrap(new double[] {0.0, 100.0});
+        final IntBuffer summaryInts = IntBuffer.wrap(new int[] {1, 2, 3, 2, 1, 10});
         final DAFArraySummary summary = new DAFArraySummary(summaryDoubles, summaryInts, 1, 80);
-        final DAFArray array = new DAFArray("TEST", summary, Arrays.asList(1.0, 2.0, 3.0));
+        final DAFArray array = new DAFArray("TEST", summary, DoubleBuffer.wrap(new double[] {1.0, 2.0, 3.0}));
         final DAF daf = new DAF(fileRecord, sb.toString(), Arrays.asList(array));
 
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -503,10 +505,10 @@ class DAFWriterTest {
                 "DAF/SPK", 2, 5, 40, 5, "test",
                 2, 2, 1, "LTL-IEEE", DAFConstants.FTPSTR);
 
-        final List<Double> summaryDoubles = Arrays.asList(0.0, 100.0);
-        final List<Integer> summaryInts = Arrays.asList(1, 2, 3, 1, 10);
+        final DoubleBuffer summaryDoubles = DoubleBuffer.wrap(new double[] {0.0, 100.0});
+        final IntBuffer summaryInts = IntBuffer.wrap(new int[] {1, 2, 3, 1, 10});
         final DAFArraySummary summary = new DAFArraySummary(summaryDoubles, summaryInts, 1, 80);
-        final List<Double> elements = Arrays.asList(1.0, 2.0, 3.0);
+        final DoubleBuffer elements = DoubleBuffer.wrap(new double[] {1.0, 2.0, 3.0});
         final DAFArray array = new DAFArray("TEST", summary, elements);
 
         final DAF daf = new DAF(fileRecord, null, Arrays.asList(array));

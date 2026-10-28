@@ -16,8 +16,7 @@
  */
 package org.orekit.files.spice.binary.daf.generic;
 
-import java.util.Collections;
-import java.util.List;
+import java.nio.DoubleBuffer;
 
 /**
  * Represents a single array in a {@link DAF} file, including its name, summary,
@@ -41,7 +40,7 @@ public class DAFArray {
     /**
      * Elements (doubles) of the array.
      */
-    private final List<Double> arrayElements;
+    private final DoubleBuffer arrayElements;
 
     /**
      * Simple constructor.
@@ -50,10 +49,14 @@ public class DAFArray {
      * @param arraySummary summary of the array
      * @param arrayElements list of array elements
      */
-    public DAFArray(final String arrayName, final DAFArraySummary arraySummary, final List<Double> arrayElements) {
+    public DAFArray(final String arrayName,
+                    final DAFArraySummary arraySummary,
+                    final DoubleBuffer arrayElements) {
         this.arrayName = arrayName;
         this.arraySummary = arraySummary;
-        this.arrayElements = arrayElements != null ? arrayElements : Collections.emptyList();
+        this.arrayElements = arrayElements != null ?
+                arrayElements.duplicate() :
+                DoubleBuffer.allocate(0);
     }
 
     /**
@@ -79,7 +82,7 @@ public class DAFArray {
      *
      * @return list of array elements
      */
-    public List<Double> getArrayElements() {
-        return Collections.unmodifiableList(arrayElements);
+    public DoubleBuffer getArrayElements() {
+        return arrayElements.asReadOnlyBuffer();
     }
 }

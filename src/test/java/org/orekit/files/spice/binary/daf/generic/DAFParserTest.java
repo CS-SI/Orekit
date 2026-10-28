@@ -22,22 +22,16 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.DoubleBuffer;
+import java.nio.IntBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.List;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.spice.binary.daf.generic.DAF;
-import org.orekit.files.spice.binary.daf.generic.DAFArray;
-import org.orekit.files.spice.binary.daf.generic.DAFArraySummary;
-import org.orekit.files.spice.binary.daf.generic.DAFConstants;
-import org.orekit.files.spice.binary.daf.generic.DAFFileRecord;
-import org.orekit.files.spice.binary.daf.generic.DAFParser;
-import org.orekit.files.spice.binary.daf.generic.DAFWriter;
 
 class DAFParserTest {
 
@@ -62,7 +56,7 @@ class DAFParserTest {
         final String testComments = parsedFile.getComments();
         final DAFArray testArray = parsedFile.getArrays().getFirst();
         final DAFArraySummary testArraySummary = testArray.getArraySummary();
-        final List<Double> testArrayElements = testArray.getArrayElements();
+        final DoubleBuffer testArrayElements = testArray.getArrayElements();
         // file record tests
         Assertions.assertEquals("NIO2SPK", testFileRecord.getDescription());
         Assertions.assertEquals("LTL-IEEE", testFileRecord.getEndianString());
@@ -80,18 +74,18 @@ class DAFParserTest {
         Assertions.assertEquals("vgr2.jup230.nio", testArray.getArrayName());
         Assertions.assertEquals(4097, testArraySummary.getInitialArrayAddress());
         Assertions.assertEquals(330161, testArraySummary.getFinalArrayAddress());
-        Assertions.assertEquals(2, testArraySummary.getSummaryDoubles().size());
-        Assertions.assertEquals(6, testArraySummary.getSummaryInts().size());
-        Assertions.assertEquals(-649364400.000000, testArraySummary.getSummaryDoubles().getFirst(), 1e-6);
+        Assertions.assertEquals(2, testArraySummary.getSummaryDoubles().remaining());
+        Assertions.assertEquals(6, testArraySummary.getSummaryInts().remaining());
+        Assertions.assertEquals(-649364400.000000, testArraySummary.getSummaryDoubles().get(0), 1e-6);
         Assertions.assertEquals(-645364800.000000, testArraySummary.getSummaryDoubles().get(1), 1e-6);
-        Assertions.assertEquals(-32, testArraySummary.getSummaryInts().getFirst());
+        Assertions.assertEquals(-32, testArraySummary.getSummaryInts().get(0));
         Assertions.assertEquals(5, testArraySummary.getSummaryInts().get(1));
         Assertions.assertEquals(1, testArraySummary.getSummaryInts().get(2));
         Assertions.assertEquals(1, testArraySummary.getSummaryInts().get(3));
         Assertions.assertEquals(513, testArraySummary.getSummaryInts().get(4));
         Assertions.assertEquals(41270, testArraySummary.getSummaryInts().get(5));
-        Assertions.assertEquals(40758, testArrayElements.size());
-        Assertions.assertEquals(-649364399.000000, testArrayElements.getFirst(), 1e-6);
+        Assertions.assertEquals(40758, testArrayElements.remaining());
+        Assertions.assertEquals(-649364399.000000, testArrayElements.get(0), 1e-6);
         Assertions.assertEquals(1.000000, testArrayElements.get(1), 1e-6);
         Assertions.assertEquals(-0.603684, testArrayElements.get(7401), 1e-6);
         Assertions.assertEquals(-645842469.316287, testArrayElements.get(40756), 1e-6);
@@ -124,10 +118,10 @@ class DAFParserTest {
         // summary
         // doubles
         final DAFArraySummary summary = array.getArraySummary();
-        Assertions.assertEquals(0.0, summary.getSummaryDoubles().getFirst(), 1e-6);
+        Assertions.assertEquals(0.0, summary.getSummaryDoubles().get(0), 1e-6);
         Assertions.assertEquals(100.0, summary.getSummaryDoubles().get(1), 1e-6);
         // ints
-        Assertions.assertEquals(1, summary.getSummaryInts().getFirst());
+        Assertions.assertEquals(1, summary.getSummaryInts().get(0));
         Assertions.assertEquals(2, summary.getSummaryInts().get(1));
         Assertions.assertEquals(3, summary.getSummaryInts().get(2));
         Assertions.assertEquals(2, summary.getSummaryInts().get(3));
@@ -135,8 +129,8 @@ class DAFParserTest {
         Assertions.assertEquals(387, summary.getSummaryInts().get(5));
 
         // elements
-        Assertions.assertEquals(3, array.getArrayElements().size());
-        Assertions.assertEquals(1.0, array.getArrayElements().getFirst(), 1e-10);
+        Assertions.assertEquals(3, array.getArrayElements().remaining());
+        Assertions.assertEquals(1.0, array.getArrayElements().get(0), 1e-10);
         Assertions.assertEquals(2.0, array.getArrayElements().get(1), 1e-10);
         Assertions.assertEquals(3.0, array.getArrayElements().get(2), 1e-10);
     }
@@ -198,10 +192,11 @@ class DAFParserTest {
         // write a valid DAF with comments (firstSummaryRecNum=3, so 1 comment record), then truncate
         final DAFFileRecord fileRecord = new DAFFileRecord("DAF/SPK", 2, 6, 40, 5, "test",
                 3, 3, 1, "LTL-IEEE", DAFConstants.FTPSTR);
-        final List<Double> summaryDoubles = Arrays.asList(0.0, 100.0);
-        final List<Integer> summaryInts = Arrays.asList(1, 2, 3, 2, 1, 10);
+        final DoubleBuffer summaryDoubles = DoubleBuffer.wrap(new double[] {0.0, 100.0});
+        final IntBuffer summaryInts = IntBuffer.wrap(new int[] {1, 2, 3, 2, 1, 10});
         final DAFArraySummary summary = new DAFArraySummary(summaryDoubles, summaryInts, 1, 80);
-        final DAFArray array = new DAFArray("TEST", summary, Arrays.asList(1.0, 2.0, 3.0));
+        final DAFArray array = new DAFArray("TEST", summary,
+                DoubleBuffer.wrap(new double[] {1.0, 2.0, 3.0}));
         final DAF daf = new DAF(fileRecord, "test", Arrays.asList(array));
 
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -222,10 +217,11 @@ class DAFParserTest {
         // write a valid big-endian DAF, then corrupt the endianness string
         final DAFFileRecord fileRecord = new DAFFileRecord("DAF/SPK", 2, 6, 40, 5, "test",
                 2, 2, 1, "BIG-IEEE", DAFConstants.FTPSTR);
-        final List<Double> summaryDoubles = Arrays.asList(0.0, 100.0);
-        final List<Integer> summaryInts = Arrays.asList(1, 2, 3, 2, 1, 10);
+        final DoubleBuffer summaryDoubles = DoubleBuffer.wrap(new double[] {0.0, 100.0});
+        final IntBuffer summaryInts = IntBuffer.wrap(new int[] {1, 2, 3, 2, 1, 10});
         final DAFArraySummary summary = new DAFArraySummary(summaryDoubles, summaryInts, 1, 80);
-        final DAFArray array = new DAFArray("TEST", summary, Arrays.asList(1.0, 2.0, 3.0));
+        final DAFArray array = new DAFArray("TEST", summary,
+                DoubleBuffer.wrap(new double[] {1.0, 2.0, 3.0}));
         final DAF daf = new DAF(fileRecord, null, Arrays.asList(array));
 
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -249,10 +245,11 @@ class DAFParserTest {
         // write a valid DAF with no comments (firstSummaryRecNum=2), then truncate before summary record
         final DAFFileRecord fileRecord = new DAFFileRecord("DAF/SPK", 2, 6, 40, 5, "test",
                 2, 2, 1, "LTL-IEEE", DAFConstants.FTPSTR);
-        final List<Double> summaryDoubles = Arrays.asList(0.0, 100.0);
-        final List<Integer> summaryInts = Arrays.asList(1, 2, 3, 2, 1, 10);
+        final DoubleBuffer summaryDoubles = DoubleBuffer.wrap(new double[] {0.0, 100.0});
+        final IntBuffer summaryInts = IntBuffer.wrap(new int[] {1, 2, 3, 2, 1, 10});
         final DAFArraySummary summary = new DAFArraySummary(summaryDoubles, summaryInts, 1, 80);
-        final DAFArray array = new DAFArray("TEST", summary, Arrays.asList(1.0, 2.0, 3.0));
+        final DAFArray array = new DAFArray("TEST", summary,
+                DoubleBuffer.wrap(new double[] {1.0, 2.0, 3.0}));
         final DAF daf = new DAF(fileRecord, null, Arrays.asList(array));
 
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -273,10 +270,11 @@ class DAFParserTest {
         // write a valid DAF with no comments (firstSummaryRecNum=2), then truncate after summary record
         final DAFFileRecord fileRecord = new DAFFileRecord("DAF/SPK", 2, 6, 40, 5, "test",
                 2, 2, 1, "LTL-IEEE", DAFConstants.FTPSTR);
-        final List<Double> summaryDoubles = Arrays.asList(0.0, 100.0);
-        final List<Integer> summaryInts = Arrays.asList(1, 2, 3, 2, 1, 10);
+        final DoubleBuffer summaryDoubles = DoubleBuffer.wrap(new double[] {0.0, 100.0});
+        final IntBuffer summaryInts = IntBuffer.wrap(new int[] {1, 2, 3, 2, 1, 10});
         final DAFArraySummary summary = new DAFArraySummary(summaryDoubles, summaryInts, 1, 80);
-        final DAFArray array = new DAFArray("TEST", summary, Arrays.asList(1.0, 2.0, 3.0));
+        final DAFArray array = new DAFArray("TEST", summary,
+                DoubleBuffer.wrap(new double[] {1.0, 2.0, 3.0}));
         final DAF daf = new DAF(fileRecord, null, Arrays.asList(array));
 
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();

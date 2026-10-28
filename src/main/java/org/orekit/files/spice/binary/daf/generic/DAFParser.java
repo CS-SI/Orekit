@@ -16,11 +16,12 @@
  */
 package org.orekit.files.spice.binary.daf.generic;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.DoubleBuffer;
+import java.nio.IntBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -53,14 +54,8 @@ public class DAFParser {
     public DAF parse(final DataSource source) {
         try (InputStream is = source.getOpener().openStreamOnce()) {
 
-            // Manually read entire file into memory
-            final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            final byte[] buffer = new byte[DAFConstants.BUFFER_SIZE];
-            int bytesRead;
-            while ((bytesRead = is.read(buffer)) != -1) {
-                baos.write(buffer, 0, bytesRead);
-            }
-            final byte[] rawData = baos.toByteArray();
+            // read entire file into memory
+            final byte[] rawData = is.readAllBytes();
 
             // Parse file record. DAF files contain a single file record (always the first one),
             // comprising metadata. Each DAF file record is 1024 bytes long, including the file record.
@@ -386,16 +381,13 @@ public class DAFParser {
                                 final String endianString, final int numDoublesSummary, final int numIntsSummary) {
         final DAFArraySummary summary = parseArraySummary(summaryRaw, endianString, numDoublesSummary, numIntsSummary);
         // now we just need to get the array elements using the initial and final addresses. this will be a list of doubles,
-        final List<Double> arrayElements = new ArrayList<>();
         final int initialArrayAddressBytes = summary.getInitialArrayAddress();
         final int finalArrayAddressBytes = summary.getFinalArrayAddress();
         final ByteBuffer elementsBuffer = ByteBuffer.wrap(rawData, initialArrayAddressBytes - 1, finalArrayAddressBytes - initialArrayAddressBytes);
         elementsBuffer.order(DAFConstants.BIG_ENDIAN_STRING.equalsIgnoreCase(endianString) ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN);
-        while (elementsBuffer.remaining() >= DAFConstants.DOUBLE_SIZE_BYTES) {
-            arrayElements.add(elementsBuffer.getDouble());
-        }
+
         // with these, we can assemble the array (summary + name + elements)
-        return new DAFArray(name, summary, arrayElements);
+        return new DAFArray(name, summary, elementsBuffer.asDoubleBuffer());
     }
 
     /**
@@ -409,22 +401,22 @@ public class DAFParser {
      */
     private DAFArraySummary parseArraySummary(final byte[] summaryRaw, final String endianString,
                                               final int numDoublesSummary, final int numIntsSummary) {
-        final List<Double> summaryDoubles = new ArrayList<>();
         final ByteBuffer summaryBuffer = ByteBuffer.wrap(summaryRaw);
         summaryBuffer.order(DAFConstants.BIG_ENDIAN_STRING.equalsIgnoreCase(endianString) ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN);
         // we need to get a number of doubles equal to numDoublesSummary
-        for (int j = 0; j < numDoublesSummary; j++) {
-            summaryDoubles.add(summaryBuffer.getDouble());
-        }
+        final DoubleBuffer summaryDoubles =
+                summaryBuffer.asDoubleBuffer().limit(numDoublesSummary);
+        final int nBytes = numDoublesSummary * DAFConstants.DOUBLE_SIZE_BYTES;
+        summaryBuffer.position(summaryBuffer.position() + nBytes);
         // and then a number of ints equal to numIntsSummary
-        final List<Integer> summaryInts = new ArrayList<>();
-        for (int j = 0; j < numIntsSummary; j++) {
-            summaryInts.add(summaryBuffer.getInt());
-        }
+        final IntBuffer summaryInts =
+                summaryBuffer.asIntBuffer().limit(numIntsSummary);
         // the final two integers in the summaryInts are the initial and final double word addresses of the array elements
         // note we convert them to byte addresses here
-        final int initialArrayAddressBytes = (summaryInts.get(summaryInts.size() - 2) - 1) * DAFConstants.DOUBLE_SIZE_BYTES + 1;
-        final int finalArrayAddressBytes = summaryInts.getLast() * DAFConstants.DOUBLE_SIZE_BYTES + 1;
+        final int initialArrayAddressBytes =
+                (summaryInts.get(numIntsSummary - 2) - 1) * DAFConstants.DOUBLE_SIZE_BYTES + 1;
+        final int finalArrayAddressBytes =
+                summaryInts.get(numIntsSummary - 1) * DAFConstants.DOUBLE_SIZE_BYTES + 1;
         // with these, we can initialize a DAFArraySummary object
         return new DAFArraySummary(summaryDoubles, summaryInts, initialArrayAddressBytes, finalArrayAddressBytes);
     }

@@ -20,6 +20,10 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.DoubleBuffer;
+import java.nio.IntBuffer;
+import java.nio.channels.Channels;
+import java.nio.channels.WritableByteChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -267,43 +271,45 @@ public class DAFWriter {
      */
     private void writeSummaryRecord(final DataOutputStream dos, final List<DAFArraySummary> summaries, final int numDoubles, final int numInts,
                                     final int nextSummaryRecNum, final int prevSummaryRecNum) throws IOException {
+        final ByteBuffer bytes = ByteBuffer
+                .allocate(DAFConstants.RECORD_LENGTH_BYTES)
+                .order(bb.order());
+
         final int singleSummarySizeDoubles = numDoubles + (numInts + 1) / 2;
 
         // Write control doubles (NEXT, PREV, NSUM)
         // Note that they are written as doubles but will actually always be integer numbers
-        writeDouble(dos, nextSummaryRecNum);
-        writeDouble(dos, prevSummaryRecNum);
-        writeDouble(dos, summaries.size());
-
-        int bytesWritten = 3 * DAFConstants.DOUBLE_SIZE_BYTES;
+        bytes.putDouble(nextSummaryRecNum);
+        bytes.putDouble(prevSummaryRecNum);
+        bytes.putDouble(summaries.size());
 
         // Write each summary
+        final int targetBytes = singleSummarySizeDoubles * DAFConstants.DOUBLE_SIZE_BYTES;
         for (final DAFArraySummary summary : summaries) {
             // ND doubles
-            for (double d : summary.getSummaryDoubles()) {
-                writeDouble(dos, d);
-            }
-            bytesWritten += numDoubles * DAFConstants.DOUBLE_SIZE_BYTES;
+            final DoubleBuffer summaryDoubles = summary.getSummaryDoubles();
+            final int nDouble = summaryDoubles.remaining();
+            // TODO check nDouble == numDouble
+            bytes.asDoubleBuffer().put(summaryDoubles);
+            final int nDoubleBytes = nDouble * DAFConstants.DOUBLE_SIZE_BYTES;
+            bytes.position(bytes.position() + nDoubleBytes);
 
             // NI ints
-            for (int i : summary.getSummaryInts()) {
-                writeInt(dos, i);
-            }
-            bytesWritten += numInts * DAFConstants.INT_SIZE_BYTES;
+            final IntBuffer summaryInts = summary.getSummaryInts();
+            final int nInts = summaryInts.remaining();
+            // TODO check nInt == numInt
+            bytes.asIntBuffer().put(summaryInts);
+            final int nIntBytes = nInts * DAFConstants.INT_SIZE_BYTES;
+            bytes.position(bytes.position() + nIntBytes);
 
             // Pad to align to singleSummarySizeDoubles * double byte size (8)
-            final int summaryBytes = numDoubles * DAFConstants.DOUBLE_SIZE_BYTES + numInts * DAFConstants.INT_SIZE_BYTES;
-            final int targetBytes = singleSummarySizeDoubles * DAFConstants.DOUBLE_SIZE_BYTES;
-            for (int i = summaryBytes; i < targetBytes; i++) {
-                dos.writeByte(DAFConstants.NULL_ASCII);
-                bytesWritten++;
-            }
+            final int summaryBytes = nDoubleBytes + nIntBytes;
+            bytes.position(bytes.position() + targetBytes - summaryBytes);
         }
+        // rest of the record is padded with null bytes
 
-        // Pad rest of the record with null bytes
-        for (int i = bytesWritten; i < DAFConstants.RECORD_LENGTH_BYTES; i++) {
-            dos.writeByte(DAFConstants.NULL_ASCII);
-        }
+        bytes.position(0);
+        writeBytes(dos, bytes);
     }
 
     /**
@@ -411,7 +417,7 @@ public class DAFWriter {
                 int batchTotalElements = 0;
 
                 for (int i = batchStart; i < batchEnd; i++) {
-                    final int numElements = arrays.get(i).getArrayElements().size();
+                    final int numElements = arrays.get(i).getArrayElements().remaining();
                     arrayAddresses[i][0] = nextFreeAddress; // initial address
                     arrayAddresses[i][1] = nextFreeAddress + numElements - 1; // final address
                     nextFreeAddress += numElements;
@@ -464,10 +470,16 @@ public class DAFWriter {
                     final int finalAddress = arrayAddresses[i][1];
 
                     // Create updated summary with correct addresses
-                    final List<Integer> updatedInts = new ArrayList<>(array.getArraySummary().getSummaryInts());
+                    final IntBuffer oldSummaryInts =
+                            array.getArraySummary().getSummaryInts();
+                    final int nInt = oldSummaryInts.remaining();
+                    final IntBuffer updatedInts = IntBuffer
+                            .allocate(nInt)
+                            .put(oldSummaryInts)
+                            .clear();
                     // Last two ints are initial and final addresses
-                    updatedInts.set(updatedInts.size() - 2, initialAddress);
-                    updatedInts.set(updatedInts.size() - 1, finalAddress);
+                    updatedInts.put(nInt - 2, initialAddress);
+                    updatedInts.put(nInt - 1, finalAddress);
 
                     final DAFArraySummary updatedSummary = new DAFArraySummary(
                         array.getArraySummary().getSummaryDoubles(),
@@ -492,11 +504,18 @@ public class DAFWriter {
                 // Write data contiguously for all arrays in this batch
                 int batchTotalElements = 0;
                 for (int i = batchStart; i < batchEnd; i++) {
-                    final List<Double> elements = arrays.get(i).getArrayElements();
-                    for (final Double element : elements) {
-                        writeDouble(dos, element);
-                    }
-                    batchTotalElements += elements.size();
+                    final DoubleBuffer elements = arrays.get(i).getArrayElements();
+                    final int nDoubles = elements.remaining();
+                    final int nBytes = nDoubles * DAFConstants.DOUBLE_SIZE_BYTES;
+                    // TODO might be able to avoid a copy if the DoubleBuffer is
+                    //  backed by a ByteBuffer and the order is correct
+                    // byte swap if needed
+                    final ByteBuffer bytes = ByteBuffer
+                            .allocate(nBytes)
+                            .order(bb.order());
+                    bytes.asDoubleBuffer().put(elements);
+                    writeBytes(dos, bytes);
+                    batchTotalElements += nDoubles;
                 }
 
                 // Pad to complete the final data record of this batch to 128 doubles (1024 bytes)
@@ -511,6 +530,22 @@ public class DAFWriter {
         } finally {
             // close the stream
             dos.close();
+        }
+    }
+
+    /**
+     * Write the buffer out. Writes bytes from the buffer's position to its
+     * limit. On return the position is equal to the limit.
+     *
+     * @param dos   to append to.
+     * @param bytes to write.
+     * @throws IOException
+     */
+    private static void writeBytes(final DataOutputStream dos,
+                                   final ByteBuffer bytes) throws IOException {
+        final WritableByteChannel channel = Channels.newChannel(dos);
+        while (bytes.remaining() > 0) {
+            channel.write(bytes);
         }
     }
 
@@ -547,15 +582,4 @@ public class DAFWriter {
         dos.write(bb.array(), 0, DAFConstants.INT_SIZE_BYTES);
     }
 
-    /**
-     * Write an 8-byte double using the writer's endianness.
-     * @param dos data output stream to write to
-     * @param x double to write
-     * @throws IOException if I/O error occurs
-     */
-    private void writeDouble(final DataOutputStream dos, final double x) throws IOException {
-        bb.clear();
-        bb.putDouble(x);
-        dos.write(bb.array(), 0, DAFConstants.DOUBLE_SIZE_BYTES);
-    }
 }
