@@ -22,7 +22,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
@@ -37,6 +36,8 @@ import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.DateTimeComponents;
+import org.orekit.utils.DoubleArrayList;
+import org.orekit.utils.DoubleList;
 
 /** Loads Vienna tropospheric coefficients a given input stream.
  * A stream contains, for a given day and a given hour, the hydrostatic and wet zenith delays
@@ -278,12 +279,12 @@ public class ViennaModelCoefficientsLoader extends AbstractSelfFeedingLoader
         String line = null;
 
         // Initialize Lists
-        final ArrayList<Double> latitudes  = new ArrayList<>();
-        final ArrayList<Double> longitudes = new ArrayList<>();
-        final ArrayList<Double> ah         = new ArrayList<>();
-        final ArrayList<Double> aw         = new ArrayList<>();
-        final ArrayList<Double> zhd        = new ArrayList<>();
-        final ArrayList<Double> zwd        = new ArrayList<>();
+        final DoubleList latitudes  = new DoubleArrayList();
+        final DoubleList longitudes = new DoubleArrayList();
+        final DoubleList ah         = new DoubleArrayList();
+        final DoubleList aw         = new DoubleArrayList();
+        final DoubleList zhd        = new DoubleArrayList();
+        final DoubleList zwd        = new DoubleArrayList();
 
         // Open stream and parse data
         try (BufferedReader br = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
@@ -337,15 +338,8 @@ public class ViennaModelCoefficientsLoader extends AbstractSelfFeedingLoader
         final int dimLon = longitudes.size();
 
         // Change Lists to Arrays
-        final double[] xVal = new double[dimLat];
-        for (int i = 0; i < dimLat; i++) {
-            xVal[i] = latitudes.get(i);
-        }
-
-        final double[] yVal = new double[dimLon];
-        for (int j = 0; j < dimLon; j++) {
-            yVal[j] = longitudes.get(j);
-        }
+        final double[] xVal = latitudes.toArray();
+        final double[] yVal = longitudes.toArray();
 
         final double[][] fvalAH = new double[dimLat][dimLon];
         final double[][] fvalAW = new double[dimLat][dimLon];
