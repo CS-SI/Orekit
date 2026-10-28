@@ -56,6 +56,8 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.utils.Constants;
+import org.orekit.utils.DoubleArrayList;
+import org.orekit.utils.DoubleList;
 import org.orekit.utils.drivers.ParameterDriver;
 import org.orekit.utils.TimeSpanMap;
 
@@ -609,7 +611,7 @@ public class GlobalIonosphereMapModel extends AbstractIonosphericModel  {
                 AbsoluteDate      firstEpoch  = null;
                 AbsoluteDate      lastEpoch   = null;
                 AbsoluteDate      epoch       = firstEpoch;
-                ArrayList<Double> values      = new ArrayList<>();
+                DoubleList values             = new DoubleArrayList();
 
                 for (line = br.readLine(); line != null; line = br.readLine()) {
                     ++lineNumber;
@@ -670,7 +672,7 @@ public class GlobalIonosphereMapModel extends AbstractIonosphericModel  {
                                 maps.add(map);
                                 // Reset parameters
                                 inTEC  = false;
-                                values = new ArrayList<>();
+                                values = new DoubleArrayList();
                                 epoch  = null;
                                 break;
                             default :
@@ -684,7 +686,7 @@ public class GlobalIonosphereMapModel extends AbstractIonosphericModel  {
                                         !line.endsWith(END) &&
                                         !line.endsWith(EPOCH)) {
                                         for (int fieldStart = 0; fieldStart < line.length(); fieldStart += 5) {
-                                            values.add((double) Integer.parseInt(line.substring(fieldStart, fieldStart + 5).trim()));
+                                            values.add(Integer.parseInt(line.substring(fieldStart, fieldStart + 5).trim()));
                                         }
                                     }
                                 }
@@ -695,7 +697,7 @@ public class GlobalIonosphereMapModel extends AbstractIonosphericModel  {
                             // Here, we are parsing the last line of TEC data for a given latitude
                             // The size of this line is lower than 60.
                             for (int fieldStart = 0; fieldStart < line.length(); fieldStart += 5) {
-                                values.add((double) Integer.parseInt(line.substring(fieldStart, fieldStart + 5).trim()));
+                                values.add(Integer.parseInt(line.substring(fieldStart, fieldStart + 5).trim()));
                             }
                         }
                     }
@@ -797,7 +799,7 @@ public class GlobalIonosphereMapModel extends AbstractIonosphericModel  {
          * @param longitudes array containing the different latitudes in radians
          * @return the interpolating TEC functiopn in TECUnits
          */
-        private BilinearInterpolatingFunction interpolateTEC(final ArrayList<Double> values, final double exponent,
+        private BilinearInterpolatingFunction interpolateTEC(final DoubleList values, final double exponent,
                                                              final double[] latitudes, final double[] longitudes) {
             // Array dimensions
             final int dimLat = latitudes.length;
