@@ -19,6 +19,11 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
+    <release version="13.1.10" date="TBD" description="TBD.">
+        <action dev="sepoma" type="fix" issue="2035">
+          Fixed wrong sign in L1TransformProvider.
+        </action>
+    </release>
     <release version="13.1.9" date="2026-10-03" description="Orekit 13.1.9 is a patch release. It solves a range of bugs including some related to Albedo and EOPs.">
         <action dev="luc" type="fix" issue="2028" due-to="LordRaptor">
           Fixed power computation of units containing a current part.
