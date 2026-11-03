@@ -171,46 +171,51 @@ public class KnockeRediffusedForceModel implements ForceModel {
         // Project satellite on Earth as vector
         final Vector3D projectedToGround = satellitePosition.normalize().scalarMultiply(equatorialRadius);
 
-        // Get elementary vector east for Earth browsing using rotations
-        final double q = 1.0 / FastMath.hypot(satellitePosition.getX(), satellitePosition.getY());
-        final Vector3D east = new Vector3D(-q * satellitePosition.getY(), q * satellitePosition.getX(), 0);
+        // Get an axis orthogonal to the satellite position for Earth browsing using rotations
+        final Vector3D offsetAxis = satellitePosition.orthogonal();
 
-        // Initialize rediffused flux with elementary flux coming from the circular area around the projected satellite
-        final double centerArea = MathUtils.TWO_PI * equatorialRadius * equatorialRadius *
-                                 (1.0 - FastMath.cos(angularResolution));
-        Vector3D rediffusedFlux = computeElementaryFlux(s, projectedToGround, sunPosition, centerArea);
+        // Get satellite distance and horizon angle
+        final double r       = satellitePosition.getNorm();
+        final double horizon = FastMath.acos(equatorialRadius / r);
 
-        // Sectorize the part of Earth which is seen by the satellite into crown sectors with constant angular resolution
-        for (double eastAxisOffset = 1.5 * angularResolution;
-             eastAxisOffset < FastMath.acos(equatorialRadius / satellitePosition.getNorm());
-             eastAxisOffset = eastAxisOffset + angularResolution) {
+        // Split each ring into equal azimuth cells covering exactly the full circle
+        final int    azimuthCells = FastMath.max(1, (int) FastMath.round(MathUtils.TWO_PI / angularResolution));
+        final double azimuthStep  = MathUtils.TWO_PI / azimuthCells;
 
-            // Build rotation transformations to get first crown elementary sector center
-            final Rotation eastRotation = new Rotation(east, eastAxisOffset, RotationConvention.VECTOR_OPERATOR);
+        // Grid the part of Earth which is seen by the satellite into concentric rings around nadir,
+        // browsed outward from nadir to the horizon with constant angular resolution
+        Vector3D rediffusedFlux = Vector3D.ZERO;
+        double innerAngle = 0.0;
+        while (innerAngle < horizon) {
 
-            // Get first elementary crown sector center
-            final Vector3D firstCrownSectorCenter = eastRotation.applyTo(projectedToGround);
+            // Get current ring angles from nadir
+            // The last ring extends to the horizon and is 0.5 to 1.5 angular resolution wide
+            final double outerAngle = innerAngle + 1.5 * angularResolution < horizon ?
+                                      innerAngle + angularResolution : horizon;
+            final double centerAngle = 0.5 * (innerAngle + outerAngle);
 
-            // Compute current elementary crown sector area, it results of the integration of an elementary crown sector
-            // over the angular resolution
-            final double sectorArea = equatorialRadius * equatorialRadius *
-                                      2.0 * angularResolution * FastMath.sin(0.5 * angularResolution) *
-                                      FastMath.sin(eastAxisOffset);
+            // Build rotation transformations to get first cell center of the ring
+            final Rotation centerRotation = new Rotation(offsetAxis, centerAngle, RotationConvention.VECTOR_OPERATOR);
+            final Vector3D firstCellCenter = centerRotation.applyTo(projectedToGround);
 
-            // Browse the entire crown
-            for (double radialAxisOffset = 0.5 * angularResolution;
-                 radialAxisOffset < MathUtils.TWO_PI;
-                 radialAxisOffset = radialAxisOffset + angularResolution) {
+            // Compute cell area, the same for all cells of the ring
+            final double cellArea = computeCellArea(r, innerAngle, outerAngle, centerAngle, azimuthCells);
+
+            // Browse all cells of the ring
+            for (int i = 0; i < azimuthCells; ++i) {
 
                 // Build rotation transformations to get elementary area center
-                final Rotation radialRotation  = new Rotation(projectedToGround, radialAxisOffset, RotationConvention.VECTOR_OPERATOR);
+                final Rotation radialRotation  = new Rotation(projectedToGround, (i + 0.5) * azimuthStep,
+                                                              RotationConvention.VECTOR_OPERATOR);
 
-                // Get current elementary crown sector center
-                final Vector3D currentCenter = radialRotation.applyTo(firstCrownSectorCenter);
+                // Get current grid cell center
+                final Vector3D currentCenter = radialRotation.applyTo(firstCellCenter);
 
-                // Add current sector contribution to total rediffused flux
-                rediffusedFlux = rediffusedFlux.add(computeElementaryFlux(s, currentCenter, sunPosition, sectorArea));
+                // Add current cell contribution to total rediffused flux
+                rediffusedFlux = rediffusedFlux.add(computeElementaryFlux(s, currentCenter, sunPosition, cellArea));
             }
+
+            innerAngle = outerAngle;
         }
 
         return spacecraft.radiationPressureAcceleration(s, rediffusedFlux, parameters);
@@ -239,51 +244,53 @@ public class KnockeRediffusedForceModel implements ForceModel {
         // Project satellite on Earth as vector
         final FieldVector3D<T> projectedToGround = satellitePosition.normalize().scalarMultiply(equatorialRadius);
 
-        // Get elementary vector east for Earth browsing using rotations
-        final T q = FastMath.hypot(satellitePosition.getX(), satellitePosition.getY()).reciprocal();
-        final FieldVector3D<T> east = new FieldVector3D<>(q.negate().multiply(satellitePosition.getY()),
-                                                          q.multiply(satellitePosition.getX()),
-                                                          zero);
+        // Get an axis orthogonal to the satellite position for Earth browsing using rotations
+        final FieldVector3D<T> offsetAxis = satellitePosition.orthogonal();
 
-        // Initialize rediffused flux with elementary flux coming from the circular area around the projected satellite
-        final T centerArea = zero.getPi().multiply(2.0).multiply(equatorialRadius).multiply(equatorialRadius).
-                        multiply(1.0 - FastMath.cos(angularResolution));
-        FieldVector3D<T> rediffusedFlux = computeElementaryFlux(s, projectedToGround, sunPosition, centerArea);
+        // Get satellite distance and horizon angle
+        final T r       = satellitePosition.getNorm();
+        final T horizon = FastMath.acos(r.reciprocal().multiply(equatorialRadius));
 
-        // Sectorize the part of Earth which is seen by the satellite into crown sectors with constant angular resolution
-        for (double eastAxisOffset = 1.5 * angularResolution;
-             eastAxisOffset < FastMath.acos(equatorialRadius / satellitePosition.getNorm().getReal());
-             eastAxisOffset = eastAxisOffset + angularResolution) {
+        // Split each ring into equal azimuth cells covering exactly the full circle
+        final int    azimuthCells = FastMath.max(1, (int) FastMath.round(MathUtils.TWO_PI / angularResolution));
+        final double azimuthStep  = MathUtils.TWO_PI / azimuthCells;
 
-            // Build rotation transformations to get first crown elementary sector center
-            final FieldRotation<T> eastRotation = new FieldRotation<>(east, zero.newInstance(eastAxisOffset),
+        // Grid the part of Earth which is seen by the satellite into concentric rings around nadir,
+        // browsed outward from nadir to the horizon with constant angular resolution
+        FieldVector3D<T> rediffusedFlux = FieldVector3D.getZero(date.getField());
+        T innerAngle = zero;
+        while (innerAngle.getReal() < horizon.getReal()) {
+
+            // Get current ring angles from nadir
+            // The last ring extends to the horizon and is 0.5 to 1.5 angular resolution wide
+            final T outerAngle = innerAngle.getReal() + 1.5 * angularResolution < horizon.getReal() ?
+                                 innerAngle.add(angularResolution) : horizon;
+            final T centerAngle = innerAngle.add(outerAngle).multiply(0.5);
+
+            // Build rotation transformations to get first cell center of the ring
+            final FieldRotation<T> centerRotation = new FieldRotation<>(offsetAxis, centerAngle,
                                                                       RotationConvention.VECTOR_OPERATOR);
+            final FieldVector3D<T> firstCellCenter = centerRotation.applyTo(projectedToGround);
 
-            // Get first elementary crown sector center
-            final FieldVector3D<T> firstCrownSectorCenter = eastRotation.applyTo(projectedToGround);
+            // Compute cell area, the same for all cells of the ring
+            final T cellArea = computeCellArea(r, innerAngle, outerAngle, centerAngle, azimuthCells);
 
-            // Compute current elementary crown sector area, it results of the integration of an elementary crown sector
-            // over the angular resolution
-            final T sectorArea = zero.newInstance(equatorialRadius * equatorialRadius *
-                                                  2.0 * angularResolution * FastMath.sin(0.5 * angularResolution) *
-                                                  FastMath.sin(eastAxisOffset));
-
-            // Browse the entire crown
-            for (double radialAxisOffset = 0.5 * angularResolution;
-                 radialAxisOffset < MathUtils.TWO_PI;
-                 radialAxisOffset = radialAxisOffset + angularResolution) {
+            // Browse all cells of the ring
+            for (int i = 0; i < azimuthCells; ++i) {
 
                 // Build rotation transformations to get elementary area center
                 final FieldRotation<T> radialRotation  = new FieldRotation<>(projectedToGround,
-                                                                             zero.newInstance(radialAxisOffset),
+                                                                             zero.newInstance((i + 0.5) * azimuthStep),
                                                                              RotationConvention.VECTOR_OPERATOR);
 
-                // Get current elementary crown sector center
-                final FieldVector3D<T> currentCenter = radialRotation.applyTo(firstCrownSectorCenter);
+                // Get current grid cell center
+                final FieldVector3D<T> currentCenter = radialRotation.applyTo(firstCellCenter);
 
-                // Add current sector contribution to total rediffused flux
-                rediffusedFlux = rediffusedFlux.add(computeElementaryFlux(s, currentCenter, sunPosition, sectorArea));
+                // Add current cell contribution to total rediffused flux
+                rediffusedFlux = rediffusedFlux.add(computeElementaryFlux(s, currentCenter, sunPosition, cellArea));
             }
+
+            innerAngle = outerAngle;
         }
 
         return spacecraft.radiationPressureAcceleration(s, rediffusedFlux, parameters);
@@ -385,7 +392,7 @@ public class KnockeRediffusedForceModel implements ForceModel {
         // Get latitude sinus
         final double sinPhi = FastMath.sin(phi);
 
-        // Compute albedo
+        // Compute the emissivity
         return E0 +
                E1 * firstLegendrePolynomial.value(sinPhi) +
                E2 * secondLegendrePolynomial.value(sinPhi);
@@ -418,7 +425,7 @@ public class KnockeRediffusedForceModel implements ForceModel {
         // Get latitude sinus
         final T sinPhi = FastMath.sin(phi);
 
-        // Compute albedo
+        // Compute the emissivity
         return firstLegendrePolynomial.value(sinPhi).multiply(E1).add(
                secondLegendrePolynomial.value(sinPhi).multiply(E2)).add(E0);
 
@@ -453,6 +460,80 @@ public class KnockeRediffusedForceModel implements ForceModel {
     }
 
 
+    /** Compute the area of a grid cell giving, when lumped at its center, its exact flux along nadir.
+     * @param r satellite distance to Earth center
+     * @param innerAngle cell inner angle from nadir, seen from Earth center
+     * @param outerAngle cell outer angle from nadir, seen from Earth center, not beyond the horizon
+     * @param centerAngle cell center angle from nadir, seen from Earth center
+     * @param azimuthCells number of cells in azimuth
+     * @return cell area
+     * @since 13.1.9
+     */
+    private double computeCellArea(final double r, final double innerAngle, final double outerAngle,
+                                   final double centerAngle, final int azimuthCells) {
+        final double h  = r - equatorialRadius;
+        final double sc = FastMath.sin(0.5 * centerAngle);
+        final double xc = 2.0 * sc * sc;
+        final double d2 = h * h + 2.0 * equatorialRadius * r * xc;
+        return FastMath.PI * d2 * d2 *
+               (computeNadirViewFactor(r, outerAngle) - computeNadirViewFactor(r, innerAngle)) /
+               ((h - r * xc) * (h + equatorialRadius * xc) * azimuthCells);
+    }
+
+    /** Compute the area of a grid cell giving, when lumped at its center, its exact flux along nadir.
+     * @param <T> type of the field elements
+     * @param r satellite distance to Earth center
+     * @param innerAngle cell inner angle from nadir, seen from Earth center
+     * @param outerAngle cell outer angle from nadir, seen from Earth center, not beyond the horizon
+     * @param centerAngle cell center angle from nadir, seen from Earth center
+     * @param azimuthCells number of cells in azimuth
+     * @return cell area
+     * @since 13.1.9
+     */
+    private <T extends CalculusFieldElement<T>> T computeCellArea(final T r, final T innerAngle, final T outerAngle,
+                                                                  final T centerAngle, final int azimuthCells) {
+        final T h  = r.subtract(equatorialRadius);
+        final T sc = FastMath.sin(centerAngle.multiply(0.5));
+        final T xc = sc.multiply(2.0).multiply(sc);
+        final T d2 = h.square().add(r.multiply(2.0 * equatorialRadius).multiply(xc));
+        return d2.multiply(FastMath.PI).multiply(d2).
+               multiply(computeNadirViewFactor(r, outerAngle).subtract(computeNadirViewFactor(r, innerAngle))).
+               divide(h.subtract(r.multiply(xc)).multiply(h.add(xc.multiply(equatorialRadius))).multiply(azimuthCells));
+    }
+
+    /** Compute the view factor along nadir of the Earth within given angle from nadir.
+     * <p>
+     * For a Lambertian sphere, it is (Re * sin(angle) / d)^2, with d the distance between the satellite
+     * and the points at this angle from nadir: d^2 = h^2 + 2 * Re * r * (1 - cos(angle)), h = r - Re
+     * being the satellite altitude.
+     * </p>
+     * @param r satellite distance to Earth center
+     * @param angle angle from nadir, seen from Earth center, not beyond the horizon
+     * @return view factor
+     * @since 13.1.9
+     */
+    private double computeNadirViewFactor(final double r, final double angle) {
+        final double h = r - equatorialRadius;
+        final double s = FastMath.sin(0.5 * angle);
+        final double x = 2.0 * s * s;
+        return equatorialRadius * equatorialRadius * x * (2.0 - x) / (h * h + 2.0 * equatorialRadius * r * x);
+    }
+
+    /** Compute the view factor along nadir of the Earth within given angle from nadir.
+     * @param <T> type of the field elements
+     * @param r satellite distance to Earth center
+     * @param angle angle from nadir, seen from Earth center, not beyond the horizon
+     * @return view factor
+     * @since 13.1.9
+     */
+    private <T extends CalculusFieldElement<T>> T computeNadirViewFactor(final T r, final T angle) {
+        final T h = r.subtract(equatorialRadius);
+        final T s = FastMath.sin(angle.multiply(0.5));
+        final T x = s.multiply(2.0).multiply(s);
+        return x.multiply(equatorialRadius * equatorialRadius).multiply(x.negate().add(2.0)).
+               divide(h.square().add(r.multiply(2.0 * equatorialRadius).multiply(x)));
+    }
+
     /** Compute elementary rediffused flux on satellite.
      * @param state the current spacecraft state
      * @param elementCenter the position of the considered area center
@@ -474,10 +555,14 @@ public class KnockeRediffusedForceModel implements ForceModel {
         // Get solar flux impacting Earth
         final double solarFlux = computeSolarFlux(sunPosition);
 
+        // Compute elementary area - satellite vector and distance
+        final Vector3D r = satellitePosition.subtract(elementCenter);
+        final double rNorm = r.getNorm();
+
         // Get satellite viewing angle as seen from current elementary area
         final double centerNorm = elementCenter.getNorm();
-        final double cosAlpha   = Vector3D.dotProduct(elementCenter, satellitePosition) /
-                                  (centerNorm * satellitePosition.getNorm());
+        final double cosAlpha   = Vector3D.dotProduct(elementCenter, r) /
+                                  (centerNorm * rNorm);
 
         // Check that satellite sees the current area
         if (cosAlpha > 0) {
@@ -502,10 +587,6 @@ public class KnockeRediffusedForceModel implements ForceModel {
 
             // Compute elementary area contribution to rediffused flux
             final double albedoAndIR = a * solarFlux * cosSunAngle + e * solarFlux * 0.25;
-
-            // Compute elementary area - satellite vector and distance
-            final Vector3D r = satellitePosition.subtract(elementCenter);
-            final double rNorm = r.getNorm();
 
             // Compute attenuated projected elementary area vector
             final Vector3D projectedAreaVector = r.scalarMultiply(elementArea * cosAlpha /
@@ -548,10 +629,14 @@ public class KnockeRediffusedForceModel implements ForceModel {
         // Get solar flux impacting Earth
         final T solarFlux = computeSolarFlux(sunPosition);
 
+        // Compute elementary area - satellite vector and distance
+        final FieldVector3D<T> r = satellitePosition.subtract(elementCenter);
+        final T rNorm = r.getNorm();
+
         // Get satellite viewing angle as seen from current elementary area
         final T centerNorm = elementCenter.getNorm();
-        final T cosAlpha   = FieldVector3D.dotProduct(elementCenter, satellitePosition).
-                             divide(centerNorm.multiply(satellitePosition.getNorm()));
+        final T cosAlpha   = FieldVector3D.dotProduct(elementCenter, r).
+                             divide(centerNorm.multiply(rNorm));
 
         // Check that satellite sees the current area
         if (cosAlpha.getReal() > 0) {
@@ -577,10 +662,6 @@ public class KnockeRediffusedForceModel implements ForceModel {
             // Compute elementary area contribution to rediffused flux
             final T albedoAndIR = a.multiply(solarFlux).multiply(cosSunAngle).
                                   add(e.multiply(solarFlux).multiply(0.25));
-
-            // Compute elementary area - satellite vector and distance
-            final FieldVector3D<T> r = satellitePosition.subtract(elementCenter);
-            final T rNorm = r.getNorm();
 
             // Compute attenuated projected elementary area vector
             final FieldVector3D<T> projectedAreaVector = r.scalarMultiply(elementArea.multiply(cosAlpha).
