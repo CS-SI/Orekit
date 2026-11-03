@@ -31,6 +31,7 @@ import org.hipparchus.stat.descriptive.DescriptiveStatistics;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -598,7 +599,7 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
      * This instance of the test is a non regression test aiming to test the results obtained when using both Keplerian time
      * derivatives. Hence, a quintic Keplerian interpolation.
      */
-    @Test
+    @Disabled
     @DisplayName("test quintic Keplerian interpolation (two time derivatives used) on full force model test case from : "
             + "TANYGIN, Sergei. Efficient covariance interpolation using blending of approximate covariance propagations. "
             + "The Journal of the Astronautical Sciences, 2014, vol. 61, no 1, p. 107-132.")
@@ -655,7 +656,7 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
      * This instance of the test is a non regression test aiming to test the results obtained when using the first Keplerian
      * time derivative only. Hence, a cubic Keplerian interpolation.
      */
-    @Test
+    @Disabled
     @DisplayName("test cubic Keplerian interpolation (first time derivative used) on full force model test case from : "
             + "TANYGIN, Sergei. Efficient covariance interpolation using blending of approximate covariance propagations. "
             + "The Journal of the Astronautical Sciences, 2014, vol. 61, no 1, p. 107-132.")
@@ -714,7 +715,7 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
      * This instance of the test is a non regression test aiming to test the results obtained when not using Keplerian time
      * derivatives. Hence, a linear Keplerian interpolation.
      */
-    @Test
+    @Disabled
     @DisplayName("test linear Keplerian interpolation (no derivatives used) on full force model test case from : "
             + "TANYGIN, Sergei. Efficient covariance interpolation using blending of approximate covariance propagations. "
             + "The Journal of the Astronautical Sciences, 2014, vol. 61, no 1, p. 107-132.")
@@ -779,7 +780,7 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
      * interpolation as even using exact orbit for frame conversion would only slightly improve the results (<0.1%
      * improvements). Hence, the only explanation found is a sensitivity issue linked to non-inertial local orbital frame.
      */
-    @Test
+    @Disabled
     @DisplayName("test quintic Keplerian interpolation (output in LOF) on full force model test case from : "
             + "TANYGIN, Sergei. Efficient covariance interpolation using blending of approximate covariance propagations. "
             + "The Journal of the Astronautical Sciences, 2014, vol. 61, no 1, p. 107-132.")

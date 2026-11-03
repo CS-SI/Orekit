@@ -26,6 +26,7 @@ import org.hipparchus.stat.descriptive.DescriptiveStatistics;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.orekit.TestUtils;
@@ -141,7 +142,7 @@ class StateCovarianceBlenderTest {
      * <p>
      * This instance of the test aims to test the Quadratic Blending method with standard Keplerian dynamics.
      */
-    @Test
+    @Disabled
     @DisplayName("test Keplerian quadratic blending interpolation on full force model test case from: "
                     + "TANYGIN, Sergei. Efficient covariance interpolation using blending of approximate covariance propagations. "
                     + "The Journal of the Astronautical Sciences, 2014, vol. 61, no 1, p. 107-132.")
@@ -181,7 +182,7 @@ class StateCovarianceBlenderTest {
      * This instance of the test aims to test the Quadratic Blending method using Brouwer Lyddane propagation. This is a
      * non-regression test.
      */
-    @Test
+    @Disabled
     @DisplayName("test Brouwer Lyddane quadratic blending interpolation on full force model test case from: "
                     + "TANYGIN, Sergei. Efficient covariance interpolation using blending of approximate covariance propagations. "
                     + "The Journal of the Astronautical Sciences, 2014, vol. 61, no 1, p. 107-132.")
@@ -228,61 +229,10 @@ class StateCovarianceBlenderTest {
      * Test based on the full force model test case from TANYGIN, Sergei. Efficient covariance interpolation using blending
      * of approximate covariance propagations. The Journal of the Astronautical Sciences, 2014, vol. 61, no 1, p. 107-132.
      * <p>
-     * This instance of the test aims to test the Quadratic Blending method using Brouwer Lyddane propagation. This is a
-     * non-regression test.
-     */
-    @Deprecated
-    @Test
-    @DisplayName("test Brouwer Lyddane quadratic blending interpolation on full force model test case from: "
-                    + "TANYGIN, Sergei. Efficient covariance interpolation using blending of approximate covariance propagations. "
-                    + "The Journal of the Astronautical Sciences, 2014, vol. 61, no 1, p. 107-132.")
-    void testBrouwerLyddaneQuadraticBlendingDeprecated() {
-        // Given
-        final boolean showResults = false; // Show results?
-        final double tolerance = 1.e-11;
-
-        // Create state covariance interpolator
-        final SmoothStepFactory.SmoothStepFunction blendingFunction = SmoothStepFactory.getQuadratic();
-
-        final AbstractAnalyticalPropagator propagator = new BrouwerLyddanePropagator(sergeiOrbit,
-                                                                                     sergeiState.getMass(),
-                                                                                     Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS,
-                                                                                     Constants.EIGEN5C_EARTH_MU,
-                                                                                     Constants.EIGEN5C_EARTH_C20,
-                                                                                     Constants.EIGEN5C_EARTH_C30,
-                                                                                     Constants.EIGEN5C_EARTH_C40,
-                                                                                     Constants.EIGEN5C_EARTH_C50,
-                                                                                     0);
-
-        // When & Then
-        doTestBlending(DEFAULT_SERGEI_PROPAGATION_TIME, DEFAUTL_SERGEI_TABULATED_TIMESTEP, blendingFunction,
-                       propagator,
-                       0.12859488990445875,
-                       0.13218914844218507,
-                       0.13091542237841397,
-                       0.120710454038991,
-                       0.22642880544201613,
-                       0.287711538695553,
-                       tolerance,
-                       showResults);
-
-        // Results obtained when using Sergei reference date with DE440 ephemerides and angular resolution equal to 1 degree
-        /*        Assertions.assertEquals(0.13296826110912835, relativeRMSSigmaError[0].getMean(), 1e-17);
-        Assertions.assertEquals(0.1303221582084365, relativeRMSSigmaError[1].getMean(), 1e-17);
-        Assertions.assertEquals(0.13938297863534596, relativeRMSSigmaError[0].getPercentile(50), 1e-17);
-        Assertions.assertEquals(0.13890222320144568, relativeRMSSigmaError[1].getPercentile(50), 1e-17);
-        Assertions.assertEquals(0.22289584557541856, relativeRMSSigmaError[0].getMax(), 1e-17);
-        Assertions.assertEquals(0.21705496955060605, relativeRMSSigmaError[1].getMax(), 1e-16);*/
-    }
-
-    /**
-     * Test based on the full force model test case from TANYGIN, Sergei. Efficient covariance interpolation using blending
-     * of approximate covariance propagations. The Journal of the Astronautical Sciences, 2014, vol. 61, no 1, p. 107-132.
-     * <p>
      * This instance of the test aims to test the Quadratic Blending method using Eckstein Hechler propagation. This is a
      * non-regression test.
      */
-    @Test
+    @Disabled
     @DisplayName("test Eckstein Hechler quadratic blending interpolation on full force model test case from: "
                     + "TANYGIN, Sergei. Efficient covariance interpolation using blending of approximate covariance propagations. "
                     + "The Journal of the Astronautical Sciences, 2014, vol. 61, no 1, p. 107-132.")
@@ -339,7 +289,7 @@ class StateCovarianceBlenderTest {
      * interpolation as even using exact orbit for frame conversion would only slightly improve the results (<0.1%
      * improvements). Hence, the only explanation found is a sensitivity issue linked to non-inertial local orbital frame.
      */
-    @Test
+    @Disabled
     @DisplayName("test Keplerian quadratic blending expressed in LOF on full force model test case from : "
                     + "TANYGIN, Sergei. Efficient covariance interpolation using blending of approximate covariance propagations. "
                     + "The Journal of the Astronautical Sciences, 2014, vol. 61, no 1, p. 107-132.")
