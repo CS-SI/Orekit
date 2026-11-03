@@ -25,13 +25,13 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** Class modeling a position-velocity measurement.
  * <p>
- * For position-only measurement see {@link Position}.
+ * For position-only measurement see {@link PositionMeasurement}.
  * </p>
- * @see Position
+ * @see PositionMeasurement
  * @author Luc Maisonobe
  * @since 8.0
  */
-public class PV extends PseudoMeasurement<PV> {
+public class PVMeasurement extends PseudoMeasurement<PVMeasurement> {
 
     /** Type of the measurement. */
     public static final String MEASUREMENT_TYPE = "PV";
@@ -68,9 +68,9 @@ public class PV extends PseudoMeasurement<PV> {
      * @param satellite satellite related to this measurement
      * @since 9.3
      */
-    public PV(final AbsoluteDate date, final Vector3D position, final Vector3D velocity,
-              final double sigmaPosition, final double sigmaVelocity, final double baseWeight,
-              final ObservableSatellite satellite) {
+    public PVMeasurement(final AbsoluteDate date, final Vector3D position, final Vector3D velocity,
+                         final double sigmaPosition, final double sigmaVelocity, final double baseWeight,
+                         final ObservableSatellite satellite) {
         this(date, position, velocity,
              new double[] {
                  sigmaPosition,
@@ -96,9 +96,9 @@ public class PV extends PseudoMeasurement<PV> {
      * @param satellite satellite related to this measurement
      * @since 9.3
      */
-    public PV(final AbsoluteDate date, final Vector3D position, final Vector3D velocity,
-              final double[] sigmaPosition, final double[] sigmaVelocity,
-              final double baseWeight, final ObservableSatellite satellite) {
+    public PVMeasurement(final AbsoluteDate date, final Vector3D position, final Vector3D velocity,
+                         final double[] sigmaPosition, final double[] sigmaVelocity,
+                         final double baseWeight, final ObservableSatellite satellite) {
         this(date, position, velocity, buildPvCovarianceMatrix(sigmaPosition, sigmaVelocity), baseWeight, satellite);
     }
 
@@ -113,8 +113,8 @@ public class PV extends PseudoMeasurement<PV> {
      * @param satellite satellite related to this measurement
      * @since 9.3
      */
-    public PV(final AbsoluteDate date, final Vector3D position, final Vector3D velocity,
-              final double[] sigmaPV, final double baseWeight, final ObservableSatellite satellite) {
+    public PVMeasurement(final AbsoluteDate date, final Vector3D position, final Vector3D velocity,
+                         final double[] sigmaPV, final double baseWeight, final ObservableSatellite satellite) {
         this(date, position, velocity, new MeasurementQuality(sigmaPV, new double[] {baseWeight, baseWeight, baseWeight,
             baseWeight, baseWeight, baseWeight}), satellite);
     }
@@ -133,9 +133,9 @@ public class PV extends PseudoMeasurement<PV> {
      * @param satellite satellite related to this measurement
      * @since 9.3
      */
-    public PV(final AbsoluteDate date, final Vector3D position, final Vector3D velocity,
-              final double[][] positionCovarianceMatrix, final double[][] velocityCovarianceMatrix,
-              final double baseWeight, final ObservableSatellite satellite) {
+    public PVMeasurement(final AbsoluteDate date, final Vector3D position, final Vector3D velocity,
+                         final double[][] positionCovarianceMatrix, final double[][] velocityCovarianceMatrix,
+                         final double baseWeight, final ObservableSatellite satellite) {
         this(date, position, velocity, buildPvCovarianceMatrix(positionCovarianceMatrix, velocityCovarianceMatrix),
              baseWeight, satellite);
     }
@@ -151,8 +151,8 @@ public class PV extends PseudoMeasurement<PV> {
      * @param satellite satellite related to this measurement
      * @since 9.3
      */
-    public PV(final AbsoluteDate date, final Vector3D position, final Vector3D velocity,
-              final double[][] covarianceMatrix, final double baseWeight, final ObservableSatellite satellite) {
+    public PVMeasurement(final AbsoluteDate date, final Vector3D position, final Vector3D velocity,
+                         final double[][] covarianceMatrix, final double baseWeight, final ObservableSatellite satellite) {
         this(date, position, velocity, new MeasurementQuality(covarianceMatrix,
               new double[] { baseWeight, baseWeight, baseWeight, baseWeight, baseWeight, baseWeight }), satellite);
     }
@@ -167,8 +167,8 @@ public class PV extends PseudoMeasurement<PV> {
      * @param satellite satellite related to this measurement
      * @since 14.0
      */
-    public PV(final AbsoluteDate date, final Vector3D position, final Vector3D velocity,
-              final MeasurementQuality measurementQuality, final ObservableSatellite satellite) {
+    public PVMeasurement(final AbsoluteDate date, final Vector3D position, final Vector3D velocity,
+                         final MeasurementQuality measurementQuality, final ObservableSatellite satellite) {
         super(date,
                 new double[] {
                         position.getX(), position.getY(), position.getZ(),
@@ -194,15 +194,15 @@ public class PV extends PseudoMeasurement<PV> {
 
     /** {@inheritDoc} */
     @Override
-    protected EstimatedMeasurementBase<PV> theoreticalEvaluationWithoutDerivatives(final int iteration, final int evaluation,
-                                                                                   final SpacecraftState[] states,
-                                                                                   final boolean fillParticipants) {
+    protected EstimatedMeasurementBase<PVMeasurement> theoreticalEvaluationWithoutDerivatives(final int iteration, final int evaluation,
+                                                                                              final SpacecraftState[] states,
+                                                                                              final boolean fillParticipants) {
 
         // PV value
         final TimeStampedPVCoordinates pv = states[0].getPVCoordinates();
 
         // prepare the evaluation
-        final EstimatedMeasurementBase<PV> estimated =
+        final EstimatedMeasurementBase<PVMeasurement> estimated =
                         new EstimatedMeasurementBase<>(this, iteration, evaluation, states,
                                                        fillParticipants ? new TimeStampedPVCoordinates[] { pv } : new TimeStampedPVCoordinates[0]);
 
@@ -215,9 +215,9 @@ public class PV extends PseudoMeasurement<PV> {
 
     /** {@inheritDoc} */
     @Override
-    protected EstimatedMeasurement<PV> theoreticalEvaluation(final int iteration, final int evaluation,
-                                                             final SpacecraftState[] states) {
-        final EstimatedMeasurement<PV> estimated = new EstimatedMeasurement<>(theoreticalEvaluationWithoutDerivatives(iteration, evaluation, states));
+    protected EstimatedMeasurement<PVMeasurement> theoreticalEvaluation(final int iteration, final int evaluation,
+                                                                        final SpacecraftState[] states) {
+        final EstimatedMeasurement<PVMeasurement> estimated = new EstimatedMeasurement<>(theoreticalEvaluationWithoutDerivatives(iteration, evaluation, states));
 
         // partial derivatives with respect to state
         estimated.setStateDerivatives(0, IDENTITY);
@@ -282,5 +282,11 @@ public class PV extends PseudoMeasurement<PV> {
             pvCovarianceMatrix[i + 3][i + 3] =  sigmaVelocity[i] * sigmaVelocity[i];
         }
         return pvCovarianceMatrix;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String getMeasurementType() {
+        return MEASUREMENT_TYPE;
     }
 }

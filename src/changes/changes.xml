@@ -20,6 +20,18 @@
   </properties>
   <body>
       <release version="14.0" date="TBD" description="TBD">
+          <action dev="jtabeaud" type="fix" issue="2033">
+              Fix precision problem with KeplerianExtendedPositionProvider.
+          </action>
+          <action dev="serrof" type="update" issue="2031">
+              Append Measurement to Position and PV classes' name.
+          </action>
+          <action dev="nlowing" type="fix" issue="2026">
+              Fix calculation of inferred LOD in EOPHistory to be scaled by JULIAN_DAY.
+          </action>
+          <action dev="evan" type="update">
+            Update PropagatorBuilder and OrbitStateFactory to not need type casts.
+          </action>
           <action dev="serrof" type="update" issue="2024">
               Generalized JacobianPropagatorConverter to non fully numerical.
           </action>
@@ -97,6 +109,9 @@
           <action dev="luc" type="update" issue="1992">
               Use DataSource in EopHistoryLoader.Parser interface.
           </action>
+          <action dev="rodrigomarcelino" type="fix" issue="1990">
+              Removed "missing translation" markers from localization files.
+          </action>
           <action dev="serrof" type="add" issue="1988">
               Add parallactic refraction modifier.
           </action>
@@ -156,6 +171,10 @@
           </action>
           <action dev="rafa" type="fix" issue="1950">
               Implement logic from Algorithm 2 from Izzo's 2014 paper to correct nMax in LambertSolver.
+          </action>
+          <action dev="rodrigomarcelino" type="add" issue="1936">
+              Allowed configuring the TLE generation algorithm used when resetting
+              TLE from state in (Field)TLEPropagator and TLEGradientConverter.
           </action>
           <action dev="Nicolas Kaikati" type="add" issue="1935">
           Added an Observer for LeastSquaresConverter.

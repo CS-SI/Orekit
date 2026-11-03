@@ -28,8 +28,8 @@ import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.measurements.ObservableSatellite;
-import org.orekit.estimation.measurements.PV;
-import org.orekit.estimation.measurements.Position;
+import org.orekit.estimation.measurements.PVMeasurement;
+import org.orekit.estimation.measurements.PositionMeasurement;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.Orbit;
@@ -70,9 +70,9 @@ class IodHerrickGibbsTest {
 
         // Herrick-Gibbs IOD
         final Orbit orbit = gibbs.estimate(FramesFactory.getEME2000(),
-                                           new Position(t1, r1, 1.0, 1.0, satellite),
-                                           new Position(t2, r2, 1.0, 1.0, satellite),
-                                           new Position(t3, r3, 1.0, 1.0, satellite));
+                                           new PositionMeasurement(t1, r1, 1.0, 1.0, satellite),
+                                           new PositionMeasurement(t2, r2, 1.0, 1.0, satellite),
+                                           new PositionMeasurement(t3, r3, 1.0, 1.0, satellite));
 
         // Verify
         Assertions.assertEquals(0.0, orbit.durationFrom(t2));
@@ -125,9 +125,9 @@ class IodHerrickGibbsTest {
         // Initialization
         final AbsoluteDate date = new AbsoluteDate(2000, 2, 24, 11, 35, 47.0, TimeScalesFactory.getUTC());
         final ObservableSatellite satellite = new ObservableSatellite(0);
-        final PV pv1 = new PV(date, Vector3D.PLUS_I, Vector3D.ZERO, 1.0, 1.0, 1.0, satellite);
-        final PV pv2 = new PV(date.shiftedBy(1.0), Vector3D.PLUS_J, Vector3D.ZERO, 1.0, 1.0, 1.0, satellite);
-        final PV pv3 = new PV(date, Vector3D.PLUS_K, Vector3D.ZERO, 1.0, 1.0, 1.0, satellite);
+        final PVMeasurement pv1 = new PVMeasurement(date, Vector3D.PLUS_I, Vector3D.ZERO, 1.0, 1.0, 1.0, satellite);
+        final PVMeasurement pv2 = new PVMeasurement(date.shiftedBy(1.0), Vector3D.PLUS_J, Vector3D.ZERO, 1.0, 1.0, 1.0, satellite);
+        final PVMeasurement pv3 = new PVMeasurement(date, Vector3D.PLUS_K, Vector3D.ZERO, 1.0, 1.0, 1.0, satellite);
         // Action
         try {
             new IodHerrickGibbs(Constants.WGS84_EARTH_MU).estimate(FramesFactory.getEME2000(), pv1, pv2, pv3);
@@ -159,9 +159,9 @@ class IodHerrickGibbsTest {
         // Initialization
         final AbsoluteDate date = new AbsoluteDate(2000, 2, 24, 11, 35, 47.0, TimeScalesFactory.getUTC());
         final ObservableSatellite satellite = new ObservableSatellite(0);
-        final PV pv1 = new PV(date, Vector3D.PLUS_I, Vector3D.ZERO, 1.0, 1.0, 1.0, satellite);
-        final PV pv2 = new PV(date.shiftedBy(1.0), Vector3D.PLUS_J, Vector3D.ZERO, 1.0, 1.0, 1.0, satellite);
-        final PV pv3 = new PV(date.shiftedBy(2.0), Vector3D.PLUS_K, Vector3D.ZERO, 1.0, 1.0, 1.0, satellite);
+        final PVMeasurement pv1 = new PVMeasurement(date, Vector3D.PLUS_I, Vector3D.ZERO, 1.0, 1.0, 1.0, satellite);
+        final PVMeasurement pv2 = new PVMeasurement(date.shiftedBy(1.0), Vector3D.PLUS_J, Vector3D.ZERO, 1.0, 1.0, 1.0, satellite);
+        final PVMeasurement pv3 = new PVMeasurement(date.shiftedBy(2.0), Vector3D.PLUS_K, Vector3D.ZERO, 1.0, 1.0, 1.0, satellite);
         // Action
         try {
             new IodHerrickGibbs(Constants.WGS84_EARTH_MU).estimate(FramesFactory.getEME2000(), pv1, pv2, pv3);

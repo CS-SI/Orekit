@@ -62,7 +62,7 @@ class SGP4OrbitalStateTest {
         Assertions.assertEquals(tle.getE(), elements.getAveragedEccentricity());
         Assertions.assertEquals(tle.getI(), elements.getAveragedInclination());
         Assertions.assertEquals(tle.getRaan(), elements.getAveragedRightAscensionOfTheAscendingNode());
-        Assertions.assertEquals(tle.getPeriapsisArgument(), elements.getAveragedPeriapsisArgument());
+        Assertions.assertEquals(tle.getPerigeeArgument(), elements.getAveragedPeriapsisArgument());
         Assertions.assertEquals(tle.getMeanAnomaly(), elements.getAveragedMeanAnomaly());
     }
 

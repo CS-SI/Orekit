@@ -44,7 +44,7 @@ import org.orekit.data.UnixCompressFilter;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.estimation.measurements.Position;
+import org.orekit.estimation.measurements.PositionMeasurement;
 import org.orekit.files.ilrs.CPF;
 import org.orekit.files.ilrs.CPF.CPFCoordinate;
 import org.orekit.files.ilrs.CPF.CPFEphemeris;
@@ -85,8 +85,8 @@ import org.orekit.propagation.semianalytical.dsst.forces.DSSTZonal;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
-import org.orekit.utils.drivers.ParameterDriver;
 import org.orekit.utils.TimeStampedPVCoordinates;
+import org.orekit.utils.drivers.ParameterDriver;
 
 public class UnscentedSemiAnalyticalKalmanOrbitDeterminationTest {
 
@@ -440,7 +440,7 @@ public class UnscentedSemiAnalyticalKalmanOrbitDeterminationTest {
                                                               transformPosition(coordinate.getPosition());
 
             // Initialize measurement
-            final Position measurement = new Position(coordinate.getDate(), posInertial, sigma, 1.0, satellite);
+            final PositionMeasurement measurement = new PositionMeasurement(coordinate.getDate(), posInertial, sigma, 1.0, satellite);
 
             // Add the measurement to the list
             measurements.add(measurement);
@@ -551,7 +551,7 @@ public class UnscentedSemiAnalyticalKalmanOrbitDeterminationTest {
             final EstimatedMeasurement<?> estimatedMeasurement = estimation.getCorrectedMeasurement();
 
             // Check
-            if (estimatedMeasurement.getObservedMeasurement() instanceof Position) {
+            if (estimatedMeasurement.getObservedMeasurement() instanceof PositionMeasurement) {
 
                 if (estimatedMeasurement.getStatus() == EstimatedMeasurement.Status.REJECTED) {
                     if (print) {

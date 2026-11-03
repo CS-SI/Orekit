@@ -82,7 +82,7 @@ abstract class SDP4  extends TLEPropagator {
     protected void sxpPropagate(final double tSince, final double bStar) {
 
         // Update for secular gravity and atmospheric drag
-        omgadf = tle.getPeriapsisArgument() + omgdot * tSince;
+        omgadf = tle.getPerigeeArgument() + omgdot * tSince;
         final double xnoddf = tle.getRaan() + xnodot * tSince;
         final double tSinceSq = tSince * tSince;
         xnode = xnoddf + xnodcf * tSinceSq;

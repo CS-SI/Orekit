@@ -23,6 +23,7 @@ import org.orekit.forces.gravity.potential.TideSystem;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.orbits.AbstractOrbitFactory;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.OrbitalStateFactory;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 
@@ -31,7 +32,7 @@ import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
  * @since 6.0
  */
 public class EcksteinHechlerPropagatorBuilder
-    extends AbstractAnalyticalPropagatorBuilder<EcksteinHechlerPropagator, Orbit, AbstractOrbitFactory<Orbit>> {
+    extends AbstractAnalyticalPropagatorBuilder<EcksteinHechlerPropagator, Orbit, OrbitalStateFactory<? extends Orbit>> {
 
     /** Provider for un-normalized coefficients. */
     private final UnnormalizedSphericalHarmonicsProvider provider;
@@ -40,10 +41,10 @@ public class EcksteinHechlerPropagatorBuilder
      * @param factory factory for initial orbit
      * @param provider for un-normalized zonal coefficients
      * @since 14.0
-     * @see #EcksteinHechlerPropagatorBuilder(AbstractOrbitFactory,
+     * @see #EcksteinHechlerPropagatorBuilder(OrbitalStateFactory,
      * UnnormalizedSphericalHarmonicsProvider, AttitudeProvider)
      */
-    public EcksteinHechlerPropagatorBuilder(final AbstractOrbitFactory<? extends Orbit> factory,
+    public EcksteinHechlerPropagatorBuilder(final OrbitalStateFactory<? extends Orbit> factory,
                                             final UnnormalizedSphericalHarmonicsProvider provider) {
         this(factory, provider, FrameAlignedProvider.of(factory.getFrame()));
     }
@@ -54,10 +55,10 @@ public class EcksteinHechlerPropagatorBuilder
      * @param attitudeProvider attitude law to use.
      * @since 14.0
      */
-    public EcksteinHechlerPropagatorBuilder(final AbstractOrbitFactory<? extends Orbit> factory,
+    public EcksteinHechlerPropagatorBuilder(final OrbitalStateFactory<? extends Orbit> factory,
                                             final UnnormalizedSphericalHarmonicsProvider provider,
                                             final AttitudeProvider attitudeProvider) {
-        super((AbstractOrbitFactory<Orbit>) factory, true, attitudeProvider, Propagator.DEFAULT_MASS);
+        super(factory, true, attitudeProvider, Propagator.DEFAULT_MASS);
         factory.setMu(provider.getMu());
         this.provider = provider;
     }
@@ -73,10 +74,10 @@ public class EcksteinHechlerPropagatorBuilder
      * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
      * @param c60 un-normalized zonal coefficient (about -5.41e-7 for Earth)
      * @since 14.0
-     * @see #EcksteinHechlerPropagatorBuilder(AbstractOrbitFactory,
+     * @see #EcksteinHechlerPropagatorBuilder(OrbitalStateFactory,
      * UnnormalizedSphericalHarmonicsProvider, AttitudeProvider)
      */
-    public EcksteinHechlerPropagatorBuilder(final AbstractOrbitFactory<? extends Orbit> factory,
+    public EcksteinHechlerPropagatorBuilder(final OrbitalStateFactory<? extends Orbit> factory,
                                             final double referenceRadius,
                                             final double mu,
                                             final TideSystem tideSystem,

@@ -137,7 +137,7 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldOrbital
     /** Inclination (rad). */
     private final T inclination;
 
-    /** Argument of periapsis (rad). */
+    /** Argument of perigee (rad). */
     private final T pa;
 
     /** Right Ascension of the Ascending node (rad). */
@@ -260,7 +260,7 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldOrbital
      *
      * <p>
      * The mean anomaly, the right ascension of ascending node Ω and the argument of
-     * periapsis ω are normalized into the [0, 2π] interval as they can be negative.
+     * perigee ω are normalized into the [0, 2π] interval as they can be negative.
      * After that, a range check is performed on some of the orbital elements:
      *
      * <pre>
@@ -286,7 +286,7 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldOrbital
      * @param meanMotionSecondDerivative mean motion second derivative (rad/s³)
      * @param e eccentricity
      * @param i inclination (rad)
-     * @param pa argument of periapsis (rad)
+     * @param pa argument of perigee (rad)
      * @param raan right ascension of ascending node (rad)
      * @param meanAnomaly mean anomaly (rad)
      * @param revolutionNumberAtEpoch revolution number at epoch
@@ -318,7 +318,7 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldOrbital
      * </p>
      * <p>
      * The mean anomaly, the right ascension of ascending node Ω and the argument of
-     * periapsis ω are normalized into the [0, 2π] interval as they can be negative.
+     * perigee ω are normalized into the [0, 2π] interval as they can be negative.
      * After that, a range check is performed on some of the orbital elements:
      *
      * <pre>
@@ -344,7 +344,7 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldOrbital
      * @param meanMotionSecondDerivative mean motion second derivative (rad/s³)
      * @param e eccentricity
      * @param i inclination (rad)
-     * @param pa argument of periapsis (rad)
+     * @param pa argument of perigee (rad)
      * @param raan right ascension of ascending node (rad)
      * @param meanAnomaly mean anomaly (rad)
      * @param revolutionNumberAtEpoch revolution number at epoch
@@ -651,10 +651,10 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldOrbital
         return inclination;
     }
 
-    /** Get the argument of periapsis.
+    /** Get the argument of perigee.
      * @return omega (rad)
      */
-    public T getPeriapsisArgument() {
+    public T getPerigeeArgument() {
         return pa;
     }
 
@@ -787,7 +787,7 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldOrbital
     public TLE toTLE() {
         return new TLE(getSatelliteNumber(), getClassification(), getLaunchYear(), getLaunchNumber(), getLaunchPiece(), getEphemerisType(),
                        getElementNumber(), getDate().toAbsoluteDate(), getMeanMotion().getReal(), getMeanMotionFirstDerivative().getReal(),
-                       getMeanMotionSecondDerivative().getReal(), getE().getReal(), getI().getReal(), getPeriapsisArgument().getReal(),
+                       getMeanMotionSecondDerivative().getReal(), getE().getReal(), getI().getReal(), getPerigeeArgument().getReal(),
                        getRaan().getReal(), getMeanAnomaly().getReal(), getRevolutionNumberAtEpoch(), getBStar().getReal(), getUtc());
     }
 

@@ -51,9 +51,9 @@ import org.orekit.estimation.measurements.InterSatellitesRangeMeasurementCreator
 import org.orekit.estimation.measurements.MultiplexedMeasurement;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.estimation.measurements.PV;
+import org.orekit.estimation.measurements.PVMeasurement;
 import org.orekit.estimation.measurements.PVMeasurementCreator;
-import org.orekit.estimation.measurements.Position;
+import org.orekit.estimation.measurements.PositionMeasurement;
 import org.orekit.estimation.measurements.PositionMeasurementCreator;
 import org.orekit.estimation.measurements.Range;
 import org.orekit.estimation.measurements.RangeRateMeasurementCreator;
@@ -84,10 +84,10 @@ import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 import org.orekit.utils.drivers.ParameterDriver;
 import org.orekit.utils.drivers.ParameterDriversList;
 import org.orekit.utils.drivers.ParameterDriversList.DelegatingDriver;
-import org.orekit.utils.TimeStampedPVCoordinates;
 
 class BatchLSEstimatorTest {
 
@@ -106,13 +106,13 @@ class BatchLSEstimatorTest {
         final ObservableSatellite satellite = new ObservableSatellite(0);
         for (int i = 0; i < 10; i++) {
             final TimeStampedPVCoordinates shifted = orbit.shiftedBy(i * 100).getPVCoordinates();
-            estimator.addMeasurement(new PV(shifted.getDate(), shifted.getPosition(), shifted.getVelocity(),
+            estimator.addMeasurement(new PVMeasurement(shifted.getDate(), shifted.getPosition(), shifted.getVelocity(),
                     1e1, 1.e-1, 1., satellite));
         }
         final PVCoordinates pvCoordinates = orbit.shiftedBy(1e4).getPVCoordinates();
-        final PV outlier = new PV(orbit.getDate().shiftedBy(-1), pvCoordinates.getPosition(), pvCoordinates.getVelocity(),
+        final PVMeasurement outlier = new PVMeasurement(orbit.getDate().shiftedBy(-1), pvCoordinates.getPosition(), pvCoordinates.getVelocity(),
                 1e1, 1.e-1, 1., satellite);
-        final OutlierFilter<PV> outlierFilter = new OutlierFilter<>(1, 1.);
+        final OutlierFilter<PVMeasurement> outlierFilter = new OutlierFilter<>(1, 1.);
         outlier.addModifier(outlierFilter);
         estimator.addMeasurement(outlier);
         // WHEN
@@ -201,7 +201,7 @@ class BatchLSEstimatorTest {
         final List<ObservedMeasurement<?>> measurements =
                 EstimationTestUtils.createMeasurements(propagator, new PositionMeasurementCreator(),0.0, 1.0, 300.0);
         final RealMatrix covariance = MatrixUtils.createRealIdentityMatrix(6);
-        final MeasurementNoise<Position> measurementNoise = new MeasurementNoise<>(new CorrelatedRandomVectorGenerator(covariance,
+        final MeasurementNoise<PositionMeasurement> measurementNoise = new MeasurementNoise<>(new CorrelatedRandomVectorGenerator(covariance,
                 1e-16, new GaussianRandomGenerator(new Well512a(293890302))));
         measurements.forEach(measurement -> measurement.addModifier((EstimationModifier) measurementNoise));
 

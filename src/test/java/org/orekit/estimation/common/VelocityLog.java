@@ -19,16 +19,16 @@ package org.orekit.estimation.common;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
-import org.orekit.estimation.measurements.PV;
+import org.orekit.estimation.measurements.PVMeasurement;
 
 /** Logger for velocity measurements.
  * @author Luc Maisonobe
  */
-class VelocityLog extends MeasurementLog<PV> {
+class VelocityLog extends MeasurementLog<PVMeasurement> {
 
     /** {@inheritDoc} */
     @Override
-    double residual(final EstimatedMeasurement<PV> evaluation) {
+    double residual(final EstimatedMeasurement<PVMeasurement> evaluation) {
         final double[] theoretical = evaluation.getEstimatedValue();
         final double[] observed    = evaluation.getObservedMeasurement().getObservedValue();
         return Vector3D.distance(new Vector3D(theoretical[3], theoretical[4], theoretical[5]),

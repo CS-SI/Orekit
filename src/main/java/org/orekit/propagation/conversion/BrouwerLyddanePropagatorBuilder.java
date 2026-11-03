@@ -23,8 +23,8 @@ import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.TideSystem;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
-import org.orekit.orbits.AbstractOrbitFactory;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.OrbitalStateFactory;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.BrouwerLyddanePropagator;
 import org.orekit.propagation.analytical.tle.TLE;
@@ -62,7 +62,7 @@ import org.orekit.utils.drivers.ParameterDriversList;
  * @since 11.1
  */
 public class BrouwerLyddanePropagatorBuilder
-    extends AbstractAnalyticalPropagatorBuilder<BrouwerLyddanePropagator, Orbit, AbstractOrbitFactory<Orbit>> {
+    extends AbstractAnalyticalPropagatorBuilder<BrouwerLyddanePropagator, Orbit, OrbitalStateFactory<? extends Orbit>> {
 
     /** Parameters scaling factor.
      * <p>
@@ -80,11 +80,11 @@ public class BrouwerLyddanePropagatorBuilder
      * @param provider for un-normalized zonal coefficients
      * @param M2 value of empirical drag coefficient in rad/s².
      *        If equal to {@link BrouwerLyddanePropagator#M2} drag is not computed
-     * @see #BrouwerLyddanePropagatorBuilder(AbstractOrbitFactory,
+     * @see #BrouwerLyddanePropagatorBuilder(OrbitalStateFactory,
      * UnnormalizedSphericalHarmonicsProvider, AttitudeProvider, double)
      * @since 14.0
      */
-    public BrouwerLyddanePropagatorBuilder(final AbstractOrbitFactory<? extends Orbit> factory,
+    public BrouwerLyddanePropagatorBuilder(final OrbitalStateFactory<? extends Orbit> factory,
                                            final UnnormalizedSphericalHarmonicsProvider provider,
                                            final double M2) {
         this(factory, provider, FrameAlignedProvider.of(factory.getFrame()), M2);
@@ -101,11 +101,11 @@ public class BrouwerLyddanePropagatorBuilder
      * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
      * @param M2 value of empirical drag coefficient in rad/s².
      *        If equal to {@link BrouwerLyddanePropagator#M2} drag is not computed
-     * @see #BrouwerLyddanePropagatorBuilder(AbstractOrbitFactory,
+     * @see #BrouwerLyddanePropagatorBuilder(OrbitalStateFactory,
      * UnnormalizedSphericalHarmonicsProvider, AttitudeProvider, double)
      * @since 14.0
      */
-    public BrouwerLyddanePropagatorBuilder(final AbstractOrbitFactory<? extends Orbit> factory,
+    public BrouwerLyddanePropagatorBuilder(final OrbitalStateFactory<? extends Orbit> factory,
                                            final double referenceRadius,
                                            final double mu,
                                            final TideSystem tideSystem,
@@ -155,11 +155,11 @@ public class BrouwerLyddanePropagatorBuilder
      * @param M2 value of empirical drag coefficient in rad/s².
      *        If equal to {@link BrouwerLyddanePropagator#M2} drag is not computed
      */
-    public BrouwerLyddanePropagatorBuilder(final AbstractOrbitFactory<? extends Orbit> factory,
+    public BrouwerLyddanePropagatorBuilder(final OrbitalStateFactory<? extends Orbit> factory,
                                            final UnnormalizedSphericalHarmonicsProvider provider,
                                            final AttitudeProvider attitudeProvider,
                                            final double M2) {
-        super((AbstractOrbitFactory<Orbit>) factory, true, attitudeProvider, Propagator.DEFAULT_MASS);
+        super(factory, true, attitudeProvider, Propagator.DEFAULT_MASS);
         factory.setMu(provider.getMu());
         this.provider = provider;
         // initialize M2 driver
@@ -177,7 +177,7 @@ public class BrouwerLyddanePropagatorBuilder
 
         // Use cloned builder to unlink orbital drivers
         final BrouwerLyddanePropagatorBuilder builder =
-            new BrouwerLyddanePropagatorBuilder((AbstractOrbitFactory<? extends Orbit>) clonedBuilder.getOrbitalStateFactory().clone(),
+            new BrouwerLyddanePropagatorBuilder(clonedBuilder.getOrbitalStateFactory().clone(),
                                                 clonedBuilder.provider,
                                                 clonedBuilder.getAttitudeProvider(),
                                                 clonedBuilder.getM2Value());

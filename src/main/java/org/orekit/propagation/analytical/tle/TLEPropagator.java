@@ -425,7 +425,7 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator impleme
                 tle.getE() * (0.5 + 2.0 * etasq) -
                 2 * TLEConstants.CK2 * tsi / (a0dp * psisq) *
                         (-3.0 * x3thm1 * (1.0 - 2.0 * eeta + etasq * (1.5 - 0.5 * eeta)) +
-                                0.75 * x1mth2 * (2.0 * etasq - eeta * (1.0 + etasq)) * FastMath.cos(2.0 * tle.getPeriapsisArgument())));
+                                0.75 * x1mth2 * (2.0 * etasq - eeta * (1.0 + etasq)) * FastMath.cos(2.0 * tle.getPerigeeArgument())));
 
         final double theta4 = theta2 * theta2;
         final double temp1 = 3 * TLEConstants.CK2 * pinvsq * xn0dp;
@@ -640,7 +640,7 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator impleme
                       tle.getEphemerisType(), tle.getElementNumber(), tle.getDate(),
                       tle.getMeanMotion(), tle.getMeanMotionFirstDerivative(),
                       tle.getMeanMotionSecondDerivative(),
-                      tle.getE(), tle.getI(), tle.getPeriapsisArgument(), tle.getRaan(),
+                      tle.getE(), tle.getI(), tle.getPerigeeArgument(), tle.getRaan(),
                       tle.getMeanAnomaly(), tle.getRevolutionNumberAtEpoch(),
                       bStarDriver.getValue());
         initializeTle(tle);

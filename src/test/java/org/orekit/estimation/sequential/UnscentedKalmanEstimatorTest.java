@@ -40,9 +40,9 @@ import org.orekit.estimation.measurements.InterSatellitesRangeMeasurementCreator
 import org.orekit.estimation.measurements.MultiplexedMeasurement;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.estimation.measurements.PV;
+import org.orekit.estimation.measurements.PVMeasurement;
 import org.orekit.estimation.measurements.PVMeasurementCreator;
-import org.orekit.estimation.measurements.Position;
+import org.orekit.estimation.measurements.PositionMeasurement;
 import org.orekit.estimation.measurements.Range;
 import org.orekit.estimation.measurements.RangeRateMeasurementCreator;
 import org.orekit.estimation.measurements.TwoWayRangeMeasurementCreator;
@@ -67,10 +67,10 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.clocks.PolynomialClockModel;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
+import org.orekit.utils.TimeStampedPVCoordinates;
 import org.orekit.utils.drivers.ParameterDriver;
 import org.orekit.utils.drivers.ParameterDriversList;
 import org.orekit.utils.drivers.ParameterDriversList.DelegatingDriver;
-import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class UnscentedKalmanEstimatorTest {
 
@@ -94,7 +94,7 @@ public class UnscentedKalmanEstimatorTest {
         final UnscentedKalmanEstimator estimator = builder.build();
         final AbsoluteDate measurementDate = tle.getDate().shiftedBy(1.0);
         final TLEPropagator propagator = TLEPropagator.selectExtrapolator(tle);
-        final Position positionMeasurement = new Position(measurementDate, propagator.getPosition(measurementDate,
+        final PositionMeasurement positionMeasurement = new PositionMeasurement(measurementDate, propagator.getPosition(measurementDate,
                 propagator.getFrame()), 1., 1., new ObservableSatellite(0));
         // WHEN & THEN
         Assertions.assertDoesNotThrow(() -> estimator.estimationStep(positionMeasurement));
@@ -120,7 +120,7 @@ public class UnscentedKalmanEstimatorTest {
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit, propagatorBuilder);
         final AbsoluteDate measurementDate = context.initialOrbit.getDate().shiftedBy(600.0);
         final SpacecraftState state = propagator.propagate(measurementDate);
-        final ObservedMeasurement<?> measurement = new PV(measurementDate,
+        final ObservedMeasurement<?> measurement = new PVMeasurement(measurementDate,
                 state.getPosition().add(new Vector3D(10.0, -10.0, 5.0)),
                 state.getVelocity().add(new Vector3D(-10.0, 5.0, -5.0)),
                 5.0, 5.0, 1.0, new ObservableSatellite(0));
@@ -189,11 +189,11 @@ public class UnscentedKalmanEstimatorTest {
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit, propagatorBuilder1);
         final AbsoluteDate measurementDate = context.initialOrbit.getDate().shiftedBy(600.0);
         final SpacecraftState state = propagator.propagate(measurementDate);
-        final ObservedMeasurement<?> measurement1 = new PV(measurementDate,
+        final ObservedMeasurement<?> measurement1 = new PVMeasurement(measurementDate,
                 state.getPosition().add(new Vector3D(10.0, -10.0, 5.0)),
                 state.getVelocity().add(new Vector3D(-10.0, 5.0, -5.0)),
                 5.0, 5.0, 1.0, new ObservableSatellite(0));
-        final ObservedMeasurement<?> measurement2 = new PV(measurementDate,
+        final ObservedMeasurement<?> measurement2 = new PVMeasurement(measurementDate,
                 state.getPosition().add(new Vector3D(-10.0, 20.0, -1.0)),
                 state.getVelocity().add(new Vector3D(10.0, 50.0, -10.0)),
                 5.0, 5.0, 1.0, new ObservableSatellite(1));
@@ -1063,8 +1063,8 @@ public class UnscentedKalmanEstimatorTest {
         final double sigmaPos = 2.0;
         final double sigmaVel = 2.0e-3;
         final double sigmaRange = 2.0;
-        final Position pos = new Position(reference, Vector3D.PLUS_I, sigmaPos, 1.0, new ObservableSatellite(0));
-        final PV pv = new PV(reference, Vector3D.PLUS_I, Vector3D.PLUS_J, sigmaPos, sigmaVel, 1.0, new ObservableSatellite(0));
+        final PositionMeasurement pos = new PositionMeasurement(reference, Vector3D.PLUS_I, sigmaPos, 1.0, new ObservableSatellite(0));
+        final PVMeasurement pv = new PVMeasurement(reference, Vector3D.PLUS_I, Vector3D.PLUS_J, sigmaPos, sigmaVel, 1.0, new ObservableSatellite(0));
         final Range range = new Range(station, false, reference, 100.0, sigmaRange, 1.0, new ObservableSatellite(0));
 
         // Decorated measurements

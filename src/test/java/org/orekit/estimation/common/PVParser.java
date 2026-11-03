@@ -17,34 +17,34 @@
 
 package org.orekit.estimation.common;
 
+import java.util.Map;
+
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.estimation.measurements.ObservableSatellite;
-import org.orekit.estimation.measurements.PV;
+import org.orekit.estimation.measurements.PVMeasurement;
 import org.orekit.estimation.measurements.Range;
 import org.orekit.estimation.measurements.modifiers.Bias;
-
-import java.util.Map;
 
 /** Parser for PV measurements.
  * @author Luc Maisonobe
  */
-class PVParser extends MeasurementsParser<PV> {
+class PVParser extends MeasurementsParser<PVMeasurement> {
     /** {@inheritDoc} */
     @Override
-    public PV parseFields(final String[] fields,
-                          final Map<String, StationData> stations,
-                          final PVData pvData,
-                          final ObservableSatellite satellite,
-                          final Bias<Range> satRangeBias,
-                          final Weights weights,
-                          final String line,
-                          final int lineNumber,
-                          final String fileName) {
+    public PVMeasurement parseFields(final String[] fields,
+                                     final Map<String, StationData> stations,
+                                     final PVData pvData,
+                                     final ObservableSatellite satellite,
+                                     final Bias<Range> satRangeBias,
+                                     final Weights weights,
+                                     final String line,
+                                     final int lineNumber,
+                                     final String fileName) {
         // field 2, which corresponds to stations in other measurements, is ignored
         // this allows the measurements files to be columns aligned
         // by inserting something like "----" instead of a station name
         checkFields(9, fields, line, lineNumber, fileName);
-        return new org.orekit.estimation.measurements.PV(getDate(fields[0], line, lineNumber, fileName),
+        return new PVMeasurement(getDate(fields[0], line, lineNumber, fileName),
                                                          new Vector3D(Double.parseDouble(fields[3]) * 1000.0,
                                                                       Double.parseDouble(fields[4]) * 1000.0,
                                                                       Double.parseDouble(fields[5]) * 1000.0),

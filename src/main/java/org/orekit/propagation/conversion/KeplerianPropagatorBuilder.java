@@ -18,7 +18,6 @@ package org.orekit.propagation.conversion;
 
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FrameAlignedProvider;
-import org.orekit.orbits.AbstractOrbitFactory;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitalStateFactory;
 import org.orekit.propagation.Propagator;
@@ -30,7 +29,7 @@ import org.orekit.propagation.analytical.KeplerianPropagator;
  * @since 6.0
  */
 public class KeplerianPropagatorBuilder
-    extends AbstractAnalyticalPropagatorBuilder<KeplerianPropagator, Orbit, AbstractOrbitFactory<Orbit>> {
+    extends AbstractAnalyticalPropagatorBuilder<KeplerianPropagator, Orbit, OrbitalStateFactory<? extends Orbit>> {
 
     /** Build a new instance.
      * @param factory factory for initial orbit
@@ -48,7 +47,7 @@ public class KeplerianPropagatorBuilder
      */
     public KeplerianPropagatorBuilder(final OrbitalStateFactory<? extends Orbit> factory,
                                       final AttitudeProvider attitudeProvider) {
-        super((AbstractOrbitFactory<Orbit>) factory, true, attitudeProvider, Propagator.DEFAULT_MASS);
+        super(factory, true, attitudeProvider, Propagator.DEFAULT_MASS);
     }
 
     /** {@inheritDoc}. */

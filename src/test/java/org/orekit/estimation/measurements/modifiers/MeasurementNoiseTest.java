@@ -20,7 +20,7 @@ import org.hipparchus.random.CorrelatedRandomVectorGenerator;
 import org.junit.jupiter.api.Test;
 import org.orekit.TestUtils;
 import org.orekit.estimation.measurements.ObservableSatellite;
-import org.orekit.estimation.measurements.Position;
+import org.orekit.estimation.measurements.PositionMeasurement;
 import org.orekit.estimation.measurements.generation.PositionBuilder;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -36,7 +36,7 @@ class MeasurementNoiseTest {
         final CorrelatedRandomVectorGenerator randomVectorGenerator = mock();
         final double[] noiseValue = new double[] {1., 2., 3.};
         when(randomVectorGenerator.nextVector()).thenReturn(noiseValue);
-        final MeasurementNoise<Position> noise = new MeasurementNoise<>(randomVectorGenerator);
+        final MeasurementNoise<PositionMeasurement> noise = new MeasurementNoise<>(randomVectorGenerator);
         final PositionBuilder builder = new PositionBuilder(1., 1., new ObservableSatellite(0));
         final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
         final SpacecraftState state = new SpacecraftState(TestUtils.getDefaultOrbit(date));

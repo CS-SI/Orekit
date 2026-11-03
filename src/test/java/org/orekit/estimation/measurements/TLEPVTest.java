@@ -16,6 +16,8 @@
  */
 package org.orekit.estimation.measurements;
 
+import java.util.List;
+
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.stat.descriptive.rank.Median;
@@ -34,8 +36,6 @@ import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.propagation.conversion.TLEPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Differentiation;
-
-import java.util.List;
 
 public class TLEPVTest {
 
@@ -126,16 +126,16 @@ public class TLEPVTest {
         };
 
         // Create PV measurements
-        final PV[] pvs = new PV[2];
-        pvs[0] = new PV(date, position, velocity, sigmaP, sigmaV, baseWeight, sats[0]);
-        pvs[1] = new PV(date, position, velocity, sigmaP, sigmaV, baseWeight, sats[1]);
+        final PVMeasurement[] pvs = new PVMeasurement[2];
+        pvs[0] = new PVMeasurement(date, position, velocity, sigmaP, sigmaV, baseWeight, sats[0]);
+        pvs[1] = new PVMeasurement(date, position, velocity, sigmaP, sigmaV, baseWeight, sats[1]);
 
         // Tolerance
         final double eps = 1e-25; // tolerance
 
         // Check data
         for (int k = 0; k < pvs.length; k++) {
-            final PV pv = pvs[k];
+            final PVMeasurement pv = pvs[k];
 
             // Propagator numbers
             Assertions.assertEquals(sats[k].getPropagatorIndex(), pv.getSatellites().getFirst().getPropagatorIndex(), eps);
@@ -200,18 +200,18 @@ public class TLEPVTest {
         };
 
         // Create PV measurements
-        final PV[] pvs = new PV[4];
-        pvs[0] = new PV(date, position, velocity, sigmaP, sigmaV, baseWeight, sats[0]);
-        pvs[1] = new PV(date, position, velocity, sigmaP, sigmaV, baseWeight, sats[1]);
-        pvs[2] = new PV(date, position, velocity, sigmaPV, baseWeight, sats[2]);
-        pvs[3] = new PV(date, position, velocity, sigmaPV, baseWeight, sats[3]);
+        final PVMeasurement[] pvs = new PVMeasurement[4];
+        pvs[0] = new PVMeasurement(date, position, velocity, sigmaP, sigmaV, baseWeight, sats[0]);
+        pvs[1] = new PVMeasurement(date, position, velocity, sigmaP, sigmaV, baseWeight, sats[1]);
+        pvs[2] = new PVMeasurement(date, position, velocity, sigmaPV, baseWeight, sats[2]);
+        pvs[3] = new PVMeasurement(date, position, velocity, sigmaPV, baseWeight, sats[3]);
 
         // Tolerance
         final double eps = 1e-25; // tolerance
 
         // Check data
         for (int k = 0; k < pvs.length; k++) {
-            final PV pv = pvs[k];
+            final PVMeasurement pv = pvs[k];
 
             // Propagator numbers
             Assertions.assertEquals(sats[k].getPropagatorIndex(), pv.getSatellites().getFirst().getPropagatorIndex(), eps);
@@ -289,16 +289,16 @@ public class TLEPVTest {
         final double[] sigmaV = {0.1, 0.2, 0.3};
 
         // Create PV measurements
-        final PV[] pvs = new PV[2];
-        pvs[0] = new PV(date, position, velocity, positionP, velocityP, baseWeight, sats[0]);
-        pvs[1] = new PV(date, position, velocity, positionP, velocityP, baseWeight, sats[1]);
+        final PVMeasurement[] pvs = new PVMeasurement[2];
+        pvs[0] = new PVMeasurement(date, position, velocity, positionP, velocityP, baseWeight, sats[0]);
+        pvs[1] = new PVMeasurement(date, position, velocity, positionP, velocityP, baseWeight, sats[1]);
 
         // Tolerance
         final double eps = 6.7e-16; // tolerance
 
         // Check data
         for (int k = 0; k < pvs.length; k++) {
-            final PV pv = pvs[k];
+            final PVMeasurement pv = pvs[k];
 
             // Propagator numbers
             Assertions.assertEquals(sats[k].getPropagatorIndex(), pv.getSatellites().getFirst().getPropagatorIndex(), eps);
@@ -369,16 +369,16 @@ public class TLEPVTest {
         };
 
         // Create PV measurements
-        final PV[] pvs = new PV[2];
-        pvs[0] = new PV(date, position, velocity, Pref, baseWeight, sats[0]);
-        pvs[1] = new PV(date, position, velocity, Pref, baseWeight, sats[1]);
+        final PVMeasurement[] pvs = new PVMeasurement[2];
+        pvs[0] = new PVMeasurement(date, position, velocity, Pref, baseWeight, sats[0]);
+        pvs[1] = new PVMeasurement(date, position, velocity, Pref, baseWeight, sats[1]);
 
         // Tolerance
         final double eps = 1.8e-15; // tolerance
 
         // Check data
         for (int k = 0; k < pvs.length; k++) {
-            final PV pv = pvs[k];
+            final PVMeasurement pv = pvs[k];
 
             // Propagator numbers
             Assertions.assertEquals(sats[k].getPropagatorIndex(), pv.getSatellites().getFirst().getPropagatorIndex(), eps);
@@ -422,7 +422,7 @@ public class TLEPVTest {
 
         // Build with two 3-sized vectors
         try {
-            new PV(date, position, velocity, new double[] {0., 0., 0.}, new double[] {1.}, weight, sat);
+            new PVMeasurement(date, position, velocity, new double[] {0., 0., 0.}, new double[] {1.}, weight, sat);
             Assertions.fail("An OrekitException should have been thrown");
         } catch (OrekitException e) {
             // An exception should indeed be raised here
@@ -430,7 +430,7 @@ public class TLEPVTest {
 
         // Build with one 6-sized vector
         try {
-            new PV(date, position, velocity, new double[] {0., 0., 0.}, weight, sat);
+            new PVMeasurement(date, position, velocity, new double[] {0., 0., 0.}, weight, sat);
             Assertions.fail("An OrekitException should have been thrown");
         } catch (OrekitException e) {
             // An exception should indeed be raised here
@@ -438,7 +438,7 @@ public class TLEPVTest {
 
         // Build with two 3x3 matrices
         try {
-            new PV(date, position, velocity, new double[][] {{0., 0.}, {0., 0.}},
+            new PVMeasurement(date, position, velocity, new double[][] {{0., 0.}, {0., 0.}},
                    new double[][] {{0., 0.}, {0., 0.}}, weight, sat);
             Assertions.fail("An OrekitException should have been thrown");
         } catch (OrekitException e) {
@@ -447,7 +447,7 @@ public class TLEPVTest {
 
         // Build with one 6x6 matrix
         try {
-            new PV(date, position, velocity, new double[][] {{0., 0.}, {0., 0.}}, weight, sat);
+            new PVMeasurement(date, position, velocity, new double[][] {{0., 0.}, {0., 0.}}, weight, sat);
             Assertions.fail("An OrekitException should have been thrown");
         } catch (OrekitException e) {
             // An exception should indeed be raised here

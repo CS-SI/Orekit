@@ -36,7 +36,7 @@ import org.orekit.estimation.Force;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.estimation.measurements.PV;
+import org.orekit.estimation.measurements.PVMeasurement;
 import org.orekit.estimation.measurements.Range;
 import org.orekit.estimation.measurements.modifiers.Bias;
 import org.orekit.forces.maneuvers.ConstantThrustManeuver;
@@ -84,7 +84,7 @@ public class UnscentedKalmanModelTest {
     private int M;
 
     /** PV at t0. */
-    private PV pv;
+    private PVMeasurement pv;
 
     /** Range after t0. */
     private Range range;
@@ -113,7 +113,7 @@ public class UnscentedKalmanModelTest {
 
         // Create PV at t0
         final AbsoluteDate date0 = context.initialOrbit.getDate();
-        this.pv = new PV(date0,
+        this.pv = new PVMeasurement(date0,
                              context.initialOrbit.getPosition(),
                              context.initialOrbit.getVelocity(),
                              new double[] {1., 2., 3., 1e-3, 2e-3, 3e-3}, 1.,

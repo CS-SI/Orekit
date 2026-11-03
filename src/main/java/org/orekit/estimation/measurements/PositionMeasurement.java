@@ -23,13 +23,13 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** Class modeling a position only measurement.
  * <p>
- * For position-velocity measurement see {@link PV}.
+ * For position-velocity measurement see {@link PVMeasurement}.
  * </p>
- * @see PV
+ * @see PVMeasurement
  * @author Luc Maisonobe
  * @since 9.3
  */
-public class Position extends PseudoMeasurement<Position> {
+public class PositionMeasurement extends PseudoMeasurement<PositionMeasurement> {
 
     /** Type of the measurement. */
     public static final String MEASUREMENT_TYPE = "Position";
@@ -57,9 +57,9 @@ public class Position extends PseudoMeasurement<Position> {
      * @param satellite satellite related to this measurement
      * @since 9.3
      */
-    public Position(final AbsoluteDate date, final Vector3D position,
-                    final double sigmaPosition, final double baseWeight,
-                    final ObservableSatellite satellite) {
+    public PositionMeasurement(final AbsoluteDate date, final Vector3D position,
+                               final double sigmaPosition, final double baseWeight,
+                               final ObservableSatellite satellite) {
         this(date, position, new double[] { sigmaPosition, sigmaPosition, sigmaPosition }, baseWeight, satellite);
     }
 
@@ -73,8 +73,8 @@ public class Position extends PseudoMeasurement<Position> {
      * @param satellite satellite related to this measurement
      * @since 9.3
      */
-    public Position(final AbsoluteDate date, final Vector3D position,
-                    final double[] sigmaPosition, final double baseWeight, final ObservableSatellite satellite) {
+    public PositionMeasurement(final AbsoluteDate date, final Vector3D position,
+                               final double[] sigmaPosition, final double baseWeight, final ObservableSatellite satellite) {
         this(date, position, new MeasurementQuality(sigmaPosition, new double[] {baseWeight, baseWeight, baseWeight}),
                 satellite);
     }
@@ -89,9 +89,9 @@ public class Position extends PseudoMeasurement<Position> {
      * @param satellite satellite related to this measurement
      * @since 9.3
      */
-    public Position(final AbsoluteDate date, final Vector3D position,
-                    final double[][] covarianceMatrix, final double baseWeight,
-                    final ObservableSatellite satellite) {
+    public PositionMeasurement(final AbsoluteDate date, final Vector3D position,
+                               final double[][] covarianceMatrix, final double baseWeight,
+                               final ObservableSatellite satellite) {
         this(date, position, new MeasurementQuality(covarianceMatrix, new double[] {baseWeight, baseWeight, baseWeight}),
                 satellite);
     }
@@ -105,8 +105,8 @@ public class Position extends PseudoMeasurement<Position> {
      * @param satellite satellite related to this measurement
      * @since 14.0
      */
-    public Position(final AbsoluteDate date, final Vector3D position, final MeasurementQuality measurementQuality,
-                    final ObservableSatellite satellite) {
+    public PositionMeasurement(final AbsoluteDate date, final Vector3D position, final MeasurementQuality measurementQuality,
+                               final ObservableSatellite satellite) {
         super(date, position.toArray(), measurementQuality, satellite);
     }
 
@@ -119,13 +119,13 @@ public class Position extends PseudoMeasurement<Position> {
 
     /** {@inheritDoc} */
     @Override
-    protected EstimatedMeasurementBase<Position> theoreticalEvaluationWithoutDerivatives(final int iteration, final int evaluation,
-                                                                                         final SpacecraftState[] states,
-                                                                                         final boolean fillParticipants) {
+    protected EstimatedMeasurementBase<PositionMeasurement> theoreticalEvaluationWithoutDerivatives(final int iteration, final int evaluation,
+                                                                                                    final SpacecraftState[] states,
+                                                                                                    final boolean fillParticipants) {
         final SpacecraftState state = states[0];
 
         // prepare the evaluation
-        final EstimatedMeasurementBase<Position> estimated = new EstimatedMeasurementBase<>(this, iteration, evaluation, states,
+        final EstimatedMeasurementBase<PositionMeasurement> estimated = new EstimatedMeasurementBase<>(this, iteration, evaluation, states,
                 fillParticipants ? new TimeStampedPVCoordinates[] { state.getPVCoordinates() } : new TimeStampedPVCoordinates[0]);
 
         final Vector3D position = state.getPosition();
@@ -137,10 +137,10 @@ public class Position extends PseudoMeasurement<Position> {
 
     /** {@inheritDoc} */
     @Override
-    protected EstimatedMeasurement<Position> theoreticalEvaluation(final int iteration, final int evaluation,
-                                                                   final SpacecraftState[] states) {
+    protected EstimatedMeasurement<PositionMeasurement> theoreticalEvaluation(final int iteration, final int evaluation,
+                                                                              final SpacecraftState[] states) {
 
-        final EstimatedMeasurement<Position> estimated = new EstimatedMeasurement<>(theoreticalEvaluationWithoutDerivatives(iteration, evaluation, states));
+        final EstimatedMeasurement<PositionMeasurement> estimated = new EstimatedMeasurement<>(theoreticalEvaluationWithoutDerivatives(iteration, evaluation, states));
 
         // partial derivatives with respect to state
         estimated.setStateDerivatives(0, IDENTITY);
@@ -148,4 +148,9 @@ public class Position extends PseudoMeasurement<Position> {
         return estimated;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public String getMeasurementType() {
+        return MEASUREMENT_TYPE;
+    }
 }

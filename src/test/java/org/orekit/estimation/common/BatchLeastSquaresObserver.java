@@ -16,6 +16,9 @@
  */
 package org.orekit.estimation.common;
 
+import java.util.Locale;
+import java.util.Map;
+
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresProblem;
 import org.orekit.estimation.leastsquares.BatchLSEstimator;
@@ -25,16 +28,13 @@ import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimationsProvider;
 import org.orekit.estimation.measurements.MultiplexedMeasurement;
 import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.estimation.measurements.PV;
-import org.orekit.estimation.measurements.Position;
+import org.orekit.estimation.measurements.PVMeasurement;
+import org.orekit.estimation.measurements.PositionMeasurement;
 import org.orekit.estimation.measurements.Range;
 import org.orekit.estimation.measurements.RangeRate;
 import org.orekit.orbits.Orbit;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.drivers.ParameterDriversList;
-
-import java.util.Locale;
-import java.util.Map;
 
 /**
  * Observer for Batch Least Squares orbit determination.
@@ -78,8 +78,8 @@ public class BatchLeastSquaresObserver implements BatchLSObserver {
         final EvaluationCounter<Range>       rangeCounter     = new EvaluationCounter<>();
         final EvaluationCounter<RangeRate>   rangeRateCounter = new EvaluationCounter<>();
         final EvaluationCounter<AngularAzEl> angularCounter   = new EvaluationCounter<>();
-        final EvaluationCounter<Position>    positionCounter  = new EvaluationCounter<>();
-        final EvaluationCounter<PV>          pvCounter        = new EvaluationCounter<>();
+        final EvaluationCounter<PositionMeasurement>    positionCounter  = new EvaluationCounter<>();
+        final EvaluationCounter<PVMeasurement>          pvCounter        = new EvaluationCounter<>();
         for (final Map.Entry<ObservedMeasurement<?>, EstimatedMeasurement<?>> entry : estimator.getLastEstimations().entrySet()) {
             logEvaluation(entry.getValue(),
                           rangeCounter, rangeRateCounter, angularCounter, null, positionCounter, pvCounter, null);
@@ -111,9 +111,9 @@ public class BatchLeastSquaresObserver implements BatchLSObserver {
                                EvaluationLogger<RangeRate> rangeRateLog,
                                EvaluationLogger<AngularAzEl> azimuthLog,
                                EvaluationLogger<AngularAzEl> elevationLog,
-                               EvaluationLogger<Position> positionOnlyLog,
-                               EvaluationLogger<PV> positionLog,
-                               EvaluationLogger<PV> velocityLog) {
+                               EvaluationLogger<PositionMeasurement> positionOnlyLog,
+                               EvaluationLogger<PVMeasurement> positionLog,
+                               EvaluationLogger<PVMeasurement> velocityLog) {
 
         // Get measurement type and send measurement to proper logger.
         final String measurementType = evaluation.getObservedMeasurement().getMeasurementType();
@@ -138,15 +138,15 @@ public class BatchLeastSquaresObserver implements BatchLSObserver {
             if (elevationLog != null) {
                 elevationLog.log(ev);
             }
-        }  else if (measurementType.equals(Position.MEASUREMENT_TYPE)) {
+        }  else if (measurementType.equals(PositionMeasurement.MEASUREMENT_TYPE)) {
             @SuppressWarnings("unchecked")
-            final EstimatedMeasurement<Position> ev = (EstimatedMeasurement<Position>) evaluation;
+            final EstimatedMeasurement<PositionMeasurement> ev = (EstimatedMeasurement<PositionMeasurement>) evaluation;
             if (positionOnlyLog != null) {
                 positionOnlyLog.log(ev);
             }
-        } else if (measurementType.equals(PV.MEASUREMENT_TYPE)) {
+        } else if (measurementType.equals(PVMeasurement.MEASUREMENT_TYPE)) {
             @SuppressWarnings("unchecked")
-            final EstimatedMeasurement<PV> ev = (EstimatedMeasurement<PV>) evaluation;
+            final EstimatedMeasurement<PVMeasurement> ev = (EstimatedMeasurement<PVMeasurement>) evaluation;
             if (positionLog != null) {
                 positionLog.log(ev);
             }

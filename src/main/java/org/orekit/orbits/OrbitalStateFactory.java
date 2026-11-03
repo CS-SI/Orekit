@@ -131,4 +131,7 @@ public interface OrbitalStateFactory<P extends OrbitalState> extends Cloneable {
      */
     RealMatrix getJacobianWrtCartesian();
 
+    /** Javadoc TODO. {@inheritDoc} */
+    OrbitalStateFactory<P> clone();
+
 }

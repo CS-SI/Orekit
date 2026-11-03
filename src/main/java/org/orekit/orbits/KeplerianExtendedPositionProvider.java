@@ -40,8 +40,21 @@ public class KeplerianExtendedPositionProvider extends AbstractExtendedPositionP
      */
     public KeplerianExtendedPositionProvider(final Orbit referenceOrbit) {
         // Remove non-Keplerian rates if any
-        super(referenceOrbit.getType().convertType(new CartesianOrbit(new PVCoordinates(referenceOrbit.getPosition(),
-                referenceOrbit.getVelocity()), referenceOrbit.getFrame(), referenceOrbit.getDate(), referenceOrbit.getMu())));
+        super(dropNonKeplerianRates(referenceOrbit));
+    }
+
+    /**
+     * Remove non-Keplerian rates, keeping the orbit type and its defining parameters.
+     * @param referenceOrbit reference orbit
+     * @return orbit without non-Keplerian rates
+     */
+    private static Orbit dropNonKeplerianRates(final Orbit referenceOrbit) {
+        if (referenceOrbit instanceof PositionAngleBased<?> positionAngleBased) {
+            return (Orbit) positionAngleBased.withKeplerianRates();
+        }
+        // Cartesian orbit: drop the acceleration
+        return new CartesianOrbit(new PVCoordinates(referenceOrbit.getPosition(), referenceOrbit.getVelocity()),
+                referenceOrbit.getFrame(), referenceOrbit.getDate(), referenceOrbit.getMu());
     }
 
     /** {@inheritDoc} */

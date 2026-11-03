@@ -32,6 +32,7 @@ import org.orekit.orbits.AbstractOrbitalStateFactory;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.CartesianOrbitFactory;
 import org.orekit.orbits.OrbitalState;
+import org.orekit.orbits.OrbitalStateFactory;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.AbstractPropagator;
 import org.orekit.propagation.analytical.KeplerianPropagator;
@@ -106,7 +107,7 @@ public class AbstractPropagatorBuilderTest {
      */
     public static <T extends AbstractPropagator,
                    O extends OrbitalState,
-                   F extends AbstractOrbitalStateFactory<O>,
+                   F extends OrbitalStateFactory<? extends O>,
                    B extends AbstractPropagatorBuilder<T, O, F>>
     void assertPropagatorBuilderIsACopy(final B expected, final B actual) {
 

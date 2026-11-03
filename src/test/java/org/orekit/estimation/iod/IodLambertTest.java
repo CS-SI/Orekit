@@ -31,9 +31,9 @@ import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.estimation.measurements.PV;
+import org.orekit.estimation.measurements.PVMeasurement;
 import org.orekit.estimation.measurements.PVMeasurementCreator;
-import org.orekit.estimation.measurements.Position;
+import org.orekit.estimation.measurements.PositionMeasurement;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
@@ -407,8 +407,8 @@ public class IodLambertTest {
 
         // Lambert IOD
         final Orbit orbit = lambert.estimate(inertialFrame, true, 0,
-                                                      new Position(dateRef, posR1, 1.0, 1.0, satellite),
-                                                      new Position(date2,   posR2, 1.0, 1.0, satellite));
+                                                      new PositionMeasurement(dateRef, posR1, 1.0, 1.0, satellite),
+                                                      new PositionMeasurement(date2,   posR2, 1.0, 1.0, satellite));
 
         // Test for the norm of the first velocity
         Assertions.assertEquals(0.0, orbit.getVelocity().getNorm() - velR1.getNorm(),  1e-3);
@@ -449,8 +449,8 @@ public class IodLambertTest {
 
         // Lambert IOD
         final Orbit orbit = lambert.estimate(inertialFrame, true, 0,
-                                                      new PV(dateRef, posR1, velR1, 1.0, 1.0, 1.0, satellite),
-                                                      new PV(date2,   posR2, velR2, 1.0, 1.0, 1.0, satellite));
+                                                      new PVMeasurement(dateRef, posR1, velR1, 1.0, 1.0, 1.0, satellite),
+                                                      new PVMeasurement(date2,   posR2, velR2, 1.0, 1.0, 1.0, satellite));
 
         // Test for the norm of the first velocity
         Assertions.assertEquals(0.0, orbit.getVelocity().getNorm() - velR1.getNorm(),  1e-3);

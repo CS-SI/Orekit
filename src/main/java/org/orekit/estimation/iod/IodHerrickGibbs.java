@@ -22,8 +22,8 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.estimation.measurements.PV;
-import org.orekit.estimation.measurements.Position;
+import org.orekit.estimation.measurements.PVMeasurement;
+import org.orekit.estimation.measurements.PositionMeasurement;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.FieldCartesianOrbit;
@@ -75,7 +75,7 @@ public class IodHerrickGibbs {
      * @return an initial orbit estimation at the central date
      *         (i.e., date of the second position measurement)
      */
-    public Orbit estimate(final Frame frame, final Position p1, final Position p2, final Position p3) {
+    public Orbit estimate(final Frame frame, final PositionMeasurement p1, final PositionMeasurement p2, final PositionMeasurement p3) {
         return estimate(frame, p1.getPosition(), p1.getDate(),
                         p2.getPosition(), p2.getDate(),
                         p3.getPosition(), p3.getDate());
@@ -92,7 +92,7 @@ public class IodHerrickGibbs {
      * @return an initial orbit estimation at the central date
      *         (i.e., date of the second PV measurement)
      */
-    public Orbit estimate(final Frame frame, final PV pv1, final PV pv2, final PV pv3) {
+    public Orbit estimate(final Frame frame, final PVMeasurement pv1, final PVMeasurement pv2, final PVMeasurement pv3) {
         return estimate(frame, pv1.getPosition(), pv1.getDate(),
                         pv2.getPosition(), pv2.getDate(),
                         pv3.getPosition(), pv3.getDate());

@@ -40,9 +40,9 @@ import org.orekit.estimation.measurements.InterSatellitesRangeMeasurementCreator
 import org.orekit.estimation.measurements.MultiplexedMeasurement;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.estimation.measurements.PV;
+import org.orekit.estimation.measurements.PVMeasurement;
 import org.orekit.estimation.measurements.PVMeasurementCreator;
-import org.orekit.estimation.measurements.Position;
+import org.orekit.estimation.measurements.PositionMeasurement;
 import org.orekit.estimation.measurements.PositionMeasurementCreator;
 import org.orekit.estimation.measurements.Range;
 import org.orekit.estimation.measurements.RangeRateMeasurementCreator;
@@ -66,10 +66,10 @@ import org.orekit.propagation.analytical.tle.generation.FixedPointTleGenerationA
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.propagation.conversion.TLEPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.TimeStampedPVCoordinates;
 import org.orekit.utils.drivers.ParameterDriver;
 import org.orekit.utils.drivers.ParameterDriversList;
 import org.orekit.utils.drivers.ParameterDriversList.DelegatingDriver;
-import org.orekit.utils.TimeStampedPVCoordinates;
 
 class KalmanEstimatorTest {
 
@@ -94,7 +94,7 @@ class KalmanEstimatorTest {
         final KalmanEstimator estimator = builder.build();
         final AbsoluteDate measurementDate = tle.getDate().shiftedBy(1.0);
         final TLEPropagator propagator = TLEPropagator.selectExtrapolator(tle);
-        final Position positionMeasurement = new Position(measurementDate, propagator.getPosition(measurementDate,
+        final PositionMeasurement positionMeasurement = new PositionMeasurement(measurementDate, propagator.getPosition(measurementDate,
                 propagator.getFrame()), 1., 1., new ObservableSatellite(0));
         // WHEN & THEN
         Assertions.assertDoesNotThrow(() -> estimator.estimationStep(positionMeasurement));
@@ -121,7 +121,7 @@ class KalmanEstimatorTest {
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit, propagatorBuilder);
         final AbsoluteDate measurementDate = context.initialOrbit.getDate().shiftedBy(600.0);
         final SpacecraftState state = propagator.propagate(measurementDate);
-        final ObservedMeasurement<?> measurement = new PV(measurementDate,
+        final ObservedMeasurement<?> measurement = new PVMeasurement(measurementDate,
                 state.getPosition().add(new Vector3D(10.0, -10.0, 5.0)),
                 state.getVelocity().add(new Vector3D(-10.0, 5.0, -5.0)),
                 5.0, 5.0, 1.0, new ObservableSatellite(0));
@@ -190,11 +190,11 @@ class KalmanEstimatorTest {
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit, propagatorBuilder1);
         final AbsoluteDate measurementDate = context.initialOrbit.getDate().shiftedBy(600.0);
         final SpacecraftState state = propagator.propagate(measurementDate);
-        final ObservedMeasurement<?> measurement1 = new PV(measurementDate,
+        final ObservedMeasurement<?> measurement1 = new PVMeasurement(measurementDate,
                 state.getPosition().add(new Vector3D(10.0, -10.0, 5.0)),
                 state.getVelocity().add(new Vector3D(-10.0, 5.0, -5.0)),
                 5.0, 5.0, 1.0, new ObservableSatellite(0));
-        final ObservedMeasurement<?> measurement2 = new PV(measurementDate,
+        final ObservedMeasurement<?> measurement2 = new PVMeasurement(measurementDate,
                 state.getPosition().add(new Vector3D(-10.0, 20.0, -1.0)),
                 state.getVelocity().add(new Vector3D(10.0, 50.0, -10.0)),
                 5.0, 5.0, 1.0, new ObservableSatellite(1));
@@ -315,7 +315,7 @@ class KalmanEstimatorTest {
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit, propagatorBuilder);
         final AbsoluteDate measurementDate = context.initialOrbit.getDate().shiftedBy(600.0);
         final SpacecraftState state = propagator.propagate(measurementDate);
-        final ObservedMeasurement<PV> measurement = new PV(measurementDate,
+        final ObservedMeasurement<PVMeasurement> measurement = new PVMeasurement(measurementDate,
                 state.getPosition().add(new Vector3D(10.0, -10.0, 5.0)),
                 state.getVelocity().add(new Vector3D(-10.0, 5.0, -5.0)),
                5.0, 5.0, 1.0, new ObservableSatellite(0));
@@ -380,7 +380,7 @@ class KalmanEstimatorTest {
         Assertions.assertEquals(3, thrown.getParts()[1]);
 
         // Add a measurement parameter
-        final Bias<PV> pvBias = new Bias<>(new String[]{"x bias"},
+        final Bias<PVMeasurement> pvBias = new Bias<>(new String[]{"x bias"},
                 new double[]{0.0}, new double[]{1.0},
                 new double[]{1.0}, new double[]{1.0});
         pvBias.getParameterDriver("x bias").setSelected(true);
@@ -1352,7 +1352,7 @@ class KalmanEstimatorTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         // Create a position measurement
-        final Position position = new Position(context.initialOrbit.getDate(),
+        final PositionMeasurement position = new PositionMeasurement(context.initialOrbit.getDate(),
                                                new Vector3D(1.0, -1.0, 0.0),
                                                0.5, 1.0, new ObservableSatellite(0));
 

@@ -98,8 +98,8 @@ public class SGP4OrbitalState extends AbstractAveragedOrbitalState {
     public static SGP4OrbitalState of(final TLE tle, final Frame teme) {
         final double semiMajorAxis = computeSemiMajorAxis(tle);
         final AveragedKeplerianWithMeanAngle elements = new AveragedKeplerianWithMeanAngle(
-                semiMajorAxis, tle.getE(), tle.getI(), tle.getPeriapsisArgument(), tle.getRaan(),
-                tle.getMeanAnomaly());
+            semiMajorAxis, tle.getE(), tle.getI(), tle.getPerigeeArgument(), tle.getRaan(),
+            tle.getMeanAnomaly());
         return new SGP4OrbitalState(tle.getDate(), elements, teme, tle.getUtc());
     }
 

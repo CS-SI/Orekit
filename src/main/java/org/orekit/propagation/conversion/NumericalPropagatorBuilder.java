@@ -30,8 +30,8 @@ import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.forces.maneuvers.ImpulseManeuver;
-import org.orekit.orbits.AbstractOrbitFactory;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.OrbitalStateFactory;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -44,7 +44,7 @@ import org.orekit.utils.drivers.ParameterDriversList;
  * @since 6.0
  */
 public class NumericalPropagatorBuilder
-    extends AbstractIntegratedPropagatorBuilder<NumericalPropagator, Orbit, AbstractOrbitFactory<Orbit>> {
+    extends AbstractIntegratedPropagatorBuilder<NumericalPropagator, Orbit, OrbitalStateFactory<? extends Orbit>> {
 
     /** Force models used during the extrapolation of the orbit. */
     private final List<ForceModel> forceModels;
@@ -56,9 +56,9 @@ public class NumericalPropagatorBuilder
      * @param factory factory for initial orbit
      * @param builder first order integrator builder
      * @since 14.0
-     * @see #NumericalPropagatorBuilder(AbstractOrbitFactory, ODEIntegratorBuilder, AttitudeProvider)
+     * @see #NumericalPropagatorBuilder(OrbitalStateFactory, ODEIntegratorBuilder, AttitudeProvider)
      */
-    public NumericalPropagatorBuilder(final AbstractOrbitFactory<? extends Orbit> factory,
+    public NumericalPropagatorBuilder(final OrbitalStateFactory<? extends Orbit> factory,
                                       final ODEIntegratorBuilder builder) {
         this(factory, builder, FrameAlignedProvider.of(factory.getFrame()));
     }
@@ -69,10 +69,10 @@ public class NumericalPropagatorBuilder
      * @param attitudeProvider attitude law.
      * @since 14.0
      */
-    public NumericalPropagatorBuilder(final AbstractOrbitFactory<? extends Orbit> factory,
+    public NumericalPropagatorBuilder(final OrbitalStateFactory<? extends Orbit> factory,
                                       final ODEIntegratorBuilder builder,
                                       final AttitudeProvider attitudeProvider) {
-        super((AbstractOrbitFactory<Orbit>) factory, builder,
+        super(factory, builder,
               PropagationType.OSCULATING, attitudeProvider, Propagator.DEFAULT_MASS);
         this.forceModels = new ArrayList<>();
         this.impulseManeuvers = new ArrayList<>();
@@ -86,7 +86,7 @@ public class NumericalPropagatorBuilder
 
         // Use cloned builder to unlink orbital drivers
         final NumericalPropagatorBuilder builder =
-            new NumericalPropagatorBuilder((AbstractOrbitFactory<Orbit>) clonedBuilder.getOrbitalStateFactory().clone(),
+            new NumericalPropagatorBuilder(clonedBuilder.getOrbitalStateFactory().clone(),
                                            clonedBuilder.getIntegratorBuilder(), clonedBuilder.getAttitudeProvider());
 
         // Set mass and force models
@@ -161,7 +161,7 @@ public class NumericalPropagatorBuilder
     /** {@inheritDoc} */
     public NumericalPropagator buildPropagator(final double[] normalizedParameters) {
 
-        final AbstractOrbitFactory<Orbit> factory = getOrbitalStateFactory();
+        final OrbitalStateFactory<? extends Orbit> factory = getOrbitalStateFactory();
         setParameters(normalizedParameters);
         final Orbit           orbit    = factory.createFromDrivers();
         final Attitude        attitude = getAttitudeProvider().
