@@ -34,6 +34,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
@@ -984,12 +985,12 @@ public class EquinoctialOrbitTest {
                             orbit.toString());
     }
 
-    @Test
-    void testKeplerianShiftedBy() {
+    @ParameterizedTest
+    @ValueSource(doubles = {0., 1000})
+    void testKeplerianShiftedBy(final double dt) {
         // GIVEN
         final EquinoctialOrbit equinoctialOrbit = new EquinoctialOrbit(42166712.0, 0.005, -0.025, 0.17, 0.34,
                 0.4, PositionAngleType.MEAN, FramesFactory.getEME2000(), date, mu);
-        final double dt = 1000;
         // WHEN
         final EquinoctialOrbit actual = equinoctialOrbit.keplerianShiftedBy(dt);
         // THEN

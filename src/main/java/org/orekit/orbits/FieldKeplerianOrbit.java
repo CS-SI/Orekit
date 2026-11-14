@@ -948,14 +948,18 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
     /** {@inheritDoc} */
     @Override
     public FieldKeplerianOrbit<T> shiftedBy(final T dt) {
+        if (dt.isZero()) {  // for performance
+            return new FieldKeplerianOrbit<>(a, e, i, pa, raan, cachedAnomaly, aDot, eDot, iDot, paDot, raanDot,
+                    cachedAnomalyDot, cachedPositionAngleType, getFrame(), getDate(), getMu());
+        }
 
         // use Keplerian-only motion
         final FieldKeplerianOrbit<T> keplerianShifted = keplerianShiftedBy(dt);
 
         // Non-Keplerian acceleration shall be considered
-        if (!dt.isZero() && hasNonKeplerianRates()) {
-            return new FieldKeplerianOrbit<>(shiftPVNonKeplerian(keplerianShifted.getPVCoordinates(), dt),
-                    getFrame(), getDate().shiftedBy(dt), getMu());
+        if (hasNonKeplerianRates()) {
+            final FieldPVCoordinates<T> nonKeplerianPV = shiftPVNonKeplerian(keplerianShifted.getPVCoordinates(), dt);
+            return new FieldKeplerianOrbit<>(nonKeplerianPV, getFrame(), keplerianShifted.getDate(), getMu());
         }
         // Keplerian-only motion is all we can do
         else {
@@ -968,17 +972,14 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
     @Override
     public FieldKeplerianOrbit<T> shiftedBy(final TimeOffset dt) {
 
-        // Get field and express dt as T
-        final Field<T> field   = getField();
-        final T        dtValue = field.getOne().newInstance(dt.toDouble());
-
         // use Keplerian-only motion
         final FieldKeplerianOrbit<T> keplerianShifted = keplerianShiftedBy(dt);
 
         // Non-Keplerian acceleration shall be considered
-        if (!dtValue.isZero() && hasNonKeplerianRates()) {
-            return new FieldKeplerianOrbit<>(shiftPVNonKeplerian(keplerianShifted.getPVCoordinates(), dtValue),
-                    getFrame(), getDate().shiftedBy(dt), getMu());
+        if (!dt.isZero() && hasNonKeplerianRates()) {
+            final T        dtValue = getField().getOne().newInstance(dt.toDouble());
+            final FieldPVCoordinates<T> nonKeplerianPV = shiftPVNonKeplerian(keplerianShifted.getPVCoordinates(), dtValue);
+            return new FieldKeplerianOrbit<>(nonKeplerianPV, getFrame(), keplerianShifted.getDate(), getMu());
         }
         // Keplerian-only motion is all we can do
         else {

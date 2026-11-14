@@ -34,6 +34,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
@@ -1120,6 +1121,23 @@ class KeplerianOrbitTest {
         final KeplerianOrbit actual = kepOrbit.keplerianShiftedBy(dt);
         // THEN
         final KeplerianOrbit expected = kepOrbit.shiftedBy(dt);
+        Assertions.assertEquals(expected.getDate(), actual.getDate());
+        Assertions.assertEquals(expected.getFrame(), actual.getFrame());
+        Assertions.assertEquals(expected.getMu(), actual.getMu());
+        Assertions.assertEquals(expected.getType(), actual.getType());
+        Assertions.assertEquals(expected.getKeplerianParameters(), actual.getKeplerianParameters());
+    }
+
+    @ParameterizedTest
+    @ValueSource(doubles = {0., 1000})
+    void testKeplerianShiftedBy(final double dt) {
+        // GIVEN
+        final KeplerianOrbit orbit = new KeplerianOrbit(42166712.0, 0.005, -0.025, 0.17, 0.34,
+                0.4, PositionAngleType.MEAN, FramesFactory.getEME2000(), date, mu);
+        // WHEN
+        final KeplerianOrbit actual = orbit.keplerianShiftedBy(dt);
+        // THEN
+        final KeplerianOrbit expected = orbit.shiftedBy(dt);
         Assertions.assertEquals(expected.getDate(), actual.getDate());
         Assertions.assertEquals(expected.getFrame(), actual.getFrame());
         Assertions.assertEquals(expected.getMu(), actual.getMu());

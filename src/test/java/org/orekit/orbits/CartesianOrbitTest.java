@@ -410,12 +410,12 @@ public class CartesianOrbitTest {
         }
     }
 
-    @Test
-    void testKeplerianShiftedBy() {
+    @ParameterizedTest
+    @ValueSource(doubles = {0., 1000})
+    void testKeplerianShiftedBy(final double dt) {
         // GIVEN
         final CartesianOrbit cartOrbit = new CartesianOrbit(new PVCoordinates(Vector3D.PLUS_K, Vector3D.PLUS_I.scalarMultiply(0.1)),
                 FramesFactory.getEME2000(), date, 1.);
-        final double dt = 10;
         // WHEN
         final Orbit actual = cartOrbit.keplerianShiftedBy(dt);
         // THEN

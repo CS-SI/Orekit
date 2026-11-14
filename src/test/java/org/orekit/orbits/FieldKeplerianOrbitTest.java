@@ -368,13 +368,13 @@ class FieldKeplerianOrbitTest {
         Assertions.assertEquals(expected.getKeplerianParameters(), actualFieldOrbit.getKeplerianParameters());
     }
 
-    @Test
-    void testShiftedBy() {
+    @ParameterizedTest
+    @ValueSource(doubles = {0., 1000})
+    void testShiftedBy(final double dt) {
         // GIVEN
         final ComplexField field = ComplexField.getInstance();
         final KeplerianOrbit expectedOrbit = createOrbitForTestFromKeplerianOrbit(true);
         final FieldKeplerianOrbit<Complex> fieldOrbit = new FieldKeplerianOrbit<>(field, expectedOrbit);
-        final double dt = 1;
         // WHEN
         final FieldKeplerianOrbit<Complex> actualFieldOrbit = fieldOrbit.shiftedBy(dt);
         // THEN
@@ -382,8 +382,10 @@ class FieldKeplerianOrbitTest {
         Assertions.assertEquals(expected.getMu(), actualFieldOrbit.getMu());
         Assertions.assertEquals(expected.getDate(), actualFieldOrbit.getDate());
         Assertions.assertEquals(expected.getFrame(), actualFieldOrbit.getFrame());
-        Assertions.assertEquals(expected.getPosition(), actualFieldOrbit.getPosition());
-        Assertions.assertEquals(expected.getVelocity(), actualFieldOrbit.getVelocity());
+        Assertions.assertArrayEquals(expected.getPosition().toVector3D().toArray(),
+                actualFieldOrbit.getPosition().toVector3D().toArray(), 1e-7);
+        Assertions.assertArrayEquals(expected.getVelocity().toVector3D().toArray(),
+                actualFieldOrbit.getVelocity().toVector3D().toArray(), 1e-10);
     }
 
     @Test

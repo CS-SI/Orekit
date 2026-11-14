@@ -43,6 +43,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
@@ -324,13 +325,13 @@ class FieldCircularOrbitTest {
         Assertions.assertArrayEquals(expected.getPosition(frame).getZ().getGradient(), position.getZ().getGradient(), 1e-7);
     }
 
-    @Test
-    void testShiftedBy() {
+    @ParameterizedTest
+    @ValueSource(doubles = {0., 1000})
+    void testShiftedBy(final double dt) {
         // GIVEN
         final ComplexField field = ComplexField.getInstance();
         final CircularOrbit expectedOrbit = createOrbitTestFromCircularOrbit(true);
         final FieldCircularOrbit<Complex> fieldOrbit = new FieldCircularOrbit<>(field, expectedOrbit);
-        final double dt = 1;
         // WHEN
         final FieldCircularOrbit<Complex> actualFieldOrbit = fieldOrbit.shiftedBy(dt);
         // THEN

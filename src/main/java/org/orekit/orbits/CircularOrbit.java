@@ -1035,21 +1035,24 @@ public class CircularOrbit extends Orbit implements PositionAngleBased<CircularO
     /** {@inheritDoc} */
     @Override
     public CircularOrbit shiftedBy(final TimeOffset dt) {
-
-        final double dtS = dt.toDouble();
+        if (dt.isZero()) {  // for performance
+            return new CircularOrbit(a, ex, ey, i, raan, cachedAlpha, aDot, exDot, eyDot, iDot, raanDot, cachedAlphaDot,
+                    cachedPositionAngleType, getFrame(), getDate(), getMu());
+        }
 
         // use Keplerian-only motion
+        final double dtS = dt.toDouble();
+        final AbsoluteDate shiftedDate = getDate().shiftedBy(dt);
         final CircularOrbit keplerianShifted = new CircularOrbit(a, ex, ey, i, raan,
                                                                  getAlphaM() + getKeplerianMeanMotion() * dtS,
                                                                  PositionAngleType.MEAN, cachedPositionAngleType,
-                                                                 getFrame(), getDate().shiftedBy(dt), getMu());
+                                                                 getFrame(), shiftedDate, getMu());
 
-        if (dtS != 0. && hasNonKeplerianRates()) {
+        if (hasNonKeplerianRates()) {
             final PVCoordinates pvCoordinates = shiftPVNonKeplerian(keplerianShifted.getPVCoordinates(), dtS);
 
             // build a new orbit, taking non-Keplerian acceleration into account
-            return new CircularOrbit(new TimeStampedPVCoordinates(keplerianShifted.getDate(), pvCoordinates),
-                                     keplerianShifted.getFrame(), keplerianShifted.getMu());
+            return new CircularOrbit(new TimeStampedPVCoordinates(shiftedDate, pvCoordinates), getFrame(), getMu());
 
         } else {
             // Keplerian-only motion is all we can do

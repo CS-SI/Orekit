@@ -415,16 +415,14 @@ public class CartesianOrbit extends Orbit {
     /** {@inheritDoc} */
     @Override
     protected CartesianOrbit keplerianShiftedBy(final double dt) {
-        final PVCoordinates pvCoordinates = getPVCoordinates();
-        final PVCoordinates shiftedPV = KeplerianMotionCartesianUtility.predictPositionVelocity(dt,
-                pvCoordinates.getPosition(), pvCoordinates.getVelocity(), getMu());
+        final PVCoordinates shiftedPV = KeplerianMotionCartesianUtility.predictPositionVelocity(dt, getPosition(),
+                getVelocity(), getMu());
         return new CartesianOrbit(shiftedPV, getFrame(), getDate().shiftedBy(dt), getMu());
     }
 
     /** {@inheritDoc} */
     public CartesianOrbit shiftedBy(final double dt) {
-        final PVCoordinates shiftedPV = shiftPV(dt);
-        return new CartesianOrbit(shiftedPV, getFrame(), getDate().shiftedBy(dt), getMu());
+        return shiftedBy(new TimeOffset(dt));
     }
 
     /** {@inheritDoc} */
@@ -438,13 +436,14 @@ public class CartesianOrbit extends Orbit {
      * @return shifted position and velocity
      */
     private PVCoordinates shiftPV(final double dt) {
+        if (dt == 0.) {  // for performance
+            return getPVCoordinates();
+        }
 
-        final Vector3D pvP = getPosition();
-        final PVCoordinates shiftedPV = KeplerianMotionCartesianUtility.predictPositionVelocity(dt, pvP,
-            getPVCoordinates().getVelocity(), getMu());
+        final PVCoordinates shiftedPV = KeplerianMotionCartesianUtility.predictPositionVelocity(dt, getPosition(),
+                getVelocity(), getMu());
 
-        if (dt != 0. && hasNonKeplerianAcceleration) {
-
+        if (hasNonKeplerianAcceleration) {
             return shiftPVNonKeplerian(shiftedPV, dt);
 
         } else {

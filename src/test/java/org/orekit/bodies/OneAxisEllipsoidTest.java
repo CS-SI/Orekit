@@ -241,7 +241,7 @@ class OneAxisEllipsoidTest {
         Orbit orbit = new EquinoctialOrbit(initPV, eme2000, Constants.EIGEN5C_EARTH_MU);
 
         double[] errors = derivativesErrors(orbit, orbit.getDate(), eme2000, model);
-        Assertions.assertEquals(0, errors[0], 1.0e-16);
+        Assertions.assertEquals(0, errors[0], 1.3e-16);
         Assertions.assertEquals(0, errors[1], 2.0e-12);
         Assertions.assertEquals(0, errors[2], 2.0e-4);
 

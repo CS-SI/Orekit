@@ -912,19 +912,22 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased<Kepleria
     /** {@inheritDoc} */
     @Override
     public KeplerianOrbit shiftedBy(final TimeOffset dt) {
-
-        final double dtS = dt.toDouble();
+        if (dt.isZero()) {  // for performance
+            return new KeplerianOrbit(a, e, i, pa, raan, cachedAnomaly, aDot, eDot, iDot, paDot, raanDot, cachedAnomalyDot,
+                    cachedPositionAngleType, getFrame(), getDate(), getMu());
+        }
 
         // use Keplerian-only motion
+        final double dtS = dt.toDouble();
         final KeplerianParameters shiftedElements = new KeplerianParameters(a, e, i, pa, raan,
                 getMeanAnomaly() + getKeplerianMeanMotion() * dtS, PositionAngleType.MEAN);
-        final KeplerianOrbit keplerianShifted = new KeplerianOrbit(shiftedElements,
-                getFrame(), getDate().shiftedBy(dt), getMu());
+        final AbsoluteDate shiftedDate = getDate().shiftedBy(dt);
+        final KeplerianOrbit keplerianShifted = new KeplerianOrbit(shiftedElements, getFrame(), shiftedDate, getMu());
 
-        if (dtS != 0. && hasNonKeplerianAcceleration()) {
+        if (hasNonKeplerianAcceleration()) {
             // build a new orbit, taking non-Keplerian acceleration into account
-            return new KeplerianOrbit(new TimeStampedPVCoordinates(keplerianShifted.getDate(),
-                    shiftPVNonKeplerian(keplerianShifted.getPVCoordinates(), dtS)), getFrame(), getMu());
+            final PVCoordinates pvCoordinates = shiftPVNonKeplerian(keplerianShifted.getPVCoordinates(), dtS);
+            return new KeplerianOrbit(new TimeStampedPVCoordinates(shiftedDate, pvCoordinates), getFrame(), getMu());
 
         } else {
             // Keplerian-only motion is all we can do

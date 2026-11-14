@@ -783,21 +783,23 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased<Equino
     /** {@inheritDoc} */
     @Override
     public EquinoctialOrbit shiftedBy(final TimeOffset dt) {
-
-        final double dtS = dt.toDouble();
+        if (dt.isZero()) {  // for performance
+            return new EquinoctialOrbit(a, ex, ey, hx, hy, cachedL, aDot, exDot, eyDot, hxDot, hyDot, cachedLDot,
+                    cachedPositionAngleType, getFrame(), getDate(), getMu());
+        }
 
         // use Keplerian-only motion
+        final double dtS = dt.toDouble();
+        final AbsoluteDate shiftedDate = getDate().shiftedBy(dt);
         final EquinoctialParameters parameters = new EquinoctialParameters(a, ex, ey, hx, hy,
                 getLM() + dtS * getKeplerianMeanMotion(), PositionAngleType.MEAN);
-        final EquinoctialOrbit keplerianShifted = new EquinoctialOrbit(parameters,
-                                                                       getFrame(), getDate().shiftedBy(dt), getMu());
+        final EquinoctialOrbit keplerianShifted = new EquinoctialOrbit(parameters, getFrame(), shiftedDate, getMu());
 
-        if (dtS != 0. && hasNonKeplerianRates()) {
+        if (hasNonKeplerianRates()) {
             final PVCoordinates pvCoordinates = shiftPVNonKeplerian(keplerianShifted.getPVCoordinates(), dtS);
 
             // build a new orbit, taking non-Keplerian acceleration into account
-            return new EquinoctialOrbit(new TimeStampedPVCoordinates(keplerianShifted.getDate(), pvCoordinates),
-                                        getFrame(), getMu());
+            return new EquinoctialOrbit(new TimeStampedPVCoordinates(shiftedDate, pvCoordinates), getFrame(), getMu());
 
         } else {
             // Keplerian-only motion is all we can do
