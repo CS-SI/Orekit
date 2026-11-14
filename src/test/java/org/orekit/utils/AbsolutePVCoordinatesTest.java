@@ -170,6 +170,28 @@ public class AbsolutePVCoordinatesTest {
     }
 
     @Test
+    void testGetPositionVelocity() {
+        final AbsolutePVCoordinates apv =
+                new AbsolutePVCoordinates(FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
+                        new Vector3D(1, 0.1, 10), new Vector3D(-1, -0.1, -10),
+                        new Vector3D(10, 1.0, 100));
+        Assertions.assertArrayEquals(apv.getPosition().toArray(), apv.getPosition(apv.getFrame()).toArray());
+        Assertions.assertArrayEquals(apv.getVelocity().toArray(), apv.getVelocity(apv.getFrame()).toArray());
+    }
+
+    @Test
+    void testGetPVCoordinates() {
+        final AbsolutePVCoordinates apv =
+                new AbsolutePVCoordinates(FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
+                        new Vector3D(1, 0.1, 10), new Vector3D(-1, -0.1, -10),
+                        new Vector3D(10, 1.0, 100));
+        final Frame frame = FramesFactory.getGCRF();
+        final PVCoordinates pv = apv.getPVCoordinates(frame);
+        Assertions.assertArrayEquals(pv.getPosition().toArray(), apv.getPosition(frame).toArray());
+        Assertions.assertArrayEquals(pv.getVelocity().toArray(), apv.getVelocity(frame).toArray());
+    }
+
+    @Test
     void testToString() {
         AbsolutePVCoordinates pv =
                 new AbsolutePVCoordinates(FramesFactory.getEME2000(),

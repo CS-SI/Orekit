@@ -996,8 +996,7 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
     protected FieldKeplerianOrbit<T> keplerianShiftedBy(final T dt) {
         final FieldKeplerianParameters<T> shiftedElements = new FieldKeplerianParameters<>(a, e, i, pa, raan,
                 getKeplerianMeanMotion().multiply(dt).add(getMeanAnomaly()), PositionAngleType.MEAN);
-        return new FieldKeplerianOrbit<>(shiftedElements.withPositionAngleType(cachedPositionAngleType), getFrame(),
-                getDate().shiftedBy(dt), getMu());
+        return new FieldKeplerianOrbit<>(shiftedElements, getFrame(), getDate().shiftedBy(dt), getMu());
     }
 
     /**
@@ -1010,8 +1009,7 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
     private FieldKeplerianOrbit<T> keplerianShiftedBy(final TimeOffset dt) {
         final FieldKeplerianParameters<T> shiftedElements = new FieldKeplerianParameters<>(a, e, i, pa, raan,
                 getKeplerianMeanMotion().multiply(dt.toDouble()).add(getMeanAnomaly()), PositionAngleType.MEAN);
-        return new FieldKeplerianOrbit<>(shiftedElements.withPositionAngleType(cachedPositionAngleType), getFrame(),
-                getDate().shiftedBy(dt), getMu());
+        return new FieldKeplerianOrbit<>(shiftedElements, getFrame(), getDate().shiftedBy(dt), getMu());
     }
 
     /** {@inheritDoc} */

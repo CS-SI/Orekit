@@ -879,13 +879,9 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
      * @return shifted orbit
      */
     protected FieldEquinoctialOrbit<T> keplerianShiftedBy(final T dt) {
-        return new FieldEquinoctialOrbit<>(a, ex, ey, hx, hy,
-                                           getLM().add(getKeplerianMeanMotion().multiply(dt)),
-                                           PositionAngleType.MEAN,
-                                           cachedPositionAngleType,
-                                           getFrame(),
-                                           getDate().shiftedBy(dt),
-                                           getMu());
+        final FieldEquinoctialParameters<T> shiftedParameters = new FieldEquinoctialParameters<>(a, ex, ey, hx, hy,
+                getLM().add(getKeplerianMeanMotion().multiply(dt)), PositionAngleType.MEAN);
+        return new FieldEquinoctialOrbit<>(shiftedParameters, getFrame(), getDate().shiftedBy(dt), getMu());
 
     }
 
@@ -897,13 +893,9 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
      * @return shifted orbit
      */
     private FieldEquinoctialOrbit<T> keplerianShiftedBy(final TimeOffset dt) {
-        return new FieldEquinoctialOrbit<>(a, ex, ey, hx, hy,
-                                           getLM().add(getKeplerianMeanMotion().multiply(dt.toDouble())),
-                                           PositionAngleType.MEAN,
-                                           cachedPositionAngleType,
-                                           getFrame(),
-                                           getDate().shiftedBy(dt),
-                                           getMu());
+        final FieldEquinoctialParameters<T> shiftedParameters = new FieldEquinoctialParameters<>(a, ex, ey, hx, hy,
+                getLM().add(getKeplerianMeanMotion().multiply(dt.toDouble())), PositionAngleType.MEAN);
+        return new FieldEquinoctialOrbit<>(shiftedParameters, getFrame(), getDate().shiftedBy(dt), getMu());
 
     }
 

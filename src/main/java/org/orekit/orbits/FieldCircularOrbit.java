@@ -1118,7 +1118,6 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
         return new FieldCircularOrbit<>(a, ex, ey, i, raan,
                                         getAlphaM().add(getKeplerianMeanMotion().multiply(dt)),
                                         PositionAngleType.MEAN,
-                                        cachedPositionAngleType,
                                         getFrame(),
                                         getDate().shiftedBy(dt),
                                         getMu());
@@ -1135,7 +1134,6 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
         return new FieldCircularOrbit<>(a, ex, ey, i, raan,
                                         getAlphaM().add(getKeplerianMeanMotion().multiply(dt.toDouble())),
                                         PositionAngleType.MEAN,
-                                        cachedPositionAngleType,
                                         getFrame(),
                                         getDate().shiftedBy(dt),
                                         getMu());

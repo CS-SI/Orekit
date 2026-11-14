@@ -13,6 +13,7 @@ import org.orekit.data.DataContext;
 import org.orekit.orbits.KeplerianExtendedPositionProvider;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.OrbitParamsType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -39,7 +40,7 @@ public class OriginTransformProviderTest {
         double gm = Constants.GRIM5C1_EARTH_MU;
         Orbit orbit = new KeplerianOrbit(6378137 + 500e3, 1e-3, 1, 2, 3, 4,
                 PositionAngleType.TRUE, eci, epoch, gm);
-        final KeplerianExtendedPositionProvider pvProvider = new KeplerianExtendedPositionProvider(orbit);
+        final KeplerianExtendedPositionProvider pvProvider = new KeplerianExtendedPositionProvider(OrbitParamsType.CARTESIAN.convertType(orbit));
 
         // action
         final OriginTransformProvider actual = new OriginTransformProvider(pvProvider, eci);

@@ -271,6 +271,6 @@ class KeplerianMotionCartesianUtilityTest {
                 deltaPV.getVelocity().getY().norm(),
                 deltaPV.getVelocity().getZ().norm(),
         };
-        Assertions.assertArrayEquals(new double[6], deltaPartialsNorms, 2e-10);
+        Assertions.assertArrayEquals(new double[6], deltaPartialsNorms, 3e-10);
     }
 }

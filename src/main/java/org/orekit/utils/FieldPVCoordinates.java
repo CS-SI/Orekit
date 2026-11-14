@@ -16,8 +16,8 @@
  */
 package org.orekit.utils;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.FDSFactory;
 import org.hipparchus.analysis.differentiation.FieldDerivative;
 import org.hipparchus.analysis.differentiation.FieldDerivativeStructure;
@@ -29,7 +29,6 @@ import org.hipparchus.util.FastMath;
 import org.hipparchus.util.FieldBlendable;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.time.FieldTimeShiftable;
 
 /** Simple container for Position/Velocity pairs, using {@link CalculusFieldElement}.
  * <p>
@@ -48,7 +47,7 @@ import org.orekit.time.FieldTimeShiftable;
  * @see PVCoordinates
  */
 public class FieldPVCoordinates<T extends CalculusFieldElement<T>>
-    implements FieldTimeShiftable<FieldPVCoordinates<T>, T>, FieldBlendable<FieldPVCoordinates<T>, T> {
+    implements ShiftableFieldPVCoordinatesHolder<T>, FieldBlendable<FieldPVCoordinates<T>, T> {
 
     /** The position. */
     private final FieldVector3D<T> position;
@@ -329,6 +328,12 @@ public class FieldPVCoordinates<T extends CalculusFieldElement<T>>
             velocity     = zero;
             acceleration = zero;
         }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public FieldPVCoordinates<T> getPVCoordinates() {
+        return this;
     }
 
     /** Get fixed position/velocity at origin (both p, v and a are zero vectors).

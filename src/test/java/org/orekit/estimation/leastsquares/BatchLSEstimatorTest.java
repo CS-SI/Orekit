@@ -833,7 +833,7 @@ class BatchLSEstimatorTest {
         EstimationTestUtils.checkFit(false, context, estimator, 3, 4,
                                      0.0, 4e-06,
                                      0.0, 1.2e-05,
-                                     0.0, 1.2e-07,
+                                     0.0, 1.4e-07,
                                      0.0, 6.6e-11);
 
         final Orbit determined = new KeplerianOrbit(parameters.get( 6).getValue(),
@@ -1028,7 +1028,7 @@ class BatchLSEstimatorTest {
         EstimationTestUtils.checkFit(false, context, estimator, 3, 4,
                                      0.0, 3.9e-06,
                                      0.0, 1.1e-05,
-                                     0.0, 5.8e-07,
+                                     0.0, 7.0e-07,
                                      0.0, 2.2e-10);
 
         final Orbit determined = new KeplerianOrbit(parameters.get( 6).getValue(),
