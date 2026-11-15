@@ -43,12 +43,78 @@ import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
+import org.orekit.utils.PVCoordinates;
 
 
 public class TLEPropagatorTest {
 
     private TLE tle;
     private double period;
+
+    @Test
+    public void testEccentricityBoundary() {
+        // setup a TLE for CBERS-2 from SatCode-entry
+        // Set e = 1e-4 and update the checksum.
+        final String line1 = "1 28057U 03049A   06177.78615833  .00000060  00000-0  35940-4 0  1836";
+        final String line2 = "2 28057  98.4283 247.6961 0001000  88.1964 271.9322 14.35478080140551";
+        final TLE tle = new TLE(line1, line2);
+        final TLEPropagator propagator = TLEPropagator.selectExtrapolator(tle);
+
+        // Simulate one day of propagation
+        final PVCoordinates pv = propagator.getPVCoordinates(tle.getDate().shiftedBy(1440.0 * 60));
+
+        // Check results
+        // Vallado reference: python-sgp4 2.25, WGS72, sgp4_tsince(1440.0).
+        // TEME position and velocity converted to m and m/s.
+        final Vector3D position = new Vector3D(688194.3270096679, 4124917.094150589, 5794448.168095908);
+        final Vector3D velocity = new Vector3D(2810.993475862282, 5479.602649481290, -4224.949038916624);
+        Assertions.assertTrue(TLE.isFormatOK(line1, line2));
+        Assertions.assertEquals(1e-4, tle.getE(), 0.0);
+        Assertions.assertEquals(0.0, Vector3D.distance(position, pv.getPosition()), 1e-3);
+        Assertions.assertEquals(0.0, Vector3D.distance(velocity, pv.getVelocity()), 1e-6);
+    }
+
+    @Test
+    public void testSynchronousResonance() {
+        // setup a TLE for ITALSAT-2 from SatCode-entry
+        final String line1 = "1 24208U 96044A   06177.04061740 -.00000094  00000-0  10000-3 0  1600";
+        final String line2 = "2 24208   3.8536  80.0121 0026640 311.0977  48.3000  1.00778054 36119";
+        final TLE tle = new TLE(line1, line2);
+        final TLEPropagator propagator = TLEPropagator.selectExtrapolator(tle);
+
+        // Simulate 30 days of propagation
+        final PVCoordinates pv = propagator.getPVCoordinates(tle.getDate().shiftedBy(43200.0 * 60));
+
+        // Check results
+        // Vallado reference: python-sgp4 2.25, WGS72, sgp4_tsince(43200.0).
+        // TEME position and velocity converted to m and m/s.
+        final Vector3D position = new Vector3D(-40380665.04669726, 11537098.57825122, 2888597.677195310);
+        final Vector3D velocity = new Vector3D(-849.0166973188743, -2954.860405152464, 20.91560197677583);
+        Assertions.assertTrue(TLE.isFormatOK(line1, line2));
+        Assertions.assertEquals(0.0, Vector3D.distance(position, pv.getPosition()), 1e-3);
+        Assertions.assertEquals(0.0, Vector3D.distance(velocity, pv.getVelocity()), 1e-6);
+    }
+
+    @Test
+    public void testHalfDayResonance() {
+        // setup a TLE for MOLNIYA 2-14 from SatCode-entry
+        final String line1 = "1 08195U 75081A   06176.33215444  .00000099  00000-0  11873-3 0   813";
+        final String line2 = "2 08195  64.1586 279.0717 6877146 264.7651  20.2257  2.00491383225656";
+        final TLE tle = new TLE(line1, line2);
+        final TLEPropagator propagator = TLEPropagator.selectExtrapolator(tle);
+
+        // Simulate 30 days of propagation
+        final PVCoordinates pv = propagator.getPVCoordinates(tle.getDate().shiftedBy(43200.0 * 60));
+
+        // Check results
+        // Vallado reference: python-sgp4 2.25, WGS72, sgp4_tsince(43200.0).
+        // TEME position and velocity converted to m and m/s.
+        final Vector3D position = new Vector3D(13224254.96163956, -19429057.42886261, 23117383.50947388);
+        final Vector3D velocity = new Vector3D(1243.030143282054, 644.9175780822114, 2686.274336432957);
+        Assertions.assertTrue(TLE.isFormatOK(line1, line2));
+        Assertions.assertEquals(0.0, Vector3D.distance(position, pv.getPosition()), 1e-3);
+        Assertions.assertEquals(0.0, Vector3D.distance(velocity, pv.getVelocity()), 1e-6);
+    }
 
     @Test
     public void testsecondaryMode() {

@@ -20,6 +20,10 @@
   </properties>
   <body>
     <release version="13.1.10" date="TBD" description="TBD.">
+        <action dev="soaringred" type="fix" issue="2027">
+          Fixed SGP4/SDP4 compatibility with Vallado's reference implementation by using
+          the full-precision Earth rotation rate and the same low-eccentricity threshold.
+        </action>
         <action dev="sepoma" type="fix" issue="2035">
           Fixed wrong sign in L1TransformProvider.
         </action>
