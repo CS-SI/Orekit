@@ -1061,6 +1061,10 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased<Kepleria
     /** {@inheritDoc} */
     @Override
     public KeplerianOrbit shiftedBy(final TimeOffset dt) {
+        if (dt.isZero()) {  // for performance
+            return new KeplerianOrbit(a, e, i, pa, raan, cachedAnomaly, aDot, eDot, iDot, paDot, raanDot, cachedAnomalyDot,
+                    cachedPositionAngleType, getFrame(), getDate(), getMu());
+        }
 
         final double dtS = dt.toDouble();
 
@@ -1069,7 +1073,7 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased<Kepleria
                 getMeanAnomaly() + getKeplerianMeanMotion() * dtS, PositionAngleType.MEAN,
                 cachedPositionAngleType, getFrame(), getDate().shiftedBy(dt), getMu());
 
-        if (dtS != 0. && hasNonKeplerianAcceleration()) {
+        if (hasNonKeplerianAcceleration()) {
 
             // extract non-Keplerian acceleration from first time derivatives
             final Vector3D nonKeplerianAcceleration = nonKeplerianAcceleration();

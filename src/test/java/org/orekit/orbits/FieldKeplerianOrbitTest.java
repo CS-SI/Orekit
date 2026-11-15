@@ -16,6 +16,8 @@
  */
 package org.orekit.orbits;
 
+import java.util.function.Function;
+
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
@@ -48,14 +50,12 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeOffset;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
-
-import java.util.function.Function;
-
 import static org.orekit.OrekitMatchers.relativelyCloseTo;
 
 public class FieldKeplerianOrbitTest {
@@ -349,6 +349,60 @@ public class FieldKeplerianOrbitTest {
         Assertions.assertEquals(fieldOrbit.getDate(), actualFieldOrbit.getDate());
         Assertions.assertEquals(fieldOrbit.getFrame(), actualFieldOrbit.getFrame());
         Assertions.assertEquals(fieldOrbit.getPosition(), actualFieldOrbit.getPosition());
+    }
+
+    @Test
+    void testShiftedByZeroField() {
+        // GIVEN
+        final Vector3D position = new Vector3D(-29536113.0, 30329259.0, -100125.0);
+        final Vector3D velocity = new Vector3D(-2194.0, -2141.0, -8.0);
+        final Vector3D acceleration = new Vector3D(1.0, 0.0, 0.0);
+        final PVCoordinates pvCoordinates = new PVCoordinates(position, velocity, acceleration);
+        final KeplerianOrbit orbit = new KeplerianOrbit(pvCoordinates, FramesFactory.getGCRF(),
+                AbsoluteDate.ARBITRARY_EPOCH, mu);
+        final FieldKeplerianOrbit<Binary64> expected = new FieldKeplerianOrbit<>(Binary64Field.getInstance(), orbit);
+        // WHEN
+        final FieldKeplerianOrbit<Binary64> actual = expected.shiftedBy(Binary64.ZERO);
+        // THEN
+        Assertions.assertEquals(expected.getMu(), actual.getMu());
+        Assertions.assertEquals(expected.getDate(), actual.getDate());
+        Assertions.assertEquals(expected.getFrame(), actual.getFrame());
+        final Binary64[] actualElements = MathArrays.buildArray(Binary64Field.getInstance(), 6);
+        final Binary64[] actualRates = actualElements.clone();
+        final Binary64[] expectedElements = actualElements.clone();
+        final Binary64[] expectedRates = expectedElements.clone();
+        final OrbitType orbitType = expected.getType();
+        orbitType.mapOrbitToArray(expected, expected.getCachedPositionAngleType(), expectedElements, expectedRates);
+        orbitType.mapOrbitToArray(actual, actual.getCachedPositionAngleType(), actualElements, actualRates);
+        Assertions.assertArrayEquals(expectedElements, actualElements);
+        Assertions.assertArrayEquals(expectedRates, actualRates);
+    }
+
+    @Test
+    void testShiftedByZeroTimeOffset() {
+        // GIVEN
+        final Vector3D position = new Vector3D(-29536113.0, 30329259.0, -100125.0);
+        final Vector3D velocity = new Vector3D(-2194.0, -2141.0, -8.0);
+        final Vector3D acceleration = new Vector3D(1.0, 0.0, 0.0);
+        final PVCoordinates pvCoordinates = new PVCoordinates(position, velocity, acceleration);
+        final KeplerianOrbit orbit = new KeplerianOrbit(pvCoordinates, FramesFactory.getGCRF(),
+                AbsoluteDate.ARBITRARY_EPOCH, mu);
+        final FieldKeplerianOrbit<Binary64> expected = new FieldKeplerianOrbit<>(Binary64Field.getInstance(), orbit);
+        // WHEN
+        final FieldKeplerianOrbit<Binary64> actual = expected.shiftedBy(TimeOffset.ZERO);
+        // THEN
+        Assertions.assertEquals(expected.getMu(), actual.getMu());
+        Assertions.assertEquals(expected.getDate(), actual.getDate());
+        Assertions.assertEquals(expected.getFrame(), actual.getFrame());
+        final double[] actualElements = new double[6];
+        final double[] actualRates = actualElements.clone();
+        final double[] expectedElements = new double[6];
+        final double[] expectedRates = expectedElements.clone();
+        final OrbitType orbitType = expected.getType();
+        orbitType.mapOrbitToArray(expected.toOrbit(), expected.getCachedPositionAngleType(), expectedElements, expectedRates);
+        orbitType.mapOrbitToArray(actual.toOrbit(), actual.getCachedPositionAngleType(), actualElements, actualRates);
+        Assertions.assertArrayEquals(expectedElements, actualElements, 1e-7);
+        Assertions.assertArrayEquals(expectedRates, actualRates, 1e-8);
     }
 
     @Test

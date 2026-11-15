@@ -1077,12 +1077,16 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
     /** {@inheritDoc} */
     @Override
     public FieldCircularOrbit<T> shiftedBy(final T dt) {
+        if (dt.isZero()) {  // for performance
+            return new FieldCircularOrbit<>(a, ex, ey, i, raan, cachedAlpha, aDot, exDot, eyDot, iDot, raanDot,
+                    cachedAlphaDot, cachedPositionAngleType, getFrame(), getDate(), getMu());
+        }
 
         // use Keplerian-only motion
         final FieldCircularOrbit<T> keplerianShifted = shiftWithKeplerianMotion(dt);
 
         // Non-Keplerian acceleration shall be considered
-        if (!dt.isZero() && hasNonKeplerianRates()) {
+        if (hasNonKeplerianRates()) {
             return keplerianShifted.applyNonKeplerianAcceleration(nonKeplerianAcceleration(), dt);
         }
         // Keplerian-only motion is all we can do
@@ -1108,7 +1112,7 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
         final FieldCircularOrbit<T> keplerianShifted = shiftWithKeplerianMotion(dt);
 
         // Non-Keplerian acceleration shall be considered
-        if (!dt.isZero() && hasNonKeplerianRates()) {
+        if (hasNonKeplerianRates()) {
             return keplerianShifted.applyNonKeplerianAcceleration(nonKeplerianAcceleration(), dtValue);
         }
         // Keplerian-only motion is all we can do

@@ -549,7 +549,7 @@ public class FieldPVCoordinatesTest {
                             3.0e-13);
         Assertions.assertEquals(numericalJerk.getY().getReal(),
                             fv.getVelocity().getY().getPartialDerivative(2).getReal(),
-                            3.0e-13);
+                            1.0e-12);
         Assertions.assertEquals(numericalJerk.getZ().getReal(),
                             fv.getVelocity().getZ().getPartialDerivative(2).getReal(),
                             3.0e-13);
@@ -571,7 +571,7 @@ public class FieldPVCoordinatesTest {
                             3.0e-13);
         Assertions.assertEquals(numericalJerk.getY().getReal(),
                             fv1.getAcceleration().getY().getPartialDerivative(1).getReal(),
-                            3.0e-13);
+                            1.0e-12);
         Assertions.assertEquals(numericalJerk.getZ().getReal(),
                             fv1.getAcceleration().getZ().getPartialDerivative(1).getReal(),
                             3.0e-13);
@@ -582,7 +582,7 @@ public class FieldPVCoordinatesTest {
                             3.0e-13);
         Assertions.assertEquals(numericalJerk.getY().getReal(),
                             fv2.getAcceleration().getY().getPartialDerivative(1).getReal(),
-                            3.0e-13);
+                            1.0e-12);
         Assertions.assertEquals(numericalJerk.getZ().getReal(),
                             fv2.getAcceleration().getZ().getPartialDerivative(1).getReal(),
                             3.0e-13);

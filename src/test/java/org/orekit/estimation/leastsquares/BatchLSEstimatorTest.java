@@ -16,6 +16,10 @@
  */
 package org.orekit.estimation.leastsquares;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.IntStream;
+
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.RealMatrix;
@@ -42,8 +46,8 @@ import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.PV;
 import org.orekit.estimation.measurements.PVMeasurementCreator;
 import org.orekit.estimation.measurements.Range;
-import org.orekit.estimation.measurements.TwoWayRangeMeasurementCreator;
 import org.orekit.estimation.measurements.RangeRateMeasurementCreator;
+import org.orekit.estimation.measurements.TwoWayRangeMeasurementCreator;
 import org.orekit.estimation.measurements.modifiers.OutlierFilter;
 import org.orekit.estimation.measurements.modifiers.PhaseCentersRangeModifier;
 import org.orekit.forces.gravity.NewtonianAttraction;
@@ -68,10 +72,6 @@ import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 import org.orekit.utils.TimeStampedPVCoordinates;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.IntStream;
 
 class BatchLSEstimatorTest {
 
@@ -103,9 +103,9 @@ class BatchLSEstimatorTest {
         final LeastSquaresOptimizer.Optimum optimum = estimator.getOptimum();
         // THEN
         Assertions.assertEquals(6, optimum.getIterations());
-        Assertions.assertEquals(9.3177e-19, optimum.getChiSquare(), 1e-22);
+        Assertions.assertEquals(6.632098e-19, optimum.getChiSquare(), 1e-22);
         final double actualReduced = optimum.getReducedChiSquare(0);
-        Assertions.assertEquals(1.5275e-20, actualReduced, 1e-22);
+        Assertions.assertEquals(1.087229e-20, actualReduced, 1e-22);
     }
 
     /**

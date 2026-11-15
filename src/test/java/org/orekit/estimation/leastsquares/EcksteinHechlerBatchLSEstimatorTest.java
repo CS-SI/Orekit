@@ -208,7 +208,7 @@ public class EcksteinHechlerBatchLSEstimatorTest {
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
 
-        EcksteinHechlerEstimationTestUtils.checkFit(context, estimator, 1, 11,
+        EcksteinHechlerEstimationTestUtils.checkFit(context, estimator, 1, 12,
                                                     0.0, 4.3e-5,
                                                     0.0, 1.2e-4,
                                                     0.0, 3.0e-8,

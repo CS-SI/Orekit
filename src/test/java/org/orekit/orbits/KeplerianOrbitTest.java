@@ -16,6 +16,8 @@
  */
 package org.orekit.orbits;
 
+import java.util.function.Function;
+
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.differentiation.DSFactory;
@@ -26,7 +28,10 @@ import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrixPreservingVisitor;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.orekit.Utils;
@@ -41,9 +46,6 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
-
-import java.util.function.Function;
-
 import static org.orekit.OrekitMatchers.relativelyCloseTo;
 
 class KeplerianOrbitTest {
@@ -1010,6 +1012,31 @@ class KeplerianOrbitTest {
                             MathUtils.normalizeAngle(converted.getRightAscensionOfAscendingNode() +
                                                      converted.getPerigeeArgument(), FastMath.PI),
                             1.0e-10);
+    }
+
+    @Test
+    void testShiftedByZero() {
+        // GIVEN
+        final Vector3D position = new Vector3D(-29536113.0, 30329259.0, -100125.0);
+        final Vector3D velocity = new Vector3D(-2194.0, -2141.0, -8.0);
+        final Vector3D acceleration = new Vector3D(1.0, 0.0, 0.0);
+        final PVCoordinates pvCoordinates = new PVCoordinates(position, velocity, acceleration);
+        final KeplerianOrbit expected = new KeplerianOrbit(pvCoordinates, FramesFactory.getGCRF(), date, mu);
+        // WHEN
+        final KeplerianOrbit actual = expected.shiftedBy(0.);
+        // THEN
+        Assertions.assertEquals(expected.getMu(), actual.getMu());
+        Assertions.assertEquals(expected.getDate(), actual.getDate());
+        Assertions.assertEquals(expected.getFrame(), actual.getFrame());
+        final double[] actualElements = new double[6];
+        final double[] actualRates = actualElements.clone();
+        final double[] expectedElements = new double[6];
+        final double[] expectedRates = expectedElements.clone();
+        final OrbitType orbitType = expected.getType();
+        orbitType.mapOrbitToArray(expected, expected.getCachedPositionAngleType(), expectedElements, expectedRates);
+        orbitType.mapOrbitToArray(actual, actual.getCachedPositionAngleType(), actualElements, actualRates);
+        Assertions.assertArrayEquals(expectedElements, actualElements, 1e-7);
+        Assertions.assertArrayEquals(expectedRates, actualRates, 1e-10);
     }
 
     @Test
