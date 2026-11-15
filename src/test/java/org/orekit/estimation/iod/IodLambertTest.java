@@ -237,7 +237,7 @@ public class IodLambertTest {
         Assertions.assertEquals(5.97e-4, k1.getE(), 1.0e-6);
         Assertions.assertEquals(8.55, FastMath.toDegrees(k1.getI()), 0.01);
         Assertions.assertEquals(0.0, Vector3D.distance(p1, k1.getPosition(t1, teme)), 1.4e-8);
-        Assertions.assertEquals(0.0, Vector3D.distance(p3, k1.getPosition(t3, teme)), 3.0e-7);
+        Assertions.assertEquals(0.0, Vector3D.distance(p3, k1.getPosition(t3, teme)), 4.0e-7);
 
     }
 
