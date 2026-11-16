@@ -19,7 +19,10 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
-    <release version="13.1.10" date="TBD" description="TBD.">
+    <release version="13.1.10" date="2026-11-18" description="Orekit 13.1.10 is a patch release. It solves a few bugs including a long-standing one with the L1 Lagrange point.">
+        <action dev="serrof" type="fix" issue="2042">
+            Fixed non-Keplerian acceleration in (Field)Orbit shiftedBy with zero.
+        </action>
         <action dev="v.montal" type="add" issue="2036">
             Allow interrupting EllipsoidTessellator computations.
         </action>
