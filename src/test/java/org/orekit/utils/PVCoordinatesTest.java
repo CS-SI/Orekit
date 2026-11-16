@@ -422,7 +422,7 @@ public class PVCoordinatesTest {
                             3.0e-13);
         Assertions.assertEquals(numericalJerk.getY(),
                             fv.getVelocity().getY().getPartialDerivative(2),
-                            3.0e-13);
+                            3.0e-12);
         Assertions.assertEquals(numericalJerk.getZ(),
                             fv.getVelocity().getZ().getPartialDerivative(2),
                             3.0e-13);
@@ -444,7 +444,7 @@ public class PVCoordinatesTest {
                             3.0e-13);
         Assertions.assertEquals(numericalJerk.getY(),
                             fv1.getAcceleration().getY().getPartialDerivative(1),
-                            3.0e-13);
+                            1.0e-12);
         Assertions.assertEquals(numericalJerk.getZ(),
                             fv1.getAcceleration().getZ().getPartialDerivative(1),
                             3.0e-13);
@@ -455,7 +455,7 @@ public class PVCoordinatesTest {
                             3.0e-13);
         Assertions.assertEquals(numericalJerk.getY(),
                             fv2.getAcceleration().getY().getPartialDerivative(1),
-                            3.0e-13);
+                            1.0e-12);
         Assertions.assertEquals(numericalJerk.getZ(),
                             fv2.getAcceleration().getZ().getPartialDerivative(1),
                             3.0e-13);

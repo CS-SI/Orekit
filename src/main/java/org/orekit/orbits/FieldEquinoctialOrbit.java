@@ -16,8 +16,8 @@
  */
 package org.orekit.orbits;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative1;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.FastMath;
@@ -908,12 +908,16 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
     /** {@inheritDoc} */
     @Override
     public FieldEquinoctialOrbit<T> shiftedBy(final T dt) {
+        if (dt.isZero()) {  // for performance
+            return new FieldEquinoctialOrbit<>(a, ex, ey, hx, hy, cachedL, aDot, exDot, eyDot, hxDot, hyDot, cachedLDot,
+                    cachedPositionAngleType, getFrame(), getDate(), getMu());
+        }
 
         // use Keplerian-only motion
         final FieldEquinoctialOrbit<T> keplerianShifted = shiftWithKeplerianMotion(dt);
 
         // Non-Keplerian acceleration shall be considered
-        if (!dt.isZero() && hasNonKeplerianRates()) {
+        if (hasNonKeplerianRates()) {
             return keplerianShifted.applyNonKeplerianAcceleration(nonKeplerianAcceleration(), dt);
         }
         // Keplerian-only motion is all we can do
@@ -939,7 +943,7 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
         final FieldEquinoctialOrbit<T> keplerianShifted = shiftWithKeplerianMotion(dt);
 
         // Non-Keplerian acceleration shall be considered
-        if (!dtValue.isZero() && hasNonKeplerianRates()) {
+        if (hasNonKeplerianRates()) {
             return keplerianShifted.applyNonKeplerianAcceleration(nonKeplerianAcceleration(), dtValue);
         }
         // Keplerian-only motion is all we can do
