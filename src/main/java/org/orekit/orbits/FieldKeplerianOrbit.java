@@ -948,12 +948,16 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
     /** {@inheritDoc} */
     @Override
     public FieldKeplerianOrbit<T> shiftedBy(final T dt) {
+        if (dt.isZero()) {  // for performance
+            return new FieldKeplerianOrbit<>(a, e, i, pa, raan, cachedAnomaly, aDot, eDot, iDot, paDot, raanDot,
+                    cachedAnomalyDot, cachedPositionAngleType, getFrame(), getDate(), getMu());
+        }
 
         // use Keplerian-only motion
         final FieldKeplerianOrbit<T> keplerianShifted = keplerianShiftedBy(dt);
 
         // Non-Keplerian acceleration shall be considered
-        if (!dt.isZero() && hasNonKeplerianRates()) {
+        if (hasNonKeplerianRates()) {
             return new FieldKeplerianOrbit<>(shiftPVNonKeplerian(keplerianShifted.getPVCoordinates(), dt),
                     getFrame(), getDate().shiftedBy(dt), getMu());
         }
@@ -976,7 +980,7 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
         final FieldKeplerianOrbit<T> keplerianShifted = keplerianShiftedBy(dt);
 
         // Non-Keplerian acceleration shall be considered
-        if (!dtValue.isZero() && hasNonKeplerianRates()) {
+        if (hasNonKeplerianRates()) {
             return new FieldKeplerianOrbit<>(shiftPVNonKeplerian(keplerianShifted.getPVCoordinates(), dtValue),
                     getFrame(), getDate().shiftedBy(dt), getMu());
         }

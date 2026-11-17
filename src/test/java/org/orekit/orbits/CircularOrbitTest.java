@@ -839,6 +839,31 @@ class CircularOrbitTest {
     }
 
     @Test
+    void testShiftedByZero() {
+        // GIVEN
+        final Vector3D position = new Vector3D(-29536113.0, 30329259.0, -100125.0);
+        final Vector3D velocity = new Vector3D(-2194.0, -2141.0, -8.0);
+        final Vector3D acceleration = new Vector3D(1.0, 0.0, 0.0);
+        final PVCoordinates pvCoordinates = new PVCoordinates(position, velocity, acceleration);
+        final CircularOrbit expected = new CircularOrbit(pvCoordinates, FramesFactory.getGCRF(), date, mu);
+        // WHEN
+        final CircularOrbit actual = expected.shiftedBy(0.);
+        // THEN
+        Assertions.assertEquals(expected.getMu(), actual.getMu());
+        Assertions.assertEquals(expected.getDate(), actual.getDate());
+        Assertions.assertEquals(expected.getFrame(), actual.getFrame());
+        final double[] actualElements = new double[6];
+        final double[] actualRates = actualElements.clone();
+        final double[] expectedElements = new double[6];
+        final double[] expectedRates = expectedElements.clone();
+        final OrbitType orbitType = expected.getType();
+        orbitType.mapOrbitToArray(expected, expected.getCachedPositionAngleType(), expectedElements, expectedRates);
+        orbitType.mapOrbitToArray(actual, actual.getCachedPositionAngleType(), actualElements, actualRates);
+        Assertions.assertArrayEquals(expectedElements, actualElements, 1e-7);
+        Assertions.assertArrayEquals(expectedRates, actualRates, 1e-10);
+    }
+
+    @Test
     void testNonKeplerianDerivatives() {
         final AbsoluteDate date         = new AbsoluteDate("2003-05-01T00:00:20.000", TimeScalesFactory.getUTC());
         final Vector3D     position     = new Vector3D(6896874.444705,  1956581.072644,  -147476.245054);

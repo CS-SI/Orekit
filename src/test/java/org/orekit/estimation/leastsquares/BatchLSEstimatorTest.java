@@ -16,10 +16,8 @@
  */
 package org.orekit.estimation.leastsquares;
 
-import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.stream.IntStream;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
@@ -120,9 +118,9 @@ class BatchLSEstimatorTest {
         final LeastSquaresOptimizer.Optimum optimum = estimator.getOptimum();
         // THEN
         Assertions.assertEquals(6, optimum.getIterations());
-        Assertions.assertEquals(3.1781e-20, optimum.getChiSquare(), 1e-22);
+        Assertions.assertEquals(6.632098e-19, optimum.getChiSquare(), 1e-22);
         final double actualReduced = optimum.getReducedChiSquare(0);
-        Assertions.assertEquals(5.2099e-22, actualReduced, 1e-24);
+        Assertions.assertEquals(1.087229e-20, actualReduced, 1e-22);
     }
 
     /**

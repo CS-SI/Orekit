@@ -438,12 +438,15 @@ public class CartesianOrbit extends Orbit {
      * @return shifted position and velocity
      */
     private PVCoordinates shiftPV(final double dt) {
+        if (dt == 0) {  // for performance
+            return getPVCoordinates();
+        }
 
         final Vector3D pvP = getPosition();
         final PVCoordinates shiftedPV = KeplerianMotionCartesianUtility.predictPositionVelocity(dt, pvP,
             getPVCoordinates().getVelocity(), getMu());
 
-        if (dt != 0. && hasNonKeplerianAcceleration) {
+        if (hasNonKeplerianAcceleration) {
 
             return shiftPVNonKeplerian(shiftedPV, dt);
 

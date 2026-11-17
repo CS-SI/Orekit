@@ -477,10 +477,13 @@ public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends Fiel
      */
     private FieldPVCoordinates<T> shiftPV(final T dt) {
         final FieldPVCoordinates<T> pvCoordinates = getPVCoordinates();
+        if (dt.isZero()) {
+            return pvCoordinates;
+        }
         final FieldPVCoordinates<T> shiftedPV = KeplerianMotionCartesianUtility.predictPositionVelocity(dt,
                 pvCoordinates.getPosition(), pvCoordinates.getVelocity(), getMu());
 
-        if (!dt.isZero() && hasNonKeplerianAcceleration) {
+        if (hasNonKeplerianAcceleration) {
 
             return shiftPVNonKeplerian(shiftedPV, dt);
 

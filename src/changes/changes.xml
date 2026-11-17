@@ -497,40 +497,55 @@
               Update PredefinedIAUPoles to WGCCRE 2015 report
           </action>
     </release>
+    <release version="13.1.10" date="2026-11-17" description="Orekit 13.1.10 is a patch release. It solves a few bugs including a long-standing one with the L1 Lagrange point.">
+        <action dev="serrof" type="fix" issue="2042">
+            Fixed non-Keplerian acceleration in (Field)Orbit shiftedBy with zero.
+        </action>
+        <action dev="v.montal" type="add" issue="2036">
+            Allow interrupting EllipsoidTessellator computations.
+        </action>
+        <action dev="sepoma" type="fix" issue="2035">
+            Fixed wrong sign in L1TransformProvider.
+        </action>
+        <action dev="soaringred" type="fix" issue="2027">
+            Fixed SGP4/SDP4 compatibility with Vallado's reference implementation by using
+            the full-precision Earth rotation rate and the same low-eccentricity threshold.
+        </action>
+    </release>
     <release version="13.1.9" date="2026-10-03" description="Orekit 13.1.9 is a patch release. It solves a range of bugs including some related to Albedo and EOPs.">
         <action dev="luc" type="fix" issue="2028" due-to="LordRaptor">
-            Fixed power computation of units containing a current part.
+          Fixed power computation of units containing a current part.
         </action>
         <action dev="rodrigomarcelino" type="fix" issue="2025">
-            Fix wrong term in Coppola's encounter duration.
+          Fix wrong term in Coppola's encounter duration.
         </action>
         <action dev="nlowing" type="fix" issue="2026">
-            Fix calculation of inferred LOD in EOPHistory to be scaled by JULIAN_DAY.
+          Fix calculation of inferred LOD in EOPHistory to be scaled by JULIAN_DAY.
         </action>
         <action dev="luc" type="fix" issue="2023">
-            Fixed EOP fitting when leap seconds are present.
+          Fixed EOP fitting when leap seconds are present.
         </action>
         <action dev="scottshambaugh" type="fix" issue="2022">
-            Fixed area calculations leading to too-high albedo flux in KnockeRediffusedForceModel.
+          Fixed area calculations leading to too-high albedo flux in KnockeRediffusedForceModel.
         </action>
         <action dev="luc" type="fix" issue="2019">
-            Improved tidal displacement performance.
+          Improved tidal displacement performance.
         </action>
         <action dev="luc" type="fix" issue="2018">
-            Avoid unnecessary recomputation in Vienna 3 tropospheric model.
+          Avoid unnecessary recomputation in Vienna 3 tropospheric model.
         </action>
         <action dev="nlowing" type="fix" issue="2016">
-            Fix implementation of OrekitCcsdsFrameMapper equals method.
+          Fix implementation of OrekitCcsdsFrameMapper equals method.
         </action>
         <action dev="marconugnes" type="fix" issue="2008">
-            Replaced geocentric position vector with relative position vector in KnockeRediffusedForceModel.
+          Replaced geocentric position vector with relative position vector in KnockeRediffusedForceModel.
         </action>
         <action dev="luc" type="fix" issue="1965" due-to="Julian Rengstorf">
-            Align OpsStatus enum with the SANA Operational Status registry.
+          Align OpsStatus enum with the SANA Operational Status registry.
         </action>
         <action dev="vcucchie" type="fix" issue="1738">
-            Fixed date indexing in GenericTimeStampedCache, which used a 1 microsecond
-            quantization. Exact time offsets are now used instead (attosecond accuracy).
+          Fixed date indexing in GenericTimeStampedCache, which used a 1 microsecond
+          quantization. Exact time offsets are now used instead (attosecond accuracy).
         </action>
     </release>
     <release version="13.1.8" date="2026-08-30" description="Orekit 13.1.8 is a patch release. It solves bugs related to NRLMSISE, numerical state transition matrix and rates in pseudo-inertial frames.">
@@ -555,21 +570,21 @@
         </action>
     </release>
     <release version="13.1.7" date="2026-07-03" description="Orekit 13.1.7 is a patch release. It solves various bugs related to propagators, solid tides and Alpha-5 parsing.">
-        <action dev="luc" type="fix" issue="1977">
-            Fixed AbstractPropagatorConverter.getRMS().
-        </action>
-        <action dev="luc" type="fix" issue="1976">
-            Fixed initial warm-up fitting in AbstractPropagatorConverter.
-        </action>
-        <action dev="luc" type="fix" issue="1972">
-            Allow Ephemeris with null attitude providers to be used in AggregateBoundedPropagator.
-        </action>
-        <action dev="rafa" type="add" issue="1925">
-            Add constructors with custom Love numbers in SolidTides.
-        </action>
-        <action dev="rodrigomarcelino" type="add" issue="1159">
-            Exposed Alpha-5 satellite number parsing in TLE class.
-        </action>
+      <action dev="luc" type="fix" issue="1977">
+          Fixed AbstractPropagatorConverter.getRMS().
+      </action>
+      <action dev="luc" type="fix" issue="1976">
+          Fixed initial warm-up fitting in AbstractPropagatorConverter.
+      </action>
+       <action dev="luc" type="fix" issue="1972">
+          Allow Ephemeris with null attitude providers to be used in AggregateBoundedPropagator.
+      </action>
+       <action dev="rafa" type="add" issue="1925">
+          Add constructors with custom Love numbers in SolidTides.
+      </action>
+      <action dev="rodrigomarcelino" type="add" issue="1159">
+          Exposed Alpha-5 satellite number parsing in TLE class.
+      </action>
     </release>
     <release version="13.1.6" date="2026-06-03" description="Orekit 13.1.6 is a patch release.
                                                              It solves various bugs related to CCSDS parsing and writing, DSST

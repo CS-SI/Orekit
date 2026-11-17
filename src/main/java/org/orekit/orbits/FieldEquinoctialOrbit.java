@@ -829,12 +829,16 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
     /** {@inheritDoc} */
     @Override
     public FieldEquinoctialOrbit<T> shiftedBy(final T dt) {
+        if (dt.isZero()) {  // for performance
+            return new FieldEquinoctialOrbit<>(a, ex, ey, hx, hy, cachedL, aDot, exDot, eyDot, hxDot, hyDot, cachedLDot,
+                    cachedPositionAngleType, getFrame(), getDate(), getMu());
+        }
 
         // use Keplerian-only motion
         final FieldEquinoctialOrbit<T> keplerianShifted = keplerianShiftedBy(dt);
 
         // Non-Keplerian acceleration shall be considered
-        if (!dt.isZero() && hasNonKeplerianRates()) {
+        if (hasNonKeplerianRates()) {
             return new FieldEquinoctialOrbit<>(shiftPVNonKeplerian(keplerianShifted.getPVCoordinates(), dt),
                     getFrame(), getDate().shiftedBy(dt), getMu());
         }
@@ -861,7 +865,7 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
         final FieldEquinoctialOrbit<T> keplerianShifted = keplerianShiftedBy(dt);
 
         // Non-Keplerian acceleration shall be considered
-        if (!dtValue.isZero() && hasNonKeplerianRates()) {
+        if (hasNonKeplerianRates()) {
             return new FieldEquinoctialOrbit<>(shiftPVNonKeplerian(keplerianShifted.getPVCoordinates(), dtValue),
                     getFrame(), getDate().shiftedBy(dt), getMu());
         }
