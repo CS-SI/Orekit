@@ -72,7 +72,10 @@ public class TLEConstants {
     /** ZEL. */
     public static final double ZEL      = 0.05490;
     /** THDT. */
-    public static final double THDT     = 4.3752691E-3;
+    /** Earth rotation rate from Vallado's SGP4 reference implementation
+     * (AIAA 2006-6753, sgp4unit.cpp), in rad/min.
+     */
+    public static final double THDT     = 4.37526908801129966E-3;
     /** C1SS. */
     public static final double C1SS     =  2.9864797E-6;
     /** C1L. */

@@ -20,6 +20,7 @@ import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
+import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Binary64Field;
@@ -286,6 +287,45 @@ public class L1TransformProviderTest {
             Assertions.assertEquals(0.0, FieldVector3D.angle(sunPositionInL1,   Vector3D.MINUS_I).getReal(), 3.0e-14);
             Assertions.assertEquals(FastMath.PI, FieldVector3D.angle(earthPositionInL1, Vector3D.MINUS_I).getReal(), 3.4e-14);
         }
+    }
+
+    @Test
+    public void testFieldL1PositionWithDerivatives() {
+        // field dates with non-zero derivatives use the field version of getL1 (dates with zero
+        // derivatives fall back to the non-field version), which must place L1 at the same position
+        // (see issue 2035)
+        final AbsoluteDate date = new AbsoluteDate(2000, 01, 01, 0, 0, 00.000,
+                                                   TimeScalesFactory.getUTC());
+        final UnivariateDerivative1 dt = new UnivariateDerivative1(0.0, 1.0);
+        final FieldAbsoluteDate<UnivariateDerivative1> fieldDate =
+                        new FieldAbsoluteDate<>(dt.getField(), date).shiftedBy(dt);
+        final Frame eme2000 = FramesFactory.getEME2000();
+        doTestFieldL1PositionWithDerivatives(CelestialBodyFactory.getEarth(), CelestialBodyFactory.getMoon(), date, fieldDate, eme2000);
+        doTestFieldL1PositionWithDerivatives(CelestialBodyFactory.getSun(), CelestialBodyFactory.getEarth(), date, fieldDate, eme2000);
+    }
+
+    private void doTestFieldL1PositionWithDerivatives(final CelestialBody primary, final CelestialBody secondary,
+                                                      final AbsoluteDate date,
+                                                      final FieldAbsoluteDate<UnivariateDerivative1> fieldDate,
+                                                      final Frame frame) {
+        final Frame l1Frame = new L1Frame(primary, secondary);
+
+        final Vector3D posL1 = l1Frame.getStaticTransformTo(frame, date).transformPosition(Vector3D.ZERO);
+        final FieldVector3D<UnivariateDerivative1> fieldPosL1 =
+                        l1Frame.getTransformTo(frame, fieldDate).transformPosition(Vector3D.ZERO);
+
+        // check the field and non-field L1 positions are the same
+        Assertions.assertEquals(0.0, Vector3D.distance(posL1, fieldPosL1.toVector3D()), 1.0e-3);
+
+        // check the derivative of the field L1 position against finite differences
+        final double   h        = 10.0;
+        final Vector3D velocity = new Vector3D(fieldPosL1.getX().getFirstDerivative(),
+                                               fieldPosL1.getY().getFirstDerivative(),
+                                               fieldPosL1.getZ().getFirstDerivative());
+        final Vector3D finiteDifferences =
+                        new Vector3D(+0.5 / h, l1Frame.getStaticTransformTo(frame, date.shiftedBy(+h)).transformPosition(Vector3D.ZERO),
+                                     -0.5 / h, l1Frame.getStaticTransformTo(frame, date.shiftedBy(-h)).transformPosition(Vector3D.ZERO));
+        Assertions.assertEquals(0.0, Vector3D.distance(velocity, finiteDifferences), 1.0e-6 * velocity.getNorm());
     }
 
     @BeforeEach

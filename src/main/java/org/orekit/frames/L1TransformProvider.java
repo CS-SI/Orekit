@@ -187,11 +187,11 @@ public class L1TransformProvider implements TransformProvider {
             final T rhs1       = bigrminusR.multiply(bigrminusR).reciprocal().multiply(massRatio);
             final T rhs2       = bigR.multiply(bigR).reciprocal();
             final T rhs3       = bigrminusR.multiply(rhs2).multiply(1 + massRatio).divide(bigR);
-            return lhs.subtract(rhs1.add(rhs2).add(rhs3));
+            return lhs.subtract(rhs1.add(rhs2).subtract(rhs3));
         };
         final T zero             = primaryToSecondary.getX().getField().getZero();
         final T[] searchInterval = UnivariateSolverUtils.bracket(l1Equation,
-                                                                 baseR, zero, bigR.multiply(2),
+                                                                 baseR, zero, bigR,
                                                                  bigR.multiply(0.01), zero.newInstance(1),
                                                                  MAX_EVALUATIONS);
 

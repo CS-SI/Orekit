@@ -27,8 +27,8 @@ import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
-import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;
 import org.hipparchus.analysis.differentiation.UnivariateDerivative2;
+import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.oned.Vector1D;
 import org.hipparchus.geometry.euclidean.threed.FieldLine;
@@ -69,7 +69,6 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinatesHermiteInterpolator;
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.orekit.OrekitMatchers.closeTo;
 
@@ -242,7 +241,7 @@ class OneAxisEllipsoidTest {
         Orbit orbit = new EquinoctialOrbit(initPV, eme2000, Constants.EIGEN5C_EARTH_MU);
 
         double[] errors = derivativesErrors(orbit, orbit.getDate(), eme2000, model);
-        Assertions.assertEquals(0, errors[0], 1.0e-16);
+        Assertions.assertEquals(0, errors[0], 2.0e-16);
         Assertions.assertEquals(0, errors[1], 2.0e-12);
         Assertions.assertEquals(0, errors[2], 2.0e-4);
 

@@ -196,6 +196,7 @@ public class EllipsoidTessellator {
                 // check the mesh is independent from existing meshes
                 mergingSeeds.clear();
                 for (final Map.Entry<Mesh, List<Tile>> entry : map.entrySet()) {
+                    checkInterrupted();
                     if (!factory.intersection(mesh.getCoverage(), entry.getKey().getCoverage()).isEmpty()) {
                         // the meshes are not independent, they intersect each other!
 
@@ -251,6 +252,7 @@ public class EllipsoidTessellator {
         int count = 0;
         while (inside != null) {
 
+            checkInterrupted();
             if (++count > MAX_ITER) {
                 throw new OrekitException(LocalizedCoreFormats.MAX_COUNT_EXCEEDED, MAX_ITER);
             }
@@ -261,6 +263,8 @@ public class EllipsoidTessellator {
             mergingSeeds.add(mesh.getNode(0, 0));
             List<GeodeticPoint> sample = null;
             while (!mergingSeeds.isEmpty()) {
+
+                checkInterrupted();
 
                 // expand the mesh around the seed
                 neighborExpandMesh(mesh, mergingSeeds, zone);
@@ -273,6 +277,7 @@ public class EllipsoidTessellator {
                 // check the mesh is independent from existing meshes
                 mergingSeeds.clear();
                 for (final Map.Entry<Mesh, List<GeodeticPoint>> entry : map.entrySet()) {
+                    checkInterrupted();
                     if (!factory.intersection(mesh.getCoverage(), entry.getKey().getCoverage()).isEmpty()) {
                         // the meshes are not independent, they intersect each other!
 
@@ -302,6 +307,17 @@ public class EllipsoidTessellator {
 
         return sampleLists;
 
+    }
+
+    /** Check the current thread has not been interrupted.
+     * @exception OrekitException if the current thread has been interrupted
+     * (the interrupted status is preserved)
+     */
+    static void checkInterrupted() {
+        if (Thread.currentThread().isInterrupted()) {
+            throw new OrekitException(new InterruptedException(), LocalizedCoreFormats.SIMPLE_MESSAGE,
+                                      "tessellation interrupted");
+        }
     }
 
     /** Get an inside point from a zone of interest.
@@ -336,6 +352,7 @@ public class EllipsoidTessellator {
         int count = 0;
         while (expanding) {
 
+            checkInterrupted();
             if (++count > MAX_ITER) {
                 throw new OrekitException(LocalizedCoreFormats.MAX_COUNT_EXCEEDED, MAX_ITER);
             }
@@ -344,6 +361,8 @@ public class EllipsoidTessellator {
             // inside nodes are completely surrounded by at least
             // one layer of outside nodes
             while (!newNodes.isEmpty()) {
+
+                checkInterrupted();
 
                 // retrieve an active node
                 final Mesh.Node node = newNodes.remove();
@@ -406,6 +425,8 @@ public class EllipsoidTessellator {
             }
 
             for (Range alongPair : nodesIndices(minAlong, maxAlong, truncateLastLength)) {
+
+                checkInterrupted();
 
                 // get the base vertex nodes
                 final Mesh.Node node0 = mesh.addNode(alongPair.lower, acrossPair.lower);
@@ -480,6 +501,7 @@ public class EllipsoidTessellator {
                 for (int across = mesh.getMinAcrossIndex() + acrossModulus;
                         across <= mesh.getMaxAcrossIndex();
                         across += quantization) {
+                    checkInterrupted();
                     for (int along = mesh.getMinAlongIndex() + alongModulus;
                             along <= mesh.getMaxAlongIndex();
                             along += quantization) {
@@ -542,6 +564,8 @@ public class EllipsoidTessellator {
 
         // prepare seed nodes for next iteration
         for (final Mesh.Node insideNode : smaller.getInsideNodes()) {
+
+            checkInterrupted();
 
             // beware we cannot reuse the node itself as the two meshes are not aligned!
             // we have to create new nodes around the previous location

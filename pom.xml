@@ -3,7 +3,7 @@
   <groupId>org.orekit</groupId>
   <artifactId>orekit</artifactId>
   <packaging>jar</packaging>
-  <version>13.1.9</version>
+  <version>13.1.10</version>
   <name>OREKIT</name>
   <url>https://www.orekit.org/</url>
 
@@ -255,6 +255,9 @@
       <name>Francesco Coccoluto</name>
     </contributor>
     <contributor>
+      <name>Frédéric Combes</name>
+    </contributor>
+    <contributor>
       <name>Sébastien Dinot</name>
     </contributor>
     <contributor>
@@ -348,7 +351,13 @@
       <name>Rodrigo Marcelino</name>
     </contributor>
     <contributor>
+      <name>Pontus Markström</name>
+    </contributor>
+    <contributor>
       <name>Tanner Mills</name>
+    </contributor>
+    <contributor>
+      <name>Valentin Montal</name>
     </contributor>
     <contributor>
       <name>Vincent Mouraux</name>
@@ -379,6 +388,9 @@
     </contributor>
     <contributor>
       <name>Julian Rengstorf</name>
+    </contributor>
+    <contributor>
+      <name>Redmond Riddell</name>
     </contributor>
     <contributor>
       <name>Silvia Ríos Bergantiños</name>
