@@ -116,7 +116,7 @@ public class FieldSGP4<T extends CalculusFieldElement<T>> extends FieldTLEPropag
             t5cof = d4.multiply(3.0).add(c1.multiply(12.0).multiply(d3)).add(
                     d2.multiply(d2).multiply(6.0)).add(c1sq.multiply(15.0).multiply(d2.multiply(2).add(c1sq))).multiply(0.2);
             sinM0 = scM0.sin();
-            if (tle.getE().getReal() < 1e-4) {
+            if (tle.getE().getReal() <= 1e-4) {
                 omgcof = c1sq.getField().getZero();
                 xmcof = c1sq.getField().getZero();
             } else  {
