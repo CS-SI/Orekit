@@ -856,9 +856,9 @@ class CircularOrbitTest {
         final double[] actualRates = actualElements.clone();
         final double[] expectedElements = new double[6];
         final double[] expectedRates = expectedElements.clone();
-        final OrbitType orbitType = expected.getType();
-        orbitType.mapOrbitToArray(expected, expected.getCachedPositionAngleType(), expectedElements, expectedRates);
-        orbitType.mapOrbitToArray(actual, actual.getCachedPositionAngleType(), actualElements, actualRates);
+        final OrbitParamsType orbitParamsType = expected.getType();
+        orbitParamsType.mapOrbitToArray(expected, expected.getCachedPositionAngleType(), expectedElements, expectedRates);
+        orbitParamsType.mapOrbitToArray(actual, actual.getCachedPositionAngleType(), actualElements, actualRates);
         Assertions.assertArrayEquals(expectedElements, actualElements, 1e-7);
         Assertions.assertArrayEquals(expectedRates, actualRates, 1e-10);
     }

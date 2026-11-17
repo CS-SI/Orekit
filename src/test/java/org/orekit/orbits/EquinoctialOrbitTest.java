@@ -895,7 +895,7 @@ public class EquinoctialOrbitTest {
         final double[] actualRates = actualElements.clone();
         final double[] expectedElements = new double[6];
         final double[] expectedRates = expectedElements.clone();
-        final OrbitType orbitType = expected.getType();
+        final OrbitParamsType orbitType = expected.getType();
         orbitType.mapOrbitToArray(expected, expected.getCachedPositionAngleType(), expectedElements, expectedRates);
         orbitType.mapOrbitToArray(actual, actual.getCachedPositionAngleType(), actualElements, actualRates);
         Assertions.assertArrayEquals(expectedElements, actualElements, 1e-7);

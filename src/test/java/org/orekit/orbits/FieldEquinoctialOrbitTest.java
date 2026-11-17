@@ -383,7 +383,7 @@ class FieldEquinoctialOrbitTest {
         final Binary64[] actualRates = actualElements.clone();
         final Binary64[] expectedElements = actualElements.clone();
         final Binary64[] expectedRates = expectedElements.clone();
-        final OrbitType orbitType = expected.getType();
+        final OrbitParamsType orbitType = expected.getType();
         orbitType.mapOrbitToArray(expected, expected.getCachedPositionAngleType(), expectedElements, expectedRates);
         orbitType.mapOrbitToArray(actual, actual.getCachedPositionAngleType(), actualElements, actualRates);
         Assertions.assertArrayEquals(expectedElements, actualElements);
@@ -410,7 +410,7 @@ class FieldEquinoctialOrbitTest {
         final double[] actualRates = actualElements.clone();
         final double[] expectedElements = new double[6];
         final double[] expectedRates = expectedElements.clone();
-        final OrbitType orbitType = expected.getType();
+        final OrbitParamsType orbitType = expected.getType();
         orbitType.mapOrbitToArray(expected.toOrbit(), expected.getCachedPositionAngleType(), expectedElements, expectedRates);
         orbitType.mapOrbitToArray(actual.toOrbit(), actual.getCachedPositionAngleType(), actualElements, actualRates);
         Assertions.assertArrayEquals(expectedElements, actualElements, 1e-7);

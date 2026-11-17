@@ -42,6 +42,8 @@ import org.orekit.propagation.FieldEphemerisGenerator;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.analytical.tle.generation.FixedPointTleGenerationAlgorithm;
+import org.orekit.propagation.analytical.tle.generation.TleGenerationAlgorithm;
 import org.orekit.propagation.sampling.FieldOrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -49,8 +51,6 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
-import org.orekit.propagation.analytical.tle.generation.FixedPointTleGenerationAlgorithm;
-import org.orekit.propagation.analytical.tle.generation.TleGenerationAlgorithm;
 
 
 public class FieldTLEPropagatorTest {
@@ -99,12 +99,11 @@ public class FieldTLEPropagatorTest {
         final String line1 = "1 28057U 03049A   06177.78615833  .00000060  00000-0  35940-4 0  1836";
         final String line2 = "2 28057  98.4283 247.6961 0001000  88.1964 271.9322 14.35478080140551";
         final FieldTLE<T> tle = new FieldTLE<>(field, line1, line2);
-        final T[] parameters = tle.getParameters(field);
-        final FieldTLEPropagator<T> propagator = FieldTLEPropagator.selectExtrapolator(tle, parameters);
+        final FieldTLEPropagator<T> propagator = FieldTLEPropagator.selectExtrapolator(tle);
 
         // Simulate one day of propagation
         final FieldPVCoordinates<T> pv =
-                propagator.getPVCoordinates(tle.getDate().shiftedBy(1440.0 * 60), parameters);
+                propagator.propagate(tle.getDate().shiftedBy(1440.0 * 60)).getPVCoordinates();
 
         // Check results
         // Vallado reference: python-sgp4 2.25, WGS72, sgp4_tsince(1440.0).
@@ -123,12 +122,11 @@ public class FieldTLEPropagatorTest {
         final String line1 = "1 24208U 96044A   06177.04061740 -.00000094  00000-0  10000-3 0  1600";
         final String line2 = "2 24208   3.8536  80.0121 0026640 311.0977  48.3000  1.00778054 36119";
         final FieldTLE<T> tle = new FieldTLE<>(field, line1, line2);
-        final T[] parameters = tle.getParameters(field);
-        final FieldTLEPropagator<T> propagator = FieldTLEPropagator.selectExtrapolator(tle, parameters);
+        final FieldTLEPropagator<T> propagator = FieldTLEPropagator.selectExtrapolator(tle);
 
         // Simulate 30 days of propagation
         final FieldPVCoordinates<T> pv =
-                propagator.getPVCoordinates(tle.getDate().shiftedBy(43200.0 * 60), parameters);
+                propagator.propagate(tle.getDate().shiftedBy(43200.0 * 60)).getPVCoordinates();
 
         // Check results
         // Vallado reference: python-sgp4 2.25, WGS72, sgp4_tsince(43200.0).
@@ -146,12 +144,11 @@ public class FieldTLEPropagatorTest {
         final String line1 = "1 08195U 75081A   06176.33215444  .00000099  00000-0  11873-3 0   813";
         final String line2 = "2 08195  64.1586 279.0717 6877146 264.7651  20.2257  2.00491383225656";
         final FieldTLE<T> tle = new FieldTLE<>(field, line1, line2);
-        final T[] parameters = tle.getParameters(field);
-        final FieldTLEPropagator<T> propagator = FieldTLEPropagator.selectExtrapolator(tle, parameters);
+        final FieldTLEPropagator<T> propagator = FieldTLEPropagator.selectExtrapolator(tle);
 
         // Simulate 30 days of propagation
         final FieldPVCoordinates<T> pv =
-                propagator.getPVCoordinates(tle.getDate().shiftedBy(43200.0 * 60), parameters);
+                propagator.propagate(tle.getDate().shiftedBy(43200.0 * 60)).getPVCoordinates();
 
         // Check results
         // Vallado reference: python-sgp4 2.25, WGS72, sgp4_tsince(43200.0).
