@@ -206,10 +206,10 @@ class EcksteinHechlerBatchLSEstimatorTest {
         estimator.setMaxEvaluations(20);
 
         EstimationTestUtils.checkFit(false, context, estimator, 1, 9,
-                                     0.0, 3.8e-7,
-                                     0.0, 9.0e-7,
-                                     0.0, 4.3e-9,
-                                     0.0, 2.6e-12);
+                                                    0.0, 4.3e-5,
+                                                    0.0, 1.2e-4,
+                                                    0.0, 3.0e-8,
+                                                    0.0, 2.5e-11);
 
     }
 

@@ -783,6 +783,10 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased<Equino
     /** {@inheritDoc} */
     @Override
     public EquinoctialOrbit shiftedBy(final TimeOffset dt) {
+        if (dt.isZero()) {  // for performance
+            return new EquinoctialOrbit(a, ex, ey, hx, hy, cachedL, aDot, exDot, eyDot, hxDot, hyDot, cachedLDot,
+                    cachedPositionAngleType, getFrame(), getDate(), getMu());
+        }
 
         final double dtS = dt.toDouble();
 
@@ -792,7 +796,7 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased<Equino
         final EquinoctialOrbit keplerianShifted = new EquinoctialOrbit(parameters,
                                                                        getFrame(), getDate().shiftedBy(dt), getMu());
 
-        if (dtS != 0. && hasNonKeplerianRates()) {
+        if (hasNonKeplerianRates()) {
             final PVCoordinates pvCoordinates = shiftPVNonKeplerian(keplerianShifted.getPVCoordinates(), dtS);
 
             // build a new orbit, taking non-Keplerian acceleration into account

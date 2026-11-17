@@ -403,6 +403,60 @@ class FieldKeplerianOrbitTest {
     }
 
     @Test
+    void testShiftedByZeroField() {
+        // GIVEN
+        final Vector3D position = new Vector3D(-29536113.0, 30329259.0, -100125.0);
+        final Vector3D velocity = new Vector3D(-2194.0, -2141.0, -8.0);
+        final Vector3D acceleration = new Vector3D(1.0, 0.0, 0.0);
+        final PVCoordinates pvCoordinates = new PVCoordinates(position, velocity, acceleration);
+        final KeplerianOrbit orbit = new KeplerianOrbit(pvCoordinates, FramesFactory.getGCRF(),
+                AbsoluteDate.ARBITRARY_EPOCH, mu);
+        final FieldKeplerianOrbit<Binary64> expected = new FieldKeplerianOrbit<>(Binary64Field.getInstance(), orbit);
+        // WHEN
+        final FieldKeplerianOrbit<Binary64> actual = expected.shiftedBy(Binary64.ZERO);
+        // THEN
+        Assertions.assertEquals(expected.getMu(), actual.getMu());
+        Assertions.assertEquals(expected.getDate(), actual.getDate());
+        Assertions.assertEquals(expected.getFrame(), actual.getFrame());
+        final Binary64[] actualElements = MathArrays.buildArray(Binary64Field.getInstance(), 6);
+        final Binary64[] actualRates = actualElements.clone();
+        final Binary64[] expectedElements = actualElements.clone();
+        final Binary64[] expectedRates = expectedElements.clone();
+        final OrbitParamsType orbitType = expected.getType();
+        orbitType.mapOrbitToArray(expected, expected.getCachedPositionAngleType(), expectedElements, expectedRates);
+        orbitType.mapOrbitToArray(actual, actual.getCachedPositionAngleType(), actualElements, actualRates);
+        Assertions.assertArrayEquals(expectedElements, actualElements);
+        Assertions.assertArrayEquals(expectedRates, actualRates);
+    }
+
+    @Test
+    void testShiftedByZeroTimeOffset() {
+        // GIVEN
+        final Vector3D position = new Vector3D(-29536113.0, 30329259.0, -100125.0);
+        final Vector3D velocity = new Vector3D(-2194.0, -2141.0, -8.0);
+        final Vector3D acceleration = new Vector3D(1.0, 0.0, 0.0);
+        final PVCoordinates pvCoordinates = new PVCoordinates(position, velocity, acceleration);
+        final KeplerianOrbit orbit = new KeplerianOrbit(pvCoordinates, FramesFactory.getGCRF(),
+                AbsoluteDate.ARBITRARY_EPOCH, mu);
+        final FieldKeplerianOrbit<Binary64> expected = new FieldKeplerianOrbit<>(Binary64Field.getInstance(), orbit);
+        // WHEN
+        final FieldKeplerianOrbit<Binary64> actual = expected.shiftedBy(TimeOffset.ZERO);
+        // THEN
+        Assertions.assertEquals(expected.getMu(), actual.getMu());
+        Assertions.assertEquals(expected.getDate(), actual.getDate());
+        Assertions.assertEquals(expected.getFrame(), actual.getFrame());
+        final double[] actualElements = new double[6];
+        final double[] actualRates = actualElements.clone();
+        final double[] expectedElements = new double[6];
+        final double[] expectedRates = expectedElements.clone();
+        final OrbitParamsType orbitType = expected.getType();
+        orbitType.mapOrbitToArray(expected.toOrbit(), expected.getCachedPositionAngleType(), expectedElements, expectedRates);
+        orbitType.mapOrbitToArray(actual.toOrbit(), actual.getCachedPositionAngleType(), actualElements, actualRates);
+        Assertions.assertArrayEquals(expectedElements, actualElements, 1e-7);
+        Assertions.assertArrayEquals(expectedRates, actualRates, 1e-8);
+    }
+
+    @Test
     void testFromKeplerianOrbitWithDerivatives() {
         // GIVEN
         final ComplexField field = ComplexField.getInstance();

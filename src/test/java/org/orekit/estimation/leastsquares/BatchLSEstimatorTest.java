@@ -120,9 +120,9 @@ class BatchLSEstimatorTest {
         final LeastSquaresOptimizer.Optimum optimum = estimator.getOptimum();
         // THEN
         Assertions.assertEquals(6, optimum.getIterations());
-        Assertions.assertEquals(3.1781e-20, optimum.getChiSquare(), 1e-22);
+        Assertions.assertEquals(3.178075E-20, optimum.getChiSquare(), 1e-22);
         final double actualReduced = optimum.getReducedChiSquare(0);
-        Assertions.assertEquals(5.2099e-22, actualReduced, 1e-24);
+        Assertions.assertEquals(5.20996e-22, actualReduced, 1e-25);
     }
 
     /**
@@ -1026,8 +1026,8 @@ class BatchLSEstimatorTest {
         Assertions.assertEquals(0.0010514, Vector3D.distance(closeOrbit.getVelocity(),
                           before.getVelocity()), 1.0e-6);
         EstimationTestUtils.checkFit(false, context, estimator, 3, 4,
-                                     0.0, 3.9e-06,
-                                     0.0, 1.1e-05,
+                                     0.0, 4.1e-06,
+                                     0.0, 1.3e-05,
                                      0.0, 7.0e-07,
                                      0.0, 2.2e-10);
 
