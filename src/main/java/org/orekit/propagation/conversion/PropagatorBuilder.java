@@ -100,4 +100,26 @@ public interface PropagatorBuilder extends Cloneable {
      */
     void resetOrbit(Orbit newOrbit);
 
+    /** Create a copy of this propagator builder.
+     * <p>
+     * The copy is a distinct instance holding its own parameter drivers, hence
+     * resetting the orbit of one of the two builders does not affect the other one.
+     * <p>
+     * Beware however that drivers are permanently bound together by name as soon as
+     * they are added to a common {@link ParameterDriversList}, which happens for
+     * instance when several builders are given to the same orbit determination
+     * engine. As a builder and its copy use the same driver names, in such a case
+     * setting the value of a driver of one builder also sets the value of the
+     * corresponding driver of the other builder. Drivers must therefore be renamed
+     * if both builders are to be estimated independently.
+     * <p>
+     * This method is explicitly declared here, and not inherited from
+     * {@link Object#clone()} which is {@code protected}, so that generic code
+     * handling propagator builders through this interface can copy them without
+     * casting to the implementation type.
+     *
+     * @return a copy of this propagator builder
+     * @since 14.0
+     */
+    PropagatorBuilder clone();
 }

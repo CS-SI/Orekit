@@ -16,8 +16,6 @@
  */
 package org.orekit.propagation.conversion;
 
-import java.util.List;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -28,7 +26,6 @@ import org.orekit.estimation.leastsquares.ModelObserver;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.AbstractOrbitFactory;
-import org.orekit.orbits.AbstractOrbitalStateFactory;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.CartesianOrbitFactory;
 import org.orekit.orbits.OrbitalState;
@@ -37,9 +34,13 @@ import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.AbstractPropagator;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 import org.orekit.utils.drivers.ParameterDriversList;
 import org.orekit.utils.drivers.ParameterDriversList.DelegatingDriver;
-import org.orekit.utils.TimeStampedPVCoordinates;
+
+import java.util.List;
+
 import static org.orekit.Utils.assertParametersDriversValues;
 
 public class AbstractPropagatorBuilderTest {
@@ -93,6 +94,48 @@ public class AbstractPropagatorBuilderTest {
             Assertions.assertEquals(expectedValue, driver.getValue(), 0.);
             Assertions.assertEquals(expectedValue, driver.getReferenceValue(), 0.);
         }
+    }
+
+    /** Test for issue 1734.
+     * <p>
+     *  This test checks that a propagator builder known only through the
+     * {@link PropagatorBuilder} interface can be cloned without any cast, and that
+     * the clone is independent of the original builder.
+     */
+    @Test
+    void testIssue1734() {
+
+        // Given
+        final Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        final CartesianOrbit initialOrbit = new CartesianOrbit(context.initialOrbit);
+
+        // Builder is declared with the interface type, which is the point of the issue
+        final PropagatorBuilder builder =
+                        new KeplerianPropagatorBuilder(initialOrbit.factory(PositionAngleType.TRUE, 10.));
+
+        // When: cloning through the interface requires no cast at all
+        final PropagatorBuilder copy = builder.clone();
+
+        // Change orbit of the copied builder
+        final TimeStampedPVCoordinates modifiedPv = initialOrbit.shiftedBy(3600.).getPVCoordinates();
+        copy.resetOrbit(new CartesianOrbit(modifiedPv, initialOrbit.getFrame(),
+                                           initialOrbit.getDate(), initialOrbit.getMu()));
+
+        // Then
+        Assertions.assertNotSame(builder, copy);
+        Assertions.assertEquals(builder.getClass(), copy.getClass());
+        Assertions.assertArrayEquals(builder.getSelectedNormalizedParameters(),
+                                     copy.getSelectedNormalizedParameters());
+
+        // The two builders are independent: resetting the orbit of the copy must leave the original builder untouched
+        final PVCoordinates originalPv = initialOrbit.getPVCoordinates();
+        final PVCoordinates initialPv  = builder.buildPropagator().getInitialState().getPVCoordinates();
+        final double dP = originalPv.getPosition().distance(initialPv.getPosition());
+        final double dV = originalPv.getVelocity().distance(initialPv.getVelocity());
+        final double dA = originalPv.getAcceleration().distance(initialPv.getAcceleration());
+        Assertions.assertEquals(0., dP, 0.);
+        Assertions.assertEquals(0., dV, 0.);
+        Assertions.assertEquals(0., dA, 0.);
     }
 
     /**
