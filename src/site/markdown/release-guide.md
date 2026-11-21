@@ -58,23 +58,15 @@ The `org.orekit` namespace is used for these artifacts, and only people that hav
 been identified as allowed to publish releases can push binary artifacts for publication.
 
 In order to publish, candidate release managers should therefore create an account on
-Sonatype central repository using the
-[central portal login page](https://central.sonatype.com/account). Once the
+Sonatype central repository using the [signup page](https://my.sonatype.com/). Once the
 account has been created they should ask existing release managers to add them to the
 allowed list for the `org.orekit` namespace.
 
-Note that the central portal account and the associated credentials are different from
-the legacy OSSRH system that was used before Orekit 13.1. This implies that people that
-were able to publish Orekit releases prior to Orekit 13.1 must create a new account on
-the new central portal system, their older account on legacy OSSRH is obsolete.
-
 After creating the account on Sonatype central portal, release managers should create
-a User Token. This is done by login to
-[central portal login page](https://central.sonatype.com/account), selecting the
-`View Account` item from the menu drop list at the upper right of the page (small
-button that displays the start of the username) and selecting the
-`Generate User Token` button in the `Setup Token-Based Authentication` page. This
-will generate a token with a small random Id and a long random password.
+a User Token. This is done by login to [central portal login page](https://central.sonatype.com/),
+selecting the `View User Tokens` item from the menu drop list at the upper right of the page (small
+button that displays the start of the username) and selecting the `Generate User Token` button in
+the `Tokens` page. This will generate a token with a small random Id and a long random password.
 
 Note that Orekit does *not* use the `central-publishing-maven-plugin`. The reason is
 that we need to provide public access to the binary artifacts for the voting process. As
@@ -121,7 +113,7 @@ This is typically the case with `maven-checkstyle-plugin` and
 
 Before committing these changes, you have to check that everything works. So
 run the following command, taking care to use the Java version that matches
-the compatibility requirements (Java 8 at time of writing):
+the compatibility requirements (Java 21 at time of writing):
 
     mvn clean
     LANG=C JAVA_HOME=/path/to/correct/java/version PATH=${JAVA_HOME}/bin:$PATH mvn -Prelease site
