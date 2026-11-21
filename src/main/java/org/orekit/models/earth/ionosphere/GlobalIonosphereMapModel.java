@@ -711,9 +711,9 @@ public class GlobalIonosphereMapModel extends AbstractIonosphericModel  {
             }
 
             // TEC map
-            if (maps.size() != header.getTECMapsNumer()) {
+            if (maps.size() != header.getTECMapsNumber()) {
                 throw new OrekitException(OrekitMessages.INCONSISTENT_NUMBER_OF_TEC_MAPS_IN_FILE,
-                                          maps.size(), header.getTECMapsNumer());
+                                          maps.size(), header.getTECMapsNumber());
             }
             TECMap previous = null;
             for (TECMap current : maps) {
@@ -1088,7 +1088,7 @@ public class GlobalIonosphereMapModel extends AbstractIonosphericModel  {
          * Get the number of TEC maps contained in the file.
          * @return the number of TEC maps
          */
-        public int getTECMapsNumer() {
+        public int getTECMapsNumber() {
             return nbOfMaps;
         }
 
