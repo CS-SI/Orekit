@@ -113,7 +113,7 @@ This is typically the case with `maven-checkstyle-plugin` and
 
 Before committing these changes, you have to check that everything works. So
 run the following command, taking care to use the Java version that matches
-the compatibility requirements (Java 8 at time of writing):
+the compatibility requirements (Java 21 at time of writing):
 
     mvn clean
     LANG=C JAVA_HOME=/path/to/correct/java/version PATH=${JAVA_HOME}/bin:$PATH mvn -Prelease site
