@@ -24,7 +24,7 @@ cd $(dirname $0)/..
 . scripts/functions.sh
 
 # safety checks
-safety_ckecks src/main/java/org/orekit/time
+safety_checks src/main/java/org/orekit/time
 
 # set the gitlab remote repository name
 gitlab_origin=$(find_gitlab_origin)

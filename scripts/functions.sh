@@ -31,7 +31,7 @@ request_confirmation()
     test $answer = "yes" || complain "release process stopped at user request"
 }
 
-safety_ckecks()
+safety_checks()
 {
     for cmd in git sed xsltproc sort tail curl stty base64 jq ; do
         which -s $cmd || complain "$cmd command not found"
