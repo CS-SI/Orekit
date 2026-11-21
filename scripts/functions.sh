@@ -108,7 +108,7 @@ next_version()
 {
     local current_major current_minor next_minor
     current_major=$(echo $1 | sed 's,\..*,,')
-    current_minor=$(echo $release_version | sed 's,[^.]*\.\([^.]\).*,\1,')
+    current_minor=$(echo $1 | sed 's,[^.]*\.\([^.]\).*,\1,')
     next_minor=$(expr $current_minor + 1)
     echo ${current_major}.${next_minor}
 }
@@ -241,7 +241,7 @@ create_milestone()
 {
     curl \
       --silent \
-      --output /dev/null \  
+      --output /dev/null \
       --request POST \
       --header "PRIVATE-TOKEN: $1" \
       --data   "title=\"$2\"" \
