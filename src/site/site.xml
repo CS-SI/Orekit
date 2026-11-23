@@ -14,7 +14,9 @@
   limitations under the License.
   -->
 
-<project name="Orekit">
+<site xmlns="http://maven.apache.org/SITE/2.1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://maven.apache.org/SITE/2.1.0 https://maven.apache.org/xsd/site-2.1.0.xsd"
+      name="Orekit">
   <bannerLeft>
     <alt>CS GROUP</alt>
     <src>/images/logo_cs_group.png</src>
@@ -75,4 +77,4 @@
       </menu>
     <menu ref="reports"/>
   </body>
-</project>
+</site>
