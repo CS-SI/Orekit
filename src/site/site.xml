@@ -14,16 +14,14 @@
   limitations under the License.
   -->
 
-<project name="Orekit">
-  <bannerLeft>
-    <alt>CS GROUP</alt>
-    <src>/images/logo_cs_group.png</src>
-    <href>https://www.cs-soprasteria.com/en/</href>
+<site xmlns="http://maven.apache.org/SITE/2.1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://maven.apache.org/SITE/2.1.0 https://maven.apache.org/xsd/site-2.1.0.xsd"
+      name="Orekit">
+  <bannerLeft href="https://www.cs-soprasteria.com/en/">
+    <image alt="CS GROUP" src="/images/logo_cs_group.png"/>
   </bannerLeft>
-  <bannerRight>
-    <alt>Orekit</alt>
-    <src>/images/orekit-logo.png</src>
-    <href>/index.html</href>
+  <bannerRight href="/index.html">
+    <image alt="Orekit" src="/images/orekit-logo.png"/>
   </bannerRight>
   <skin>
     <groupId>org.apache.maven.skins</groupId>
@@ -75,4 +73,4 @@
       </menu>
     <menu ref="reports"/>
   </body>
-</project>
+</site>
