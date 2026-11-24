@@ -1,14 +1,84 @@
-.classpath
-.project
-.settings
-.checkstyle
-.idea
-bin
-target
-/build
-/lib
+# Build outputs
+target/
+bin/
+/build/
+/lib/
 *.class
-.idea/
-*.iml
+dependency-reduced-pom.xml
+pom.xml.releaseBackup
+pom.xml.tag
+release.properties
+
+# JVM crash and replay logs
 hs_err_pid*
 replay_pid*
+
+# Eclipse
+.classpath
+.project
+.settings/
+.checkstyle
+.factorypath
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+
+# VS Code
+.vscode/
+
+# NetBeans
+nbproject/
+nbactions.xml
+nb-configuration.xml
+
+# Editor and OS files
+*.swp
+*~
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Merge and patch leftovers
+*.orig
+*.rej
+
+# Local environment and secrets
+.env
+.env.*
+
+# Python tools (virtual environments, caches, notebooks)
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+
+# Node tools
+node_modules/
+
+# Local logs and visualization outputs
+*.log
+*.czml
+
+# AI coding assistants
+CLAUDE.md
+CLAUDE.local.md
+.claude/
+AGENTS.md
+GEMINI.md
+.gemini/
+.cursor/
+.cursorrules
+.windsurf/
+.windsurfrules
+.aider*
+.continue/
+.codex/
+.github/copilot-instructions.md
+
+# Local working notes
+.scratch/
