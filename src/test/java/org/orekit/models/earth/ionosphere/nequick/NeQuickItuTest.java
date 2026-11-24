@@ -31,7 +31,9 @@ import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.StaticTransform;
 import org.orekit.frames.TopocentricFrame;
+import org.orekit.gnss.GnssSignal;
 import org.orekit.gnss.PredefinedGnssSignal;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.FieldCartesianOrbit;
@@ -526,6 +528,27 @@ public class NeQuickItuTest {
                                                                     zero.newInstance(600000.0));
         T stec = model.stec(date, recP, satP);
         Assertions.assertEquals(16.618, stec.getReal(), 0.001);
+
+    }
+
+    @Test
+    public void testIssue2064() {
+        NeQuickItu model = new NeQuickItu(earthBodyShape, 128.0, TimeScalesFactory.getUTC());
+        final Vector3D p1 = new Vector3D(-3617236.020599989, 4262286.048018698, 4000470.426362562);
+        final Vector3D p2 = new Vector3D(-3617529.122314957, 4262147.905445107, 4000353.288201839);
+        final GeodeticPoint    lowAltPoint   = earthBodyShape.lowestAltitudeIntermediate(p1, p2);
+
+        // Solve for the positions of p1 and p2 in the topocentric frame of
+        // the lowest altitude point
+        final AbsoluteDate receptionDate = AbsoluteDate.ARBITRARY_EPOCH;
+        final TopocentricFrame baseFrame  = new TopocentricFrame(earthBodyShape, lowAltPoint, null);
+        final StaticTransform base2Inert = baseFrame.getStaticTransformTo(earthBodyShape.getBodyFrame(),
+                                                                          receptionDate);
+        final Vector3D         localP1    = base2Inert.getInverse().transformPosition(p1);
+        final Vector3D         localP2    = base2Inert.getInverse().transformPosition(p2);
+
+        double d = model.pathDelay(localP1, localP2, baseFrame, receptionDate, GnssSignal.F0, model.getParameters());
+        Assertions.assertEquals(9.568761, d, 1.0e-6);
 
     }
 

@@ -20,6 +20,9 @@
   </properties>
   <body>
       <release version="14.0" date="TBD" description="TBD">
+          <action dev="luc" type="fix" issue="2064">
+              Fixed singularity in NeQuick computation of azimuth of satellite as seen from ray-periapsis.
+          </action>
           <action dev="serrof" type="add" issue="2038">
               Introduced common interface for PVCoordinates and AbsolutePVCoordinates.
           </action>

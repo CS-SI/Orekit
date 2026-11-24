@@ -145,14 +145,17 @@ public class Ray {
         // Sine and cosine of ray-periapsis latitude
         this.scLatP = FastMath.sinCos(latP);
 
-        if (FastMath.abs(FastMath.abs(latP) - 0.5 * FastMath.PI) < THRESHOLD || FastMath.abs(sinZ) < THRESHOLD) {
+        // Sine and cosine of azimuth of satellite as seen from ray-periapsis
+        final SinCos scLon = FastMath.sinCos(lon2 - lonP);
+        final SinCos scPsi = FastMath.sinCos(greatCircleAngle(scLatSat, scLon));
+
+        if (FastMath.abs(FastMath.abs(latP) - 0.5 * FastMath.PI) < THRESHOLD ||
+            FastMath.abs(sinZ) < THRESHOLD ||
+            FastMath.abs(scPsi.sin()) < THRESHOLD) {
             // Eq. 172 and 173
             this.sinAzP = 0.0;
             this.cosAzP = -FastMath.copySign(1, latP);
         } else {
-            final SinCos scLon = FastMath.sinCos(lon2 - lonP);
-            // Sine and cosine of azimuth of satellite as seen from ray-periapsis
-            final SinCos scPsi = FastMath.sinCos(greatCircleAngle(scLatSat, scLon));
             // Eq. 174 and 175
             this.sinAzP = scLatSat.cos() * scLon.sin() / scPsi.sin();
             this.cosAzP = (scLatSat.sin() - scLatP.sin() * scPsi.cos()) / (scLatP.cos() * scPsi.sin());
