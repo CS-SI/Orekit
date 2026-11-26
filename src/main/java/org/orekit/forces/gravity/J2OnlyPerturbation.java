@@ -25,6 +25,7 @@ import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvide
 import org.orekit.frames.FieldStaticTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.StaticTransform;
+import org.orekit.models.earth.ReferenceEllipsoid;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -59,6 +60,16 @@ public class J2OnlyPerturbation implements ForceModel {
 
     /** Frame where J2 applies. */
     private final Frame frame;
+
+    /** Constructor with {@link TimeScalarFunction}.
+     * It is the user's responsibility to make sure the Field and double versions are consistent with each other.
+     * @param referenceEllipsoid frame where J2 applies
+     * @since 14.0
+     */
+    public J2OnlyPerturbation(final ReferenceEllipsoid referenceEllipsoid) {
+        this(referenceEllipsoid.getGM(), referenceEllipsoid.getEquatorialRadius(), -referenceEllipsoid.getC2n0(1) * FastMath.sqrt(5),
+                referenceEllipsoid.getBodyFrame());
+    }
 
     /** Constructor with {@link TimeScalarFunction}.
      * It is the user's responsibility to make sure the Field and double versions are consistent with each other.
