@@ -30,6 +30,7 @@ import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.models.earth.ReferenceEllipsoid;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
@@ -42,8 +43,25 @@ import org.orekit.utils.PVCoordinates;
 class J2OnlyPerturbationTest {
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data:potential");
+    }
+
+    @Test
+    void testConstructorEllipsoid() {
+        // GIVEN
+        final Frame expectedFrame = FramesFactory.getGTOD(false);
+        final double expectedMu = Constants.GRS80_EARTH_MU;
+        final double expectedrEq = Constants.GRS80_EARTH_EQUATORIAL_RADIUS;
+        final double expectedJ2 = -Constants.GRS80_EARTH_C20;
+        final AbsoluteDate absoluteDate = AbsoluteDate.ARBITRARY_EPOCH;
+        final ReferenceEllipsoid ellipsoid = ReferenceEllipsoid.getGrs80(expectedFrame);
+        // WHEN
+        final J2OnlyPerturbation j2OnlyPerturbation = new J2OnlyPerturbation(ellipsoid);
+        // THEN
+        Assertions.assertEquals(expectedMu, j2OnlyPerturbation.getMu());
+        Assertions.assertEquals(expectedJ2, j2OnlyPerturbation.getJ2(absoluteDate), 1e-8);
+        Assertions.assertEquals(expectedrEq, j2OnlyPerturbation.getrEq());
     }
 
     @Test
